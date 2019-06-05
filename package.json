@@ -35,7 +35,6 @@
     "lint": "rc-tools run lint",
     "lint:fix": "rc-tools run lint --fix",
     "test": "jest",
-    "prepublish": "rc-tools run guard",
     "coverage": "jest --coverage",
     "now-build": "npm run build"
   },
@@ -54,16 +53,11 @@
     }
   },
   "devDependencies": {
-    "antd": "3.x",
-    "async": "^2.6.2",
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
-    "history": "^1.16.0",
+    "father": "^2.5.1",
     "jest": "^21.2.1",
-    "pre-commit": "1.x",
-    "prop-types": "^15.5.10",
-    "rc-tools": "~9.5.3",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^4.4.10",
@@ -77,9 +71,6 @@
   "dependencies": {
     "async-validator": "^1.11.2",
     "babel-runtime": "6.x",
-    "create-react-class": "^15.5.3",
-    "dom-scroll-into-view": "1.x",
-    "hoist-non-react-statics": "^3.3.0",
     "lodash": "^4.17.4",
     "rc-util": "^4.6.0",
     "warning": "^4.0.3"
