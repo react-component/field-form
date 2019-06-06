@@ -27,10 +27,11 @@
   "main": "./lib/index",
   "module": "./es/index",
   "scripts": {
+    "start": "father doc dev --storybook",
     "build": "rc-tools run build",
     "compile": "rc-tools run compile --babel-runtime",
     "gh-pages": "rc-tools run gh-pages",
-    "start": "rc-tools run storybook",
+    "start1": "rc-tools run storybook",
     "pub": "rc-tools run pub --babel-runtime",
     "lint": "rc-tools run lint",
     "lint:fix": "rc-tools run lint --fix",
@@ -53,10 +54,12 @@
     }
   },
   "devDependencies": {
+    "@types/react": "^16.8.19",
+    "@types/react-dom": "^16.8.4",
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
-    "father": "^2.5.1",
+    "father": "^2.5.2-alpha.2",
     "jest": "^21.2.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
