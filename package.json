@@ -35,23 +35,9 @@
     "pub": "rc-tools run pub --babel-runtime",
     "lint": "rc-tools run lint",
     "lint:fix": "rc-tools run lint --fix",
-    "test": "jest",
+    "test": "father test",
     "coverage": "jest --coverage",
     "now-build": "npm run build"
-  },
-  "jest": {
-    "setupFiles": [
-      "./tests/setup.js"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*"
-    ],
-    "snapshotSerializers": [
-      "enzyme-to-json/serializer"
-    ],
-    "transform": {
-      "\\.jsx?$": "./node_modules/rc-tools/scripts/jestPreprocessor.js"
-    }
   },
   "peerDependencies": {
     "react": "*"
@@ -63,7 +49,6 @@
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
     "father": "^2.6.3",
-    "jest": "^21.2.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^4.4.10",
