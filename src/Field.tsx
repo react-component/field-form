@@ -46,9 +46,9 @@ export interface FieldState {
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<FieldProps, FieldState>
-  implements FieldEntity {
+class Field extends React.Component<FieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
+
   public static defaultProps = {
     trigger: 'onChange',
     validateTrigger: 'onChange',
@@ -65,38 +65,23 @@ class Field extends React.Component<FieldProps, FieldState>
    * This makes first render of form can not get correct state value.
    */
   private touched: boolean = false;
-  private validatePromise: Promise<any> | null = null; // We reuse the promise to check if is `validating`
+
+  private validatePromise: Promise<any> | null = null;
+
+ // We reuse the promise to check if is `validating`
   private prevErrors: string[];
+
   private prevValidating: boolean;
-
-  // ================================== Utils ==================================
-  public getNamePath = (): InternalNamePath => {
-    const { name } = this.props;
-    const { prefixName = [] }: FormInstance = this.context;
-
-    return [...prefixName, ...getNamePath(name)];
-  };
-
-  public refresh = () => {
-    /**
-     * We update `reset` state twice to clean up current node.
-     * Which helps to reset value without define the type.
-     */
-    this.setState(
-      {
-        reset: true,
-      },
-      () => {
-        this.setState({ reset: false });
-      },
-    );
-  };
 
   // ============================== Subscriptions ==============================
   public componentDidMount() {
     const { getInternalHooks }: FormInstance = this.context;
     const { registerField } = getInternalHooks(HOOK_MARK);
     this.cancelRegisterFunc = registerField(this);
+  }
+
+  public componentWillUnmount() {
+    this.cancelRegister();
   }
 
   public cancelRegister = () => {
@@ -106,9 +91,28 @@ class Field extends React.Component<FieldProps, FieldState>
     this.cancelRegisterFunc = null;
   };
 
-  public componentWillUnmount() {
-    this.cancelRegister();
-  }
+    // ================================== Utils ==================================
+    public getNamePath = (): InternalNamePath => {
+      const { name } = this.props;
+      const { prefixName = [] }: FormInstance = this.context;
+  
+      return [...prefixName, ...getNamePath(name)];
+    };
+  
+    public refresh = () => {
+      /**
+       * We update `reset` state twice to clean up current node.
+       * Which helps to reset value without define the type.
+       */
+      this.setState(
+        {
+          reset: true,
+        },
+        () => {
+          this.setState({ reset: false });
+        },
+      );
+    };
 
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
@@ -205,6 +209,7 @@ class Field extends React.Component<FieldProps, FieldState>
         if (this.validatePromise === promise) {
           this.validatePromise = null;
         }
+        return;
       });
 
     return promise;
@@ -267,7 +272,7 @@ class Field extends React.Component<FieldProps, FieldState>
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
 
-    const originTriggerFunc: any = childProps[trigger!];
+    const originTriggerFunc: any = childProps[trigger];
 
     const control = {
       ...childProps,
@@ -275,7 +280,7 @@ class Field extends React.Component<FieldProps, FieldState>
     };
 
     // Add trigger
-    control[trigger!] = (...args: any[]) => {
+    control[trigger] = (...args: any[]) => {
       const newValue = defaultGetValueFromEvent(...args);
       dispatch({
         type: 'updateValue',

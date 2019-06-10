@@ -69,7 +69,6 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
   }
   prevFieldsRef.current = fields;
 
-
   return (
     <form
       {...restProps}
@@ -108,6 +107,6 @@ RefStateForm.Field = Field;
 RefStateForm.List = List;
 RefStateForm.useForm = useForm;
 
-export { FormInstance, Field as Field };
+export { FormInstance, Field };
 
 export default RefStateForm;

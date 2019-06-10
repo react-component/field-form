@@ -35,11 +35,17 @@ export type ReducerAction = UpdateAction;
 
 export class FormStore {
   private forceRootUpdate: () => void;
+
   private subscribable: boolean = true;
+
   private store: Store = {};
+
   private fieldEntities: FieldEntity[] = [];
+
   private errorCache: ErrorCache = new ErrorCache();
+
   private initialValues: Store = {};
+
   private callbacks: Callbacks = {};
 
   constructor(forceRootUpdate: () => void) {
@@ -374,7 +380,7 @@ export class FormStore {
     const namePathList: InternalNamePath[] | undefined = nameList && nameList.map(getNamePath);
 
     // Collect result in promise list
-    const promiseList: Array<Promise<any>> = [];
+    const promiseList: Promise<any>[] = [];
 
     this.getFieldEntities().forEach((field: FieldEntity) => {
       if (!field.props.rules || !field.props.rules.length) {

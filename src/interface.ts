@@ -1,6 +1,6 @@
 import { FormInstance } from './FieldContext';
 
-export type InternalNamePath = Array<string | number>;
+export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
 
 export interface Store {

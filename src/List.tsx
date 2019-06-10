@@ -15,10 +15,7 @@ interface ListOperations {
 
 interface ListProps {
   name: NamePath;
-  children?: (
-    fields: ListField[],
-    operations: ListOperations,
-  ) => JSX.Element | React.ReactNode;
+  children?: (fields: ListField[], operations: ListOperations) => JSX.Element | React.ReactNode;
 }
 
 interface ListRenderProps {
