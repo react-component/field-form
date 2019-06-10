@@ -1,4 +1,4 @@
-import { FormInstance } from './FieldContext';
+import { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
@@ -81,4 +81,39 @@ export type NotifyInfo =
 export interface Callbacks {
   onValuesChange?: (changedValues: Store, values: Store) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
+}
+
+export interface InternalHooks {
+  dispatch: (action: ReducerAction) => void;
+  registerField: (entity: FieldEntity) => () => void;
+  useSubscribe: (subscribable: boolean) => void;
+  setInitialValues: (values: Store) => void;
+  setCallbacks: (callbacks: Callbacks) => void;
+  getFields: (namePathList?: InternalNamePath[]) => FieldData[];
+}
+
+export interface FormInstance {
+  // Origin Form API
+  getFieldValue: (name: NamePath) => any;
+  getFieldsValue: (nameList?: NamePath[]) => any;
+  getFieldError: (name: NamePath) => string[];
+  getFieldsError: (nameList?: NamePath[]) => FieldError[];
+  isFieldsTouched: (nameList?: NamePath[]) => boolean;
+  isFieldTouched: (name: NamePath) => boolean;
+  isFieldValidating: (name: NamePath) => boolean;
+  resetFields: (fields?: NamePath[]) => void;
+  setFields: (fields: FieldData[]) => void;
+  setFieldsValue: (value: Store) => void;
+  validateFields: ValidateFields;
+
+  /**
+   * Passed by field context props
+   */
+  prefixName?: InternalNamePath;
+
+  /**
+   * Form component should register some content into store.
+   * We pass the `HOOK_MARK` as key to avoid user call the function.
+   */
+  getInternalHooks: (secret: string) => InternalHooks | null;
 }

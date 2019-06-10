@@ -2,6 +2,7 @@ import toChildrenArray from 'rc-util/lib/Children/toArray';
 import * as React from 'react';
 import {
   FieldEntity,
+  FormInstance,
   InternalNamePath,
   Meta,
   NamePath,
@@ -10,7 +11,7 @@ import {
   Store,
   ValidateOptions,
 } from './interface';
-import FieldContext, { FormInstance, HOOK_MARK } from './FieldContext';
+import FieldContext, { HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
 import { validateRules } from './utils/validateUtil';
 import {

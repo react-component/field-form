@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { InternalNamePath, NamePath } from './interface';
-import FieldContext, { FormInstance, HOOK_MARK } from './FieldContext';
+import { FormInstance, InternalNamePath, NamePath } from './interface';
+import FieldContext, { HOOK_MARK } from './FieldContext';
 import Field from './Field';
 import { getNamePath, setValue } from './utils/valueUtil';
 
