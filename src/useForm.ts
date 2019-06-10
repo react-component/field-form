@@ -5,13 +5,15 @@ import {
   FieldEntity,
   FieldError,
   InternalNamePath,
+  InternalHooks,
   NamePath,
   NotifyInfo,
   Store,
   ValidateFields,
   ValidateOptions,
+  FormInstance,
 } from './interface';
-import { FormInstance, HOOK_MARK, InternalHooks } from './FieldContext';
+import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
 import NameMap from './utils/NameMap';
 import { ErrorCache } from './utils/validateUtil';
@@ -271,7 +273,10 @@ export class FormStore {
       case 'updateValue': {
         const { namePath, value } = action;
         this.updateValue(namePath, value);
+        break;
       }
+      default:
+      // Currently we don't have other action. Do nothing.
     }
   };
 
@@ -441,14 +446,12 @@ function useForm(form?: FormInstance): [FormInstance] {
     if (form) {
       formRef.current = form;
     } else {
-      let formStore: FormStore;
-
       // Create a new FormStore if not provided
       const forceReRender = () => {
         forceUpdate({});
       };
 
-      formStore = new FormStore(forceReRender);
+      const formStore: FormStore = new FormStore(forceReRender);
 
       formRef.current = formStore.getForm();
     }

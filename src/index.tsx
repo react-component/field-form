@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Callbacks, FieldData, Store } from './interface';
-import FieldContext, { FormInstance, HOOK_MARK } from './FieldContext';
+import { Callbacks, FieldData, FormInstance, Store } from './interface';
+import FieldContext, { HOOK_MARK } from './FieldContext';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';

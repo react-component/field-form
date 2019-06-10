@@ -1,8 +1,7 @@
 import AsyncValidator from 'async-validator';
-import { FieldError, InternalNamePath, Rule, ValidateOptions } from '../interface';
-import { FormInstance } from '../FieldContext';
+import { FieldError, InternalNamePath, Rule, ValidateOptions, FormInstance } from '../interface';
 import NameMap from './NameMap';
-import { containsNamePath, getNamePath, isSimilar, matchNamePath } from './valueUtil';
+import { containsNamePath, getNamePath } from './valueUtil';
 
 /**
  * We use `async-validator` to validate the value.
