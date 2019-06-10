@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/label-has-associated-control, react/prop-types */
 
 import React from 'react';
-import StateForm from '../src/';
+import StateForm from '../src';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 
-const list = new Array(1111).fill();
+const list = new Array(1111).fill(() => undefined);
 
 export default class Demo extends React.Component {
   state = {};

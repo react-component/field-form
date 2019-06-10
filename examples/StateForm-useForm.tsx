@@ -1,10 +1,10 @@
 import React from 'react';
-import StateForm from '../src/';
+import StateForm from '../src';
 import Input from './components/Input';
 
 const { Field, useForm } = StateForm;
 
-const list = new Array(0).fill();
+const list = new Array(0).fill(() => undefined);
 
 export default () => {
   const [form] = useForm();

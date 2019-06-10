@@ -32,7 +32,7 @@ export interface FormInstance {
   isFieldsTouched: (nameList?: NamePath[]) => boolean;
   isFieldTouched: (name: NamePath) => boolean;
   isFieldValidating: (name: NamePath) => boolean;
-  resetFields: () => void;
+  resetFields: (fields?: NamePath[]) => void;
   setFields: (fields: FieldData[]) => void;
   setFieldsValue: (value: Store) => void;
   validateFields: ValidateFields;

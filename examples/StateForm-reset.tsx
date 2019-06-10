@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
-import StateForm from '../src/';
+import StateForm from '../src';
 import Input from './components/Input';
 
 const { Field } = StateForm;
