@@ -8,7 +8,6 @@ import {
   NamePath,
   Store,
   ValidateFields,
-  
 } from './interface';
 import { ReducerAction } from './useForm';
 
