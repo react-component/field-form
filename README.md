@@ -76,20 +76,20 @@ But you can still check the type definition [here](https://github.com/react-comp
 
 ## Field
 
-| Prop            | Description                             | Type                                     | Default  |
-| --------------- | --------------------------------------- | ---------------------------------------- | -------- |
-| name            | Field name path                         | string \| number \| (string \| number)[] | -        |
-| rules           | Validate rules                          | [Rule](#rule)[]                          | -        |
-| shouldUpdate    | Check if Field should update            | (prevValues, nextValues): boolean        | -        |
-| trigger         | Collect value update by event trigger   | string                                   | onChange |
-| validateTrigger | Config trigger point with rule validate | string \| string[]                       | onChange |
+| Prop            | Description                             | Type                              | Default  |
+| --------------- | --------------------------------------- | --------------------------------- | -------- |
+| name            | Field name path                         | [NamePath](#namepath)[]           | -        |
+| rules           | Validate rules                          | [Rule](#rule)[]                   | -        |
+| shouldUpdate    | Check if Field should update            | (prevValues, nextValues): boolean | -        |
+| trigger         | Collect value update by event trigger   | string                            | onChange |
+| validateTrigger | Config trigger point with rule validate | string \| string[]                | onChange |
 
 ## List
 
-| Prop     | Description                     | Type                                                                                     | Default |
-| -------- | ------------------------------- | ---------------------------------------------------------------------------------------- | ------- |
-| name     | List field name path            | string \| number \| (string \| number)[]                                                 | -       |
-| children | Render props for listing fields | (fields: { name: NamePath }[], operations: [ListOperations](#listoperations)): ReactNode | -       |
+| Prop     | Description                     | Type                                                                                                  | Default |
+| -------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
+| name     | List field name path            | [NamePath](#namepath)[]                                                                               | -       |
+| children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)): ReactNode | -       |
 
 ## useForm
 
@@ -118,21 +118,27 @@ class Demo extends React.Component {
 }
 ```
 
-| Prop              | Description                                | Type                                                          |
-| ----------------- | ------------------------------------------ | ------------------------------------------------------------- |
-| getFieldValue     | Get field value by name path               | (name: NamePath) => any                                       |
-| getFieldsValue    | Get list of field values by name path list | (nameList?: NamePath[]) => any                                |
-| getFieldError     | Get field errors by name path              | (name: NamePath) => string[]                                  |
-| getFieldsError    | Get list of field errors by name path list | (nameList?: NamePath[]) => FieldError[]                       |
-| isFieldsTouched   | Check if list of fields are touched        | (nameList?: NamePath[]) => boolean                            |
-| isFieldTouched    | Check if a field is touched                | (name: NamePath) => boolean                                   |
-| isFieldValidating | Check if a field is validating             | (name: NamePath) => boolean                                   |
-| resetFields       | Reset fields status                        | (fields?: NamePath[]) => void                                 |
-| setFields         | Set fields status                          | (fields: FieldData[]) => void                                 |
-| setFieldsValue    | Set fields value                           | (values) => void                                              |
-| validateFields    | Trigger fields to validate                 | (nameList?: NamePath[], options?: ValidateOptions) => Promise |
+| Prop              | Description                                | Type                                                                       |
+| ----------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
+| getFieldValue     | Get field value by name path               | (name: [NamePath](#namepath)) => any                                       |
+| getFieldsValue    | Get list of field values by name path list | (nameList?: [NamePath](#namepath)[]) => any                                |
+| getFieldError     | Get field errors by name path              | (name: [NamePath](#namepath)) => string[]                                  |
+| getFieldsError    | Get list of field errors by name path list | (nameList?: [NamePath](#namepath)[]) => FieldError[]                       |
+| isFieldsTouched   | Check if list of fields are touched        | (nameList?: [NamePath](#namepath)[]) => boolean                            |
+| isFieldTouched    | Check if a field is touched                | (name: [NamePath](#namepath)) => boolean                                   |
+| isFieldValidating | Check if a field is validating             | (name: [NamePath](#namepath)) => boolean                                   |
+| resetFields       | Reset fields status                        | (fields?: [NamePath](#namepath)[]) => void                                 |
+| setFields         | Set fields status                          | (fields: FieldData[]) => void                                              |
+| setFieldsValue    | Set fields value                           | (values) => void                                                           |
+| validateFields    | Trigger fields to validate                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
 
 ## Interface
+
+### NamePath
+
+| Type                                     |
+| ---------------------------------------- |
+| string \| number \| (string \| number)[] |
 
 ### FieldData
 
