@@ -11,7 +11,7 @@ import {
   ValidateFields,
   ValidateOptions,
 } from './interface';
-import { FormInstance, HOOK_MARK, InternalHooks } from './StateFormContext';
+import { FormInstance, HOOK_MARK, InternalHooks } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
 import NameMap from './utils/NameMap';
 import { ErrorCache } from './utils/validateUtil';

@@ -10,7 +10,7 @@ import {
   Store,
   ValidateOptions,
 } from './interface';
-import StateFormContext, { FormInstance, HOOK_MARK } from './StateFormContext';
+import FieldContext, { FormInstance, HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
 import { validateRules } from './utils/validateUtil';
 import {
@@ -28,7 +28,7 @@ interface ChildProps {
   onBlur?: (...args: any[]) => void;
 }
 
-export interface StateFormFieldProps {
+export interface FieldProps {
   name?: NamePath;
   children?:
     | React.ReactElement
@@ -41,14 +41,14 @@ export interface StateFormFieldProps {
   shouldUpdate?: (prevValues: any, nextValues: any, info: { source?: string }) => boolean;
 }
 
-export interface StateFormFieldState {
+export interface FieldState {
   reset: boolean;
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class StateFormField extends React.Component<StateFormFieldProps, StateFormFieldState>
+class Field extends React.Component<FieldProps, FieldState>
   implements FieldEntity {
-  public static contextType = StateFormContext;
+  public static contextType = FieldContext;
   public static defaultProps = {
     trigger: 'onChange',
     validateTrigger: 'onChange',
@@ -338,4 +338,4 @@ class StateFormField extends React.Component<StateFormFieldProps, StateFormField
   }
 }
 
-export default StateFormField;
+export default Field;

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Callbacks, FieldData, Store } from './interface';
-import StateFormContext, { FormInstance, HOOK_MARK } from './StateFormContext';
-import StateFormField from './StateFormField';
-import StateFormList from './StateFormList';
+import FieldContext, { FormInstance, HOOK_MARK } from './FieldContext';
+import Field from './Field';
+import List from './List';
 import useForm from './useForm';
 import { Omit } from './utils/typeUtil';
 
@@ -88,7 +88,7 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
           .catch(e => e);
       }}
     >
-      <StateFormContext.Provider value={formInstance}>{childrenNode}</StateFormContext.Provider>
+      <FieldContext.Provider value={formInstance}>{childrenNode}</FieldContext.Provider>
     </form>
   );
 };
@@ -97,17 +97,17 @@ const InternalStateForm = React.forwardRef<FormInstance, StateFormProps>(StateFo
 
 type InternalStateForm = typeof InternalStateForm;
 interface RefStateForm extends InternalStateForm {
-  Field: typeof StateFormField;
-  List: typeof StateFormList;
+  Field: typeof Field;
+  List: typeof List;
   useForm: typeof useForm;
 }
 
 const RefStateForm: RefStateForm = InternalStateForm as any;
 
-RefStateForm.Field = StateFormField;
-RefStateForm.List = StateFormList;
+RefStateForm.Field = Field;
+RefStateForm.List = List;
 RefStateForm.useForm = useForm;
 
-export { FormInstance };
+export { FormInstance, Field as Field };
 
 export default RefStateForm;

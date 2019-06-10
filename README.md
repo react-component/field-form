@@ -30,10 +30,10 @@ React Performance First Form Component.
 
 ## Development
 
-```
+``` bash
 npm install
 npm start
-open http://localhost:8000/examples/
+open http://localhost:9001/
 ```
 
 ## Feature
@@ -48,42 +48,29 @@ open http://localhost:8000/examples/
 ## Usage
 
 ```js
-import { createForm, formShape } from 'rc-field-form';
+import Form, { Field } from 'rc-field-form';
 
-class Form extends React.Component {
-  static propTypes = {
-    form: formShape,
-  };
+<StateForm
+  onFinish={(values) => {
+    console.log('Finish:', values);
+  }}
+>
+  <Field name="username">
+    <Input placeholder="Username" />
+  </Field>
+  <Field name="password">
+    <Input placeholder="Password" />
+  </Field>
 
-  submit = () => {
-    this.props.form.validateFields((error, value) => {
-      console.log(error, value);
-    });
-  }
+  <button>Submit</button>
+</StateForm>
 
-  render() {
-    let errors;
-    const { getFieldProps, getFieldError } = this.props.form;
-    return (
-      <div>
-        <input {...getFieldProps('normal')}/>
-        <input {...getFieldProps('required', {
-          onChange(){}, // have to write original onChange here if you need
-          rules: [{required: true}],
-        })}/>
-        {(errors = getFieldError('required')) ? errors.join(',') : null}
-        <button onClick={this.submit}>submit</button>
-      </div>
-    );
-  }
-}
-
-export createForm()(Form);
+export default Demo;
 ```
 
 ### Use with React Native
 
-Expo preview   
+Expo preview
 
 ![avatar](./examples/react-native/expo.jpg)
 

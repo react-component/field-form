@@ -1,8 +1,7 @@
 import React from 'react';
-import StateForm from '../src/';
+import StateForm, { Field } from '../src/';
 import Input from './components/Input';
 
-const { Field } = StateForm;
 
 const list = new Array(1111).fill(() => null);
 

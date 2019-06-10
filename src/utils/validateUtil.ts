@@ -1,6 +1,6 @@
 import AsyncValidator from 'async-validator';
 import { FieldError, InternalNamePath, Rule, ValidateOptions } from '../interface';
-import { FormInstance } from '../StateFormContext';
+import { FormInstance } from '../FieldContext';
 import NameMap from './NameMap';
 import { containsNamePath, getNamePath, isSimilar, matchNamePath } from './valueUtil';
 

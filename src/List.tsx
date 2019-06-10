@@ -1,39 +1,39 @@
 import * as React from 'react';
 import { InternalNamePath, NamePath } from './interface';
-import StateFormContext, { FormInstance, HOOK_MARK } from './StateFormContext';
-import StateFormField from './StateFormField';
+import FieldContext, { FormInstance, HOOK_MARK } from './FieldContext';
+import Field from './Field';
 import { getNamePath, setValue } from './utils/valueUtil';
 
-interface StateFormListField {
+interface ListField {
   name: number;
 }
 
-interface StateFormListOperations {
+interface ListOperations {
   add: () => void;
   remove: (index: number) => void;
 }
 
-interface StateFormListProps {
+interface ListProps {
   name: NamePath;
   children?: (
-    fields: StateFormListField[],
-    operations: StateFormListOperations,
+    fields: ListField[],
+    operations: ListOperations,
   ) => JSX.Element | React.ReactNode;
 }
 
-interface StateFormListRenderProps {
+interface ListRenderProps {
   value: any[];
   onChange: (value: any[]) => void;
 }
 
-const StateFormList: React.FunctionComponent<StateFormListProps> = ({ name, children }) => {
+const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
   // User should not pass `children` as other type.
   if (typeof children !== 'function') {
     return null;
   }
 
   return (
-    <StateFormContext.Consumer>
+    <FieldContext.Consumer>
       {(context: FormInstance) => {
         const parentPrefixName = getNamePath(context.prefixName) || [];
         const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
@@ -46,15 +46,15 @@ const StateFormList: React.FunctionComponent<StateFormListProps> = ({ name, chil
         };
 
         return (
-          <StateFormContext.Provider value={{ ...context, prefixName }}>
-            <StateFormField name={[]} shouldUpdate={shouldUpdate}>
-              {({ value = [], onChange }: StateFormListRenderProps) => {
+          <FieldContext.Provider value={{ ...context, prefixName }}>
+            <Field name={[]} shouldUpdate={shouldUpdate}>
+              {({ value = [], onChange }: ListRenderProps) => {
                 const { getInternalHooks, getFieldValue, setFieldsValue, setFields } = context;
 
                 /**
                  * Always get latest value in case user update fields by `form` api.
                  */
-                const operations: StateFormListOperations = {
+                const operations: ListOperations = {
                   add: () => {
                     const newValue = getFieldValue(prefixName) || [];
                     onChange([...newValue, undefined]);
@@ -84,19 +84,19 @@ const StateFormList: React.FunctionComponent<StateFormListProps> = ({ name, chil
 
                 return children(
                   value.map(
-                    (__, index): StateFormListField => ({
+                    (__, index): ListField => ({
                       name: index,
                     }),
                   ),
                   operations,
                 );
               }}
-            </StateFormField>
-          </StateFormContext.Provider>
+            </Field>
+          </FieldContext.Provider>
         );
       }}
-    </StateFormContext.Consumer>
+    </FieldContext.Consumer>
   );
 };
 
-export default StateFormList;
+export default List;
