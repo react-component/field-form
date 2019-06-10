@@ -86,7 +86,84 @@ But you can still check the type definition [here](https://github.com/react-comp
 
 ## List
 
-| Prop     | Description                     | Type                                                         | Default |
-| -------- | ------------------------------- | ------------------------------------------------------------ | ------- |
-| name     | List field name path            | string \| number \| (string \| number)[]                     | -       |
-| children | Render props for listing fields | (fields: ListField[], operations: ListOperations): ReactNode | -       |
+| Prop     | Description                     | Type                                                                  | Default |
+| -------- | ------------------------------- | --------------------------------------------------------------------- | ------- |
+| name     | List field name path            | string \| number \| (string \| number)[]                              | -       |
+| children | Render props for listing fields | (fields: { name: NamePath }[], operations: ListOperations): ReactNode | -       |
+
+## useForm
+
+Form component default create an form instance by `Form.useForm`.
+But you can create it and pass to Form also.
+This allow you to call some function on the form instance.
+
+```jsx
+const Demo = () => {
+  const [form] = Form.useForm();
+  return <Form form={form} />;
+};
+```
+
+For class component user, you can use `ref` to get form instance:
+
+```jsx
+class Demo extends React.Component {
+  setRef = form => {
+    // Form instance here
+  };
+
+  render() {
+    return <Form ref={this.setRef} />;
+  }
+}
+```
+
+| Prop              | Description                                | Type                                                          |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------- |
+| getFieldValue     | Get field value by name path               | (name: NamePath) => any                                       |
+| getFieldsValue    | Get list of field values by name path list | (nameList?: NamePath[]) => any                                |
+| getFieldError     | Get field errors by name path              | (name: NamePath) => string[]                                  |
+| getFieldsError    | Get list of field errors by name path list | (nameList?: NamePath[]) => FieldError[]                       |
+| isFieldsTouched   | Check if list of fields are touched        | (nameList?: NamePath[]) => boolean                            |
+| isFieldTouched    | Check if a field is touched                | (name: NamePath) => boolean                                   |
+| isFieldValidating | Check if a field is validating             | (name: NamePath) => boolean                                   |
+| resetFields       | Reset fields status                        | (fields?: NamePath[]) => void                                 |
+| setFields         | Set fields status                          | (fields: FieldData[]) => void                                 |
+| setFieldsValue    | Set fields value                           | (values) => void                                              |
+| validateFields    | Trigger fields to validate                 | (nameList?: NamePath[], options?: ValidateOptions) => Promise |
+
+## Interface
+
+### FieldData
+
+| Prop       | Type                                     |
+| ---------- | ---------------------------------------- |
+| touched    | boolean                                  |
+| validating | boolean                                  |
+| errors     | string[]                                 |
+| name       | string \| number \| (string \| number)[] |
+| value      | any                                      |
+
+### Rule
+
+| Prop            | Type                |
+| --------------- | ------------------- |
+| enum            | any[]               |
+| len             | number              |
+| max             | number              |
+| message         | string              |
+| min             | number              |
+| pattern         | RegExp              |
+| required        | boolean             |
+| transform       | (value: any) => any |
+| type            | string              |
+| validator       |                     |
+| whitespace      | boolean             |
+| validateTrigger | string \| string[]  |
+
+### ListOperations
+
+| Prop   | Type                    |
+| ------ | ----------------------- |
+| add    | () => void              |
+| remove | (index: number) => void |
