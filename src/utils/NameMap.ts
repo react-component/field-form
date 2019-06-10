@@ -61,7 +61,7 @@ class NameMap<T = any> {
       return null;
     });
 
-     return json;
+    return json;
   }
 }
 
