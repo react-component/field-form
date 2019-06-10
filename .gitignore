@@ -1,3 +1,4 @@
 .storybook
 .doc
 node_modules
+coverage/

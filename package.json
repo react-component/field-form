@@ -33,10 +33,8 @@
     "gh-pages": "rc-tools run gh-pages",
     "start1": "rc-tools run storybook",
     "pub": "rc-tools run pub --babel-runtime",
-    "lint": "rc-tools run lint",
-    "lint:fix": "rc-tools run lint --fix",
+    "lint": "eslint src/**/*",
     "test": "father test",
-    "coverage": "jest --coverage",
     "now-build": "npm run build"
   },
   "peerDependencies": {
@@ -48,7 +46,7 @@
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
-    "father": "^2.6.3",
+    "father": "^2.6.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^4.4.10",

@@ -10,7 +10,7 @@ interface KV<T> {
  * NameMap like a `Map` but accepts `string[]` as key.
  */
 class NameMap<T = any> {
-  private list: Array<KV<T>> = [];
+  private list: KV<T>[] = [];
 
   public clone(): NameMap<T> {
     const clone = new NameMap();
