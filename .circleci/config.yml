@@ -28,7 +28,7 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-      - run: npm test -- --coverage
+      - run: npm test -- --coverage && bash <(curl -s https://codecov.io/bash)
 workflows:
   version: 2
   build_and_test:
