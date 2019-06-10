@@ -3,30 +3,21 @@
 React Performance First Form Component.
 
 [![NPM version][npm-image]][npm-url]
-[![build status][travis-image]][travis-url]
+[![build status][circleCI-image]][circleCI-url]
 [![Test coverage][coveralls-image]][coveralls-url]
-[![gemnasium deps][gemnasium-image]][gemnasium-url]
 [![node version][node-image]][node-url]
 [![npm download][download-image]][download-url]
-[![Code Quality: Javascript][lgtm-badge]][lgtm-badge-url]
-[![Total alerts][lgtm-alerts]][lgtm-alerts-url]
 
 [npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
 [npm-url]: http://npmjs.org/package/rc-field-form
-[travis-image]: https://img.shields.io/travis/react-component/field-form.svg?style=flat-square
-[travis-url]: https://travis-ci.org/react-component/field-form
-[coveralls-image]: https://img.shields.io/coveralls/react-component/field-form.svg?style=flat-square
-[coveralls-url]: https://coveralls.io/r/react-component/field-form?branch=master
-[gemnasium-image]: http://img.shields.io/gemnasium/react-component/field-form.svg?style=flat-square
-[gemnasium-url]: https://gemnasium.com/react-component/field-form
-[node-image]: https://img.shields.io/badge/node.js-%3E=_0.10-green.svg?style=flat-square
+[circleCI-image]: https://img.shields.io/circleci/build/github/react-component/field-form/master.svg?style=flat-square
+[circleCI-url]: https://circleci.com/gh/react-component/field-form/tree/master
+[coveralls-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
+[coveralls-url]: https://codecov.io/gh/react-component/field-form
+[node-image]: https://img.shields.io/badge/node.js-%3E=_6.0-green.svg?style=flat-square
 [node-url]: http://nodejs.org/download/
 [download-image]: https://img.shields.io/npm/dm/rc-field-form.svg?style=flat-square
 [download-url]: https://npmjs.org/package/rc-field-form
-[lgtm-badge]: https://img.shields.io/lgtm/grade/javascript/g/react-component/field-form.svg?logo=lgtm&logoWidth=18
-[lgtm-badge-url]: https://lgtm.com/projects/g/react-component/field-form/context:javascript
-[lgtm-alerts]: https://img.shields.io/lgtm/alerts/g/react-component/field-form.svg?logo=lgtm&logoWidth=18
-[lgtm-alerts-url]: https://lgtm.com/projects/g/react-component/field-form/alerts
 
 ## Development
 
