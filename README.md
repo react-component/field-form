@@ -163,7 +163,7 @@ class Demo extends React.Component {
 | required        | boolean                                                                      |
 | transform       | (value) => any                                                               |
 | type            | string                                                                       |
-| validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) |
+| validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) => void |
 | whitespace      | boolean                                                                      |
 | validateTrigger | string \| string[]                                                           |
 
