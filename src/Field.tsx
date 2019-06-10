@@ -68,7 +68,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   private validatePromise: Promise<any> | null = null;
 
- // We reuse the promise to check if is `validating`
+  // We reuse the promise to check if is `validating`
   private prevErrors: string[];
 
   private prevValidating: boolean;
@@ -91,28 +91,28 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     this.cancelRegisterFunc = null;
   };
 
-    // ================================== Utils ==================================
-    public getNamePath = (): InternalNamePath => {
-      const { name } = this.props;
-      const { prefixName = [] }: FormInstance = this.context;
-  
-      return [...prefixName, ...getNamePath(name)];
-    };
-  
-    public refresh = () => {
-      /**
-       * We update `reset` state twice to clean up current node.
-       * Which helps to reset value without define the type.
-       */
-      this.setState(
-        {
-          reset: true,
-        },
-        () => {
-          this.setState({ reset: false });
-        },
-      );
-    };
+  // ================================== Utils ==================================
+  public getNamePath = (): InternalNamePath => {
+    const { name } = this.props;
+    const { prefixName = [] }: FormInstance = this.context;
+
+    return [...prefixName, ...getNamePath(name)];
+  };
+
+  public refresh = () => {
+    /**
+     * We update `reset` state twice to clean up current node.
+     * Which helps to reset value without define the type.
+     */
+    this.setState(
+      {
+        reset: true,
+      },
+      () => {
+        this.setState({ reset: false });
+      },
+    );
+  };
 
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
@@ -209,7 +209,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         if (this.validatePromise === promise) {
           this.validatePromise = null;
         }
-        return;
+        return true;
       });
 
     return promise;
