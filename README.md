@@ -66,8 +66,27 @@ But you can still check the type definition [here](https://github.com/react-comp
 
 ## Form
 
-| Prop          | Description                                        | Type         | Default          |
-| ------------- | -------------------------------------------------- | ------------ | ---------------- |
-| fields        | Control Form fields status. Only use when in Redux | FieldData[]  | -                |
-| form          | Set form instance created by `useForm`             | FormInstance | `Form.useForm()` |
-| initialValues | Initial value of Form                              | Object       | -                |
+| Prop           | Description                                        | Type                             | Default          |
+| -------------- | -------------------------------------------------- | -------------------------------- | ---------------- |
+| fields         | Control Form fields status. Only use when in Redux | FieldData[]                      | -                |
+| form           | Set form instance created by `useForm`             | FormInstance                     | `Form.useForm()` |
+| initialValues  | Initial value of Form                              | Object                           | -                |
+| onFieldsChange | Trigger when any value of Field changed            | (changedFields, allFields): void | -                |
+| onValuesChange | Trigger when any value of Field changed            | (changedValues, values): void    | -                |
+
+## Field
+
+| Prop            | Description                             | Type                                     | Default  |
+| --------------- | --------------------------------------- | ---------------------------------------- | -------- |
+| name            | Field name path                         | string \| number \| (string \| number)[] | -        |
+| rules           | Validate rules                          | Rule[]                                   | -        |
+| shouldUpdate    | Check if Field should update            | (prevValues, nextValues): boolean        | -        |
+| trigger         | Collect value update by event trigger   | string                                   | onChange |
+| validateTrigger | Config trigger point with rule validate | string \| string[]                       | onChange |
+
+## List
+
+| Prop     | Description                     | Type                                                         | Default |
+| -------- | ------------------------------- | ------------------------------------------------------------ | ------- |
+| name     | List field name path            | string \| number \| (string \| number)[]                     | -       |
+| children | Render props for listing fields | (fields: ListField[], operations: ListOperations): ReactNode | -       |
