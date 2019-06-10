@@ -1,3 +1,5 @@
+/* eslint-disable promise/catch-or-return, promise/always-return */
+
 import toChildrenArray from 'rc-util/lib/Children/toArray';
 import * as React from 'react';
 import {
