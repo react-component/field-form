@@ -209,7 +209,6 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         if (this.validatePromise === promise) {
           this.validatePromise = null;
         }
-        return true;
       });
 
     return promise;
