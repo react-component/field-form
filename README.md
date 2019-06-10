@@ -152,20 +152,20 @@ class Demo extends React.Component {
 
 ### Rule
 
-| Prop            | Type                |
-| --------------- | ------------------- |
-| enum            | any[]               |
-| len             | number              |
-| max             | number              |
-| message         | string              |
-| min             | number              |
-| pattern         | RegExp              |
-| required        | boolean             |
-| transform       | (value: any) => any |
-| type            | string              |
-| validator       |                     |
-| whitespace      | boolean             |
-| validateTrigger | string \| string[]  |
+| Prop            | Type                                                                         |
+| --------------- | ---------------------------------------------------------------------------- |
+| enum            | any[]                                                                        |
+| len             | number                                                                       |
+| max             | number                                                                       |
+| message         | string                                                                       |
+| min             | number                                                                       |
+| pattern         | RegExp                                                                       |
+| required        | boolean                                                                      |
+| transform       | (value) => any                                                               |
+| type            | string                                                                       |
+| validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) |
+| whitespace      | boolean                                                                      |
+| validateTrigger | string \| string[]                                                           |
 
 ### ListOperations
 
