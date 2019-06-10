@@ -1,5 +1,5 @@
 import * as React from 'react';
-import StateForm, { FormInstance } from '../../src/StateForm';
+import StateForm, { FormInstance } from '../../src/';
 
 const { Field } = StateForm;
 

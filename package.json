@@ -28,7 +28,7 @@
   "module": "./es/index",
   "scripts": {
     "start": "father doc dev --storybook",
-    "build": "rc-tools run build",
+    "build": "father doc build --storybook",
     "compile": "rc-tools run compile --babel-runtime",
     "gh-pages": "rc-tools run gh-pages",
     "start1": "rc-tools run storybook",
@@ -59,7 +59,7 @@
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
-    "father": "^2.5.2-alpha.2",
+    "father": "^2.6.0",
     "jest": "^21.2.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
