@@ -14,6 +14,9 @@ const myMessages: ValidateMessages = {
   },
   enum: '${name} 不在 ${enum} 中呢',
   whitespace: '${name} 不可以是空的啦',
+  pattern: {
+    mismatch: '${name} 并不符合格式：${pattern}',
+  },
 };
 
 export default class Demo extends React.Component {
@@ -69,6 +72,7 @@ export default class Demo extends React.Component {
               { type: 'enum', enum: ['aaa', 'bbb'] },
               { type: 'date' },
               { whitespace: true },
+              { pattern: /^\w{3}$/ },
             ]}
           >
             <Input />
