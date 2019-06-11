@@ -1,9 +1,14 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import StateForm, { FormInstance } from '../src';
+import StateForm, { FormProvider } from '../src';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
+import { ValidateMessages } from '../src/interface';
+
+const myMessages: ValidateMessages = {
+  required: '${name} 是必需品',
+};
 
 const formStyle: React.CSSProperties = {
   padding: '10px 15px',
@@ -14,8 +19,9 @@ const Form1 = () => {
   const [form] = StateForm.useForm();
 
   return (
-    <StateForm form={form} style={{ ...formStyle, border: '1px solid #000' }}>
+    <StateForm form={form} style={{ ...formStyle, border: '1px solid #000' }} name="first">
       <h4>Form 1</h4>
+      <p>Change me!</p>
       <LabelField name="username" rules={[{ required: true }]}>
         <Input placeholder="password" />
       </LabelField>
@@ -32,8 +38,9 @@ const Form2 = () => {
   const [form] = StateForm.useForm();
 
   return (
-    <StateForm form={form} style={{ ...formStyle, border: '1px solid #F00' }}>
+    <StateForm form={form} style={{ ...formStyle, border: '1px solid #F00' }} name="second">
       <h4>Form 2</h4>
+      <p>Will follow Form 1 but not sync back</p>
       <LabelField name="username" rules={[{ required: true }]}>
         <Input placeholder="password" />
       </LabelField>
@@ -51,10 +58,20 @@ const Demo = () => {
     <div>
       <h3>Form Context</h3>
       <p>Support global `validateMessages` config and communication between forms.</p>
-      <div style={{ display: 'flex', width: '100%' }}>
-        <Form1 />
-        <Form2 />
-      </div>
+      <FormProvider
+        validateMessages={myMessages}
+        onFormChange={(name, forms) => {
+          console.log('change from:', name, forms);
+          if (name === 'first') {
+            forms.second.setFieldsValue(forms.first.getFieldsValue());
+          }
+        }}
+      >
+        <div style={{ display: 'flex', width: '100%' }}>
+          <Form1 />
+          <Form2 />
+        </div>
+      </FormProvider>
     </div>
   );
 };

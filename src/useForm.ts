@@ -9,7 +9,6 @@ import {
   NamePath,
   NotifyInfo,
   Store,
-  ValidateFields,
   ValidateOptions,
   FormInstance,
   ValidateMessages,

@@ -9,6 +9,7 @@ import {
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
+import FormContext, { FormContextProps } from './FormContext';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
 
@@ -17,6 +18,7 @@ export interface StateFormProps extends BaseFormProps {
   form?: FormInstance;
   children?: (() => JSX.Element | React.ReactNode) | React.ReactNode;
   fields?: FieldData[];
+  name?: string;
   validateMessages?: ValidateMessages;
   onValuesChange?: Callbacks['onValuesChange'];
   onFieldsChange?: Callbacks['onFieldsChange'];
@@ -25,6 +27,7 @@ export interface StateFormProps extends BaseFormProps {
 
 const StateForm: React.FunctionComponent<StateFormProps> = (
   {
+    name,
     initialValues,
     fields,
     form,
@@ -37,6 +40,8 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
   }: StateFormProps,
   ref,
 ) => {
+  const formContext: FormContextProps = React.useContext(FormContext);
+
   // We customize handle event since Context will makes all the consumer re-render:
   // https://reactjs.org/docs/context.html#contextprovider
   const [formInstance] = useForm(form);
@@ -47,10 +52,29 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
     setValidateMessages,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
+  // Pass ref with form instance
+  React.useImperativeHandle(ref, () => formInstance);
+
+  // Register form into Context
+  React.useEffect(() => {
+    return formContext.registerForm(name, formInstance);
+  }, [name]);
+
   // Pass props to store
-  setValidateMessages(validateMessages);
+  setValidateMessages({
+    ...formContext.validateMessages,
+    ...validateMessages,
+  });
   setCallbacks({
-    onValuesChange,
+    onValuesChange: (...args) => {
+      if (name) {
+        formContext.triggerFormChange(name, formInstance);
+      }
+
+      if (onValuesChange) {
+        onValuesChange(...args);
+      }
+    },
     onFieldsChange,
   });
 
@@ -68,11 +92,9 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
     const values = formInstance.getFieldsValue();
     childrenNode = (children as any)(values, formInstance);
   }
+
   // Not use subscribe when using render props
   useSubscribe(!childrenRenderProps);
-
-  // Pass ref with form instance
-  React.useImperativeHandle(ref, () => formInstance);
 
   // Listen if fields provided. We use ref to save prev data here to avoid additional render
   const prevFieldsRef = React.useRef<FieldData[] | undefined>();
