@@ -21,6 +21,22 @@ export interface FieldData extends Partial<Meta> {
   value?: any;
 }
 
+export type RuleType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'method'
+  | 'regexp'
+  | 'integer'
+  | 'float'
+  | 'array'
+  | 'object'
+  | 'enum'
+  | 'date'
+  | 'url'
+  | 'hex'
+  | 'email';
+
 export interface Rule {
   enum?: any[];
   len?: number;
@@ -30,7 +46,7 @@ export interface Rule {
   pattern?: RegExp;
   required?: boolean;
   transform?: (value: any) => any;
-  type?: string;
+  type?: RuleType;
   validator?: (
     rule: Rule,
     value: any,
@@ -138,21 +154,7 @@ export interface ValidateMessages {
     parse?: string;
     invalid?: string;
   };
-  types?: {
-    string?: string;
-    method?: string;
-    array?: string;
-    object?: string;
-    number?: string;
-    date?: string;
-    boolean?: string;
-    integer?: string;
-    float?: string;
-    regexp?: string;
-    email?: string;
-    url?: string;
-    hex?: string;
-  };
+  type?: string;
   string?: {
     len?: string;
     min?: string;

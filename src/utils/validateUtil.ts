@@ -1,7 +1,96 @@
 import AsyncValidator from 'async-validator';
-import { FieldError, InternalNamePath, Rule, ValidateOptions, FormInstance } from '../interface';
+import {
+  FieldError,
+  InternalNamePath,
+  Rule,
+  ValidateOptions,
+  FormInstance,
+  ValidateMessages,
+} from '../interface';
 import NameMap from './NameMap';
 import { containsNamePath, getNamePath } from './valueUtil';
+
+/**
+ * Replace with template.
+ *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
+ */
+function replaceMessage(template: string, kv: { [name: string]: any }): string {
+  return template.replace(/\$\{\w+\}/g, function(str: string) {
+    const key = str.slice(2, -1);
+    return kv[key];
+  });
+}
+
+/**
+ * We use `async-validator` to validate rules. So have to hot replace the message with validator.
+ */
+function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
+  const kv: { [name: string]: any } = {
+    ...rule,
+    name,
+    enum: (rule.enum || []).join(', '),
+  };
+
+  const replaceFunc = (template: string, additionalKV?: Record<string, any>) => {
+    if (!template) return null;
+    return () => {
+      return replaceMessage(template, { ...kv, ...additionalKV });
+    };
+  };
+
+  const typeReplaceFunc = replaceFunc(messages.type);
+
+  const newMessages = {
+    _kv: kv,
+    _rule: rule,
+    ...messages,
+    enum: replaceFunc(messages.enum),
+    required: replaceFunc(messages.required),
+    types: {
+      string: typeReplaceFunc,
+      method: typeReplaceFunc,
+      array: typeReplaceFunc,
+      object: typeReplaceFunc,
+      number: typeReplaceFunc,
+      date: typeReplaceFunc,
+      boolean: typeReplaceFunc,
+      integer: typeReplaceFunc,
+      float: typeReplaceFunc,
+      regexp: typeReplaceFunc,
+      email: typeReplaceFunc,
+      url: typeReplaceFunc,
+      hex: typeReplaceFunc,
+    },
+  };
+  return newMessages;
+}
+
+function validateRule(
+  name: string,
+  value: any,
+  rule: Rule,
+  options: ValidateOptions,
+): Promise<string[]> {
+  const validator = new AsyncValidator({
+    [name]: [rule],
+  });
+
+  const messages = convertMessages(options.validateMessages, name, rule);
+  validator.messages(messages);
+
+  return new Promise(resolve => {
+    validator.validate({ [name]: value }, { ...options }, (errors: any) => {
+      resolve(
+        (errors || []).map((e: any) => {
+          if (e && e.message) {
+            return e.message;
+          }
+          return e;
+        }),
+      );
+    });
+  });
+}
 
 /**
  * We use `async-validator` to validate the value.
@@ -29,35 +118,22 @@ export function validateRules(
     };
   });
 
-  const validator = new AsyncValidator({
-    [name]: filledRules,
-  });
+  const summaryPromise: Promise<string[]> = Promise.all(
+    filledRules.map(rule => validateRule(name, value, rule, options)),
+  ).then((errorsList: string[][]): string[] | Promise<string[]> => {
+    const errors: string[] = [].concat(...errorsList);
 
-  if (options.validateMessages) {
-    validator.messages(options.validateMessages);
-  }
+    if (!errors.length) {
+      return [];
+    }
 
-  const promise = new Promise((resolve, reject) => {
-    validator.validate({ [name]: value }, options || {}, (errors: any) => {
-      if (!errors) {
-        resolve();
-        return;
-      }
-      reject(
-        errors.map((e: any) => {
-          if (e && e.message) {
-            return e.message;
-          }
-          return e;
-        }),
-      );
-    });
+    return Promise.reject<string[]>(errors);
   });
 
   // Internal catch error to avoid console error log.
-  promise.catch(e => e);
+  summaryPromise.catch(e => e);
 
-  return promise;
+  return summaryPromise;
 }
 
 /**
@@ -95,3 +171,38 @@ export class ErrorCache {
     this.cache.delete(namePath);
   };
 }
+
+export const defaultValidateMessages = {
+  enum: "'${name}' must be one of [${enum}]",
+  required: "'${name}' is required",
+  type: "'${name}' is not a validate ${type}",
+
+  // default: 'Validation error on field ${name}',
+  // whitespace: '${name} cannot be empty',
+  // date: {
+  //   format: '%s date %s is invalid for format %s',
+  //   parse: '%s date could not be parsed, %s is invalid ',
+  //   invalid: '%s date %s is invalid',
+  // },
+  // string: {
+  //   len: '%s must be exactly %s characters',
+  //   min: '%s must be at least %s characters',
+  //   max: '%s cannot be longer than %s characters',
+  //   range: '%s must be between %s and %s characters',
+  // },
+  // number: {
+  //   len: '%s must equal %s',
+  //   min: '%s cannot be less than %s',
+  //   max: '%s cannot be greater than %s',
+  //   range: '%s must be between %s and %s',
+  // },
+  // array: {
+  //   len: '%s must be exactly %s in length',
+  //   min: '%s cannot be less than %s in length',
+  //   max: '%s cannot be greater than %s in length',
+  //   range: '%s must be between %s and %s in length',
+  // },
+  // pattern: {
+  //   mismatch: '%s value %s does not match pattern %s',
+  // },
+};

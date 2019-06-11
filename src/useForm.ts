@@ -19,7 +19,7 @@ import {
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
 import NameMap from './utils/NameMap';
-import { ErrorCache } from './utils/validateUtil';
+import { ErrorCache, defaultValidateMessages } from './utils/validateUtil';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -409,7 +409,10 @@ export class FormStore {
 
       if (!namePathList || containsNamePath(namePathList, fieldNamePath)) {
         const promise = field.validateRules({
-          validateMessages: this.validateMessages,
+          validateMessages: {
+            ...defaultValidateMessages,
+            ...this.validateMessages,
+          },
           ...options,
         });
 

@@ -4,9 +4,12 @@ import React from 'react';
 import StateForm, { FormInstance } from '../src/';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
+import { ValidateMessages } from '../src/interface';
 
-const myMessages = {
-  required: '66666',
+const myMessages: ValidateMessages = {
+  required: '你需要一个 ${name}',
+  type: '嗨，这个 ${name} 不是一个合格的 ${type}',
+  enum: '${name} 不在 ${enum} 中呢',
 };
 
 export default class Demo extends React.Component {
@@ -51,6 +54,14 @@ export default class Demo extends React.Component {
             ]}
           >
             <Input placeholder="password 2" />
+          </LabelField>
+
+          <LabelField
+            name="field"
+            label="Full of rules"
+            rules={[{ required: true }, { type: 'number' }, { type: 'enum', enum: ['aaa', 'bbb'] }]}
+          >
+            <Input />
           </LabelField>
 
           <button type="submit">Submit</button>
