@@ -1,10 +1,16 @@
 import * as React from 'react';
-import { Callbacks, FieldData, FormInstance, Store } from './interface';
+import {
+  Callbacks,
+  FieldData,
+  FormInstance,
+  Store,
+  ValidateMessages,
+  InternalFormInstance,
+} from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';
-import { Omit } from './utils/typeUtil';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
 
@@ -13,6 +19,7 @@ export interface StateFormProps extends BaseFormProps {
   form?: FormInstance;
   children?: (() => JSX.Element | React.ReactNode) | React.ReactNode;
   fields?: FieldData[];
+  validateMessages?: ValidateMessages;
   onValuesChange?: Callbacks['onValuesChange'];
   onFieldsChange?: Callbacks['onFieldsChange'];
   onFinish?: (values: Store) => void;
@@ -24,6 +31,7 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
     fields,
     form,
     children,
+    validateMessages,
     onValuesChange,
     onFieldsChange,
     onFinish,
@@ -34,9 +42,15 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
   // We customize handle event since Context will makes all the consumer re-render:
   // https://reactjs.org/docs/context.html#contextprovider
   const [formInstance] = useForm(form);
-  const { useSubscribe, setInitialValues, setCallbacks } = formInstance.getInternalHooks(HOOK_MARK);
+  const {
+    useSubscribe,
+    setInitialValues,
+    setCallbacks,
+    setValidateMessages,
+  } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
-  // Pass props callback to store
+  // Pass props to store
+  setValidateMessages(validateMessages);
   setCallbacks({
     onValuesChange,
     onFieldsChange,
@@ -87,7 +101,9 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
           .catch(e => e);
       }}
     >
-      <FieldContext.Provider value={formInstance}>{childrenNode}</FieldContext.Provider>
+      <FieldContext.Provider value={formInstance as InternalFormInstance}>
+        {childrenNode}
+      </FieldContext.Provider>
     </form>
   );
 };

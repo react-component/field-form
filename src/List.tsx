@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FormInstance, InternalNamePath, NamePath } from './interface';
+import { FormInstance, InternalNamePath, NamePath, InternalFormInstance } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import Field from './Field';
 import { getNamePath, setValue } from './utils/valueUtil';
@@ -31,7 +31,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
 
   return (
     <FieldContext.Consumer>
-      {(context: FormInstance) => {
+      {(context: InternalFormInstance) => {
         const parentPrefixName = getNamePath(context.prefixName) || [];
         const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
 

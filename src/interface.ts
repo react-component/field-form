@@ -64,9 +64,14 @@ export interface FieldError {
 
 export interface ValidateOptions {
   triggerName?: string;
+  validateMessages?: ValidateMessages;
 }
 
-export type ValidateFields = (nameList?: NamePath[], options?: ValidateOptions) => Promise<any>;
+export type InternalValidateFields = (
+  nameList?: NamePath[],
+  options?: ValidateOptions,
+) => Promise<any>;
+export type ValidateFields = (nameList?: NamePath[]) => Promise<any>;
 
 export type NotifyInfo =
   | {
@@ -90,6 +95,7 @@ export interface InternalHooks {
   setInitialValues: (values: Store) => void;
   setCallbacks: (callbacks: Callbacks) => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
+  setValidateMessages: (validateMessages: ValidateMessages) => void;
 }
 
 export interface FormInstance {
@@ -105,6 +111,10 @@ export interface FormInstance {
   setFields: (fields: FieldData[]) => void;
   setFieldsValue: (value: Store) => void;
   validateFields: ValidateFields;
+}
+
+export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
+  validateFields: InternalValidateFields;
 
   /**
    * Passed by field context props
@@ -116,4 +126,52 @@ export interface FormInstance {
    * We pass the `HOOK_MARK` as key to avoid user call the function.
    */
   getInternalHooks: (secret: string) => InternalHooks | null;
+};
+
+export interface ValidateMessages {
+  default?: string;
+  required?: string;
+  enum?: string;
+  whitespace?: string;
+  date?: {
+    format?: string;
+    parse?: string;
+    invalid?: string;
+  };
+  types?: {
+    string?: string;
+    method?: string;
+    array?: string;
+    object?: string;
+    number?: string;
+    date?: string;
+    boolean?: string;
+    integer?: string;
+    float?: string;
+    regexp?: string;
+    email?: string;
+    url?: string;
+    hex?: string;
+  };
+  string?: {
+    len?: string;
+    min?: string;
+    max?: string;
+    range?: string;
+  };
+  number?: {
+    len?: string;
+    min?: string;
+    max?: string;
+    range?: string;
+  };
+  array?: {
+    len?: string;
+    min?: string;
+    max?: string;
+    range?: string;
+  };
+  pattern?: {
+    mismatch?: string;
+  };
 }

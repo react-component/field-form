@@ -5,6 +5,10 @@ import StateForm, { FormInstance } from '../src/';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 
+const myMessages = {
+  required: '66666',
+};
+
 export default class Demo extends React.Component {
   private form: FormInstance;
 
@@ -20,7 +24,12 @@ export default class Demo extends React.Component {
     return (
       <div>
         <h3>High Perf Validate Form</h3>
-        <StateForm ref={this.setForm} style={{ padding: 16 }} onFinish={this.onFinish}>
+        <StateForm
+          ref={this.setForm}
+          style={{ padding: 16 }}
+          onFinish={this.onFinish}
+          validateMessages={myMessages}
+        >
           <LabelField name="password" rules={[{ required: true }]}>
             <Input placeholder="password" />
           </LabelField>

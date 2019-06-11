@@ -152,20 +152,20 @@ class Demo extends React.Component {
 
 ### Rule
 
-| Prop            | Type                                                                         |
-| --------------- | ---------------------------------------------------------------------------- |
-| enum            | any[]                                                                        |
-| len             | number                                                                       |
-| max             | number                                                                       |
-| message         | string                                                                       |
-| min             | number                                                                       |
-| pattern         | RegExp                                                                       |
-| required        | boolean                                                                      |
-| transform       | (value) => any                                                               |
-| type            | string                                                                       |
+| Prop            | Type                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------ |
+| enum            | any[]                                                                                |
+| len             | number                                                                               |
+| max             | number                                                                               |
+| message         | string                                                                               |
+| min             | number                                                                               |
+| pattern         | RegExp                                                                               |
+| required        | boolean                                                                              |
+| transform       | (value) => any                                                                       |
+| type            | string                                                                               |
 | validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) => void |
-| whitespace      | boolean                                                                      |
-| validateTrigger | string \| string[]                                                           |
+| whitespace      | boolean                                                                              |
+| validateTrigger | string \| string[]                                                                   |
 
 ### ListOperations
 
