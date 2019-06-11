@@ -4,6 +4,20 @@ import React from 'react';
 import StateForm, { FormInstance } from '../src/';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
+import { ValidateMessages } from '../src/interface';
+
+const myMessages: ValidateMessages = {
+  default: '${name} 看起来怪怪的……',
+  required: '你需要一个 ${name}',
+  types: {
+    number: '嗨，这个 ${name} 不是一个合格的 ${type}',
+  },
+  enum: '${name} 不在 ${enum} 中呢',
+  whitespace: '${name} 不可以是空的啦',
+  pattern: {
+    mismatch: '${name} 并不符合格式：${pattern}',
+  },
+};
 
 export default class Demo extends React.Component {
   private form: FormInstance;
@@ -20,7 +34,12 @@ export default class Demo extends React.Component {
     return (
       <div>
         <h3>High Perf Validate Form</h3>
-        <StateForm ref={this.setForm} style={{ padding: 16 }} onFinish={this.onFinish}>
+        <StateForm
+          ref={this.setForm}
+          style={{ padding: 16 }}
+          onFinish={this.onFinish}
+          validateMessages={myMessages}
+        >
           <LabelField name="password" rules={[{ required: true }]}>
             <Input placeholder="password" />
           </LabelField>
@@ -42,6 +61,21 @@ export default class Demo extends React.Component {
             ]}
           >
             <Input placeholder="password 2" />
+          </LabelField>
+
+          <LabelField
+            name="field"
+            label="Full of rules"
+            rules={[
+              { required: true },
+              { type: 'number' },
+              { type: 'enum', enum: ['aaa', 'bbb'] },
+              { type: 'date' },
+              { whitespace: true },
+              { pattern: /^\w{3}$/ },
+            ]}
+          >
+            <Input />
           </LabelField>
 
           <button type="submit">Submit</button>

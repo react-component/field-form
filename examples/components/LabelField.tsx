@@ -1,12 +1,13 @@
 import * as React from 'react';
 import StateForm, { FormInstance } from '../../src/';
+import { FieldProps } from '../../src/Field';
 
 const { Field } = StateForm;
 
 const Error = ({ children }) => (
   <ul style={{ color: 'red' }}>
-    {children.map(error => (
-      <li>{error}</li>
+    {children.map((error: string) => (
+      <li key={error}>{error}</li>
     ))}
   </ul>
 );
@@ -20,9 +21,8 @@ const FieldState = ({ touched, validating }: { touched: boolean; validating: boo
   );
 };
 
-interface LabelFieldProps {
-  children?: any;
-  [name: string]: any;
+interface LabelFieldProps extends FieldProps {
+  label?: React.ReactNode;
 }
 
 const LabelField: React.FunctionComponent<LabelFieldProps> = ({
@@ -33,11 +33,11 @@ const LabelField: React.FunctionComponent<LabelFieldProps> = ({
 }) => {
   return (
     <Field name={name} {...restProps}>
-      {(control, meta) => {
+      {(control, meta, form) => {
         const childNode =
           typeof children === 'function'
-            ? children(control, meta)
-            : React.cloneElement(children, { ...control });
+            ? children(control, meta, form)
+            : React.cloneElement(children as React.ReactElement, { ...control });
 
         return (
           <div>

@@ -66,13 +66,14 @@ But you can still check the type definition [here](https://github.com/react-comp
 
 ## Form
 
-| Prop           | Description                                        | Type                             | Default          |
-| -------------- | -------------------------------------------------- | -------------------------------- | ---------------- |
-| fields         | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]        | -                |
-| form           | Set form instance created by `useForm`             | [FormInstance](#useform)         | `Form.useForm()` |
-| initialValues  | Initial value of Form                              | Object                           | -                |
-| onFieldsChange | Trigger when any value of Field changed            | (changedFields, allFields): void | -                |
-| onValuesChange | Trigger when any value of Field changed            | (changedValues, values): void    | -                |
+| Prop             | Description                                        | Type                                  | Default          |
+| ---------------- | -------------------------------------------------- | ------------------------------------- | ---------------- |
+| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]             | -                |
+| form             | Set form instance created by `useForm`             | [FormInstance](#useform)              | `Form.useForm()` |
+| initialValues    | Initial value of Form                              | Object                                | -                |
+| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages) | -                |
+| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void      | -                |
+| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values): void         | -                |
 
 ## Field
 
@@ -152,20 +153,20 @@ class Demo extends React.Component {
 
 ### Rule
 
-| Prop            | Type                                                                         |
-| --------------- | ---------------------------------------------------------------------------- |
-| enum            | any[]                                                                        |
-| len             | number                                                                       |
-| max             | number                                                                       |
-| message         | string                                                                       |
-| min             | number                                                                       |
-| pattern         | RegExp                                                                       |
-| required        | boolean                                                                      |
-| transform       | (value) => any                                                               |
-| type            | string                                                                       |
+| Prop            | Type                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------ |
+| enum            | any[]                                                                                |
+| len             | number                                                                               |
+| max             | number                                                                               |
+| message         | string                                                                               |
+| min             | number                                                                               |
+| pattern         | RegExp                                                                               |
+| required        | boolean                                                                              |
+| transform       | (value) => any                                                                       |
+| type            | string                                                                               |
 | validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) => void |
-| whitespace      | boolean                                                                      |
-| validateTrigger | string \| string[]                                                           |
+| whitespace      | boolean                                                                              |
+| validateTrigger | string \| string[]                                                                   |
 
 ### ListOperations
 
@@ -173,3 +174,11 @@ class Demo extends React.Component {
 | ------ | ----------------------- |
 | add    | () => void              |
 | remove | (index: number) => void |
+
+### ValidateMessages
+
+Please ref
+
+| Prop     | Type |
+| -------- | ---- |
+| required |      |

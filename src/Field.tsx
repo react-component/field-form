@@ -10,6 +10,7 @@ import {
   Rule,
   Store,
   ValidateOptions,
+  InternalFormInstance,
 } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
@@ -76,7 +77,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   // ============================== Subscriptions ==============================
   public componentDidMount() {
-    const { getInternalHooks }: FormInstance = this.context;
+    const { getInternalHooks }: InternalFormInstance = this.context;
     const { registerField } = getInternalHooks(HOOK_MARK);
     this.cancelRegisterFunc = registerField(this);
   }
@@ -95,7 +96,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   // ================================== Utils ==================================
   public getNamePath = (): InternalNamePath => {
     const { name } = this.props;
-    const { prefixName = [] }: FormInstance = this.context;
+    const { prefixName = [] }: InternalFormInstance = this.context;
 
     return [...prefixName, ...getNamePath(name)];
   };
@@ -268,7 +269,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getControlled = (childProps: ChildProps = {}) => {
     const { trigger, validateTrigger } = this.props;
     const namePath = this.getNamePath();
-    const { getInternalHooks, validateFields }: FormInstance = this.context;
+    const { getInternalHooks, validateFields }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
 

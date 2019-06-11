@@ -1,7 +1,88 @@
 import AsyncValidator from 'async-validator';
-import { FieldError, InternalNamePath, Rule, ValidateOptions, FormInstance } from '../interface';
+import {
+  FieldError,
+  InternalNamePath,
+  Rule,
+  ValidateOptions,
+  FormInstance,
+  ValidateMessages,
+} from '../interface';
 import NameMap from './NameMap';
-import { containsNamePath, getNamePath } from './valueUtil';
+import { containsNamePath, getNamePath, setValues } from './valueUtil';
+import { defaultValidateMessages } from './messages';
+
+/**
+ * Replace with template.
+ *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
+ */
+function replaceMessage(template: string, kv: { [name: string]: any }): string {
+  return template.replace(/\$\{\w+\}/g, function(str: string) {
+    const key = str.slice(2, -1);
+    return kv[key];
+  });
+}
+
+/**
+ * We use `async-validator` to validate rules. So have to hot replace the message with validator.
+ * { required: '${name} is required' } => { required: () => 'field is required' }
+ */
+function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
+  const kv: { [name: string]: any } = {
+    ...rule,
+    name,
+    enum: (rule.enum || []).join(', '),
+  };
+
+  const replaceFunc = (template: string, additionalKV?: Record<string, any>) => {
+    if (!template) return null;
+    return () => {
+      return replaceMessage(template, { ...kv, ...additionalKV });
+    };
+  };
+
+  /* eslint-disable no-param-reassign */
+  function fillTemplate(source: { [name: string]: any }, target: { [name: string]: any } = {}) {
+    Object.keys(source).forEach(ruleName => {
+      const value = source[ruleName];
+      if (typeof value === 'string') {
+        target[ruleName] = replaceFunc(value);
+      } else if (value && typeof value === 'object') {
+        target[ruleName] = {};
+        fillTemplate(value, target[ruleName]);
+      } else {
+        target[ruleName] = value;
+      }
+    });
+
+    return target;
+  }
+  /* eslint-enable */
+
+  return fillTemplate(setValues({}, defaultValidateMessages, messages));
+}
+
+function validateRule(
+  name: string,
+  value: any,
+  rule: Rule,
+  options: ValidateOptions,
+): Promise<string[]> {
+  const validator = new AsyncValidator({
+    [name]: [rule],
+  });
+
+  const messages = convertMessages(options.validateMessages, name, rule);
+  validator.messages(messages);
+
+  return Promise.resolve(validator.validate({ [name]: value }, { ...options }))
+    .then(() => [])
+    .catch(errObj => {
+      if (errObj.errors) {
+        return errObj.errors.map(e => e.message);
+      }
+      return messages.default();
+    });
+}
 
 /**
  * We use `async-validator` to validate the value.
@@ -29,31 +110,22 @@ export function validateRules(
     };
   });
 
-  const validator = new AsyncValidator({
-    [name]: filledRules,
-  });
+  const summaryPromise: Promise<string[]> = Promise.all(
+    filledRules.map(rule => validateRule(name, value, rule, options)),
+  ).then((errorsList: string[][]): string[] | Promise<string[]> => {
+    const errors: string[] = [].concat(...errorsList);
 
-  const promise = new Promise((resolve, reject) => {
-    validator.validate({ [name]: value }, options || {}, (errors: any) => {
-      if (!errors) {
-        resolve();
-        return;
-      }
-      reject(
-        errors.map((e: any) => {
-          if (e && e.message) {
-            return e.message;
-          }
-          return e;
-        }),
-      );
-    });
+    if (!errors.length) {
+      return [];
+    }
+
+    return Promise.reject<string[]>(errors);
   });
 
   // Internal catch error to avoid console error log.
-  promise.catch(e => e);
+  summaryPromise.catch(e => e);
 
-  return promise;
+  return summaryPromise;
 }
 
 /**

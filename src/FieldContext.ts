@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FormInstance } from './interface';
+import { InternalFormInstance } from './interface';
 
 export const HOOK_MARK = 'RC_FORM_INTERNAL_HOOKS';
 
@@ -7,7 +7,7 @@ const warningFunc: any = () => {
   throw new Error('StateForm is not defined.');
 };
 
-const Context = React.createContext<FormInstance>({
+const Context = React.createContext<InternalFormInstance>({
   getFieldValue: warningFunc,
   getFieldsValue: warningFunc,
   getFieldError: warningFunc,

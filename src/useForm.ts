@@ -12,11 +12,15 @@ import {
   ValidateFields,
   ValidateOptions,
   FormInstance,
+  ValidateMessages,
+  InternalValidateFields,
+  InternalFormInstance,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
 import NameMap from './utils/NameMap';
 import { ErrorCache } from './utils/validateUtil';
+import { defaultValidateMessages } from './utils/messages';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -50,11 +54,13 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
+  private validateMessages: ValidateMessages = null;
+
   constructor(forceRootUpdate: () => void) {
     this.forceRootUpdate = forceRootUpdate;
   }
 
-  public getForm = (): FormInstance => ({
+  public getForm = (): InternalFormInstance => ({
     getFieldValue: this.getFieldValue,
     getFieldsValue: this.getFieldsValue,
     getFieldError: this.getFieldError,
@@ -79,6 +85,7 @@ export class FormStore {
         useSubscribe: this.useSubscribe,
         setInitialValues: this.setInitialValues,
         setCallbacks: this.setCallbacks,
+        setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
       };
     }
@@ -102,6 +109,10 @@ export class FormStore {
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
+  };
+
+  private setValidateMessages = (validateMessages: ValidateMessages) => {
+    this.validateMessages = validateMessages;
   };
 
   // ============================ Fields ============================
@@ -381,7 +392,10 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
-  private validateFields: ValidateFields = (nameList?: NamePath[], options?: ValidateOptions) => {
+  private validateFields: InternalValidateFields = (
+    nameList?: NamePath[],
+    options?: ValidateOptions,
+  ) => {
     const namePathList: InternalNamePath[] | undefined = nameList && nameList.map(getNamePath);
 
     // Collect result in promise list
@@ -395,7 +409,13 @@ export class FormStore {
       const fieldNamePath = field.getNamePath();
 
       if (!namePathList || containsNamePath(namePathList, fieldNamePath)) {
-        const promise = field.validateRules(options);
+        const promise = field.validateRules({
+          validateMessages: {
+            ...defaultValidateMessages,
+            ...this.validateMessages,
+          },
+          ...options,
+        });
 
         // Wrap promise with field
         promiseList.push(
