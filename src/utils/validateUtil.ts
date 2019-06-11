@@ -8,7 +8,8 @@ import {
   ValidateMessages,
 } from '../interface';
 import NameMap from './NameMap';
-import { containsNamePath, getNamePath } from './valueUtil';
+import { containsNamePath, getNamePath, setValues } from './valueUtil';
+import { defaultValidateMessages } from './messages';
 
 /**
  * Replace with template.
@@ -23,6 +24,7 @@ function replaceMessage(template: string, kv: { [name: string]: any }): string {
 
 /**
  * We use `async-validator` to validate rules. So have to hot replace the message with validator.
+ * { required: '${name} is required' } => { required: () => 'field is required' }
  */
 function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
   const kv: { [name: string]: any } = {
@@ -38,31 +40,25 @@ function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
     };
   };
 
-  const typeReplaceFunc = replaceFunc(messages.type);
+  /* eslint-disable no-param-reassign */
+  function fillTemplate(source: { [name: string]: any }, target: { [name: string]: any } = {}) {
+    Object.keys(source).forEach(ruleName => {
+      const value = source[ruleName];
+      if (typeof value === 'string') {
+        target[ruleName] = replaceFunc(value);
+      } else if (value && typeof value === 'object') {
+        target[ruleName] = {};
+        fillTemplate(value, target[ruleName]);
+      } else {
+        target[ruleName] = value;
+      }
+    });
 
-  const newMessages = {
-    _kv: kv,
-    _rule: rule,
-    ...messages,
-    enum: replaceFunc(messages.enum),
-    required: replaceFunc(messages.required),
-    types: {
-      string: typeReplaceFunc,
-      method: typeReplaceFunc,
-      array: typeReplaceFunc,
-      object: typeReplaceFunc,
-      number: typeReplaceFunc,
-      date: typeReplaceFunc,
-      boolean: typeReplaceFunc,
-      integer: typeReplaceFunc,
-      float: typeReplaceFunc,
-      regexp: typeReplaceFunc,
-      email: typeReplaceFunc,
-      url: typeReplaceFunc,
-      hex: typeReplaceFunc,
-    },
-  };
-  return newMessages;
+    return target;
+  }
+  /* eslint-enable */
+
+  return fillTemplate(setValues({}, defaultValidateMessages, messages));
 }
 
 function validateRule(
@@ -78,18 +74,14 @@ function validateRule(
   const messages = convertMessages(options.validateMessages, name, rule);
   validator.messages(messages);
 
-  return new Promise(resolve => {
-    validator.validate({ [name]: value }, { ...options }, (errors: any) => {
-      resolve(
-        (errors || []).map((e: any) => {
-          if (e && e.message) {
-            return e.message;
-          }
-          return e;
-        }),
-      );
+  return Promise.resolve(validator.validate({ [name]: value }, { ...options }))
+    .then(() => [])
+    .catch(errObj => {
+      if (errObj.errors) {
+        return errObj.errors.map(e => e.message);
+      }
+      return messages.default();
     });
-  });
 }
 
 /**
@@ -171,38 +163,3 @@ export class ErrorCache {
     this.cache.delete(namePath);
   };
 }
-
-export const defaultValidateMessages = {
-  enum: "'${name}' must be one of [${enum}]",
-  required: "'${name}' is required",
-  type: "'${name}' is not a validate ${type}",
-
-  // default: 'Validation error on field ${name}',
-  // whitespace: '${name} cannot be empty',
-  // date: {
-  //   format: '%s date %s is invalid for format %s',
-  //   parse: '%s date could not be parsed, %s is invalid ',
-  //   invalid: '%s date %s is invalid',
-  // },
-  // string: {
-  //   len: '%s must be exactly %s characters',
-  //   min: '%s must be at least %s characters',
-  //   max: '%s cannot be longer than %s characters',
-  //   range: '%s must be between %s and %s characters',
-  // },
-  // number: {
-  //   len: '%s must equal %s',
-  //   min: '%s cannot be less than %s',
-  //   max: '%s cannot be greater than %s',
-  //   range: '%s must be between %s and %s',
-  // },
-  // array: {
-  //   len: '%s must be exactly %s in length',
-  //   min: '%s cannot be less than %s in length',
-  //   max: '%s cannot be greater than %s in length',
-  //   range: '%s must be between %s and %s in length',
-  // },
-  // pattern: {
-  //   mismatch: '%s value %s does not match pattern %s',
-  // },
-};

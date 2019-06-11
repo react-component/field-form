@@ -19,7 +19,8 @@ import {
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
 import NameMap from './utils/NameMap';
-import { ErrorCache, defaultValidateMessages } from './utils/validateUtil';
+import { ErrorCache } from './utils/validateUtil';
+import { defaultValidateMessages } from './utils/messages';
 import {
   cloneByNamePathList,
   containsNamePath,

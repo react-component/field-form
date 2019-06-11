@@ -7,9 +7,13 @@ import LabelField from './components/LabelField';
 import { ValidateMessages } from '../src/interface';
 
 const myMessages: ValidateMessages = {
+  default: '${name} 看起来怪怪的……',
   required: '你需要一个 ${name}',
-  type: '嗨，这个 ${name} 不是一个合格的 ${type}',
+  types: {
+    number: '嗨，这个 ${name} 不是一个合格的 ${type}',
+  },
   enum: '${name} 不在 ${enum} 中呢',
+  whitespace: '${name} 不可以是空的啦',
 };
 
 export default class Demo extends React.Component {
@@ -59,7 +63,13 @@ export default class Demo extends React.Component {
           <LabelField
             name="field"
             label="Full of rules"
-            rules={[{ required: true }, { type: 'number' }, { type: 'enum', enum: ['aaa', 'bbb'] }]}
+            rules={[
+              { required: true },
+              { type: 'number' },
+              { type: 'enum', enum: ['aaa', 'bbb'] },
+              { type: 'date' },
+              { whitespace: true },
+            ]}
           >
             <Input />
           </LabelField>
