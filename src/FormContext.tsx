@@ -11,7 +11,7 @@ export interface FormProviderProps {
 }
 
 export interface FormContextProps extends FormProviderProps {
-  triggerFormChange: (name: string, form: FormInstance) => void;
+  triggerFormChange: (name: string) => void;
   registerForm: (name: string, form: FormInstance) => () => void;
 }
 
@@ -38,7 +38,7 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
         // =========================================================
         // =                  Global Form Control                  =
         // =========================================================
-        triggerFormChange: (name, form) => {
+        triggerFormChange: name => {
           if (onFormChange) {
             onFormChange(name, formsRef.current);
           }

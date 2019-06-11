@@ -68,7 +68,7 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
   setCallbacks({
     onValuesChange: (...args) => {
       if (name) {
-        formContext.triggerFormChange(name, formInstance);
+        formContext.triggerFormChange(name);
       }
 
       if (onValuesChange) {
