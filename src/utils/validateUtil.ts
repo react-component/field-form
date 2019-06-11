@@ -33,6 +33,10 @@ export function validateRules(
     [name]: filledRules,
   });
 
+  if (options.validateMessages) {
+    validator.messages(options.validateMessages);
+  }
+
   const promise = new Promise((resolve, reject) => {
     validator.validate({ [name]: value }, options || {}, (errors: any) => {
       if (!errors) {

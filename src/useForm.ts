@@ -408,7 +408,10 @@ export class FormStore {
       const fieldNamePath = field.getNamePath();
 
       if (!namePathList || containsNamePath(namePathList, fieldNamePath)) {
-        const promise = field.validateRules(options);
+        const promise = field.validateRules({
+          validateMessages: this.validateMessages,
+          ...options,
+        });
 
         // Wrap promise with field
         promiseList.push(
