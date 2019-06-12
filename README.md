@@ -71,6 +71,7 @@ But you can still check the type definition [here](https://github.com/react-comp
 | fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]             | -                |
 | form             | Set form instance created by `useForm`             | [FormInstance](#useform)              | `Form.useForm()` |
 | initialValues    | Initial value of Form                              | Object                                | -                |
+| name             | Config name with [FormProvider](#formprovider)     | string                                | -                |
 | validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages) | -                |
 | onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void      | -                |
 | onValuesChange   | Trigger when any value of Field changed            | (changedValues, values): void         | -                |
@@ -133,6 +134,13 @@ class Demo extends React.Component {
 | setFieldsValue    | Set fields value                           | (values) => void                                                           |
 | validateFields    | Trigger fields to validate                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
 
+## FormProvider
+
+| Prop             | Description                               | Type                                     | Default |
+| ---------------- | ----------------------------------------- | ---------------------------------------- | ------- |
+| validateMessages | Config global `validateMessages` template | [ValidateMessages](#validatemessages)    | -       |
+| onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
+
 ## Interface
 
 ### NamePath
@@ -177,8 +185,15 @@ class Demo extends React.Component {
 
 ### ValidateMessages
 
-Please ref
+Validate Messages provides a list of error template.
+You can ref [here](https://github.com/react-component/field-form/blob/master/src/utils/messages.ts) for fully default templates.
 
-| Prop     | Type |
-| -------- | ---- |
-| required |      |
+| Prop    | Description         |
+| ------- | ------------------- |
+| enum    | Rule `enum` prop    |
+| len     | Rule `len` prop     |
+| max     | Rule `max` prop     |
+| min     | Rule `min` prop     |
+| name    | Field name          |
+| pattern | Rule `pattern` prop |
+| type    | Rule `type` prop    |
