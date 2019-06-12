@@ -238,7 +238,7 @@ export class FormStore {
     let fields: FieldData[];
 
     if (!namePathList) {
-      this.getFieldEntities(true).map(
+      fields = this.getFieldEntities(true).map(
         (field: FieldEntity): FieldData => {
           const namePath = field.getNamePath();
           const meta = field.getMeta();

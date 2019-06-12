@@ -23,7 +23,7 @@ const Form1 = () => {
       <h4>Form 1</h4>
       <p>Change me!</p>
       <LabelField name="username" rules={[{ required: true }]}>
-        <Input placeholder="password" />
+        <Input placeholder="username" />
       </LabelField>
       <LabelField name="password" rules={[{ required: true }]}>
         <Input placeholder="password" />
@@ -42,7 +42,7 @@ const Form2 = () => {
       <h4>Form 2</h4>
       <p>Will follow Form 1 but not sync back</p>
       <LabelField name="username" rules={[{ required: true }]}>
-        <Input placeholder="password" />
+        <Input placeholder="username" />
       </LabelField>
       <LabelField name="password" rules={[{ required: true }]}>
         <Input placeholder="password" />
@@ -60,10 +60,10 @@ const Demo = () => {
       <p>Support global `validateMessages` config and communication between forms.</p>
       <FormProvider
         validateMessages={myMessages}
-        onFormChange={(name, forms) => {
-          console.log('change from:', name, forms);
+        onFormChange={(name, { changedFields, forms }) => {
+          console.log('change from:', name, changedFields, forms);
           if (name === 'first') {
-            forms.second.setFieldsValue(forms.first.getFieldsValue());
+            forms.second.setFields(changedFields);
           }
         }}
       >

@@ -1,17 +1,22 @@
 import * as React from 'react';
-import { ValidateMessages, FormInstance } from './interface';
+import { ValidateMessages, FormInstance, FieldData } from './interface';
 
 interface Forms {
   [name: string]: FormInstance;
 }
 
+interface FormChangeInfo {
+  changedFields: FieldData[];
+  forms: Forms;
+}
+
 export interface FormProviderProps {
   validateMessages?: ValidateMessages;
-  onFormChange?: (name: string, forms: Forms) => void;
+  onFormChange?: (name: string, info: FormChangeInfo) => void;
 }
 
 export interface FormContextProps extends FormProviderProps {
-  triggerFormChange: (name: string) => void;
+  triggerFormChange: (name: string, changedFields: FieldData[]) => void;
   registerForm: (name: string, form: FormInstance) => () => void;
 }
 
@@ -38,9 +43,12 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
         // =========================================================
         // =                  Global Form Control                  =
         // =========================================================
-        triggerFormChange: name => {
+        triggerFormChange: (name, changedFields) => {
           if (onFormChange) {
-            onFormChange(name, formsRef.current);
+            onFormChange(name, {
+              changedFields,
+              forms: formsRef.current,
+            });
           }
         },
         registerForm: (name, form) => {

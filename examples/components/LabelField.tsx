@@ -40,7 +40,7 @@ const LabelField: React.FunctionComponent<LabelFieldProps> = ({
             : React.cloneElement(children as React.ReactElement, { ...control });
 
         return (
-          <div>
+          <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <label style={{ flex: 'none', width: 100 }}>{label || name}</label>
 

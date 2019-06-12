@@ -66,16 +66,14 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
     ...validateMessages,
   });
   setCallbacks({
-    onValuesChange: (...args) => {
-      if (name) {
-        formContext.triggerFormChange(name);
-      }
+    onValuesChange,
+    onFieldsChange: (changedFields: FieldData[], ...rest) => {
+      formContext.triggerFormChange(name, changedFields);
 
-      if (onValuesChange) {
-        onValuesChange(...args);
+      if (onFieldsChange) {
+        onFieldsChange(changedFields, ...rest);
       }
     },
-    onFieldsChange,
   });
 
   // Initial store value when first mount
