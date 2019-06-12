@@ -52,7 +52,7 @@ export interface Rule {
     value: any,
     callback: (error?: string) => void,
     context: FormInstance, // TODO: Maybe not good place to export this?
-  ) => void;
+  ) => Promise<void> | void;
   whitespace?: boolean;
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
