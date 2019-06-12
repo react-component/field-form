@@ -2,25 +2,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField from './common/InfoField';
-import timeout from './common/timeout';
-
-async function changeValue(wrapper, value) {
-  wrapper.find('input').simulate('change', { target: { value } });
-  await timeout();
-  wrapper.update();
-}
-
-function matchError(wrapper, error) {
-  if (error) {
-    expect(wrapper.find('.errors li').length).toBeTruthy();
-  } else {
-    expect(wrapper.find('.errors li').length).toBeFalsy();
-  }
-
-  if (error && typeof error !== 'boolean') {
-    expect(wrapper.find('.errors li').text()).toBe(error);
-  }
-}
+import { changeValue, matchError } from './common';
 
 describe('validate', () => {
   it('required', async () => {
