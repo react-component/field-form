@@ -161,20 +161,25 @@ class Demo extends React.Component {
 
 ### Rule
 
-| Prop            | Type                                                                                 |
-| --------------- | ------------------------------------------------------------------------------------ |
-| enum            | any[]                                                                                |
-| len             | number                                                                               |
-| max             | number                                                                               |
-| message         | string                                                                               |
-| min             | number                                                                               |
-| pattern         | RegExp                                                                               |
-| required        | boolean                                                                              |
-| transform       | (value) => any                                                                       |
-| type            | string                                                                               |
-| validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) => void |
-| whitespace      | boolean                                                                              |
-| validateTrigger | string \| string[]                                                                   |
+| Prop            | Type                                                                                            |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| enum            | any[]                                                                                           |
+| len             | number                                                                                          |
+| max             | number                                                                                          |
+| message         | string                                                                                          |
+| min             | number                                                                                          |
+| pattern         | RegExp                                                                                          |
+| required        | boolean                                                                                         |
+| transform       | (value) => any                                                                                  |
+| type            | string                                                                                          |
+| validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) => Promise \| void |
+| whitespace      | boolean                                                                                         |
+| validateTrigger | string \| string[]                                                                              |
+
+#### validator
+
+To keep sync with `rc-form` legacy usage of `validator`, we still provides `callback` to trigger validate finished.
+But in `rc-field-form`, we strongly recommend to return a Promise instead.
 
 ### ListOperations
 

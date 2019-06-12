@@ -1,4 +1,5 @@
 import AsyncValidator from 'async-validator';
+import warning from 'warning';
 import {
   FieldError,
   InternalNamePath,
@@ -61,7 +62,7 @@ function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
   return fillTemplate(setValues({}, defaultValidateMessages, messages));
 }
 
-function validateRule(
+async function validateRule(
   name: string,
   value: any,
   rule: Rule,
@@ -74,14 +75,15 @@ function validateRule(
   const messages = convertMessages(options.validateMessages, name, rule);
   validator.messages(messages);
 
-  return Promise.resolve(validator.validate({ [name]: value }, { ...options }))
-    .then(() => [])
-    .catch(errObj => {
-      if (errObj.errors) {
-        return errObj.errors.map(e => e.message);
-      }
-      return messages.default();
-    });
+  try {
+    await Promise.resolve(validator.validate({ [name]: value }, { ...options }));
+    return [];
+  } catch (errObj) {
+    if (errObj.errors) {
+      return errObj.errors.map(e => e.message);
+    }
+    return messages.default();
+  }
 }
 
 /**
@@ -105,7 +107,40 @@ export function validateRules(
     return {
       ...currentRule,
       validator(rule: any, val: any, callback: any) {
-        currentRule.validator(rule, val, callback, context);
+        let hasPromise = false;
+
+        // Wrap callback only accept when promise not provided
+        const wrappedCallback = (...args: string[]) => {
+          warning(
+            !hasPromise,
+            'Your validator function has already return a promise. `callback` will be ignored.',
+          );
+
+          if (!hasPromise) {
+            callback(...args);
+          }
+        };
+
+        // Get promise
+        const promise = currentRule.validator(rule, val, wrappedCallback, context);
+        hasPromise =
+          promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
+
+        /**
+         * 1. Use promise as the first priority.
+         * 2. If promise not exist, use callback with warning instead
+         */
+        warning(hasPromise, '`callback` is deprecated. Please return a promise instead.');
+
+        if (hasPromise) {
+          (promise as Promise<void>)
+            .then(() => {
+              callback();
+            })
+            .catch(err => {
+              callback(err);
+            });
+        }
       },
     };
   });

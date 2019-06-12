@@ -50,12 +50,11 @@ export default class Demo extends React.Component {
             rules={[
               { required: true },
               {
-                validator(_, value, callback, { getFieldValue }) {
+                async validator(_, value, __, { getFieldValue }) {
                   if (getFieldValue('password') !== value) {
-                    callback('password2 is not same as password');
-                    return;
+                    return Promise.reject('password2 is not same as password');
                   }
-                  callback();
+                  return Promise.resolve();
                 },
               },
             ]}

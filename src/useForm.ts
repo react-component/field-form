@@ -1,4 +1,5 @@
 import * as React from 'react';
+import warning from 'warning';
 import {
   Callbacks,
   FieldData,
@@ -89,7 +90,7 @@ export class FormStore {
       };
     }
 
-    console.error('`getInternalHooks` is internal usage. Should not call directly.');
+    warning(false, '`getInternalHooks` is internal usage. Should not call directly.');
     return null;
   };
 
