@@ -1,4 +1,5 @@
 import timeout from './timeout';
+import InfoField from './InfoField';
 
 export async function changeValue(wrapper, value) {
   wrapper.find('input').simulate('change', { target: { value } });
@@ -16,4 +17,8 @@ export function matchError(wrapper, error) {
   if (error && typeof error !== 'boolean') {
     expect(wrapper.find('.errors li').text()).toBe(error);
   }
+}
+
+export function getField(wrapper, index = 0) {
+  return wrapper.find(InfoField).at(index);
 }

@@ -75,7 +75,8 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
-| name | Field name path | [NamePath](#namepath)[] | - |
+| dependencies | Will re-render if dependencies changed | [NamePath](#namepath)[] | - |
+| name | Field name path | [NamePath](#namepath) | - |
 | rules | Validate rules | [Rule](#rule)[] | - |
 | shouldUpdate | Check if Field should update | (prevValues, nextValues): boolean | - |
 | trigger | Collect value update by event trigger | string | onChange |
