@@ -2,11 +2,7 @@
 
 React Performance First Form Component.
 
-[![NPM version][npm-image]][npm-url]
-[![build status][circleci-image]][circleci-url]
-[![Test coverage][coveralls-image]][coveralls-url]
-[![node version][node-image]][node-url]
-[![npm download][download-image]][download-url]
+[![NPM version][npm-image]][npm-url] [![build status][circleci-image]][circleci-url] [![Test coverage][coveralls-image]][coveralls-url] [![node version][node-image]][node-url] [![npm download][download-image]][download-url]
 
 [npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
 [npm-url]: http://npmjs.org/package/rc-field-form
@@ -61,43 +57,40 @@ export default Demo;
 
 # API
 
-We use typescript to create the Type definition. You can view directly in IDE.
-But you can still check the type definition [here](https://github.com/react-component/field-form/blob/master/src/interface.ts).
+We use typescript to create the Type definition. You can view directly in IDE. But you can still check the type definition [here](https://github.com/react-component/field-form/blob/master/src/interface.ts).
 
 ## Form
 
-| Prop             | Description                                        | Type                                  | Default          |
-| ---------------- | -------------------------------------------------- | ------------------------------------- | ---------------- |
-| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]             | -                |
-| form             | Set form instance created by `useForm`             | [FormInstance](#useform)              | `Form.useForm()` |
-| initialValues    | Initial value of Form                              | Object                                | -                |
-| name             | Config name with [FormProvider](#formprovider)     | string                                | -                |
-| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages) | -                |
-| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void      | -                |
-| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values): void         | -                |
+| Prop | Description | Type | Default |
+| --- | --- | --- | --- |
+| fields | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[] | - |
+| form | Set form instance created by `useForm` | [FormInstance](#useform) | `Form.useForm()` |
+| initialValues | Initial value of Form | Object | - |
+| name | Config name with [FormProvider](#formprovider) | string | - |
+| validateMessages | Set validate message template | [ValidateMessages](#validatemessages) | - |
+| onFieldsChange | Trigger when any value of Field changed | (changedFields, allFields): void | - |
+| onValuesChange | Trigger when any value of Field changed | (changedValues, values): void | - |
 
 ## Field
 
-| Prop            | Description                             | Type                              | Default  |
-| --------------- | --------------------------------------- | --------------------------------- | -------- |
-| name            | Field name path                         | [NamePath](#namepath)[]           | -        |
-| rules           | Validate rules                          | [Rule](#rule)[]                   | -        |
-| shouldUpdate    | Check if Field should update            | (prevValues, nextValues): boolean | -        |
-| trigger         | Collect value update by event trigger   | string                            | onChange |
-| validateTrigger | Config trigger point with rule validate | string \| string[]                | onChange |
+| Prop | Description | Type | Default |
+| --- | --- | --- | --- |
+| name | Field name path | [NamePath](#namepath)[] | - |
+| rules | Validate rules | [Rule](#rule)[] | - |
+| shouldUpdate | Check if Field should update | (prevValues, nextValues): boolean | - |
+| trigger | Collect value update by event trigger | string | onChange |
+| validateTrigger | Config trigger point with rule validate | string \| string[] | onChange |
 
 ## List
 
-| Prop     | Description                     | Type                                                                                                  | Default |
-| -------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
-| name     | List field name path            | [NamePath](#namepath)[]                                                                               | -       |
-| children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)): ReactNode | -       |
+| Prop | Description | Type | Default |
+| --- | --- | --- | --- |
+| name | List field name path | [NamePath](#namepath)[] | - |
+| children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)): ReactNode | - |
 
 ## useForm
 
-Form component default create an form instance by `Form.useForm`.
-But you can create it and pass to Form also.
-This allow you to call some function on the form instance.
+Form component default create an form instance by `Form.useForm`. But you can create it and pass to Form also. This allow you to call some function on the form instance.
 
 ```jsx
 const Demo = () => {
@@ -120,26 +113,26 @@ class Demo extends React.Component {
 }
 ```
 
-| Prop              | Description                                | Type                                                                       |
-| ----------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
-| getFieldValue     | Get field value by name path               | (name: [NamePath](#namepath)) => any                                       |
-| getFieldsValue    | Get list of field values by name path list | (nameList?: [NamePath](#namepath)[]) => any                                |
-| getFieldError     | Get field errors by name path              | (name: [NamePath](#namepath)) => string[]                                  |
-| getFieldsError    | Get list of field errors by name path list | (nameList?: [NamePath](#namepath)[]) => FieldError[]                       |
-| isFieldsTouched   | Check if list of fields are touched        | (nameList?: [NamePath](#namepath)[]) => boolean                            |
-| isFieldTouched    | Check if a field is touched                | (name: [NamePath](#namepath)) => boolean                                   |
-| isFieldValidating | Check if a field is validating             | (name: [NamePath](#namepath)) => boolean                                   |
-| resetFields       | Reset fields status                        | (fields?: [NamePath](#namepath)[]) => void                                 |
-| setFields         | Set fields status                          | (fields: FieldData[]) => void                                              |
-| setFieldsValue    | Set fields value                           | (values) => void                                                           |
-| validateFields    | Trigger fields to validate                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
+| Prop | Description | Type |
+| --- | --- | --- |
+| getFieldValue | Get field value by name path | (name: [NamePath](#namepath)) => any |
+| getFieldsValue | Get list of field values by name path list | (nameList?: [NamePath](#namepath)[]) => any |
+| getFieldError | Get field errors by name path | (name: [NamePath](#namepath)) => string[] |
+| getFieldsError | Get list of field errors by name path list | (nameList?: [NamePath](#namepath)[]) => FieldError[] |
+| isFieldsTouched | Check if list of fields are touched | (nameList?: [NamePath](#namepath)[]) => boolean |
+| isFieldTouched | Check if a field is touched | (name: [NamePath](#namepath)) => boolean |
+| isFieldValidating | Check if a field is validating | (name: [NamePath](#namepath)) => boolean |
+| resetFields | Reset fields status | (fields?: [NamePath](#namepath)[]) => void |
+| setFields | Set fields status | (fields: FieldData[]) => void |
+| setFieldsValue | Set fields value | (values) => void |
+| validateFields | Trigger fields to validate | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
 
 ## FormProvider
 
-| Prop             | Description                               | Type                                     | Default |
-| ---------------- | ----------------------------------------- | ---------------------------------------- | ------- |
-| validateMessages | Config global `validateMessages` template | [ValidateMessages](#validatemessages)    | -       |
-| onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
+| Prop | Description | Type | Default |
+| --- | --- | --- | --- |
+| validateMessages | Config global `validateMessages` template | [ValidateMessages](#validatemessages) | - |
+| onFormChange | Trigger by named form fields change | (name, { changedFields, forms }) => void | - |
 
 ## Interface
 
@@ -161,25 +154,24 @@ class Demo extends React.Component {
 
 ### Rule
 
-| Prop            | Type                                                                                            |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| enum            | any[]                                                                                           |
-| len             | number                                                                                          |
-| max             | number                                                                                          |
-| message         | string                                                                                          |
-| min             | number                                                                                          |
-| pattern         | RegExp                                                                                          |
-| required        | boolean                                                                                         |
-| transform       | (value) => any                                                                                  |
-| type            | string                                                                                          |
-| validator       | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) => Promise \| void |
-| whitespace      | boolean                                                                                         |
-| validateTrigger | string \| string[]                                                                              |
+| Prop | Type |
+| --- | --- |
+| enum | any[] |
+| len | number |
+| max | number |
+| message | string |
+| min | number |
+| pattern | RegExp |
+| required | boolean |
+| transform | (value) => any |
+| type | string |
+| validator | ([rule](#rule), value, callback: (error?: string) => void, [form](#useform)) => Promise \| void |
+| whitespace | boolean |
+| validateTrigger | string \| string[] |
 
 #### validator
 
-To keep sync with `rc-form` legacy usage of `validator`, we still provides `callback` to trigger validate finished.
-But in `rc-field-form`, we strongly recommend to return a Promise instead.
+To keep sync with `rc-form` legacy usage of `validator`, we still provides `callback` to trigger validate finished. But in `rc-field-form`, we strongly recommend to return a Promise instead.
 
 ### ListOperations
 
@@ -190,8 +182,7 @@ But in `rc-field-form`, we strongly recommend to return a Promise instead.
 
 ### ValidateMessages
 
-Validate Messages provides a list of error template.
-You can ref [here](https://github.com/react-component/field-form/blob/master/src/utils/messages.ts) for fully default templates.
+Validate Messages provides a list of error template. You can ref [here](https://github.com/react-component/field-form/blob/master/src/utils/messages.ts) for fully default templates.
 
 | Prop    | Description         |
 | ------- | ------------------- |
