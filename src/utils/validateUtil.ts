@@ -111,14 +111,17 @@ export function validateRules(
 
         // Wrap callback only accept when promise not provided
         const wrappedCallback = (...args: string[]) => {
-          warning(
-            !hasPromise,
-            'Your validator function has already return a promise. `callback` will be ignored.',
-          );
+          // Wait a tick to make sure return type is a promise
+          Promise.resolve().then(() => {
+            warning(
+              !hasPromise,
+              'Your validator function has already return a promise. `callback` will be ignored.',
+            );
 
-          if (!hasPromise) {
-            callback(...args);
-          }
+            if (!hasPromise) {
+              callback(...args);
+            }
+          });
         };
 
         // Get promise

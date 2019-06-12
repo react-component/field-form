@@ -31,7 +31,6 @@
     "build": "father doc build --storybook",
     "compile": "rc-tools run compile --babel-runtime",
     "gh-pages": "rc-tools run gh-pages",
-    "start1": "rc-tools run storybook",
     "pub": "rc-tools run pub --babel-runtime",
     "lint": "eslint src/**/*",
     "test": "father test",
