@@ -324,7 +324,7 @@ export class FormStore {
       onValuesChange(changedValues, this.store);
     }
 
-    this.triggerOnFieldsChange([namePath]);
+    this.triggerOnFieldsChange([namePath, ...childrenFields]);
   };
 
   // Let all child Field get update.
@@ -365,8 +365,8 @@ export class FormStore {
         if (!children.has(field)) {
           children.add(field);
 
-          if (field.isFieldTouched()) {
-            const fieldNamePath = field.getNamePath();
+          const fieldNamePath = field.getNamePath();
+          if (field.isFieldTouched() && fieldNamePath.length) {
             childrenFields.push(fieldNamePath);
             fillChildren(fieldNamePath);
           }

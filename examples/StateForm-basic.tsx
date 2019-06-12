@@ -35,7 +35,7 @@ export default class Demo extends React.Component {
           </Field>
 
           <h4>Show additional field when `username` is `111`</h4>
-          <Field shouldUpdate={(prev, next) => prev.username !== next.username}>
+          <Field dependencies={['username']}>
             {(control, meta, context) => {
               const { username } = context.getFieldsValue();
               return username === '111' ? <Input {...control} placeholder="I am secret!" /> : null;

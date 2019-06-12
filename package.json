@@ -42,6 +42,7 @@
   "devDependencies": {
     "@types/react": "^16.8.19",
     "@types/react-dom": "^16.8.4",
+    "@types/warning": "^3.0.0",
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
@@ -50,7 +51,6 @@
     "react-dom": "^16.8.6",
     "react-redux": "^4.4.10",
     "react-router": "^3.0.0",
-    "react-test-renderer": "^16.1.1",
     "redux": "^3.7.2"
   },
   "pre-commit": [
@@ -58,7 +58,6 @@
   ],
   "dependencies": {
     "async-validator": "^1.11.2",
-    "babel-runtime": "6.x",
     "lodash": "^4.17.4",
     "rc-util": "^4.6.0",
     "warning": "^4.0.3"

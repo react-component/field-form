@@ -36,7 +36,10 @@ export interface FieldProps {
     | React.ReactElement
     | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
   rules?: Rule[];
-  /** Set up `dependencies` field. When dependencies field update and current field is touched, will trigger validate rules. */
+  /**
+   * Set up `dependencies` field.
+   * When dependencies field update and current field is touched, will trigger validate rules and render.
+   */
   dependencies?: NamePath[];
   trigger?: string;
   validateTrigger?: string | string[];
@@ -123,7 +126,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     namePathList: InternalNamePath[] | null,
     info: NotifyInfo,
   ) => {
-    const { shouldUpdate } = this.props;
+    const { shouldUpdate, dependencies = [] } = this.props;
     const { getFieldsValue, getFieldError }: FormInstance = this.context;
     const values = getFieldsValue();
     const namePath = this.getNamePath();
@@ -169,11 +172,15 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
       default:
         /**
          * - If `namePath` exists in `namePathList`, means it's related value and should update.
+         * - If `dependencies` exists in `namePathList`, means upstream trigger update.
          * - If `shouldUpdate` provided, use customize logic to update the field
          *   - else to check if value changed
          */
         if (
           (namePathList && containsNamePath(namePathList, namePath)) ||
+          dependencies.some(dependency =>
+            containsNamePath(namePathList, getNamePath(dependency)),
+          ) ||
           (shouldUpdate ? shouldUpdate(prevStore, values, info) : prevValue !== curValue)
         ) {
           this.forceUpdate();
@@ -327,7 +334,8 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
     const { child, isFunction } = this.getOnlyChild(children);
     if (!child) {
-      return children;
+      // Return origin `children` if is not a function
+      return isFunction ? child : children;
     }
 
     // Not need to `cloneElement` since user can handle this in render function self
