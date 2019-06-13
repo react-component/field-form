@@ -38,7 +38,7 @@ export default class Demo extends React.Component {
           <Field dependencies={['username']}>
             {(control, meta, context) => {
               const { username } = context.getFieldsValue();
-              return username === '111' ? <Input {...control} placeholder="I am secret!" /> : null;
+              return username === '111' && <Input {...control} placeholder="I am secret!" />;
             }}
           </Field>
 
