@@ -3,6 +3,7 @@ import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
 import { changeValue, getField } from '../common';
+import timeout from '../common/timeout';
 
 describe('legacy.async-validation', () => {
   let wrapper;
@@ -42,8 +43,24 @@ describe('legacy.async-validation', () => {
   it('works', async () => {
     await changeValue(getField(wrapper, 'async'), '');
     expect(form.getFieldValue('async')).toBe('');
-    expect(form.getFieldError('async').length).toBeFalsy();
+    expect(form.getFieldError('async')).toEqual([]);
     expect(form.isFieldValidating('async')).toBeTruthy();
     expect(form.isFieldsValidating()).toBeTruthy();
+
+    await timeout(200);
+    expect(form.getFieldError('async')).toEqual(['must be 1']);
+    expect(form.isFieldValidating('async')).toBe(false);
+    expect(form.isFieldsValidating()).toBe(false);
+
+    await changeValue(getField(wrapper, 'async'), '1');
+    expect(form.getFieldValue('async')).toBe('1');
+    expect(form.getFieldError('async')).toEqual([]);
+    expect(form.isFieldValidating('async')).toBeTruthy();
+    expect(form.isFieldsValidating()).toBeTruthy();
+
+    await timeout(200);
+    expect(form.getFieldError('async')).toEqual([]);
+    expect(form.isFieldValidating('async')).toBeFalsy();
+    expect(form.isFieldsValidating()).toBeFalsy();
   });
 });

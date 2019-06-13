@@ -411,6 +411,15 @@ export class FormStore {
   ) => {
     const namePathList: InternalNamePath[] | undefined = nameList && nameList.map(getNamePath);
 
+    // Clean up origin errors
+    // namePathList.forEach
+    this.errorCache.updateError(
+      namePathList.map(name => ({
+        name,
+        errors: [],
+      })),
+    );
+
     // Collect result in promise list
     const promiseList: Promise<any>[] = [];
 
