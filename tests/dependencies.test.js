@@ -2,7 +2,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../src';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue, matchError, getField, getInput } from './common';
+import { changeValue, matchError, getField } from './common';
 
 describe('dependencies', () => {
   it('touched', async () => {
@@ -65,7 +65,7 @@ describe('dependencies', () => {
     ]);
 
     rendered = false;
-    await changeValue(getInput(wrapper), '1');
+    await changeValue(getField(wrapper), '1');
 
     expect(rendered).toBeTruthy();
   });

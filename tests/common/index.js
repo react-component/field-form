@@ -1,5 +1,6 @@
 import timeout from './timeout';
 import InfoField, { Input } from './InfoField';
+import { Field } from '../../src';
 
 export async function changeValue(wrapper, value) {
   wrapper.find('input').simulate('change', { target: { value } });
@@ -20,9 +21,16 @@ export function matchError(wrapper, error) {
 }
 
 export function getField(wrapper, index = 0) {
-  return wrapper.find(InfoField).at(index);
-}
+  if (typeof index === 'number') {
+    return wrapper.find(Field).at(index);
+  }
 
-export function getInput(wrapper, index = 0) {
-  return wrapper.find(Input).at(index);
+  const fields = wrapper.find(Field);
+  for (let i = 0; i < fields.length; i += 1) {
+    const field = fields.at(i);
+    if (index === field.props().name) {
+      return field;
+    }
+  }
+  return null;
 }

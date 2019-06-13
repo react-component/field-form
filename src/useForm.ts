@@ -68,6 +68,7 @@ export class FormStore {
     isFieldsTouched: this.isFieldsTouched,
     isFieldTouched: this.isFieldTouched,
     isFieldValidating: this.isFieldValidating,
+    isFieldsValidating: this.isFieldsValidating,
     resetFields: this.resetFields,
     setFields: this.setFields,
     setFieldsValue: this.setFieldsValue,
@@ -185,14 +186,21 @@ export class FormStore {
     return this.isFieldsTouched([name]);
   };
 
-  private isFieldValidating = (name: NamePath) => {
-    const namePath: InternalNamePath = getNamePath(name);
-    const field = this.getFieldEntities().find(testField => {
-      const fieldNamePath = testField.getNamePath();
-      return matchNamePath(fieldNamePath, namePath);
-    });
+  private isFieldsValidating = (nameList?: NamePath[]) => {
+    const fieldEntities = this.getFieldEntities();
+    if (!nameList) {
+      return fieldEntities.some(testField => testField.isFieldValidating());
+    }
 
-    return field && field.isFieldValidating();
+    const namePathList: InternalNamePath[] = nameList.map(getNamePath);
+    return fieldEntities.some(testField => {
+      const fieldNamePath = testField.getNamePath();
+      return containsNamePath(namePathList, fieldNamePath) && testField.isFieldValidating();
+    });
+  };
+
+  private isFieldValidating = (name: NamePath) => {
+    return this.isFieldsValidating([name]);
   };
 
   private resetFields = (nameList?: NamePath[]) => {

@@ -194,3 +194,20 @@ Validate Messages provides a list of error template. You can ref [here](https://
 | name    | Field name          |
 | pattern | Rule `pattern` prop |
 | type    | Rule `type` prop    |
+
+# Different with `rc-form`
+
+`rc-field-form` is try to keep sync with `rc-form` in api level, but there still have something to change:
+
+## 🔥 `getFieldsError` always return array
+
+`rc-form` returns `null` when no error happen.
+This makes user have to do some additional code like:
+
+```js
+(form.getFieldsError('fieldName') || []).forEach(() => {
+  // Do something...
+});
+```
+
+Now `getFieldsError` will return `[]` if no errors.
