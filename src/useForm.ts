@@ -412,13 +412,16 @@ export class FormStore {
     const namePathList: InternalNamePath[] | undefined = nameList && nameList.map(getNamePath);
 
     // Clean up origin errors
-    // namePathList.forEach
-    this.errorCache.updateError(
-      namePathList.map(name => ({
-        name,
-        errors: [],
-      })),
-    );
+    if (namePathList) {
+      this.errorCache.updateError(
+        namePathList.map(name => ({
+          name,
+          errors: [],
+        })),
+      );
+    } else {
+      this.errorCache = new ErrorCache();
+    }
 
     // Collect result in promise list
     const promiseList: Promise<any>[] = [];
@@ -468,8 +471,8 @@ export class FormStore {
 
     const returnPromise = summaryPromise
       .then(() => this.store)
-      .catch((results: any) => {
-        const errorList = results.filter((result: any) => result);
+      .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
+        const errorList = results.filter(result => result);
         return Promise.reject(errorList);
       });
 

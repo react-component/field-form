@@ -63,4 +63,19 @@ describe('legacy.async-validation', () => {
     expect(form.isFieldValidating('async')).toBeFalsy();
     expect(form.isFieldsValidating()).toBeFalsy();
   });
+
+  it('validateFields works for error', async () => {
+    try {
+      await form.validateFields();
+    } catch (errorList) {
+      const values = form.getFieldsValue();
+      expect(values.normal).toEqual(undefined);
+      expect(values.async).toEqual(undefined);
+      expect(errorList.length).toBe(1);
+
+      const entity = errorList[0];
+      expect(entity.name).toEqual(['async']);
+      expect(entity.errors).toEqual(['must be 1']);
+    }
+  });
 });

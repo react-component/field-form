@@ -201,8 +201,7 @@ Validate Messages provides a list of error template. You can ref [here](https://
 
 ## 🔥 `getFieldsError` always return array
 
-`rc-form` returns `null` when no error happen.
-This makes user have to do some additional code like:
+`rc-form` returns `null` when no error happen. This makes user have to do some additional code like:
 
 ```js
 (form.getFieldsError('fieldName') || []).forEach(() => {
@@ -211,3 +210,25 @@ This makes user have to do some additional code like:
 ```
 
 Now `getFieldsError` will return `[]` if no errors.
+
+## 🔥 `validateFields` return a promise instead of `callback` function
+
+Since ES8 is support `async/await`, that's no reason not to use it. Now you can easily handle your validate logic:
+
+```js
+async function() {
+  try {
+    const values = await form.validateFields();
+    console.log(values);
+  } catch (errorList) {
+    errorList.forEach(({ name, errors }) => {
+      // Do something...
+    });
+  }
+}
+```
+
+**Notice:**
+
+- `callback` is removed in `rc-field-form`
+- Now if your validator return an `Error(message)`, not need to get error by `e => e.message`. FieldForm will handle this.
