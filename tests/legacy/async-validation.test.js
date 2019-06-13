@@ -9,16 +9,14 @@ describe('legacy.async-validation', () => {
   let wrapper;
   let form;
 
-  const checkRule = {
-    validator(_, value, callback) {
-      setTimeout(() => {
-        if (value === '1') {
-          callback();
-        } else {
-          callback(new Error('must be 1'));
-        }
-      }, 100);
-    },
+  const checkRule = (_, value, callback) => {
+    setTimeout(() => {
+      if (value === '1') {
+        callback();
+      } else {
+        callback(new Error('must be 1'));
+      }
+    }, 100);
   };
 
   beforeEach(() => {

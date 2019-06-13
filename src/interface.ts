@@ -37,7 +37,14 @@ export type RuleType =
   | 'hex'
   | 'email';
 
-export interface Rule {
+type Validator = (
+  rule: Rule,
+  value: any,
+  callback: (error?: string) => void,
+  context: FormInstance, // TODO: Maybe not good place to export this?
+) => Promise<void> | void;
+
+export interface RuleObject {
   enum?: any[];
   len?: number;
   max?: number;
@@ -47,17 +54,14 @@ export interface Rule {
   required?: boolean;
   transform?: (value: any) => any;
   type?: RuleType;
-  validator?: (
-    rule: Rule,
-    value: any,
-    callback: (error?: string) => void,
-    context: FormInstance, // TODO: Maybe not good place to export this?
-  ) => Promise<void> | void;
+  validator?: Validator;
   whitespace?: boolean;
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
 }
+
+export type Rule = RuleObject | Validator;
 
 export interface FieldEntity {
   onStoreChange: (store: any, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
