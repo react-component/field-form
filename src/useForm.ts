@@ -329,7 +329,7 @@ export class FormStore {
       onValuesChange(changedValues, this.store);
     }
 
-    this.triggerOnFieldsChange([namePath]);
+    this.triggerOnFieldsChange([namePath, ...childrenFields]);
   };
 
   // Let all child Field get update.
