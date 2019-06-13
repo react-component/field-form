@@ -316,6 +316,11 @@ export class FormStore {
     const childrenFields = this.getDependencyChildrenFields(namePath);
     this.validateFields(childrenFields);
 
+    this.notifyObservers(prevStore, childrenFields, {
+      type: 'dependenciesUpdate',
+      relatedFields: [namePath, ...childrenFields],
+    });
+
     // trigger callback function
     const { onValuesChange } = this.callbacks;
 
