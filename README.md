@@ -229,3 +229,7 @@ async function() {
 ```
 
 **Notice: Now if your validator return an `Error(message)`, not need to get error by `e => e.message`. FieldForm will handle this.**
+
+## 🔥 `preserve` is no need anymore
+
+In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed.

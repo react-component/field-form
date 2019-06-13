@@ -406,6 +406,7 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
+  // TODO: Cache validate result to avoid duplicated validate???
   private validateFields: InternalValidateFields = (
     nameList?: NamePath[],
     options?: ValidateOptions,

@@ -65,6 +65,7 @@ describe('legacy.async-validation', () => {
   it('validateFields works for error', async () => {
     try {
       await form.validateFields();
+      throw new Error('should not pass');
     } catch ({ values, errorFields }) {
       expect(values.normal).toEqual(undefined);
       expect(values.async).toEqual(undefined);
