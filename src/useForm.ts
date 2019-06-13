@@ -26,7 +26,6 @@ import {
   containsNamePath,
   getNamePath,
   getValue,
-  matchNamePath,
   setValue,
   setValues,
 } from './utils/valueUtil';
@@ -55,6 +54,8 @@ export class FormStore {
   private callbacks: Callbacks = {};
 
   private validateMessages: ValidateMessages = null;
+
+  private lastValidatePromise: Promise<FieldError[]> = null;
 
   constructor(forceRootUpdate: () => void) {
     this.forceRootUpdate = forceRootUpdate;
@@ -457,6 +458,7 @@ export class FormStore {
     });
 
     const summaryPromise = allPromiseFinish(promiseList);
+    this.lastValidatePromise = summaryPromise;
 
     // Notify fields with rule that validate has finished and need update
     summaryPromise
@@ -470,10 +472,19 @@ export class FormStore {
       });
 
     const returnPromise = summaryPromise
-      .then(() => this.store)
+      .then(() => {
+        if (this.lastValidatePromise === summaryPromise) {
+          return this.store;
+        }
+        return Promise.reject([]);
+      })
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
         const errorList = results.filter(result => result);
-        return Promise.reject(errorList);
+        return Promise.reject({
+          values: this.store,
+          errorFields: errorList,
+          outOfDate: this.lastValidatePromise !== summaryPromise,
+        });
       });
 
     // Do not throw in console

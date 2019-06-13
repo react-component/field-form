@@ -1,4 +1,6 @@
-export function allPromiseFinish(promiseList: Promise<any>[]) {
+import { FieldError } from '../interface';
+
+export function allPromiseFinish(promiseList: Promise<FieldError>[]): Promise<FieldError[]> {
   let hasError = false;
   let count = promiseList.length;
   const results: any[] = [];
