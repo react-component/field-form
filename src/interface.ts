@@ -97,6 +97,15 @@ export type NotifyInfo =
   | {
       type: 'setField';
       data: FieldData;
+    }
+  | {
+      type: 'dependenciesUpdate';
+      /**
+       * Contains all the related `InternalNamePath[]`.
+       * a <- b <- c : change `a`
+       * relatedFields=[a, b, c]
+       */
+      relatedFields: InternalNamePath[];
     };
 
 export interface Callbacks {

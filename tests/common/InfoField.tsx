@@ -6,6 +6,10 @@ interface InfoFieldProps extends FieldProps {
   children: ReactElement;
 }
 
+export const Input = ({ value = '', ...props }) => (
+  <input {...props} value={value} />
+);
+
 /**
  * Return a wrapped Field with meta info
  */
@@ -16,7 +20,7 @@ const InfoField: React.FC<InfoFieldProps> = ({ children, ...props }) => (
         {children ? (
           React.cloneElement(children, control)
         ) : (
-          <input {...control} value={control.value || ''} />
+          <Input {...control} />
         )}
         <ul className="errors">
           {errors.map(error => (

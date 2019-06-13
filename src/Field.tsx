@@ -169,18 +169,28 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         break;
       }
 
+      case 'dependenciesUpdate': {
+        /**
+         * Trigger when marked `dependencies` updated. Related fields will all update
+         */
+        const dependencyList = dependencies.map(getNamePath);
+        if (
+          (namePathList && containsNamePath(namePathList, namePath)) ||
+          dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
+        ) {
+          this.forceUpdate();
+        }
+        break;
+      }
+
       default:
         /**
          * - If `namePath` exists in `namePathList`, means it's related value and should update.
-         * - If `dependencies` exists in `namePathList`, means upstream trigger update.
          * - If `shouldUpdate` provided, use customize logic to update the field
          *   - else to check if value changed
          */
         if (
           (namePathList && containsNamePath(namePathList, namePath)) ||
-          dependencies.some(dependency =>
-            containsNamePath(namePathList, getNamePath(dependency)),
-          ) ||
           (shouldUpdate ? shouldUpdate(prevStore, values, info) : prevValue !== curValue)
         ) {
           this.forceUpdate();
