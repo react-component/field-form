@@ -2,7 +2,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../src';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue, matchError, getField } from './common';
+import { changeValue, matchError, getField, getInput } from './common';
 
 describe('dependencies', () => {
   it('touched', async () => {
@@ -31,8 +31,9 @@ describe('dependencies', () => {
     matchError(getField(wrapper, 1), true);
   });
 
-  it.only('nest dependencies', async () => {
+  it('nest dependencies', async () => {
     let form = null;
+    let rendered = false;
 
     const wrapper = mount(
       <div>
@@ -49,7 +50,7 @@ describe('dependencies', () => {
           </Field>
           <Field name="field_3" dependencies={['field_2']}>
             {control => {
-              console.log('Render!!!!');
+              rendered = true;
               return <Input {...control} />;
             }}
           </Field>
@@ -63,8 +64,9 @@ describe('dependencies', () => {
       { name: 'field_3', touched: true },
     ]);
 
-    console.log('1111111');
-    await changeValue(getField(wrapper), '1');
-    console.log('2222222');
+    rendered = false;
+    await changeValue(getInput(wrapper), '1');
+
+    expect(rendered).toBeTruthy();
   });
 });
