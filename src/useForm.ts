@@ -26,7 +26,6 @@ import {
   containsNamePath,
   getNamePath,
   getValue,
-  matchNamePath,
   setValue,
   setValues,
 } from './utils/valueUtil';
@@ -56,6 +55,8 @@ export class FormStore {
 
   private validateMessages: ValidateMessages = null;
 
+  private lastValidatePromise: Promise<FieldError[]> = null;
+
   constructor(forceRootUpdate: () => void) {
     this.forceRootUpdate = forceRootUpdate;
   }
@@ -68,10 +69,12 @@ export class FormStore {
     isFieldsTouched: this.isFieldsTouched,
     isFieldTouched: this.isFieldTouched,
     isFieldValidating: this.isFieldValidating,
+    isFieldsValidating: this.isFieldsValidating,
     resetFields: this.resetFields,
     setFields: this.setFields,
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
+    // TODO: validateFieldsAndScroll
 
     getInternalHooks: this.getInternalHooks,
   });
@@ -185,14 +188,21 @@ export class FormStore {
     return this.isFieldsTouched([name]);
   };
 
-  private isFieldValidating = (name: NamePath) => {
-    const namePath: InternalNamePath = getNamePath(name);
-    const field = this.getFieldEntities().find(testField => {
-      const fieldNamePath = testField.getNamePath();
-      return matchNamePath(fieldNamePath, namePath);
-    });
+  private isFieldsValidating = (nameList?: NamePath[]) => {
+    const fieldEntities = this.getFieldEntities();
+    if (!nameList) {
+      return fieldEntities.some(testField => testField.isFieldValidating());
+    }
 
-    return field && field.isFieldValidating();
+    const namePathList: InternalNamePath[] = nameList.map(getNamePath);
+    return fieldEntities.some(testField => {
+      const fieldNamePath = testField.getNamePath();
+      return containsNamePath(namePathList, fieldNamePath) && testField.isFieldValidating();
+    });
+  };
+
+  private isFieldValidating = (name: NamePath) => {
+    return this.isFieldsValidating([name]);
   };
 
   private resetFields = (nameList?: NamePath[]) => {
@@ -397,11 +407,24 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
+  // TODO: Cache validate result to avoid duplicated validate???
   private validateFields: InternalValidateFields = (
     nameList?: NamePath[],
     options?: ValidateOptions,
   ) => {
     const namePathList: InternalNamePath[] | undefined = nameList && nameList.map(getNamePath);
+
+    // Clean up origin errors
+    if (namePathList) {
+      this.errorCache.updateError(
+        namePathList.map(name => ({
+          name,
+          errors: [],
+        })),
+      );
+    } else {
+      this.errorCache = new ErrorCache();
+    }
 
     // Collect result in promise list
     const promiseList: Promise<any>[] = [];
@@ -437,6 +460,7 @@ export class FormStore {
     });
 
     const summaryPromise = allPromiseFinish(promiseList);
+    this.lastValidatePromise = summaryPromise;
 
     // Notify fields with rule that validate has finished and need update
     summaryPromise
@@ -450,10 +474,19 @@ export class FormStore {
       });
 
     const returnPromise = summaryPromise
-      .then(() => this.store)
-      .catch((results: any) => {
-        const errorList = results.filter((result: any) => result);
-        return Promise.reject(errorList);
+      .then(() => {
+        if (this.lastValidatePromise === summaryPromise) {
+          return this.store;
+        }
+        return Promise.reject([]);
+      })
+      .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
+        const errorList = results.filter(result => result);
+        return Promise.reject({
+          values: this.store,
+          errorFields: errorList,
+          outOfDate: this.lastValidatePromise !== summaryPromise,
+        });
       });
 
     // Do not throw in console

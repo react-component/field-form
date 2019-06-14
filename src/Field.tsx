@@ -214,7 +214,12 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
     let filteredRules = rules || [];
     if (triggerName) {
-      filteredRules = filteredRules.filter(({ validateTrigger }: Rule) => {
+      filteredRules = filteredRules.filter((rule: Rule) => {
+        if (typeof rule === 'function') {
+          return true;
+        }
+
+        const { validateTrigger } = rule;
         if (!validateTrigger) {
           return true;
         }

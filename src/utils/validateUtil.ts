@@ -28,11 +28,16 @@ function replaceMessage(template: string, kv: { [name: string]: any }): string {
  * { required: '${name} is required' } => { required: () => 'field is required' }
  */
 function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
-  const kv: { [name: string]: any } = {
-    ...rule,
-    name,
-    enum: (rule.enum || []).join(', '),
-  };
+  const kv: { [name: string]: any } =
+    typeof rule === 'function'
+      ? {
+          name,
+        }
+      : {
+          ...rule,
+          name,
+          enum: (rule.enum || []).join(', '),
+        };
 
   const replaceFunc = (template: string, additionalKV?: Record<string, any>) => {
     if (!template) return null;
@@ -101,7 +106,10 @@ export function validateRules(
 
   // Fill rule with context
   const filledRules: Rule[] = rules.map(currentRule => {
-    if (!currentRule.validator) {
+    const originValidatorFunc =
+      typeof currentRule === 'function' ? currentRule : currentRule.validator;
+
+    if (!originValidatorFunc) {
       return currentRule;
     }
     return {
@@ -125,7 +133,7 @@ export function validateRules(
         };
 
         // Get promise
-        const promise = currentRule.validator(rule, val, wrappedCallback, context);
+        const promise = originValidatorFunc(rule, val, wrappedCallback, context);
         hasPromise =
           promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
 

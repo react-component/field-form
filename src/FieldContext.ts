@@ -15,6 +15,7 @@ const Context = React.createContext<InternalFormInstance>({
   isFieldsTouched: warningFunc,
   isFieldTouched: warningFunc,
   isFieldValidating: warningFunc,
+  isFieldsValidating: warningFunc,
   resetFields: warningFunc,
   setFields: warningFunc,
   setFieldsValue: warningFunc,

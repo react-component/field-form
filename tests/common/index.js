@@ -1,5 +1,6 @@
 import timeout from './timeout';
-import InfoField, { Input } from './InfoField';
+import { Field } from '../../src';
+import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 
 export async function changeValue(wrapper, value) {
   wrapper.find('input').simulate('change', { target: { value } });
@@ -20,9 +21,42 @@ export function matchError(wrapper, error) {
 }
 
 export function getField(wrapper, index = 0) {
-  return wrapper.find(InfoField).at(index);
+  if (typeof index === 'number') {
+    return wrapper.find(Field).at(index);
+  }
+
+  const name = getNamePath(index);
+  const fields = wrapper.find(Field);
+  for (let i = 0; i < fields.length; i += 1) {
+    const field = fields.at(i);
+    const fieldName = getNamePath(field.props().name);
+
+    if (matchNamePath(name, fieldName)) {
+      return field;
+    }
+  }
+  return null;
 }
 
-export function getInput(wrapper, index = 0) {
-  return wrapper.find(Input).at(index);
+export function matchArray(source, target, matchKey) {
+  expect(matchKey).toBeTruthy();
+
+  try {
+    expect(source.length).toBe(target.length);
+  } catch (err) {
+    throw new Error(
+      `
+Array length not match.
+source(${source.length}): ${JSON.stringify(source)}
+target(${target.length}): ${JSON.stringify(target)}
+`.trim(),
+    );
+  }
+
+  target.forEach(tgt => {
+    const matchValue = tgt[matchKey];
+    const src = source.find(item => matchNamePath(item[matchKey], matchValue));
+    expect(src).toBeTruthy();
+    expect(src).toMatchObject(tgt);
+  });
 }
