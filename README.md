@@ -233,3 +233,11 @@ async function() {
 ## 🔥 `preserve` is no need anymore
 
 In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed.
+
+## 🔥 `setFields` not trigger `onFieldsChange` anymore
+
+User control update will not trigger `onFieldsChange` event since it will case potential dead loop.
+
+## 🔥 `setFieldsValue` not trigger `onValuesChange` anymore
+
+User control update will not trigger `onValuesChange` event since it will case potential dead loop.

@@ -74,6 +74,7 @@ export class FormStore {
     setFields: this.setFields,
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
+    // TODO: validateFieldsAndScroll
 
     getInternalHooks: this.getInternalHooks,
   });
