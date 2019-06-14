@@ -95,7 +95,6 @@ export function validateRules(
   value: any,
   rules: RuleObject[],
   options: ValidateOptions,
-  context: FormInstance,
 ) {
   const name = namePath.join('.');
 
@@ -127,7 +126,7 @@ export function validateRules(
         };
 
         // Get promise
-        const promise = originValidatorFunc(rule, val, wrappedCallback, context);
+        const promise = originValidatorFunc(rule, val, wrappedCallback);
         hasPromise =
           promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
 

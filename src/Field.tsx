@@ -237,7 +237,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
       });
     }
 
-    const promise = validateRules(namePath, this.getValue(), filteredRules, options, this.context);
+    const promise = validateRules(namePath, this.getValue(), filteredRules, options);
     this.validatePromise = promise;
 
     promise

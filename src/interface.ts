@@ -41,7 +41,6 @@ type Validator = (
   rule: Rule,
   value: any,
   callback: (error?: string) => void,
-  context: FormInstance, // TODO: Maybe not good place to export this?
 ) => Promise<void> | void;
 
 export type RuleRender = (form: FormInstance) => RuleObject;

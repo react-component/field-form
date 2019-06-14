@@ -66,4 +66,10 @@ target(${target.length}): ${JSON.stringify(target)}
   });
 }
 
+export async function validateFields(form, ...args) {
+  await act(async () => {
+    await form.validateFields(...args);
+  });
+}
+
 /* eslint-enable import/no-extraneous-dependencies */
