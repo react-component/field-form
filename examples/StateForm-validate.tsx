@@ -7,7 +7,11 @@ import Input from './components/Input';
 const { Field } = StateForm;
 
 const Error = ({ children }) => (
-  <ul style={{ color: 'red' }}>{children.map((error) => <li>{error}</li>)}</ul>
+  <ul style={{ color: 'red' }}>
+    {children.map(error => (
+      <li>{error}</li>
+    ))}
+  </ul>
 );
 
 const FieldState = ({ form, name }) => {
@@ -23,7 +27,7 @@ const FieldState = ({ form, name }) => {
 };
 
 export default class Demo extends React.Component {
-  onFinish = (values) => {
+  onFinish = values => {
     console.log('Finish:', values);
   };
 
@@ -43,7 +47,7 @@ export default class Demo extends React.Component {
 
             return (
               <React.Fragment>
-                <Field name="username" rules={[ { required: true } ]}>
+                <Field name="username" rules={[{ required: true }]}>
                   <Input
                     placeholder="Username"
                     onChange={({ target: { value } }) => {
@@ -58,16 +62,16 @@ export default class Demo extends React.Component {
                   name="password"
                   rules={[
                     { required: true },
-                    {
-                      validator(_, __, callback, context) {
+                    context => ({
+                      validator(_, __, callback) {
                         if (context.isFieldTouched('password2')) {
-                          context.validateFields([ 'password2' ]);
+                          context.validateFields(['password2']);
                           callback();
                           return;
                         }
                         callback();
                       },
-                    },
+                    }),
                   ]}
                 >
                   <Input placeholder="Password" />
@@ -79,15 +83,15 @@ export default class Demo extends React.Component {
                   name="password2"
                   rules={[
                     { required: true },
-                    {
-                      validator(rule, value, callback, context) {
+                    context => ({
+                      validator(rule, value, callback) {
                         const { password } = context.getFieldsValue();
                         if (password !== value) {
                           callback('Not Same as password1!!!');
                         }
                         callback();
                       },
-                    },
+                    }),
                   ]}
                 >
                   <Input placeholder="Password 2" />
@@ -95,7 +99,7 @@ export default class Demo extends React.Component {
                 <FieldState form={form} name="password2" />
                 <Error>{password2Error}</Error>
 
-                <Field name="renderProps" rules={[ { required: true } ]}>
+                <Field name="renderProps" rules={[{ required: true }]}>
                   {(control, meta) => {
                     return (
                       <div>
@@ -110,7 +114,7 @@ export default class Demo extends React.Component {
 
                 <Field
                   name="validateTrigger"
-                  validateTrigger={[ 'onSubmit', 'onChange' ]}
+                  validateTrigger={['onSubmit', 'onChange']}
                   rules={[
                     { required: true, validateTrigger: 'onSubmit' },
                     {
