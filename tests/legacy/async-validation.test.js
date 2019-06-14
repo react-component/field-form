@@ -30,7 +30,7 @@ describe('legacy.async-validation', () => {
           <Field name="normal">
             <Input />
           </Field>
-          <Field name="async" rules={[checkRule]}>
+          <Field name="async" rules={[{ validator: checkRule }]}>
             <Input />
           </Field>
         </Form>

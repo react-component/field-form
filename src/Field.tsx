@@ -11,6 +11,7 @@ import {
   Store,
   ValidateOptions,
   InternalFormInstance,
+  RuleObject,
 } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
@@ -102,6 +103,19 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     const { prefixName = [] }: InternalFormInstance = this.context;
 
     return [...prefixName, ...getNamePath(name)];
+  };
+
+  public getRules = (): RuleObject[] => {
+    const { rules = [] } = this.props;
+
+    return rules.map(
+      (rule: Rule): RuleObject => {
+        if (typeof rule === 'function') {
+          return rule(this.context);
+        }
+        return rule;
+      },
+    );
   };
 
   public refresh = () => {
@@ -208,17 +222,12 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   public validateRules = (options?: ValidateOptions) => {
-    const { rules } = this.props;
     const { triggerName } = (options || {}) as ValidateOptions;
     const namePath = this.getNamePath();
 
-    let filteredRules = rules || [];
+    let filteredRules = this.getRules();
     if (triggerName) {
-      filteredRules = filteredRules.filter((rule: Rule) => {
-        if (typeof rule === 'function') {
-          return true;
-        }
-
+      filteredRules = filteredRules.filter((rule: RuleObject) => {
         const { validateTrigger } = rule;
         if (!validateTrigger) {
           return true;

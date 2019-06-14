@@ -44,6 +44,8 @@ type Validator = (
   context: FormInstance, // TODO: Maybe not good place to export this?
 ) => Promise<void> | void;
 
+export type RuleRender = (form: FormInstance) => RuleObject;
+
 export interface RuleObject {
   enum?: any[];
   len?: number;
@@ -61,7 +63,7 @@ export interface RuleObject {
   validateTrigger?: string | string[];
 }
 
-export type Rule = RuleObject | Validator;
+export type Rule = RuleObject | RuleRender;
 
 export interface FieldEntity {
   onStoreChange: (store: any, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;

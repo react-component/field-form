@@ -481,7 +481,7 @@ export class FormStore {
         return Promise.reject([]);
       })
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
-        const errorList = results.filter(result => result);
+        const errorList = results.filter(result => result && result.errors.length);
         return Promise.reject({
           values: this.store,
           errorFields: errorList,

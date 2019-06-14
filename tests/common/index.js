@@ -1,10 +1,15 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
+import { act } from 'react-dom/test-utils';
 import timeout from './timeout';
 import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 
 export async function changeValue(wrapper, value) {
   wrapper.find('input').simulate('change', { target: { value } });
-  await timeout();
+  await act(async () => {
+    await timeout();
+  });
   wrapper.update();
 }
 
@@ -60,3 +65,5 @@ target(${target.length}): ${JSON.stringify(target)}
     expect(src).toMatchObject(tgt);
   });
 }
+
+/* eslint-enable import/no-extraneous-dependencies */

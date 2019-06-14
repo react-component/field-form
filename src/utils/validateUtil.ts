@@ -3,10 +3,10 @@ import * as warning from 'warning';
 import {
   FieldError,
   InternalNamePath,
-  Rule,
   ValidateOptions,
   FormInstance,
   ValidateMessages,
+  RuleObject,
 } from '../interface';
 import NameMap from './NameMap';
 import { containsNamePath, getNamePath, setValues } from './valueUtil';
@@ -27,17 +27,12 @@ function replaceMessage(template: string, kv: { [name: string]: any }): string {
  * We use `async-validator` to validate rules. So have to hot replace the message with validator.
  * { required: '${name} is required' } => { required: () => 'field is required' }
  */
-function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
-  const kv: { [name: string]: any } =
-    typeof rule === 'function'
-      ? {
-          name,
-        }
-      : {
-          ...rule,
-          name,
-          enum: (rule.enum || []).join(', '),
-        };
+function convertMessages(messages: ValidateMessages, name: string, rule: RuleObject) {
+  const kv: { [name: string]: any } = {
+    ...rule,
+    name,
+    enum: (rule.enum || []).join(', '),
+  };
 
   const replaceFunc = (template: string, additionalKV?: Record<string, any>) => {
     if (!template) return null;
@@ -70,7 +65,7 @@ function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
 async function validateRule(
   name: string,
   value: any,
-  rule: Rule,
+  rule: RuleObject,
   options: ValidateOptions,
 ): Promise<string[]> {
   const validator = new AsyncValidator({
@@ -98,16 +93,15 @@ async function validateRule(
 export function validateRules(
   namePath: InternalNamePath,
   value: any,
-  rules: Rule[],
+  rules: RuleObject[],
   options: ValidateOptions,
   context: FormInstance,
 ) {
   const name = namePath.join('.');
 
   // Fill rule with context
-  const filledRules: Rule[] = rules.map(currentRule => {
-    const originValidatorFunc =
-      typeof currentRule === 'function' ? currentRule : currentRule.validator;
+  const filledRules: RuleObject[] = rules.map(currentRule => {
+    const originValidatorFunc = currentRule.validator;
 
     if (!originValidatorFunc) {
       return currentRule;
