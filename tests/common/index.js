@@ -1,5 +1,4 @@
 import timeout from './timeout';
-import InfoField, { Input } from './InfoField';
 import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 

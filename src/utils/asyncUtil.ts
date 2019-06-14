@@ -5,6 +5,10 @@ export function allPromiseFinish(promiseList: Promise<FieldError>[]): Promise<Fi
   let count = promiseList.length;
   const results: any[] = [];
 
+  if (!promiseList.length) {
+    return Promise.resolve([]);
+  }
+
   return new Promise((resolve, reject) => {
     promiseList.forEach((promise, index) => {
       promise

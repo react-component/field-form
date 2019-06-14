@@ -199,6 +199,16 @@ Validate Messages provides a list of error template. You can ref [here](https://
 
 `rc-field-form` is try to keep sync with `rc-form` in api level, but there still have something to change:
 
+## 🔥 Remove Field will not clean up related value
+
+We do lots of logic to clean up the value when Field removed before. But with user feedback, remove exist value increase the additional work to keep value back with conditional field.
+
+## 🔥 Nest name use array instead of string
+
+In `rc-form`, we support like `user.name` to be a name and convert value to `{ user: { name: 'Bamboo' } }`. This makes '.' always be the route of variable, this makes developer have to do additional work if name is real contains a point like `app.config.start` to be `app_config_start` and parse back to point when submit.
+
+Field Form will only trade `['user', 'name']` to be `{ user: { name: 'Bamboo' } }`, and `user.name` to be `{ ['user.name']: 'Bamboo' }`.
+
 ## 🔥 `getFieldsError` always return array
 
 `rc-form` returns `null` when no error happen. This makes user have to do some additional code like:
@@ -234,10 +244,8 @@ async function() {
 
 In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed.
 
-## 🔥 `setFields` not trigger `onFieldsChange` anymore
+## 🔥 `setFields` not trigger `onFieldsChange` and `setFieldsValue` not trigger `onValuesChange`
 
-User control update will not trigger `onFieldsChange` event since it will case potential dead loop.
+In `rc-form`, we hope to help user auto trigger change event by setting to make redux dispatch easier, but it's not good design since it makes code logic couping.
 
-## 🔥 `setFieldsValue` not trigger `onValuesChange` anymore
-
-User control update will not trigger `onValuesChange` event since it will case potential dead loop.
+Additionally, user control update trigger `onFieldsChange` & `onValuesChange` event has potential dead loop risk.

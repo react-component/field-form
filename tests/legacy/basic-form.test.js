@@ -101,7 +101,7 @@ describe('legacy.basic-form', () => {
       let form;
       const onValuesChange = jest.fn();
 
-      const wrapper = mount(
+      mount(
         <div>
           <Form
             ref={instance => {
