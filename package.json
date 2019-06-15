@@ -29,7 +29,7 @@
   "scripts": {
     "start": "father doc dev --storybook",
     "build": "father doc build --storybook",
-    "compile": "rc-tools run compile --babel-runtime",
+    "compile": "father build",
     "gh-pages": "rc-tools run gh-pages",
     "pub": "rc-tools run pub --babel-runtime",
     "lint": "eslint src/**/*",

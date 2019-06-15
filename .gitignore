@@ -2,4 +2,6 @@
 .doc
 node_modules
 coverage/
+es/
+lib/
 ~*
