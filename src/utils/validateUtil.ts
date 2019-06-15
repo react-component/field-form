@@ -1,5 +1,5 @@
 import AsyncValidator from 'async-validator';
-import * as warning from 'warning';
+import warning from 'warning';
 import {
   FieldError,
   InternalNamePath,

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as warning from 'warning';
+import warning from 'warning';
 import {
   Callbacks,
   FieldData,
