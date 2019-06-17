@@ -1,8 +1,9 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import Form from '../src';
-import InfoField from './common/InfoField';
-import { changeValue, matchError } from './common';
+import Form, { Field } from '../src';
+import InfoField, { Input } from './common/InfoField';
+import { changeValue, matchError, getField } from './common';
+import timeout from './common/timeout';
 
 describe('validate', () => {
   it('required', async () => {
@@ -141,6 +142,44 @@ describe('validate', () => {
       );
 
       errorSpy.mockRestore();
+    });
+  });
+
+  describe('validateTrigger', () => {
+    it('normal', async () => {
+      let form;
+      const wrapper = mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+          >
+            <InfoField
+              name="test"
+              validateTrigger={['onBlur', 'onChange']}
+              rules={[
+                { required: true, validateTrigger: 'onBlur' },
+                {
+                  validator: async () => {
+                    throw new Error('Not pass');
+                  },
+                  validateTrigger: 'onChange',
+                },
+              ]}
+            >
+              <Input />
+            </InfoField>
+          </Form>
+        </div>,
+      );
+
+      await changeValue(getField(wrapper, 'test'), '');
+      expect(form.getFieldError('test')).toEqual(['Not pass']);
+
+      wrapper.find('input').simulate('blur');
+      await timeout();
+      expect(form.getFieldError('test')).toEqual(["'test' is required"]);
     });
   });
 });

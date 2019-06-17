@@ -31,4 +31,10 @@ describe('legacy.form', () => {
 
     expect(form.getFieldValue('normal')).toBe('2');
   });
+
+  // [Legacy] Seems useless
+  it('can reset hidden fields', () => {});
+
+  // [Legacy] Should move to Ant Design
+  it('form name', () => {});
 });
