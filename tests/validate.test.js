@@ -1,6 +1,7 @@
+/* eslint-disable no-template-curly-in-string */
 import React from 'react';
 import { mount } from 'enzyme';
-import Form, { Field } from '../src';
+import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
@@ -50,7 +51,7 @@ describe('validate', () => {
             {
               async validator(_, value) {
                 if (value !== 'bamboo') {
-                  return Promise.reject('should be bamboo!');
+                  return Promise.reject(new Error('should be bamboo!'));
                 }
                 return '';
               },
@@ -183,3 +184,4 @@ describe('validate', () => {
     });
   });
 });
+/* eslint-enable no-template-curly-in-string */
