@@ -1,12 +1,12 @@
 import AsyncValidator from 'async-validator';
-import * as warning from 'warning';
+import * as React from 'react';
+import warning from 'warning';
 import {
   FieldError,
   InternalNamePath,
-  Rule,
   ValidateOptions,
-  FormInstance,
   ValidateMessages,
+  RuleObject,
 } from '../interface';
 import NameMap from './NameMap';
 import { containsNamePath, getNamePath, setValues } from './valueUtil';
@@ -17,7 +17,7 @@ import { defaultValidateMessages } from './messages';
  *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
  */
 function replaceMessage(template: string, kv: { [name: string]: any }): string {
-  return template.replace(/\$\{\w+\}/g, function(str: string) {
+  return template.replace(/\$\{\w+\}/g, (str: string) => {
     const key = str.slice(2, -1);
     return kv[key];
   });
@@ -27,23 +27,16 @@ function replaceMessage(template: string, kv: { [name: string]: any }): string {
  * We use `async-validator` to validate rules. So have to hot replace the message with validator.
  * { required: '${name} is required' } => { required: () => 'field is required' }
  */
-function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
-  const kv: { [name: string]: any } =
-    typeof rule === 'function'
-      ? {
-          name,
-        }
-      : {
-          ...rule,
-          name,
-          enum: (rule.enum || []).join(', '),
-        };
+function convertMessages(messages: ValidateMessages, name: string, rule: RuleObject) {
+  const kv: { [name: string]: any } = {
+    ...rule,
+    name,
+    enum: (rule.enum || []).join(', '),
+  };
 
   const replaceFunc = (template: string, additionalKV?: Record<string, any>) => {
     if (!template) return null;
-    return () => {
-      return replaceMessage(template, { ...kv, ...additionalKV });
-    };
+    return () => replaceMessage(template, { ...kv, ...additionalKV });
   };
 
   /* eslint-disable no-param-reassign */
@@ -70,25 +63,52 @@ function convertMessages(messages: ValidateMessages, name: string, rule: Rule) {
 async function validateRule(
   name: string,
   value: any,
-  rule: Rule,
+  rule: RuleObject,
   options: ValidateOptions,
 ): Promise<string[]> {
+  const cloneRule = { ...rule };
+  // We should special handle array validate
+  let subRuleField: RuleObject = null;
+  if (cloneRule && cloneRule.type === 'array' && cloneRule.defaultField) {
+    subRuleField = cloneRule.defaultField;
+    delete cloneRule.defaultField;
+  }
+
   const validator = new AsyncValidator({
-    [name]: [rule],
+    [name]: [cloneRule],
   });
 
-  const messages = convertMessages(options.validateMessages, name, rule);
+  const messages = convertMessages(options.validateMessages, name, cloneRule);
   validator.messages(messages);
+
+  let result = [];
 
   try {
     await Promise.resolve(validator.validate({ [name]: value }, { ...options }));
-    return [];
   } catch (errObj) {
     if (errObj.errors) {
-      return errObj.errors.map(e => e.message);
+      result = errObj.errors.map(({ message }, index) =>
+        // Wrap ReactNode with `key`
+        (React.isValidElement(message)
+          ? React.cloneElement(message, { key: `error_${index}` })
+          : message),
+      );
+    } else {
+      result = [messages.default()];
     }
-    return messages.default();
   }
+
+  if (!result.length && subRuleField) {
+    const subResults: string[][] = await Promise.all(
+      value.map((subValue: any, i: number) =>
+        validateRule(`${name}.${i}`, subValue, subRuleField, options),
+      ),
+    );
+
+    return subResults.reduce((prev, errors) => [...prev, ...errors], []);
+  }
+
+  return result;
 }
 
 /**
@@ -98,16 +118,14 @@ async function validateRule(
 export function validateRules(
   namePath: InternalNamePath,
   value: any,
-  rules: Rule[],
+  rules: RuleObject[],
   options: ValidateOptions,
-  context: FormInstance,
 ) {
   const name = namePath.join('.');
 
   // Fill rule with context
-  const filledRules: Rule[] = rules.map(currentRule => {
-    const originValidatorFunc =
-      typeof currentRule === 'function' ? currentRule : currentRule.validator;
+  const filledRules: RuleObject[] = rules.map(currentRule => {
+    const originValidatorFunc = currentRule.validator;
 
     if (!originValidatorFunc) {
       return currentRule;
@@ -133,7 +151,7 @@ export function validateRules(
         };
 
         // Get promise
-        const promise = originValidatorFunc(rule, val, wrappedCallback, context);
+        const promise = originValidatorFunc(rule, val, wrappedCallback);
         hasPromise =
           promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
 

@@ -46,9 +46,9 @@
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
-    "father": "^2.7.2",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
+    "father": "^2.8.0",
+    "react": "^v16.9.0-alpha.0",
+    "react-dom": "^v16.9.0-alpha.0",
     "react-redux": "^4.4.10",
     "react-router": "^3.0.0",
     "redux": "^3.7.2"

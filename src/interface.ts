@@ -29,7 +29,6 @@ export type RuleType =
   | 'regexp'
   | 'integer'
   | 'float'
-  | 'array'
   | 'object'
   | 'enum'
   | 'date'
@@ -41,10 +40,11 @@ type Validator = (
   rule: Rule,
   value: any,
   callback: (error?: string) => void,
-  context: FormInstance, // TODO: Maybe not good place to export this?
 ) => Promise<void> | void;
 
-export interface RuleObject {
+export type RuleRender = (form: FormInstance) => RuleObject;
+
+interface BaseRule {
   enum?: any[];
   len?: number;
   max?: number;
@@ -61,7 +61,14 @@ export interface RuleObject {
   validateTrigger?: string | string[];
 }
 
-export type Rule = RuleObject | Validator;
+interface ArrayRule extends Omit<BaseRule, 'type'> {
+  type: 'array';
+  defaultField?: RuleObject;
+}
+
+export type RuleObject = BaseRule | ArrayRule;
+
+export type Rule = RuleObject | RuleRender;
 
 export interface FieldEntity {
   onStoreChange: (store: any, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
@@ -121,7 +128,7 @@ export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
-  setInitialValues: (values: Store) => void;
+  setInitialValues: (values: Store, init: boolean) => void;
   setCallbacks: (callbacks: Callbacks) => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;

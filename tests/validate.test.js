@@ -1,8 +1,10 @@
+/* eslint-disable no-template-curly-in-string */
 import React from 'react';
 import { mount } from 'enzyme';
-import Form from '../src';
-import InfoField from './common/InfoField';
-import { changeValue, matchError } from './common';
+import Form, { Field } from '../src';
+import InfoField, { Input } from './common/InfoField';
+import { changeValue, matchError, getField } from './common';
+import timeout from './common/timeout';
 
 describe('validate', () => {
   it('required', async () => {
@@ -49,7 +51,7 @@ describe('validate', () => {
             {
               async validator(_, value) {
                 if (value !== 'bamboo') {
-                  return Promise.reject('should be bamboo!');
+                  return Promise.reject(new Error('should be bamboo!'));
                 }
                 return '';
               },
@@ -143,4 +145,77 @@ describe('validate', () => {
       errorSpy.mockRestore();
     });
   });
+
+  describe('validateTrigger', () => {
+    it('normal', async () => {
+      let form;
+      const wrapper = mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+          >
+            <InfoField
+              name="test"
+              validateTrigger={['onBlur', 'onChange']}
+              rules={[
+                { required: true, validateTrigger: 'onBlur' },
+                {
+                  validator: async () => {
+                    throw new Error('Not pass');
+                  },
+                  validateTrigger: 'onChange',
+                },
+              ]}
+            >
+              <Input />
+            </InfoField>
+          </Form>
+        </div>,
+      );
+
+      await changeValue(getField(wrapper, 'test'), '');
+      expect(form.getFieldError('test')).toEqual(['Not pass']);
+
+      wrapper.find('input').simulate('blur');
+      await timeout();
+      expect(form.getFieldError('test')).toEqual(["'test' is required"]);
+    });
+  });
+
+  it('change validateTrigger', async () => {
+    let form;
+
+    const Test = ({ init = false }) => (
+      <Form
+        ref={instance => {
+          form = instance;
+        }}
+      >
+        <Field
+          name="title"
+          validateTrigger={init ? 'onChange' : 'onBlur'}
+          rules={[
+            { required: true, message: 'Title is required' },
+            { min: 3, message: 'Title should be 3+ characters' },
+          ]}
+        >
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    const wrapper = mount(<Test />);
+
+    getField(wrapper).simulate('blur');
+    await timeout();
+    expect(form.getFieldError('title')).toEqual(['Title is required']);
+
+    wrapper.setProps({ init: true });
+    await changeValue(getField(wrapper), '1');
+    expect(form.getFieldValue('title')).toBe('1');
+    expect(form.getFieldError('title')).toEqual(['Title should be 3+ characters']);
+  });
 });
+/* eslint-enable no-template-curly-in-string */

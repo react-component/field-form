@@ -1,9 +1,11 @@
-const base = require('father/template/.eslintrc.js');
+const base = require('@umijs/fabric/dist/eslint');
 
-base.rules['no-template-curly-in-string'] = 0;
-base.rules['promise/always-return'] = 0;
-base.rules['promise/catch-or-return'] = 0;
-base.rules['promise/no-callback-in-promise'] = 0;
-base.rules['prefer-promise-reject-errors'] = 0;
-
-module.exports = base;
+module.exports = {
+  ...base,
+  rules: {
+    ...base.rules,
+    'no-template-curly-in-string': 0,
+    'prefer-promise-reject-errors': 0,
+    'react/no-array-index-key': 0,
+  },
+};

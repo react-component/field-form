@@ -16,10 +16,10 @@ export default class Demo extends React.Component {
         <h3>Render Props ({list.length} inputs)</h3>
         <p>Render Props is easy to use but bad performance</p>
         <StateForm>
-          {(store) => {
+          {(values) => {
             return (
               <React.Fragment>
-                {JSON.stringify(store, null, 2)}
+                {JSON.stringify(values, null, 2)}
                 <Field name="field_1">
                   <Input placeholder="Field 1" />
                 </Field>
@@ -31,7 +31,7 @@ export default class Demo extends React.Component {
                 </Field>
 
                 <h4>Show additional field when field 1 is `222`</h4>
-                {store.field_1 === '222' ? (
+                {values.field_1 === '222' ? (
                   <Field name="secret">
                     <Input placeholder="Field Secret!" />
                   </Field>

@@ -17,8 +17,8 @@ const InfoField: React.FC<InfoFieldProps> = ({ children, ...props }) => (
       <div>
         {children ? React.cloneElement(children, control) : <Input {...control} />}
         <ul className="errors">
-          {errors.map(error => (
-            <li key={error}>{error}</li>
+          {errors.map((error, index) => (
+            <li key={index}>{error}</li>
           ))}
         </ul>
       </div>
