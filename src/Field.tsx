@@ -32,21 +32,22 @@ interface ChildProps {
 }
 
 export interface FieldProps {
-  name?: NamePath;
   children?:
     | React.ReactElement
     | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
-  getValueFromEvent?: (...args: any[]) => any;
-  rules?: Rule[];
   /**
    * Set up `dependencies` field.
    * When dependencies field update and current field is touched,
    * will trigger validate rules and render.
    */
   dependencies?: NamePath[];
+  getValueFromEvent?: (...args: any[]) => any;
+  name?: NamePath;
+  normalize?: (value: any, prevValue: any, allValues: any) => any;
+  rules?: Rule[];
+  shouldUpdate?: (prevValues: any, nextValues: any, info: { source?: string }) => boolean;
   trigger?: string;
   validateTrigger?: string | string[];
-  shouldUpdate?: (prevValues: any, nextValues: any, info: { source?: string }) => boolean;
 }
 
 export interface FieldState {
@@ -302,9 +303,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
-    const { trigger, validateTrigger, getValueFromEvent } = this.props;
+    const { trigger, validateTrigger, getValueFromEvent, normalize } = this.props;
     const namePath = this.getNamePath();
-    const { getInternalHooks, validateFields }: InternalFormInstance = this.context;
+    const { getInternalHooks, validateFields, getFieldsValue }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
 
@@ -317,7 +318,12 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
     // Add trigger
     control[trigger] = (...args: any[]) => {
-      const newValue = (getValueFromEvent || defaultGetValueFromEvent)(...args);
+      let newValue = (getValueFromEvent || defaultGetValueFromEvent)(...args);
+
+      if (normalize) {
+        newValue = normalize(newValue, value, getFieldsValue());
+      }
+
       dispatch({
         type: 'updateValue',
         namePath,

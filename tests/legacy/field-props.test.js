@@ -62,4 +62,30 @@ describe('legacy.field-props', () => {
     await changeValue(getField(wrapper), '2');
     expect(form.getFieldValue('normal')).toBe('21');
   });
+
+  it('normalize', async () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <Field name="normal" normalize={v => v && v.toUpperCase()}>
+            <Input />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    await changeValue(getField(wrapper), 'a');
+
+    expect(form.getFieldValue('normal')).toBe('A');
+    expect(
+      getField(wrapper)
+        .find('input')
+        .props().value,
+    ).toBe('A');
+  });
 });
