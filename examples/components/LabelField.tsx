@@ -6,8 +6,8 @@ const { Field } = StateForm;
 
 const Error = ({ children }) => (
   <ul style={{ color: 'red' }}>
-    {children.map((error: string) => (
-      <li key={error}>{error}</li>
+    {children.map((error: React.ReactNode, index: number) => (
+      <li key={index}>{error}</li>
     ))}
   </ul>
 );

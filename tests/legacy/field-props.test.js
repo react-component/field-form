@@ -3,7 +3,6 @@ import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
 import { changeValue, getField, matchArray } from '../common';
-import timeout from '../common/timeout';
 
 describe('legacy.field-props', () => {
   // https://github.com/ant-design/ant-design/issues/8985
@@ -28,7 +27,7 @@ describe('legacy.field-props', () => {
     );
 
     try {
-      const values = await form.validateFields();
+      await form.validateFields();
       throw new Error('Should not pass!');
     } catch ({ errorFields }) {
       matchArray(
@@ -87,5 +86,26 @@ describe('legacy.field-props', () => {
         .find('input')
         .props().value,
     ).toBe('A');
+  });
+
+  it('support jsx message', async () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <Field name="required" rules={[{ required: true, message: <b>1</b> }]}>
+            <Input />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    await changeValue(getField(wrapper), '');
+    expect(form.getFieldError('required').length).toBe(1);
+    expect(form.getFieldError('required')[0].type).toBe('b');
   });
 });

@@ -49,14 +49,14 @@ export default class Demo extends React.Component {
             dependencies={['password']}
             rules={[
               { required: true },
-              {
-                async validator(_, value, __, { getFieldValue }) {
+              ({ getFieldValue }) => ({
+                async validator(_, value) {
                   if (getFieldValue('password') !== value) {
                     return Promise.reject('password2 is not same as password');
                   }
                   return Promise.resolve();
                 },
-              },
+              }),
             ]}
           >
             <Input placeholder="password 2" />
@@ -67,6 +67,7 @@ export default class Demo extends React.Component {
             label="Full of rules"
             rules={[
               { required: true },
+              { required: true, message: <h1>我是 ReactNode</h1> },
               { type: 'number' },
               { type: 'enum', enum: ['aaa', 'bbb'] },
               { type: 'date' },

@@ -1,10 +1,10 @@
 import AsyncValidator from 'async-validator';
+import * as React from 'react';
 import warning from 'warning';
 import {
   FieldError,
   InternalNamePath,
   ValidateOptions,
-  FormInstance,
   ValidateMessages,
   RuleObject,
 } from '../interface';
@@ -17,7 +17,7 @@ import { defaultValidateMessages } from './messages';
  *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
  */
 function replaceMessage(template: string, kv: { [name: string]: any }): string {
-  return template.replace(/\$\{\w+\}/g, function(str: string) {
+  return template.replace(/\$\{\w+\}/g, (str: string) => {
     const key = str.slice(2, -1);
     return kv[key];
   });
@@ -36,9 +36,7 @@ function convertMessages(messages: ValidateMessages, name: string, rule: RuleObj
 
   const replaceFunc = (template: string, additionalKV?: Record<string, any>) => {
     if (!template) return null;
-    return () => {
-      return replaceMessage(template, { ...kv, ...additionalKV });
-    };
+    return () => replaceMessage(template, { ...kv, ...additionalKV });
   };
 
   /* eslint-disable no-param-reassign */
@@ -80,7 +78,12 @@ async function validateRule(
     return [];
   } catch (errObj) {
     if (errObj.errors) {
-      return errObj.errors.map(e => e.message);
+      return errObj.errors.map(({ message }, index) =>
+        // Wrap ReactNode with `key`
+        (React.isValidElement(message)
+          ? React.cloneElement(message, { key: `error_${index}` })
+          : message),
+      );
     }
     return messages.default();
   }
