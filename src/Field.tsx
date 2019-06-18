@@ -36,10 +36,12 @@ export interface FieldProps {
   children?:
     | React.ReactElement
     | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
+  getValueFromEvent?: (...args: any[]) => any;
   rules?: Rule[];
   /**
    * Set up `dependencies` field.
-   * When dependencies field update and current field is touched, will trigger validate rules and render.
+   * When dependencies field update and current field is touched,
+   * will trigger validate rules and render.
    */
   dependencies?: NamePath[];
   trigger?: string;
@@ -217,9 +219,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     }
   };
 
-  public isFieldTouched = () => {
-    return this.touched;
-  };
+  public isFieldTouched = () => this.touched;
 
   public validateRules = (options?: ValidateOptions) => {
     const { triggerName } = (options || {}) as ValidateOptions;
@@ -302,7 +302,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
-    const { trigger, validateTrigger } = this.props;
+    const { trigger, validateTrigger, getValueFromEvent } = this.props;
     const namePath = this.getNamePath();
     const { getInternalHooks, validateFields }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
@@ -317,7 +317,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
     // Add trigger
     control[trigger] = (...args: any[]) => {
-      const newValue = defaultGetValueFromEvent(...args);
+      const newValue = (getValueFromEvent || defaultGetValueFromEvent)(...args);
       dispatch({
         type: 'updateValue',
         namePath,
@@ -346,7 +346,8 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         // Always use latest rules
         const { rules } = this.props;
         if (rules && rules.length) {
-          // We dispatch validate to root since it will update related data with other field with same name
+          // We dispatch validate to root,
+          // since it will update related data with other field with same name
           // TODO: use dispatch instead
           validateFields([namePath], { triggerName });
         }

@@ -122,7 +122,7 @@ export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
-  setInitialValues: (values: Store) => void;
+  setInitialValues: (values: Store, init: boolean) => void;
   setCallbacks: (callbacks: Callbacks) => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;

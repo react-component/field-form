@@ -101,14 +101,17 @@ export class FormStore {
     this.subscribable = subscribable;
   };
 
-  private setInitialValues = (initialValues: Store) => {
+  /**
+   * First time `setInitialValues` should update store with initial value
+   */
+  private setInitialValues = (initialValues: Store, init: boolean) => {
     this.initialValues = initialValues || {};
-    this.store = setValues({}, initialValues, this.store);
+    if (init) {
+      this.store = setValues({}, initialValues, this.store);
+    }
   };
 
-  private getInitialValue = (namePath: InternalNamePath) => {
-    return getValue(this.initialValues, namePath);
-  };
+  private getInitialValue = (namePath: InternalNamePath) => getValue(this.initialValues, namePath);
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
@@ -136,9 +139,7 @@ export class FormStore {
       return this.store;
     }
 
-    return nameList.map((name: NamePath) => {
-      return this.getFieldValue(name);
-    });
+    return nameList.map((name: NamePath) => this.getFieldValue(name));
   };
 
   private getFieldValue = (name: NamePath) => {
@@ -184,9 +185,7 @@ export class FormStore {
     });
   };
 
-  private isFieldTouched = (name: NamePath) => {
-    return this.isFieldsTouched([name]);
-  };
+  private isFieldTouched = (name: NamePath) => this.isFieldsTouched([name]);
 
   private isFieldsValidating = (nameList?: NamePath[]) => {
     const fieldEntities = this.getFieldEntities();
@@ -201,9 +200,7 @@ export class FormStore {
     });
   };
 
-  private isFieldValidating = (name: NamePath) => {
-    return this.isFieldsValidating([name]);
-  };
+  private isFieldValidating = (name: NamePath) => this.isFieldsValidating([name]);
 
   private resetFields = (nameList?: NamePath[]) => {
     const prevStore = this.store;
@@ -399,9 +396,9 @@ export class FormStore {
 
     if (onFieldsChange) {
       const fields = this.getFields();
-      const changedFields = fields.filter(({ name: fieldName }) => {
-        return containsNamePath(namePathList, fieldName as any);
-      });
+      const changedFields = fields.filter(({ name: fieldName }) =>
+        containsNamePath(namePathList, fieldName as any),
+      );
       onFieldsChange(changedFields, fields);
     }
   };

@@ -56,9 +56,11 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
   React.useImperativeHandle(ref, () => formInstance);
 
   // Register form into Context
-  React.useEffect(() => {
-    return formContext.registerForm(name, formInstance);
-  }, [name]);
+  React.useEffect(() => formContext.registerForm(name, formInstance), [
+    formContext,
+    formInstance,
+    name,
+  ]);
 
   // Pass props to store
   setValidateMessages({
@@ -76,11 +78,11 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
     },
   });
 
-  // Initial store value when first mount
+  // Set initial value, init store value when first mount
   const mountRef = React.useRef(null);
+  setInitialValues(initialValues, !mountRef.current);
   if (!mountRef.current) {
     mountRef.current = true;
-    setInitialValues(initialValues);
   }
 
   // Prepare children by `children` type
