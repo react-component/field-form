@@ -29,7 +29,6 @@ export type RuleType =
   | 'regexp'
   | 'integer'
   | 'float'
-  | 'array'
   | 'object'
   | 'enum'
   | 'date'
@@ -45,7 +44,7 @@ type Validator = (
 
 export type RuleRender = (form: FormInstance) => RuleObject;
 
-export interface RuleObject {
+interface BaseRule {
   enum?: any[];
   len?: number;
   max?: number;
@@ -61,6 +60,13 @@ export interface RuleObject {
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
 }
+
+interface ArrayRule extends Omit<BaseRule, 'type'> {
+  type: 'array';
+  defaultField?: RuleObject;
+}
+
+export type RuleObject = BaseRule | ArrayRule;
 
 export type Rule = RuleObject | RuleRender;
 

@@ -66,27 +66,49 @@ async function validateRule(
   rule: RuleObject,
   options: ValidateOptions,
 ): Promise<string[]> {
+  const cloneRule = { ...rule };
+  // We should special handle array validate
+  let subRuleField: RuleObject = null;
+  if (cloneRule && cloneRule.type === 'array' && cloneRule.defaultField) {
+    subRuleField = cloneRule.defaultField;
+    delete cloneRule.defaultField;
+  }
+
   const validator = new AsyncValidator({
-    [name]: [rule],
+    [name]: [cloneRule],
   });
 
-  const messages = convertMessages(options.validateMessages, name, rule);
+  const messages = convertMessages(options.validateMessages, name, cloneRule);
   validator.messages(messages);
+
+  let result = [];
 
   try {
     await Promise.resolve(validator.validate({ [name]: value }, { ...options }));
-    return [];
   } catch (errObj) {
     if (errObj.errors) {
-      return errObj.errors.map(({ message }, index) =>
+      result = errObj.errors.map(({ message }, index) =>
         // Wrap ReactNode with `key`
         (React.isValidElement(message)
           ? React.cloneElement(message, { key: `error_${index}` })
           : message),
       );
+    } else {
+      result = [messages.default()];
     }
-    return messages.default();
   }
+
+  if (!result.length && subRuleField) {
+    const subResults: string[][] = await Promise.all(
+      value.map((subValue: any, i: number) =>
+        validateRule(`${name}.${i}`, subValue, subRuleField, options),
+      ),
+    );
+
+    return subResults.reduce((prev, errors) => [...prev, ...errors], []);
+  }
+
+  return result;
 }
 
 /**

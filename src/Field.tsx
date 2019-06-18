@@ -47,7 +47,7 @@ export interface FieldProps {
   rules?: Rule[];
   shouldUpdate?: (prevValues: any, nextValues: any, info: { source?: string }) => boolean;
   trigger?: string;
-  validateTrigger?: string | string[];
+  validateTrigger?: string | string[] | false;
 }
 
 export interface FieldState {
@@ -339,7 +339,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     };
 
     // Add validateTrigger
-    const validateTriggerList: string[] = toArray(validateTrigger);
+    const validateTriggerList: string[] = toArray(validateTrigger || []);
 
     validateTriggerList.forEach((triggerName: string) => {
       // Wrap additional function of component, so that we can get latest value from store
