@@ -14,11 +14,8 @@ export function getNamePath(path: NamePath | null): (string | number)[] {
   return toArray(path);
 }
 
-export function getValue(store: Store, namePath: InternalNamePath, defaultValues?: Store) {
+export function getValue(store: Store, namePath: InternalNamePath) {
   const value = get(store, namePath);
-  if (value === undefined && defaultValues) {
-    return get(defaultValues, namePath);
-  }
   return value;
 }
 
@@ -31,7 +28,7 @@ export function cloneByNamePathList(store: any, namePathList: InternalNamePath[]
   let newStore = {};
   namePathList.forEach(namePath => {
     const value = getValue(store, namePath);
-    newStore = setValue(store, namePath, value);
+    newStore = setValue(newStore, namePath, value);
   });
 
   return newStore;

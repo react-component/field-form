@@ -1,8 +1,9 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import Form, { Field } from '../src';
+import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue, getField } from './common';
+import { changeValue, getField, matchError } from './common';
+import timeout from './common/timeout';
 
 describe('Basic', () => {
   describe('create form', () => {
@@ -36,6 +37,30 @@ describe('Basic', () => {
         expect(wrapper.find('form')).toBeTruthy();
       });
     });
+  });
+
+  it('fields touched', async () => {
+    let form;
+
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField name="username" />
+          <InfoField name="password" />
+        </Form>
+      </div>,
+    );
+
+    expect(form.isFieldsTouched()).toBeFalsy();
+    expect(form.isFieldsTouched(['username', 'password'])).toBeFalsy();
+
+    await changeValue(getField(wrapper, 0), 'Bamboo');
+    expect(form.isFieldsTouched()).toBeTruthy();
+    expect(form.isFieldsTouched(['username', 'password'])).toBeTruthy();
   });
 
   describe('reset form', () => {
@@ -111,6 +136,20 @@ describe('Basic', () => {
           path2: 'Bamboo',
         },
       });
+      expect(form.getFieldsValue(['username'])).toEqual({
+        username: 'Light',
+      });
+      expect(form.getFieldsValue(['path1'])).toEqual({
+        path1: {
+          path2: 'Bamboo',
+        },
+      });
+      expect(form.getFieldsValue(['username', ['path1', 'path2']])).toEqual({
+        username: 'Light',
+        path1: {
+          path2: 'Bamboo',
+        },
+      });
       expect(
         getField(wrapper, 'username')
           .find('input')
@@ -173,5 +212,87 @@ describe('Basic', () => {
           .props().value,
       ).toEqual('Light');
     });
+  });
+
+  it('should throw if no Form in use', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    mount(
+      <Field>
+        <Input />
+      </Field>,
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: Can not find FormContext. Please make sure you wrap Field under Form.',
+    );
+
+    errorSpy.mockRestore();
+  });
+
+  it('keep origin input function', async () => {
+    const onChange = jest.fn();
+    const onValuesChange = jest.fn();
+    const wrapper = mount(
+      <Form onValuesChange={onValuesChange}>
+        <Field name="username">
+          <Input onChange={onChange} />
+        </Field>
+      </Form>,
+    );
+
+    await changeValue(getField(wrapper), 'Bamboo');
+    expect(onValuesChange).toHaveBeenCalledWith({ username: 'Bamboo' }, { username: 'Bamboo' });
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ target: { value: 'Bamboo' } }));
+  });
+
+  it('submit', async () => {
+    const onFinish = jest.fn();
+
+    const wrapper = mount(
+      <Form onFinish={onFinish}>
+        <InfoField name="user" rules={[{ required: true }]}>
+          <Input />
+        </InfoField>
+        <button type="submit">submit</button>
+      </Form>,
+    );
+
+    // Not trigger
+    wrapper.find('button').simulate('submit');
+    await timeout();
+    wrapper.update();
+    matchError(wrapper, "'user' is required");
+    expect(onFinish).not.toHaveBeenCalled();
+
+    // Trigger
+    await changeValue(getField(wrapper), 'Bamboo');
+    wrapper.find('button').simulate('submit');
+    await timeout();
+    matchError(wrapper, false);
+    expect(onFinish).toHaveBeenCalledWith({ user: 'Bamboo' });
+  });
+
+  it('getInternalHooks should not usable by user', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    let form;
+    mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        />
+      </div>,
+    );
+
+    expect(form.getInternalHooks()).toEqual(null);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: `getInternalHooks` is internal usage. Should not call directly.',
+    );
+
+    errorSpy.mockRestore();
   });
 });

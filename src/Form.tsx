@@ -13,7 +13,7 @@ import FormContext, { FormContextProps } from './FormContext';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
 
-export interface StateFormProps extends BaseFormProps {
+export interface FormProps extends BaseFormProps {
   initialValues?: Store;
   form?: FormInstance;
   children?: (() => JSX.Element | React.ReactNode) | React.ReactNode;
@@ -25,7 +25,7 @@ export interface StateFormProps extends BaseFormProps {
   onFinish?: (values: Store) => void;
 }
 
-const StateForm: React.FunctionComponent<StateFormProps> = (
+const Form: React.FunctionComponent<FormProps> = (
   {
     name,
     initialValues,
@@ -37,7 +37,7 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
     onFieldsChange,
     onFinish,
     ...restProps
-  }: StateFormProps,
+  }: FormProps,
   ref,
 ) => {
   const formContext: FormContextProps = React.useContext(FormContext);
@@ -128,4 +128,4 @@ const StateForm: React.FunctionComponent<StateFormProps> = (
   );
 };
 
-export default StateForm;
+export default Form;

@@ -1,5 +1,5 @@
 import React from 'react';
-import StateForm, { Field } from '../src/';
+import Form, { Field } from '../src/';
 import Input from './components/Input';
 
 
@@ -12,7 +12,7 @@ export default class Demo extends React.Component {
     return (
       <div>
         <h3>State Form ({list.length} inputs)</h3>
-        <StateForm>
+        <Form>
           <Field name="username">
             <Input placeholder="Username" />
           </Field>
@@ -48,7 +48,7 @@ export default class Demo extends React.Component {
               <Input placeholder={`field_${index}`} />
             </Field>
           ))}
-        </StateForm>
+        </Form>
       </div>
     );
   }

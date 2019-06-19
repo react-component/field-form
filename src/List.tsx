@@ -1,11 +1,13 @@
 import * as React from 'react';
-import { FormInstance, InternalNamePath, NamePath, InternalFormInstance } from './interface';
+import warning from 'warning';
+import { InternalNamePath, NamePath, InternalFormInstance } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import Field from './Field';
 import { getNamePath, setValue } from './utils/valueUtil';
 
 interface ListField {
   name: number;
+  key: number;
 }
 
 interface ListOperations {
@@ -26,6 +28,7 @@ interface ListRenderProps {
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
   // User should not pass `children` as other type.
   if (typeof children !== 'function') {
+    warning(false, 'Form.List only accepts function as children.');
     return null;
   }
 
@@ -75,7 +78,15 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                     nextValue.splice(index, 1);
 
                     setFieldsValue(setValue({}, prefixName, []));
-                    setFields(fields);
+
+                    // Set value back.
+                    // We should add current list name also to let it re-render
+                    setFields([
+                      ...fields,
+                      {
+                        name: prefixName,
+                      },
+                    ]);
                   },
                 };
 
@@ -83,6 +94,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                   value.map(
                     (__, index): ListField => ({
                       name: index,
+                      key: index,
                     }),
                   ),
                   operations,

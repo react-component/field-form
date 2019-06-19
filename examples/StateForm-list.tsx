@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import StateForm from '../src/';
+import Form from '../src/';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 
-const { List, useForm } = StateForm;
+const { List, useForm } = Form;
 
 const Demo = () => {
   const [form] = useForm();
@@ -15,7 +15,7 @@ const Demo = () => {
       <h3>List of Form</h3>
       <p>You can set Field as List</p>
 
-      <StateForm
+      <Form
         form={form}
         onValuesChange={(_, values) => {
           console.log('values:', values);
@@ -62,7 +62,7 @@ const Demo = () => {
             );
           }}
         </List>
-      </StateForm>
+      </Form>
 
       <div style={{ border: '1px solid #000', padding: 15 }}>
         <h4>Out Of Form</h4>

@@ -1,10 +1,11 @@
 import * as React from 'react';
+import warning from 'warning';
 import { InternalFormInstance } from './interface';
 
 export const HOOK_MARK = 'RC_FORM_INTERNAL_HOOKS';
 
 const warningFunc: any = () => {
-  throw new Error('StateForm is not defined.');
+  warning(false, 'Can not find FormContext. Please make sure you wrap Field under Form.');
 };
 
 const Context = React.createContext<InternalFormInstance>({
@@ -21,7 +22,19 @@ const Context = React.createContext<InternalFormInstance>({
   setFieldsValue: warningFunc,
   validateFields: warningFunc,
 
-  getInternalHooks: warningFunc,
+  getInternalHooks: () => {
+    warningFunc();
+
+    return {
+      dispatch: warningFunc,
+      registerField: warningFunc,
+      useSubscribe: warningFunc,
+      setInitialValues: warningFunc,
+      setCallbacks: warningFunc,
+      getFields: warningFunc,
+      setValidateMessages: warningFunc,
+    };
+  },
 });
 
 export default Context;

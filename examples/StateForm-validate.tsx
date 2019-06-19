@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import StateForm from '../src';
+import Form from '../src';
 import Input from './components/Input';
 
-const { Field } = StateForm;
+const { Field } = Form;
 
 const Error = ({ children }) => (
   <ul style={{ color: 'red' }}>
@@ -35,7 +35,7 @@ export default class Demo extends React.Component {
     return (
       <div>
         <h3>Validate Form</h3>
-        <StateForm style={{ padding: 16 }} onFinish={this.onFinish}>
+        <Form style={{ padding: 16 }} onFinish={this.onFinish}>
           {(values, form) => {
             const usernameError = form.getFieldError('username');
             const passwordError = form.getFieldError('password');
@@ -161,7 +161,7 @@ export default class Demo extends React.Component {
               </React.Fragment>
             );
           }}
-        </StateForm>
+        </Form>
       </div>
     );
   }

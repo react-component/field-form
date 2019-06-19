@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import StateForm, { FormInstance } from '../src/';
+import Form, { FormInstance } from '../src/';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 import { ValidateMessages } from '../src/interface';
@@ -34,7 +34,7 @@ export default class Demo extends React.Component {
     return (
       <div>
         <h3>High Perf Validate Form</h3>
-        <StateForm
+        <Form
           ref={this.setForm}
           style={{ padding: 16 }}
           onFinish={this.onFinish}
@@ -87,7 +87,7 @@ export default class Demo extends React.Component {
           >
             Reset
           </button>
-        </StateForm>
+        </Form>
       </div>
     );
   }
