@@ -1,8 +1,8 @@
 import React from 'react';
-import StateForm from '../src';
+import Form from '../src';
 import Input from './components/Input';
 
-const { Field, useForm } = StateForm;
+const { Field, useForm } = Form;
 
 const list = new Array(0).fill(() => undefined);
 
@@ -22,7 +22,7 @@ export default () => {
         Fill Values
       </button>
 
-      <StateForm form={form}>
+      <Form form={form}>
         <React.Fragment>
           <Field name="username">
             <Input placeholder="Username" />
@@ -43,7 +43,7 @@ export default () => {
             </Field>
           ))}
         </React.Fragment>
-      </StateForm>
+      </Form>
     </div>
   );
 };

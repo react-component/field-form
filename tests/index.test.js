@@ -174,4 +174,36 @@ describe('Basic', () => {
       ).toEqual('Light');
     });
   });
+
+  it('should throw if no Form in use', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    mount(
+      <Field>
+        <Input />
+      </Field>,
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: Can not find FormContext. Please make sure you wrap Field under Form.',
+    );
+
+    errorSpy.mockRestore();
+  });
+
+  it('keep origin input function', async () => {
+    const onChange = jest.fn();
+    const onValuesChange = jest.fn();
+    const wrapper = mount(
+      <Form onValuesChange={onValuesChange}>
+        <Field name="username">
+          <Input onChange={onChange} />
+        </Field>
+      </Form>,
+    );
+
+    await changeValue(getField(wrapper), 'Bamboo');
+    expect(onValuesChange).toHaveBeenCalledWith({ username: 'Bamboo' }, { username: 'Bamboo' });
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ target: { value: 'Bamboo' } }));
+  });
 });

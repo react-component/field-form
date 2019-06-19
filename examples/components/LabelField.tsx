@@ -1,8 +1,8 @@
 import * as React from 'react';
-import StateForm, { FormInstance } from '../../src/';
+import Form, { FormInstance } from '../../src/';
 import { FieldProps } from '../../src/Field';
 
-const { Field } = StateForm;
+const { Field } = Form;
 
 const Error = ({ children }) => (
   <ul style={{ color: 'red' }}>

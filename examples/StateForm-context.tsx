@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import StateForm, { FormProvider } from '../src';
+import Form, { FormProvider } from '../src';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 import { ValidateMessages } from '../src/interface';
@@ -16,10 +16,10 @@ const formStyle: React.CSSProperties = {
 };
 
 const Form1 = () => {
-  const [form] = StateForm.useForm();
+  const [form] = Form.useForm();
 
   return (
-    <StateForm form={form} style={{ ...formStyle, border: '1px solid #000' }} name="first">
+    <Form form={form} style={{ ...formStyle, border: '1px solid #000' }} name="first">
       <h4>Form 1</h4>
       <p>Change me!</p>
       <LabelField name="username" rules={[{ required: true }]}>
@@ -30,15 +30,15 @@ const Form1 = () => {
       </LabelField>
 
       <button type="submit">Submit</button>
-    </StateForm>
+    </Form>
   );
 };
 
 const Form2 = () => {
-  const [form] = StateForm.useForm();
+  const [form] = Form.useForm();
 
   return (
-    <StateForm form={form} style={{ ...formStyle, border: '1px solid #F00' }} name="second">
+    <Form form={form} style={{ ...formStyle, border: '1px solid #F00' }} name="second">
       <h4>Form 2</h4>
       <p>Will follow Form 1 but not sync back</p>
       <LabelField name="username" rules={[{ required: true }]}>
@@ -49,7 +49,7 @@ const Form2 = () => {
       </LabelField>
 
       <button type="submit">Submit</button>
-    </StateForm>
+    </Form>
   );
 };
 

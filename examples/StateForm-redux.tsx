@@ -3,7 +3,7 @@
 import React from 'react';
 import { connect, Provider } from 'react-redux';
 import { createStore } from 'redux';
-import StateForm from '../src/';
+import Form from '../src/';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 
@@ -22,7 +22,7 @@ let App: any = ({ dispatch, fields }) => {
   console.log('=>', fields);
 
   return (
-    <StateForm
+    <Form
       fields={fields}
       onValuesChange={(changedValues, allValues) => {
         console.log('Value Change:', changedValues, allValues);
@@ -42,8 +42,8 @@ let App: any = ({ dispatch, fields }) => {
         <Input />
       </LabelField>
 
-      <LabelField name="required" placeholder="required" rules={[{ required: true }]}>
-        <Input />
+      <LabelField name="required" rules={[{ required: true }]}>
+        <Input placeholder="required" />
       </LabelField>
 
       <button
@@ -71,7 +71,7 @@ let App: any = ({ dispatch, fields }) => {
       >
         dispatch to change
       </button>
-    </StateForm>
+    </Form>
   );
 };
 App = connect((fields: any) => ({ fields }))(App);

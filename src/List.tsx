@@ -26,8 +26,6 @@ interface ListRenderProps {
 }
 
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
-  const [_, forceUpdate] = React.useState();
-
   // User should not pass `children` as other type.
   if (typeof children !== 'function') {
     warning(false, 'Form.List only accepts function as children.');
@@ -80,8 +78,15 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                     nextValue.splice(index, 1);
 
                     setFieldsValue(setValue({}, prefixName, []));
-                    setFields(fields);
-                    forceUpdate({});
+
+                    // Set value back.
+                    // We should add current list name also to let it re-render
+                    setFields([
+                      ...fields,
+                      {
+                        name: prefixName,
+                      },
+                    ]);
                   },
                 };
 

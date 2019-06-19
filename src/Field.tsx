@@ -328,6 +328,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
     // Add trigger
     control[trigger] = (...args: any[]) => {
+      // Mark as touched
+      this.touched = true;
+
       let newValue = (getValueFromEvent || defaultGetValueFromEvent)(...args);
 
       if (normalize) {
@@ -339,9 +342,6 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         namePath,
         value: newValue,
       });
-
-      // Mark as touched
-      this.touched = true;
 
       if (originTriggerFunc) {
         originTriggerFunc(...args);

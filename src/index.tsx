@@ -3,26 +3,26 @@ import { FormInstance } from './interface';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';
-import FieldForm, { StateFormProps } from './Form';
+import FieldForm, { FormProps } from './Form';
 import { FormProvider } from './FormContext';
 
-const InternalStateForm = React.forwardRef<FormInstance, StateFormProps>(FieldForm);
+const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm);
 
-type InternalStateForm = typeof InternalStateForm;
-interface RefStateForm extends InternalStateForm {
+type InternalForm = typeof InternalForm;
+interface RefForm extends InternalForm {
   FormProvider: typeof FormProvider;
   Field: typeof Field;
   List: typeof List;
   useForm: typeof useForm;
 }
 
-const RefStateForm: RefStateForm = InternalStateForm as any;
+const RefForm: RefForm = InternalForm as any;
 
-RefStateForm.FormProvider = FormProvider;
-RefStateForm.Field = Field;
-RefStateForm.List = List;
-RefStateForm.useForm = useForm;
+RefForm.FormProvider = FormProvider;
+RefForm.Field = Field;
+RefForm.List = List;
+RefForm.useForm = useForm;
 
 export { FormInstance, Field, List, useForm, FormProvider };
 
-export default RefStateForm;
+export default RefForm;

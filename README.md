@@ -37,7 +37,7 @@ open http://localhost:9001/
 ```js
 import Form, { Field } from 'rc-field-form';
 
-<StateForm
+<Form
   onFinish={values => {
     console.log('Finish:', values);
   }}
@@ -50,7 +50,7 @@ import Form, { Field } from 'rc-field-form';
   </Field>
 
   <button>Submit</button>
-</StateForm>;
+</Form>;
 
 export default Demo;
 ```

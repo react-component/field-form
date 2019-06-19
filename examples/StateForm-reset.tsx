@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
-import StateForm from '../src';
+import Form from '../src';
 import Input from './components/Input';
 
-const { Field } = StateForm;
+const { Field } = Form;
 
 function Item({ children, ...restProps }) {
   return (
@@ -24,11 +24,11 @@ function Item({ children, ...restProps }) {
 }
 
 const Demo = () => {
-  const [form] = StateForm.useForm();
+  const [form] = Form.useForm();
   return (
     <div>
       <h3>Reset / Set Form</h3>
-      <StateForm form={form} initialValues={{ username: 'strange', path1: { path2: '233' } }}>
+      <Form form={form} initialValues={{ username: 'strange', path1: { path2: '233' } }}>
         <Item name="username" rules={[{ required: true }]}>
           <Input placeholder="Username" />
         </Item>
@@ -64,7 +64,7 @@ const Demo = () => {
         >
           Set Password with Errors
         </button>
-      </StateForm>
+      </Form>
     </div>
   );
 };

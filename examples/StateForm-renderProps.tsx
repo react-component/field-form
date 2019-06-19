@@ -1,9 +1,9 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React from 'react';
-import StateForm from '../src';
+import Form from '../src';
 import Input from './components/Input';
 
-const { Field } = StateForm;
+const { Field } = Form;
 
 const list = new Array(1111).fill(() => undefined);
 
@@ -15,7 +15,7 @@ export default class Demo extends React.Component {
       <div>
         <h3>Render Props ({list.length} inputs)</h3>
         <p>Render Props is easy to use but bad performance</p>
-        <StateForm>
+        <Form>
           {(values) => {
             return (
               <React.Fragment>
@@ -55,7 +55,7 @@ export default class Demo extends React.Component {
               </React.Fragment>
             );
           }}
-        </StateForm>
+        </Form>
       </div>
     );
   }

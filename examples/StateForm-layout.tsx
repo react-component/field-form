@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control, react/prop-types */
 
 import React from 'react';
-import StateForm from '../src';
+import Form from '../src';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 
@@ -14,7 +14,7 @@ export default class Demo extends React.Component {
     return (
       <div>
         <h3>State Form ({list.length} inputs)</h3>
-        <StateForm>
+        <Form>
           <LabelField name="username">
             <Input placeholder="Username" />
           </LabelField>
@@ -24,7 +24,7 @@ export default class Demo extends React.Component {
           <LabelField name={['path1', 'path2']} label="Nest Path" rules={[ { required: true } ]}>
             <Input placeholder="nest" />
           </LabelField>
-        </StateForm>
+        </Form>
       </div>
     );
   }
