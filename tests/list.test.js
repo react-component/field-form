@@ -1,4 +1,5 @@
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import Form, { Field, List } from '../src';
 import InfoField, { Input } from './common/InfoField';
@@ -54,7 +55,7 @@ describe('list', () => {
     });
   });
 
-  it.only('operation', async () => {
+  it('operation', async () => {
     let operation;
     const [wrapper, getList] = generateForm((fields, opt) => {
       operation = opt;
@@ -86,7 +87,9 @@ describe('list', () => {
     expect(form.isFieldTouched(['list', 2])).toBeFalsy();
 
     // Remove
-    operation.remove(1);
+    act(() => {
+      operation.remove(1);
+    });
     wrapper.update();
     expect(getList().find(Field).length).toEqual(2);
     expect(form.getFieldsValue()).toEqual({

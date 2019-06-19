@@ -26,6 +26,8 @@ interface ListRenderProps {
 }
 
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
+  const [_, forceUpdate] = React.useState();
+
   // User should not pass `children` as other type.
   if (typeof children !== 'function') {
     warning(false, 'Form.List only accepts function as children.');
@@ -79,6 +81,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
 
                     setFieldsValue(setValue({}, prefixName, []));
                     setFields(fields);
+                    forceUpdate({});
                   },
                 };
 
