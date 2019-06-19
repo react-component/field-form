@@ -139,7 +139,7 @@ export class FormStore {
       return this.store;
     }
 
-    return nameList.map((name: NamePath) => this.getFieldValue(name));
+    return cloneByNamePathList(this.store, nameList.map(getNamePath));
   };
 
   private getFieldValue = (name: NamePath) => {

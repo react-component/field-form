@@ -1,6 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import Form, { Field } from '../src';
+import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, getField, matchError } from './common';
 import timeout from './common/timeout';
@@ -37,6 +37,30 @@ describe('Basic', () => {
         expect(wrapper.find('form')).toBeTruthy();
       });
     });
+  });
+
+  it('fields touched', async () => {
+    let form;
+
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField name="username" />
+          <InfoField name="password" />
+        </Form>
+      </div>,
+    );
+
+    expect(form.isFieldsTouched()).toBeFalsy();
+    expect(form.isFieldsTouched(['username', 'password'])).toBeFalsy();
+
+    await changeValue(getField(wrapper, 0), 'Bamboo');
+    expect(form.isFieldsTouched()).toBeTruthy();
+    expect(form.isFieldsTouched(['username', 'password'])).toBeTruthy();
   });
 
   describe('reset form', () => {
@@ -107,6 +131,20 @@ describe('Basic', () => {
       );
 
       expect(form.getFieldsValue()).toEqual({
+        username: 'Light',
+        path1: {
+          path2: 'Bamboo',
+        },
+      });
+      expect(form.getFieldsValue(['username'])).toEqual({
+        username: 'Light',
+      });
+      expect(form.getFieldsValue(['path1'])).toEqual({
+        path1: {
+          path2: 'Bamboo',
+        },
+      });
+      expect(form.getFieldsValue(['username', ['path1', 'path2']])).toEqual({
         username: 'Light',
         path1: {
           path2: 'Bamboo',
@@ -233,5 +271,28 @@ describe('Basic', () => {
     await timeout();
     matchError(wrapper, false);
     expect(onFinish).toHaveBeenCalledWith({ user: 'Bamboo' });
+  });
+
+  it('getInternalHooks should not usable by user', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    let form;
+    mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        />
+      </div>,
+    );
+
+    expect(form.getInternalHooks()).toEqual(null);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: `getInternalHooks` is internal usage. Should not call directly.',
+    );
+
+    errorSpy.mockRestore();
   });
 });

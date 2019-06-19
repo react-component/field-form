@@ -8,14 +8,28 @@ import timeout from './common/timeout';
 
 describe('validate', () => {
   it('required', async () => {
+    let form;
     const wrapper = mount(
-      <Form>
-        <InfoField name="username" rules={[{ required: true }]} />
-      </Form>,
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField name="username" rules={[{ required: true }]} />
+        </Form>
+      </div>,
     );
 
     await changeValue(wrapper, '');
     matchError(wrapper, true);
+    expect(form.getFieldError('username')).toEqual(["'username' is required"]);
+    expect(form.getFieldsError()).toEqual([
+      {
+        name: ['username'],
+        errors: ["'username' is required"],
+      },
+    ]);
   });
 
   describe('validateMessages', () => {

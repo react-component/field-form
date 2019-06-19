@@ -31,7 +31,7 @@ export function cloneByNamePathList(store: any, namePathList: InternalNamePath[]
   let newStore = {};
   namePathList.forEach(namePath => {
     const value = getValue(store, namePath);
-    newStore = setValue(store, namePath, value);
+    newStore = setValue(newStore, namePath, value);
   });
 
   return newStore;
