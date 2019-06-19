@@ -15,6 +15,7 @@ import {
   ValidateMessages,
   InternalValidateFields,
   InternalFormInstance,
+  ValidateErrorEntity,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -470,13 +471,15 @@ export class FormStore {
         this.triggerOnFieldsChange(resultNamePathList);
       });
 
-    const returnPromise = summaryPromise
-      .then(() => {
-        if (this.lastValidatePromise === summaryPromise) {
-          return this.store;
-        }
-        return Promise.reject([]);
-      })
+    const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
+      .then(
+        (): Promise<Store | string[]> => {
+          if (this.lastValidatePromise === summaryPromise) {
+            return Promise.resolve(this.store);
+          }
+          return Promise.reject([]);
+        },
+      )
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
         const errorList = results.filter(result => result && result.errors.length);
         return Promise.reject({
@@ -487,9 +490,9 @@ export class FormStore {
       });
 
     // Do not throw in console
-    returnPromise.catch(e => e);
+    returnPromise.catch<ValidateErrorEntity>(e => e);
 
-    return returnPromise;
+    return returnPromise as Promise<Store | ValidateErrorEntity>;
   };
 }
 

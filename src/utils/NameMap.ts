@@ -9,11 +9,11 @@ interface KV<T> {
 /**
  * NameMap like a `Map` but accepts `string[]` as key.
  */
-class NameMap<T = any> {
+class NameMap<T> {
   private list: KV<T>[] = [];
 
   public clone(): NameMap<T> {
-    const clone = new NameMap();
+    const clone: NameMap<T> = new NameMap();
     clone.list = this.list.concat();
     return clone;
   }
@@ -50,12 +50,12 @@ class NameMap<T = any> {
     this.list = this.list.filter(item => !matchNamePath(item.key, key));
   }
 
-  public map(callback: (kv: KV<T>) => any) {
+  public map<U>(callback: (kv: KV<T>) => U) {
     return this.list.map(callback);
   }
 
   public toJSON(): { [name: string]: T } {
-    const json: any = {};
+    const json: { [name: string]: T } = {};
     this.map(({ key, value }) => {
       json[key.join('.')] = value;
       return null;

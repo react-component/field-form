@@ -3,7 +3,7 @@ import { FieldError } from '../interface';
 export function allPromiseFinish(promiseList: Promise<FieldError>[]): Promise<FieldError[]> {
   let hasError = false;
   let count = promiseList.length;
-  const results: any[] = [];
+  const results: FieldError[] = [];
 
   if (!promiseList.length) {
     return Promise.resolve([]);
