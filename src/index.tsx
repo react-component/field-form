@@ -23,6 +23,6 @@ RefStateForm.Field = Field;
 RefStateForm.List = List;
 RefStateForm.useForm = useForm;
 
-export { FormInstance, Field, useForm, FormProvider };
+export { FormInstance, Field, List, useForm, FormProvider };
 
 export default RefStateForm;

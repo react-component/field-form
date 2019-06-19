@@ -69,6 +69,8 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   private cancelRegisterFunc: () => void | null = null;
 
+  private destroy: boolean = false;
+
   /**
    * Follow state should not management in State since it will async update by React.
    * This makes first render of form can not get correct state value.
@@ -91,6 +93,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   public componentWillUnmount() {
     this.cancelRegister();
+    this.destroy = true;
   }
 
   public cancelRegister = () => {
@@ -121,7 +124,14 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     );
   };
 
+  public reRender() {
+    if (this.destroy) return;
+    this.forceUpdate();
+  }
+
   public refresh = () => {
+    if (this.destroy) return;
+
     /**
      * We update `reset` state twice to clean up current node.
      * Which helps to reset value without define the type.
@@ -181,7 +191,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         const validating = this.isFieldValidating();
 
         if (this.prevValidating !== validating || !isSimilar(this.prevErrors, errors)) {
-          this.forceUpdate();
+          this.reRender();
         }
         break;
       }
@@ -195,7 +205,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           (namePathList && containsNamePath(namePathList, namePath)) ||
           dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
         ) {
-          this.forceUpdate();
+          this.reRender();
         }
         break;
       }
@@ -214,7 +224,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           ) ||
           (shouldUpdate ? shouldUpdate(prevStore, values, info) : prevValue !== curValue)
         ) {
-          this.forceUpdate();
+          this.reRender();
         }
         break;
     }
