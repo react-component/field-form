@@ -7,6 +7,8 @@ import {
   ValidateOptions,
   ValidateMessages,
   RuleObject,
+  Rule,
+  StoreValue,
 } from '../interface';
 import NameMap from './NameMap';
 import { containsNamePath, getNamePath, setValues } from './valueUtil';
@@ -16,7 +18,7 @@ import { defaultValidateMessages } from './messages';
  * Replace with template.
  *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
  */
-function replaceMessage(template: string, kv: { [name: string]: any }): string {
+function replaceMessage(template: string, kv: Record<string, string>): string {
   return template.replace(/\$\{\w+\}/g, (str: string) => {
     const key = str.slice(2, -1);
     return kv[key];
@@ -27,20 +29,30 @@ function replaceMessage(template: string, kv: { [name: string]: any }): string {
  * We use `async-validator` to validate rules. So have to hot replace the message with validator.
  * { required: '${name} is required' } => { required: () => 'field is required' }
  */
-function convertMessages(messages: ValidateMessages, name: string, rule: RuleObject) {
-  const kv: { [name: string]: any } = {
-    ...rule,
+function convertMessages(
+  messages: ValidateMessages,
+  name: string,
+  rule: RuleObject,
+): ValidateMessages {
+  const kv = {
+    ...(rule as Record<string, string | number>),
     name,
     enum: (rule.enum || []).join(', '),
   };
 
-  const replaceFunc = (template: string, additionalKV?: Record<string, any>) => {
+  const replaceFunc = (template: string, additionalKV?: Record<string, string>) => {
     if (!template) return null;
     return () => replaceMessage(template, { ...kv, ...additionalKV });
   };
 
   /* eslint-disable no-param-reassign */
-  function fillTemplate(source: { [name: string]: any }, target: { [name: string]: any } = {}) {
+  type Template =
+    | {
+        [name: string]: string | (() => string) | { [name: string]: Template };
+      }
+    | string;
+
+  function fillTemplate(source: Template, target: Template = {}) {
     Object.keys(source).forEach(ruleName => {
       const value = source[ruleName];
       if (typeof value === 'string') {
@@ -57,12 +69,12 @@ function convertMessages(messages: ValidateMessages, name: string, rule: RuleObj
   }
   /* eslint-enable */
 
-  return fillTemplate(setValues({}, defaultValidateMessages, messages));
+  return fillTemplate(setValues({}, defaultValidateMessages, messages)) as ValidateMessages;
 }
 
 async function validateRule(
   name: string,
-  value: any,
+  value: StoreValue,
   rule: RuleObject,
   options: ValidateOptions,
 ): Promise<string[]> {
@@ -78,7 +90,7 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const messages = convertMessages(options.validateMessages, name, cloneRule);
+  const messages: ValidateMessages = convertMessages(options.validateMessages, name, cloneRule);
   validator.messages(messages);
 
   let result = [];
@@ -94,13 +106,13 @@ async function validateRule(
           : message),
       );
     } else {
-      result = [messages.default()];
+      result = [(messages.default as (() => string))()];
     }
   }
 
   if (!result.length && subRuleField) {
     const subResults: string[][] = await Promise.all(
-      value.map((subValue: any, i: number) =>
+      (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
         validateRule(`${name}.${i}`, subValue, subRuleField, options),
       ),
     );
@@ -117,7 +129,7 @@ async function validateRule(
  */
 export function validateRules(
   namePath: InternalNamePath,
-  value: any,
+  value: StoreValue,
   rules: RuleObject[],
   options: ValidateOptions,
 ) {
@@ -132,7 +144,7 @@ export function validateRules(
     }
     return {
       ...currentRule,
-      validator(rule: any, val: any, callback: any) {
+      validator(rule: Rule, val: StoreValue, callback: (error?: string) => void) {
         let hasPromise = false;
 
         // Wrap callback only accept when promise not provided

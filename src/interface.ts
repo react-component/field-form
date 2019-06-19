@@ -72,6 +72,12 @@ export type RuleObject = BaseRule | ArrayRule;
 
 export type Rule = RuleObject | RuleRender;
 
+export interface ValidateErrorEntity {
+  values: Store;
+  errorFields: { name: InternalNamePath; errors: string[] };
+  outOfDate: boolean;
+}
+
 export interface FieldEntity {
   onStoreChange: (store: any, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
   isFieldTouched: () => boolean;
@@ -167,50 +173,51 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
   getInternalHooks: (secret: string) => InternalHooks | null;
 };
 
+type ValidateMessage = string | (() => string);
 export interface ValidateMessages {
-  default?: string;
-  required?: string;
-  enum?: string;
-  whitespace?: string;
+  default?: ValidateMessage;
+  required?: ValidateMessage;
+  enum?: ValidateMessage;
+  whitespace?: ValidateMessage;
   date?: {
-    format?: string;
-    parse?: string;
-    invalid?: string;
+    format?: ValidateMessage;
+    parse?: ValidateMessage;
+    invalid?: ValidateMessage;
   };
   types?: {
-    string?: string;
-    method?: string;
-    array?: string;
-    object?: string;
-    number?: string;
-    date?: string;
-    boolean?: string;
-    integer?: string;
-    float?: string;
-    regexp?: string;
-    email?: string;
-    url?: string;
-    hex?: string;
+    string?: ValidateMessage;
+    method?: ValidateMessage;
+    array?: ValidateMessage;
+    object?: ValidateMessage;
+    number?: ValidateMessage;
+    date?: ValidateMessage;
+    boolean?: ValidateMessage;
+    integer?: ValidateMessage;
+    float?: ValidateMessage;
+    regexp?: ValidateMessage;
+    email?: ValidateMessage;
+    url?: ValidateMessage;
+    hex?: ValidateMessage;
   };
   string?: {
-    len?: string;
-    min?: string;
-    max?: string;
-    range?: string;
+    len?: ValidateMessage;
+    min?: ValidateMessage;
+    max?: ValidateMessage;
+    range?: ValidateMessage;
   };
   number?: {
-    len?: string;
-    min?: string;
-    max?: string;
-    range?: string;
+    len?: ValidateMessage;
+    min?: ValidateMessage;
+    max?: ValidateMessage;
+    range?: ValidateMessage;
   };
   array?: {
-    len?: string;
-    min?: string;
-    max?: string;
-    range?: string;
+    len?: ValidateMessage;
+    min?: ValidateMessage;
+    max?: ValidateMessage;
+    range?: ValidateMessage;
   };
   pattern?: {
-    mismatch?: string;
+    mismatch?: ValidateMessage;
   };
 }
