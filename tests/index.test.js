@@ -2,7 +2,8 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../src';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue, getField } from './common';
+import { changeValue, getField, matchError } from './common';
+import timeout from './common/timeout';
 
 describe('Basic', () => {
   describe('create form', () => {
@@ -205,5 +206,32 @@ describe('Basic', () => {
     await changeValue(getField(wrapper), 'Bamboo');
     expect(onValuesChange).toHaveBeenCalledWith({ username: 'Bamboo' }, { username: 'Bamboo' });
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ target: { value: 'Bamboo' } }));
+  });
+
+  it('submit', async () => {
+    const onFinish = jest.fn();
+
+    const wrapper = mount(
+      <Form onFinish={onFinish}>
+        <InfoField name="user" rules={[{ required: true }]}>
+          <Input />
+        </InfoField>
+        <button type="submit">submit</button>
+      </Form>,
+    );
+
+    // Not trigger
+    wrapper.find('button').simulate('submit');
+    await timeout();
+    wrapper.update();
+    matchError(wrapper, "'user' is required");
+    expect(onFinish).not.toHaveBeenCalled();
+
+    // Trigger
+    await changeValue(getField(wrapper), 'Bamboo');
+    wrapper.find('button').simulate('submit');
+    await timeout();
+    matchError(wrapper, false);
+    expect(onFinish).toHaveBeenCalledWith({ user: 'Bamboo' });
   });
 });
