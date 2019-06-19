@@ -3,8 +3,10 @@ import { ReducerAction } from './useForm';
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
 
+type StoreBaseValue = string | number | boolean;
+export type StoreValue = StoreBaseValue | Store | StoreBaseValue[];
 export interface Store {
-  [name: string]: any;
+  [name: string]: StoreValue;
 }
 
 export interface Meta {

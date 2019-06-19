@@ -1,6 +1,6 @@
 import setIn from 'lodash/fp/set';
 import get from 'lodash/get';
-import { InternalNamePath, NamePath, Store } from '../interface';
+import { InternalNamePath, NamePath, Store, StoreValue } from '../interface';
 import { toArray } from './typeUtil';
 
 /**
@@ -19,12 +19,12 @@ export function getValue(store: Store, namePath: InternalNamePath) {
   return value;
 }
 
-export function setValue(store: any, namePath: InternalNamePath, value: any) {
+export function setValue(store: Store, namePath: InternalNamePath, value: StoreValue): Store {
   const newStore = setIn(namePath, value, store);
   return newStore;
 }
 
-export function cloneByNamePathList(store: any, namePathList: InternalNamePath[]) {
+export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]) {
   let newStore = {};
   namePathList.forEach(namePath => {
     const value = getValue(store, namePath);
@@ -38,7 +38,7 @@ export function containsNamePath(namePathList: InternalNamePath[], namePath: Int
   return namePathList && namePathList.some(path => matchNamePath(path, namePath));
 }
 
-function isObject(obj: any) {
+function isObject(obj: StoreValue) {
   return typeof obj === 'object' && obj !== null;
 }
 
@@ -46,24 +46,28 @@ function isObject(obj: any) {
  * Copy values into store and return a new values object
  * ({ a: 1, b: { c: 2 } }, { a: 4, b: { d: 5 } }) => { a: 4, b: { c: 2, d: 5 } }
  */
-function internalSetValues(store: Store | any[], values: Store | any[] = {}) {
-  const isArray: boolean = Array.isArray(store);
-  const newStore = isArray ? [...(store as any)] : { ...store };
+function internalSetValues<T>(store: T, values: T): T {
+  const newStore: T = (Array.isArray(store) ? [...store] : { ...store }) as T;
+
+  if (!values) {
+    return newStore;
+  }
+
   Object.keys(values).forEach(key => {
     const prevValue = newStore[key];
     const value = values[key];
 
     // If both are object (but target is not array), we use recursion to set deep value
     const recursive = isObject(prevValue) && isObject(value) && !Array.isArray(value);
-    newStore[key] = recursive ? internalSetValues(prevValue, value) : value;
+    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : value;
   });
 
   return newStore;
 }
 
-export function setValues(store: Store, ...restValues: Store[]) {
+export function setValues<T>(store: T, ...restValues: T[]): T {
   return restValues.reduce(
-    (current: Store, newStore: Store) => internalSetValues(current, newStore),
+    (current: T, newStore: T): T => internalSetValues<T>(current, newStore),
     store,
   );
 }
@@ -79,7 +83,8 @@ export function matchNamePath(
 }
 
 // Like `shallowEqual`, but we not check the data which may cause re-render
-export function isSimilar(source: any, target: any) {
+type SimilarObject = string | number | {};
+export function isSimilar(source: SimilarObject, target: SimilarObject) {
   if (source === target) {
     return true;
   }
@@ -107,12 +112,10 @@ export function isSimilar(source: any, target: any) {
   });
 }
 
-export function defaultGetValueFromEvent(...args: any[]) {
-  const arg = args[0];
-
-  if (arg && arg.target && 'value' in arg.target) {
-    return arg.target.value;
+export function defaultGetValueFromEvent(event: Event) {
+  if (event && event.target && 'value' in event.target) {
+    return (event.target as HTMLInputElement).value;
   }
 
-  return arg;
+  return event;
 }
