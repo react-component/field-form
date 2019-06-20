@@ -20,6 +20,10 @@ export interface FormProps extends BaseFormProps {
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
+  __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__?: {
+    NOT_CONTAIN_FORM?: boolean;
+    HOOK_MARK: string;
+  };
   onValuesChange?: Callbacks['onValuesChange'];
   onFieldsChange?: Callbacks['onFieldsChange'];
   onFinish?: (values: Store) => void;
@@ -36,6 +40,7 @@ const Form: React.FunctionComponent<FormProps> = (
     onValuesChange,
     onFieldsChange,
     onFinish,
+    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__,
     ...restProps
   }: FormProps,
   ref,
@@ -102,6 +107,19 @@ const Form: React.FunctionComponent<FormProps> = (
     formInstance.setFields(fields || []);
   }
   prevFieldsRef.current = fields;
+
+  if (
+    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__ &&
+    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__.NOT_CONTAIN_FORM &&
+    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__.HOOK_MARK ===
+      'asdihasiodhaohdioahfoihsoefhisihifhsiofhiosfd'
+  ) {
+    return (
+      <FieldContext.Provider value={formInstance as InternalFormInstance}>
+        {childrenNode}
+      </FieldContext.Provider>
+    );
+  }
 
   return (
     <form
