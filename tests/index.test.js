@@ -25,6 +25,21 @@ describe('Basic', () => {
       expect(wrapper.find('input').length).toBe(2);
     });
 
+    it('notContainForm', () => {
+      const wrapper = mount(
+        <Form
+          __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__={{
+            NOT_CONTAIN_FORM: true,
+            HOOK_MARK: 'asdihasiodhaohdioahfoihsoefhisihifhsiofhiosfd',
+          }}
+        >
+          {renderContent()}
+        </Form>,
+      );
+      expect(wrapper.find('form').length).toBe(0);
+      expect(wrapper.find('input').length).toBe(2);
+    });
+
     describe('render props', () => {
       it('normal', () => {
         const wrapper = mount(<Form>{renderContent}</Form>);
