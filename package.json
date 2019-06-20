@@ -34,7 +34,7 @@
     "prepublishOnly": "npm run compile",
     "lint": "eslint src/ --ext .tsx,.ts",
     "test": "father test",
-    "now-build": "npm run build"
+    "now-build": "npm run build && np --no-cleanup --yolo --no-publish"
   },
   "peerDependencies": {
     "react": "*"
@@ -47,6 +47,7 @@
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
     "father": "^2.8.0",
+    "np": "^5.0.3",
     "react": "^v16.9.0-alpha.0",
     "react-dom": "^v16.9.0-alpha.0",
     "react-redux": "^4.4.10",
