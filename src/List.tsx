@@ -20,11 +20,6 @@ interface ListProps {
   children?: (fields: ListField[], operations: ListOperations) => JSX.Element | React.ReactNode;
 }
 
-interface ListRenderProps {
-  value: StoreValue[];
-  onChange: (value: StoreValue[]) => void;
-}
-
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
   // User should not pass `children` as other type.
   if (typeof children !== 'function') {
@@ -48,7 +43,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
         return (
           <FieldContext.Provider value={{ ...context, prefixName }}>
             <Field name={[]} shouldUpdate={shouldUpdate}>
-              {({ value = [], onChange }: ListRenderProps) => {
+              {({ value = [], onChange }) => {
                 const { getInternalHooks, getFieldValue, setFieldsValue, setFields } = context;
 
                 /**
@@ -56,12 +51,12 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                  */
                 const operations: ListOperations = {
                   add: () => {
-                    const newValue = getFieldValue(prefixName) || [];
+                    const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
                     onChange([...newValue, undefined]);
                   },
                   remove: (index: number) => {
                     const { getFields } = getInternalHooks(HOOK_MARK);
-                    const newValue = getFieldValue(prefixName) || [];
+                    const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
                     const namePathList: InternalNamePath[] = newValue.map((__, i) => [
                       ...prefixName,
                       i,
@@ -91,7 +86,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                 };
 
                 return children(
-                  value.map(
+                  (value as StoreValue[]).map(
                     (__, index): ListField => ({
                       name: index,
                       key: index,
