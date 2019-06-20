@@ -1,6 +1,6 @@
 {
   "name": "rc-field-form",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.0",
   "description": "React Form Component",
   "keywords": [
     "react",
@@ -31,7 +31,7 @@
     "build": "father doc build --storybook",
     "compile": "father build",
     "gh-pages": "rc-tools run gh-pages",
-    "pub": "rc-tools run pub --babel-runtime",
+    "prepublishOnly": "npm run compile",
     "lint": "eslint src/ --ext .tsx,.ts",
     "test": "father test",
     "now-build": "npm run build"
