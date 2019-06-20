@@ -364,8 +364,11 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          // TODO: use dispatch instead
-          validateFields([namePath], { triggerName });
+          dispatch({
+            type: 'validateField',
+            namePath,
+            triggerName,
+          });
         }
       };
     });

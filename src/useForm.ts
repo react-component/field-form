@@ -37,7 +37,13 @@ interface UpdateAction {
   value: any;
 }
 
-export type ReducerAction = UpdateAction;
+interface ValidateAction {
+  type: 'validateField';
+  namePath: InternalNamePath;
+  triggerName: string;
+}
+
+export type ReducerAction = UpdateAction | ValidateAction;
 
 export class FormStore {
   private forceRootUpdate: () => void;
@@ -75,7 +81,6 @@ export class FormStore {
     setFields: this.setFields,
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
-    // TODO: validateFieldsAndScroll
 
     getInternalHooks: this.getInternalHooks,
   });
@@ -294,6 +299,11 @@ export class FormStore {
         this.updateValue(namePath, value);
         break;
       }
+      case 'validateField': {
+        const { namePath, triggerName } = action;
+        this.validateFields([namePath], { triggerName });
+        break;
+      }
       default:
       // Currently we don't have other action. Do nothing.
     }
@@ -405,7 +415,6 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
-  // TODO: Cache validate result to avoid duplicated validate???
   private validateFields: InternalValidateFields = (
     nameList?: NamePath[],
     options?: ValidateOptions,
