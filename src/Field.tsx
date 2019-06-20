@@ -12,6 +12,8 @@ import {
   ValidateOptions,
   InternalFormInstance,
   RuleObject,
+  StoreValue,
+  EventArgs,
 } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
@@ -25,10 +27,10 @@ import {
 } from './utils/valueUtil';
 
 interface ChildProps {
-  value?: any;
-  onChange?: (...args: any[]) => void;
-  onFocus?: (...args: any[]) => void;
-  onBlur?: (...args: any[]) => void;
+  value?: StoreValue;
+  onChange?: (...args: EventArgs) => void;
+  onFocus?: (...args: EventArgs) => void;
+  onBlur?: (...args: EventArgs) => void;
 }
 
 export interface FieldProps {
@@ -41,11 +43,11 @@ export interface FieldProps {
    * will trigger validate rules and render.
    */
   dependencies?: NamePath[];
-  getValueFromEvent?: (...args: any[]) => any;
+  getValueFromEvent?: (...args: EventArgs) => StoreValue;
   name?: NamePath;
-  normalize?: (value: any, prevValue: any, allValues: any) => any;
+  normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
-  shouldUpdate?: (prevValues: any, nextValues: any, info: { source?: string }) => boolean;
+  shouldUpdate?: (prevValues: Store, nextValues: Store, info: { source?: string }) => boolean;
   trigger?: string;
   validateTrigger?: string | string[] | false;
 }
@@ -77,7 +79,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
    */
   private touched: boolean = false;
 
-  private validatePromise: Promise<any> | null = null;
+  private validatePromise: Promise<string[]> | null = null;
 
   // We reuse the promise to check if is `validating`
   private prevErrors: string[];
@@ -149,7 +151,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
   public onStoreChange = (
-    prevStore: any,
+    prevStore: Store,
     namePathList: InternalNamePath[] | null,
     info: NotifyInfo,
   ) => {
@@ -178,7 +180,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
             this.touched = data.touched;
           }
           if ('validating' in data) {
-            this.validatePromise = data.validating ? Promise.resolve() : null;
+            this.validatePromise = data.validating ? Promise.resolve([]) : null;
           }
 
           this.refresh();
@@ -284,7 +286,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getOnlyChild = (
     children:
       | React.ReactNode
-      | ((control: ChildProps, meta: Meta, context: any) => React.ReactNode),
+      | ((control: ChildProps, meta: Meta, context: FormInstance) => React.ReactNode),
   ): { child: React.ReactElement | null; isFunction: boolean } => {
     // Support render props
     if (typeof children === 'function') {
@@ -315,10 +317,11 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getControlled = (childProps: ChildProps = {}) => {
     const { trigger, validateTrigger, getValueFromEvent, normalize } = this.props;
     const namePath = this.getNamePath();
-    const { getInternalHooks, validateFields, getFieldsValue }: InternalFormInstance = this.context;
+    const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
     const control = {
@@ -327,7 +330,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     };
 
     // Add trigger
-    control[trigger] = (...args: any[]) => {
+    control[trigger] = (...args: EventArgs) => {
       // Mark as touched
       this.touched = true;
 
@@ -354,7 +357,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     validateTriggerList.forEach((triggerName: string) => {
       // Wrap additional function of component, so that we can get latest value from store
       const originTrigger = control[triggerName];
-      control[triggerName] = (...args: any[]) => {
+      control[triggerName] = (...args: EventArgs) => {
         if (originTrigger) {
           originTrigger(...args);
         }
@@ -364,8 +367,11 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          // TODO: use dispatch instead
-          validateFields([namePath], { triggerName });
+          dispatch({
+            type: 'validateField',
+            namePath,
+            triggerName,
+          });
         }
       };
     });

@@ -1,6 +1,6 @@
 import setIn from 'lodash/fp/set';
 import get from 'lodash/get';
-import { InternalNamePath, NamePath, Store, StoreValue } from '../interface';
+import { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
 
 /**
@@ -112,7 +112,8 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
   });
 }
 
-export function defaultGetValueFromEvent(event: Event) {
+export function defaultGetValueFromEvent(...args: EventArgs) {
+  const event = args[0];
   if (event && event.target && 'value' in event.target) {
     return (event.target as HTMLInputElement).value;
   }

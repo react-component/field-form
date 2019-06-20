@@ -217,6 +217,19 @@ In `rc-form`, we support like `user.name` to be a name and convert value to `{ u
 
 Field Form will only trade `['user', 'name']` to be `{ user: { name: 'Bamboo' } }`, and `user.name` to be `{ ['user.name']: 'Bamboo' }`.
 
+## 🔥 Remove `validateFieldsAndScroll`
+
+Since `findDomNode` is marked as warning in [StrictMode](https://reactjs.org/docs/strict-mode.html#warning-about-deprecated-finddomnode-usage). It seems over control of Form component.
+We decide to remove `validateFieldsAndScroll` method and you should handle it with you own logic:
+
+```jsx
+<Form>
+  <Field name="username">
+    <input ref={this.inputRef} />
+  </Field>
+</Form>
+```
+
 ## 🔥 `getFieldsError` always return array
 
 `rc-form` returns `null` when no error happen. This makes user have to do some additional code like:

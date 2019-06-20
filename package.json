@@ -32,7 +32,7 @@
     "compile": "father build",
     "gh-pages": "rc-tools run gh-pages",
     "pub": "rc-tools run pub --babel-runtime",
-    "lint": "eslint src/**/*",
+    "lint": "eslint src/ --ext .tsx,.ts",
     "test": "father test",
     "now-build": "npm run build"
   },

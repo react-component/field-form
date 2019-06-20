@@ -16,7 +16,7 @@ interface RefForm extends InternalForm {
   useForm: typeof useForm;
 }
 
-const RefForm: RefForm = InternalForm as any;
+const RefForm: RefForm = InternalForm as RefForm;
 
 RefForm.FormProvider = FormProvider;
 RefForm.Field = Field;
