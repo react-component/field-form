@@ -4,6 +4,7 @@ import { InternalFormInstance } from './interface';
 
 export const HOOK_MARK = 'RC_FORM_INTERNAL_HOOKS';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const warningFunc: any = () => {
   warning(false, 'Can not find FormContext. Please make sure you wrap Field under Form.');
 };

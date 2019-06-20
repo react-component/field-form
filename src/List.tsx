@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'warning';
-import { InternalNamePath, NamePath, InternalFormInstance } from './interface';
+import { InternalNamePath, NamePath, InternalFormInstance, StoreValue } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import Field from './Field';
 import { getNamePath, setValue } from './utils/valueUtil';
@@ -21,8 +21,8 @@ interface ListProps {
 }
 
 interface ListRenderProps {
-  value: any[];
-  onChange: (value: any[]) => void;
+  value: StoreValue[];
+  onChange: (value: StoreValue[]) => void;
 }
 
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
@@ -38,7 +38,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
         const parentPrefixName = getNamePath(context.prefixName) || [];
         const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
 
-        const shouldUpdate = (prevValue: any, nextValue: any, { source }) => {
+        const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }) => {
           if (source === 'internal') {
             return false;
           }

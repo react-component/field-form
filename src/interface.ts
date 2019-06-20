@@ -20,7 +20,7 @@ export interface Meta {
  */
 export interface FieldData extends Partial<Meta> {
   name: NamePath;
-  value?: any;
+  value?: StoreValue;
 }
 
 export type RuleType =
@@ -40,21 +40,21 @@ export type RuleType =
 
 type Validator = (
   rule: Rule,
-  value: any,
+  value: StoreValue,
   callback: (error?: string) => void,
 ) => Promise<void> | void;
 
 export type RuleRender = (form: FormInstance) => RuleObject;
 
 interface BaseRule {
-  enum?: any[];
+  enum?: StoreValue[];
   len?: number;
   max?: number;
-  message?: any;
+  message?: string;
   min?: number;
   pattern?: RegExp;
   required?: boolean;
-  transform?: (value: any) => any;
+  transform?: (value: StoreValue) => StoreValue;
   type?: RuleType;
   validator?: Validator;
   whitespace?: boolean;
@@ -79,10 +79,10 @@ export interface ValidateErrorEntity {
 }
 
 export interface FieldEntity {
-  onStoreChange: (store: any, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
+  onStoreChange: (store: Store, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
   isFieldTouched: () => boolean;
   isFieldValidating: () => boolean;
-  validateRules: (options?: ValidateOptions) => Promise<any>;
+  validateRules: (options?: ValidateOptions) => Promise<string[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
   props: {
@@ -105,8 +105,8 @@ export interface ValidateOptions {
 export type InternalValidateFields = (
   nameList?: NamePath[],
   options?: ValidateOptions,
-) => Promise<any>;
-export type ValidateFields = (nameList?: NamePath[]) => Promise<any>;
+) => Promise<Store>;
+export type ValidateFields = (nameList?: NamePath[]) => Promise<Store>;
 
 export type NotifyInfo =
   | {
@@ -144,8 +144,8 @@ export interface InternalHooks {
 
 export interface FormInstance {
   // Origin Form API
-  getFieldValue: (name: NamePath) => any;
-  getFieldsValue: (nameList?: NamePath[]) => any;
+  getFieldValue: (name: NamePath) => StoreValue;
+  getFieldsValue: (nameList?: NamePath[]) => Store;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   isFieldsTouched: (nameList?: NamePath[]) => boolean;
@@ -172,6 +172,9 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
    */
   getInternalHooks: (secret: string) => InternalHooks | null;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type EventArgs = any[];
 
 type ValidateMessage = string | (() => string);
 export interface ValidateMessages {

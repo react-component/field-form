@@ -13,10 +13,12 @@ import FormContext, { FormContextProps } from './FormContext';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
 
+type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
+
 export interface FormProps extends BaseFormProps {
   initialValues?: Store;
   form?: FormInstance;
-  children?: (() => JSX.Element | React.ReactNode) | React.ReactNode;
+  children?: RenderProps | React.ReactNode;
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
@@ -90,7 +92,7 @@ const Form: React.FunctionComponent<FormProps> = (
   const childrenRenderProps = typeof children === 'function';
   if (childrenRenderProps) {
     const values = formInstance.getFieldsValue();
-    childrenNode = (children as any)(values, formInstance);
+    childrenNode = (children as RenderProps)(values, formInstance);
   }
 
   // Not use subscribe when using render props

@@ -16,6 +16,7 @@ import {
   InternalValidateFields,
   InternalFormInstance,
   ValidateErrorEntity,
+  StoreValue,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -34,7 +35,7 @@ import {
 interface UpdateAction {
   type: 'updateValue';
   namePath: InternalNamePath;
-  value: any;
+  value: StoreValue;
 }
 
 interface ValidateAction {
@@ -310,7 +311,7 @@ export class FormStore {
   };
 
   private notifyObservers = (
-    prevStore: any,
+    prevStore: Store,
     namePathList: InternalNamePath[] | null,
     info: NotifyInfo,
   ) => {
@@ -323,7 +324,7 @@ export class FormStore {
     }
   };
 
-  private updateValue = (name: NamePath, value: any) => {
+  private updateValue = (name: NamePath, value: StoreValue) => {
     const namePath = getNamePath(name);
     const prevStore = this.store;
     this.store = setValue(this.store, namePath, value);
@@ -351,7 +352,7 @@ export class FormStore {
   };
 
   // Let all child Field get update.
-  private setFieldsValue = (store: any) => {
+  private setFieldsValue = (store: Store) => {
     const prevStore = this.store;
 
     if (store) {
@@ -408,7 +409,7 @@ export class FormStore {
     if (onFieldsChange) {
       const fields = this.getFields();
       const changedFields = fields.filter(({ name: fieldName }) =>
-        containsNamePath(namePathList, fieldName as any),
+        containsNamePath(namePathList, fieldName as InternalNamePath),
       );
       onFieldsChange(changedFields, fields);
     }
@@ -434,7 +435,10 @@ export class FormStore {
     }
 
     // Collect result in promise list
-    const promiseList: Promise<any>[] = [];
+    const promiseList: Promise<{
+      name: InternalNamePath;
+      errors: string[];
+    }>[] = [];
 
     this.getFieldEntities().forEach((field: FieldEntity) => {
       if (!field.props.rules || !field.props.rules.length) {
@@ -501,12 +505,12 @@ export class FormStore {
     // Do not throw in console
     returnPromise.catch<ValidateErrorEntity>(e => e);
 
-    return returnPromise as Promise<Store | ValidateErrorEntity>;
+    return returnPromise as Promise<Store>;
   };
 }
 
 function useForm(form?: FormInstance): [FormInstance] {
-  const formRef = React.useRef() as any;
+  const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState();
 
   if (!formRef.current) {
