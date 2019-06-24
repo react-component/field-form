@@ -1,3 +1,4 @@
+import { ReactElement } from 'react';
 import { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
@@ -50,7 +51,7 @@ interface BaseRule {
   enum?: StoreValue[];
   len?: number;
   max?: number;
-  message?: string;
+  message?: string | ReactElement;
   min?: number;
   pattern?: RegExp;
   required?: boolean;
@@ -142,17 +143,14 @@ export interface InternalHooks {
   setValidateMessages: (validateMessages: ValidateMessages) => void;
 }
 
-export type IsFieldsTouched =
-  | ((allFieldsTouched?: boolean) => boolean)
-  | ((nameList: NamePath[], allFieldsTouched?: boolean) => boolean);
-
 export interface FormInstance {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
   getFieldsValue: (nameList?: NamePath[]) => Store;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
-  isFieldsTouched: IsFieldsTouched;
+  isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
+  isFieldsTouched(allFieldsTouched?: boolean): boolean;
   isFieldTouched: (name: NamePath) => boolean;
   isFieldValidating: (name: NamePath) => boolean;
   isFieldsValidating: (nameList: NamePath[]) => boolean;

@@ -172,6 +172,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           this.validatePromise = null;
 
           this.refresh();
+          return;
         }
         break;
 
@@ -186,6 +187,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           }
 
           this.refresh();
+          return;
         }
         break;
       }
@@ -196,6 +198,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
         if (this.prevValidating !== validating || !isSimilar(this.prevErrors, errors)) {
           this.reRender();
+          return;
         }
         break;
       }
@@ -210,6 +213,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
         ) {
           this.reRender();
+          return;
         }
         break;
       }
@@ -226,14 +230,18 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           dependencies.some(dependency =>
             containsNamePath(namePathList, getNamePath(dependency)),
           ) ||
-          shouldUpdate === true ||
           (typeof shouldUpdate === 'function'
             ? shouldUpdate(prevStore, values, info)
             : prevValue !== curValue)
         ) {
           this.reRender();
+          return;
         }
         break;
+    }
+
+    if (shouldUpdate === true) {
+      this.reRender();
     }
   };
 

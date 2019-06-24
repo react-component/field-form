@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import Form, { FormInstance } from '../src/';
+import Form, { Field, FormInstance } from '../src/';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 import { ValidateMessages } from '../src/interface';
@@ -78,7 +78,19 @@ export default class Demo extends React.Component {
             <Input />
           </LabelField>
 
-          <button type="submit">Submit</button>
+          <Field shouldUpdate>
+            {(_, __, { getFieldsError, isFieldsTouched }) => {
+              const isAllTouched = isFieldsTouched(true);
+              const hasErrors = !!getFieldsError().filter(({ errors }) => errors.length).length;
+
+              return (
+                <button type="submit" disabled={!isAllTouched || hasErrors}>
+                  Submit
+                </button>
+              );
+            }}
+          </Field>
+
           <button
             type="button"
             onClick={() => {

@@ -130,6 +130,39 @@ describe('Basic', () => {
 
     resetTest('with field name', ['username']);
     resetTest('without field name');
+
+    it('not affect others', async () => {
+      let form;
+
+      const wrapper = mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+          >
+            <Field name="username" rules={[{ required: true }]}>
+              <Input />
+            </Field>
+
+            <Field name="password" rules={[{ required: true }]}>
+              <Input />
+            </Field>
+          </Form>
+        </div>,
+      );
+
+      await changeValue(getField(wrapper, 'username'), 'Bamboo');
+      await changeValue(getField(wrapper, 'password'), '');
+      form.resetFields(['username']);
+
+      expect(form.getFieldValue('username')).toEqual(undefined);
+      expect(form.getFieldError('username')).toEqual([]);
+      expect(form.isFieldTouched('username')).toBeFalsy();
+      expect(form.getFieldValue('password')).toEqual('');
+      expect(form.getFieldError('password')).toEqual(["'password' is required"]);
+      expect(form.isFieldTouched('password')).toBeTruthy();
+    });
   });
 
   describe('initialValues', () => {
@@ -320,28 +353,43 @@ describe('Basic', () => {
     errorSpy.mockRestore();
   });
 
-  it('shouldUpdate return true will update whatever notification updated', async () => {
-    let renderCount = 0;
+  it('shouldUpdate', async () => {
+    let isAllTouched;
+    let hasError;
 
     const wrapper = mount(
       <Form>
-        <Field rules={[{ required: true }]}>
+        <Field name="username" rules={[{ required: true }]}>
+          <Input />
+        </Field>
+        <Field name="password" rules={[{ required: true }]}>
           <Input />
         </Field>
         <Field shouldUpdate>
-          {() => {
-            renderCount += 1;
+          {(_, __, { getFieldsError, isFieldsTouched }) => {
+            isAllTouched = isFieldsTouched(true);
+            hasError = getFieldsError().filter(({ errors }) => errors.length).length;
+
             return null;
           }}
         </Field>
       </Form>,
     );
 
-    const baseRenderCount = renderCount;
-    changeValue(getField(wrapper), '');
-    expect(renderCount).toEqual(baseRenderCount + 1);
+    await changeValue(getField(wrapper, 'username'), '');
+    expect(isAllTouched).toBeFalsy();
+    expect(hasError).toBeTruthy();
 
-    await timeout();
-    expect(renderCount).toEqual(baseRenderCount + 2);
+    await changeValue(getField(wrapper, 'username'), 'Bamboo');
+    expect(isAllTouched).toBeFalsy();
+    expect(hasError).toBeFalsy();
+
+    await changeValue(getField(wrapper, 'password'), 'Light');
+    expect(isAllTouched).toBeTruthy();
+    expect(hasError).toBeFalsy();
+
+    await changeValue(getField(wrapper, 'password'), '');
+    expect(isAllTouched).toBeTruthy();
+    expect(hasError).toBeTruthy();
   });
 });
