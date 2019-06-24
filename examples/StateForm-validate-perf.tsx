@@ -39,6 +39,7 @@ export default class Demo extends React.Component {
           style={{ padding: 16 }}
           onFinish={this.onFinish}
           validateMessages={myMessages}
+          initialValues={{ remember: true }}
         >
           <LabelField name="password" rules={[{ required: true }]}>
             <Input placeholder="password" />
@@ -78,9 +79,16 @@ export default class Demo extends React.Component {
             <Input />
           </LabelField>
 
+          <div>
+            <Field name="remember" valuePropName="checked">
+              <input type="checkbox" />
+            </Field>
+            Remember Me
+          </div>
+
           <Field shouldUpdate>
             {(_, __, { getFieldsError, isFieldsTouched }) => {
-              const isAllTouched = isFieldsTouched(true);
+              const isAllTouched = isFieldsTouched(['password', 'password2'], true);
               const hasErrors = !!getFieldsError().filter(({ errors }) => errors.length).length;
 
               return (

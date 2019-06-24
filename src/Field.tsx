@@ -27,10 +27,8 @@ import {
 } from './utils/valueUtil';
 
 interface ChildProps {
-  value?: StoreValue;
-  onChange?: (...args: EventArgs) => void;
-  onFocus?: (...args: EventArgs) => void;
-  onBlur?: (...args: EventArgs) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [name: string]: any;
 }
 
 export interface FieldProps {
@@ -52,6 +50,7 @@ export interface FieldProps {
     | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
   trigger?: string;
   validateTrigger?: string | string[] | false;
+  valuePropName?: string;
 }
 
 export interface FieldState {
@@ -65,6 +64,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public static defaultProps = {
     trigger: 'onChange',
     validateTrigger: 'onChange',
+    valuePropName: 'value',
   };
 
   public state = {
@@ -328,7 +328,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
-    const { trigger, validateTrigger, getValueFromEvent, normalize } = this.props;
+    const { trigger, validateTrigger, getValueFromEvent, normalize, valuePropName } = this.props;
     const namePath = this.getNamePath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
@@ -339,7 +339,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
     const control = {
       ...childProps,
-      value,
+      [valuePropName]: value,
     };
 
     // Add trigger
@@ -347,7 +347,12 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
       // Mark as touched
       this.touched = true;
 
-      let newValue = (getValueFromEvent || defaultGetValueFromEvent)(...args);
+      let newValue;
+      if (getValueFromEvent) {
+        newValue = getValueFromEvent(...args);
+      } else {
+        newValue = defaultGetValueFromEvent(valuePropName, ...args);
+      }
 
       if (normalize) {
         newValue = normalize(newValue, value, getFieldsValue());

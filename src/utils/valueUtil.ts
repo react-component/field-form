@@ -112,10 +112,10 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
   });
 }
 
-export function defaultGetValueFromEvent(...args: EventArgs) {
+export function defaultGetValueFromEvent(valuePropName: string, ...args: EventArgs) {
   const event = args[0];
-  if (event && event.target && 'value' in event.target) {
-    return (event.target as HTMLInputElement).value;
+  if (event && event.target && valuePropName in event.target) {
+    return (event.target as HTMLInputElement)[valuePropName];
   }
 
   return event;

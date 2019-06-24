@@ -353,6 +353,31 @@ describe('Basic', () => {
     errorSpy.mockRestore();
   });
 
+  it('valuePropName', async () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <Field name="check" valuePropName="checked">
+            <Input type="checkbox" />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: true } });
+    await timeout();
+    expect(form.getFieldsValue()).toEqual({ check: true });
+
+    wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: false } });
+    await timeout();
+    expect(form.getFieldsValue()).toEqual({ check: false });
+  });
+
   it('shouldUpdate', async () => {
     let isAllTouched;
     let hasError;

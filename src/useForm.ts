@@ -202,7 +202,7 @@ export class FormStore {
       if (containsNamePath(namePathList, fieldNamePath)) {
         return field.isFieldTouched();
       }
-      return false;
+      return isAllFieldsTouched;
     };
 
     return isAllFieldsTouched
