@@ -66,6 +66,7 @@ describe('Basic', () => {
         >
           <InfoField name="username" />
           <InfoField name="password" />
+          <Field>{() => null}</Field>
         </Form>
       </div>,
     );
@@ -78,6 +79,12 @@ describe('Basic', () => {
     expect(form.isFieldsTouched(['username', 'password'])).toBeTruthy();
     expect(form.isFieldsTouched(true)).toBeFalsy();
     expect(form.isFieldsTouched(['username', 'password'], true)).toBeFalsy();
+
+    await changeValue(getField(wrapper, 1), 'Light');
+    expect(form.isFieldsTouched()).toBeTruthy();
+    expect(form.isFieldsTouched(['username', 'password'])).toBeTruthy();
+    expect(form.isFieldsTouched(true)).toBeTruthy();
+    expect(form.isFieldsTouched(['username', 'password'], true)).toBeTruthy();
   });
 
   describe('reset form', () => {

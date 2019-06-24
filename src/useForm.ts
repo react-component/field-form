@@ -206,8 +206,8 @@ export class FormStore {
     };
 
     return isAllFieldsTouched
-      ? this.getFieldEntities().every(testTouched)
-      : this.getFieldEntities().some(testTouched);
+      ? this.getFieldEntities(true).every(testTouched)
+      : this.getFieldEntities(true).some(testTouched);
   };
 
   private isFieldTouched = (name: NamePath) => this.isFieldsTouched([name]);
