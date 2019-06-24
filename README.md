@@ -122,7 +122,7 @@ class Demo extends React.Component {
 | getFieldsValue    | Get list of field values by name path list | (nameList?: [NamePath](#namepath)[]) => any                                |
 | getFieldError     | Get field errors by name path              | (name: [NamePath](#namepath)) => string[]                                  |
 | getFieldsError    | Get list of field errors by name path list | (nameList?: [NamePath](#namepath)[]) => FieldError[]                       |
-| isFieldsTouched   | Check if list of fields are touched        | (nameList?: [NamePath](#namepath)[]) => boolean                            |
+| isFieldsTouched   | Check if list of fields are touched        | (nameList?: [NamePath](#namepath)[], allTouched?: boolean) => boolean      |
 | isFieldTouched    | Check if a field is touched                | (name: [NamePath](#namepath)) => boolean                                   |
 | isFieldValidating | Check if a field is validating             | (name: [NamePath](#namepath)) => boolean                                   |
 | resetFields       | Reset fields status                        | (fields?: [NamePath](#namepath)[]) => void                                 |

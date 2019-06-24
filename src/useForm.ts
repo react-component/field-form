@@ -172,13 +172,27 @@ export class FormStore {
     return [];
   };
 
-  private isFieldsTouched = (nameList?: NamePath[]) => {
-    let namePathList: InternalNamePath[] | null = null;
-    if (nameList) {
-      namePathList = nameList.map(getNamePath);
+  private isFieldsTouched = (...args) => {
+    const [arg0, arg1] = args;
+    let namePathList: InternalNamePath[] | null;
+    let isAllFieldsTouched = false;
+
+    if (args.length === 0) {
+      namePathList = null;
+    } else if (args.length === 1) {
+      if (Array.isArray(arg0)) {
+        namePathList = arg0.map(getNamePath);
+        isAllFieldsTouched = false;
+      } else {
+        namePathList = null;
+        isAllFieldsTouched = arg0;
+      }
+    } else {
+      namePathList = arg0.map(getNamePath);
+      isAllFieldsTouched = arg1;
     }
 
-    return this.getFieldEntities().some((field: FieldEntity) => {
+    const testTouched = (field: FieldEntity) => {
       // Not provide `nameList` will check all the fields
       if (!namePathList) {
         return field.isFieldTouched();
@@ -189,7 +203,11 @@ export class FormStore {
         return field.isFieldTouched();
       }
       return false;
-    });
+    };
+
+    return isAllFieldsTouched
+      ? this.getFieldEntities().every(testTouched)
+      : this.getFieldEntities().some(testTouched);
   };
 
   private isFieldTouched = (name: NamePath) => this.isFieldsTouched([name]);

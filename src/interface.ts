@@ -142,13 +142,17 @@ export interface InternalHooks {
   setValidateMessages: (validateMessages: ValidateMessages) => void;
 }
 
+export type IsFieldsTouched =
+  | ((allFieldsTouched?: boolean) => boolean)
+  | ((nameList: NamePath[], allFieldsTouched?: boolean) => boolean);
+
 export interface FormInstance {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
   getFieldsValue: (nameList?: NamePath[]) => Store;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
-  isFieldsTouched: (nameList?: NamePath[]) => boolean;
+  isFieldsTouched: IsFieldsTouched;
   isFieldTouched: (name: NamePath) => boolean;
   isFieldValidating: (name: NamePath) => boolean;
   isFieldsValidating: (nameList: NamePath[]) => boolean;

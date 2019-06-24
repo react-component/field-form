@@ -1,6 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import Form, { Field, useForm } from '../src';
+import Form, { Field } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, getField, matchError } from './common';
 import timeout from './common/timeout';
@@ -76,6 +76,8 @@ describe('Basic', () => {
     await changeValue(getField(wrapper, 0), 'Bamboo');
     expect(form.isFieldsTouched()).toBeTruthy();
     expect(form.isFieldsTouched(['username', 'password'])).toBeTruthy();
+    expect(form.isFieldsTouched(true)).toBeFalsy();
+    expect(form.isFieldsTouched(['username', 'password'], true)).toBeFalsy();
   });
 
   describe('reset form', () => {
