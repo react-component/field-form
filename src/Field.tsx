@@ -47,7 +47,9 @@ export interface FieldProps {
   name?: NamePath;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
-  shouldUpdate?: (prevValues: Store, nextValues: Store, info: { source?: string }) => boolean;
+  shouldUpdate?:
+    | true
+    | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
   trigger?: string;
   validateTrigger?: string | string[] | false;
 }
@@ -224,7 +226,10 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           dependencies.some(dependency =>
             containsNamePath(namePathList, getNamePath(dependency)),
           ) ||
-          (shouldUpdate ? shouldUpdate(prevStore, values, info) : prevValue !== curValue)
+          shouldUpdate === true ||
+          (typeof shouldUpdate === 'function'
+            ? shouldUpdate(prevStore, values, info)
+            : prevValue !== curValue)
         ) {
           this.reRender();
         }

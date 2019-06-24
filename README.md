@@ -73,16 +73,16 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ## Field
 
-| Prop              | Description                             | Type                                  | Default  |
-| ----------------- | --------------------------------------- | ------------------------------------- | -------- |
-| dependencies      | Will re-render if dependencies changed  | [NamePath](#namepath)[]               | -        |
-| getValueFromEvent | Specify how to get value from event     | (..args: any[]) => any                | -        |
-| name              | Field name path                         | [NamePath](#namepath)                 | -        |
-| normalize         | Normalize value before update           | (value, prevValue, prevValues) => any | -        |
-| rules             | Validate rules                          | [Rule](#rule)[]                       | -        |
-| shouldUpdate      | Check if Field should update            | (prevValues, nextValues): boolean     | -        |
-| trigger           | Collect value update by event trigger   | string                                | onChange |
-| validateTrigger   | Config trigger point with rule validate | string \| string[]                    | onChange |
+| Prop              | Description                             | Type                                         | Default  |
+| ----------------- | --------------------------------------- | -------------------------------------------- | -------- |
+| dependencies      | Will re-render if dependencies changed  | [NamePath](#namepath)[]                      | -        |
+| getValueFromEvent | Specify how to get value from event     | (..args: any[]) => any                       | -        |
+| name              | Field name path                         | [NamePath](#namepath)                        | -        |
+| normalize         | Normalize value before update           | (value, prevValue, prevValues) => any        | -        |
+| rules             | Validate rules                          | [Rule](#rule)[]                              | -        |
+| shouldUpdate      | Check if Field should update            | true \| (prevValues, nextValues): boolean | -        |
+| trigger           | Collect value update by event trigger   | string                                       | onChange |
+| validateTrigger   | Config trigger point with rule validate | string \| string[]                           | onChange |
 
 ## List
 

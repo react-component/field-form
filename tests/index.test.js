@@ -319,4 +319,29 @@ describe('Basic', () => {
 
     errorSpy.mockRestore();
   });
+
+  it('shouldUpdate return true will update whatever notification updated', async () => {
+    let renderCount = 0;
+
+    const wrapper = mount(
+      <Form>
+        <Field rules={[{ required: true }]}>
+          <Input />
+        </Field>
+        <Field shouldUpdate>
+          {() => {
+            renderCount += 1;
+            return null;
+          }}
+        </Field>
+      </Form>,
+    );
+
+    const baseRenderCount = renderCount;
+    changeValue(getField(wrapper), '');
+    expect(renderCount).toEqual(baseRenderCount + 1);
+
+    await timeout();
+    expect(renderCount).toEqual(baseRenderCount + 2);
+  });
 });
