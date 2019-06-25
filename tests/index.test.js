@@ -91,6 +91,7 @@ describe('Basic', () => {
     function resetTest(name, ...args) {
       it(name, async () => {
         let form;
+        const onReset = jest.fn();
 
         const wrapper = mount(
           <div>
@@ -99,7 +100,7 @@ describe('Basic', () => {
                 form = instance;
               }}
             >
-              <Field name="username" rules={[{ required: true }]}>
+              <Field name="username" rules={[{ required: true }]} onReset={onReset}>
                 <Input />
               </Field>
             </Form>
@@ -111,20 +112,25 @@ describe('Basic', () => {
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeTruthy();
 
+        expect(onReset).not.toHaveBeenCalled();
         form.resetFields(...args);
         expect(form.getFieldValue('username')).toEqual(undefined);
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeFalsy();
+        expect(onReset).toHaveBeenCalled();
+        onReset.mockRestore();
 
         await changeValue(getField(wrapper, 'username'), '');
         expect(form.getFieldValue('username')).toEqual('');
         expect(form.getFieldError('username')).toEqual(["'username' is required"]);
         expect(form.isFieldTouched('username')).toBeTruthy();
 
+        expect(onReset).not.toHaveBeenCalled();
         form.resetFields(...args);
         expect(form.getFieldValue('username')).toEqual(undefined);
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeFalsy();
+        expect(onReset).toHaveBeenCalled();
       });
     }
 

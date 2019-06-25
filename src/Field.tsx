@@ -51,6 +51,7 @@ export interface FieldProps {
   trigger?: string;
   validateTrigger?: string | string[] | false;
   valuePropName?: string;
+  onReset?: () => void;
 }
 
 export interface FieldState {
@@ -157,7 +158,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     namePathList: InternalNamePath[] | null,
     info: NotifyInfo,
   ) => {
-    const { shouldUpdate, dependencies = [] } = this.props;
+    const { shouldUpdate, dependencies = [], onReset } = this.props;
     const { getFieldsValue, getFieldError }: FormInstance = this.context;
     const values = getFieldsValue();
     const namePath = this.getNamePath();
@@ -170,6 +171,10 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           // Clean up state
           this.touched = false;
           this.validatePromise = null;
+
+          if (onReset) {
+            onReset();
+          }
 
           this.refresh();
           return;
