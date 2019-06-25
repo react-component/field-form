@@ -3,7 +3,7 @@ import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField from './common/InfoField';
 
-describe('Control', () => {
+describe('Form.Control', () => {
   it('fields', () => {
     const wrapper = mount(
       <Form>
@@ -14,6 +14,7 @@ describe('Control', () => {
     wrapper.setProps({
       fields: [{ name: 'username', value: 'Bamboo' }],
     });
+    wrapper.update();
 
     expect(wrapper.find('input').props().value).toEqual('Bamboo');
   });

@@ -5,7 +5,7 @@ import InfoField, { Input } from './common/InfoField';
 import { changeValue, getField, matchError } from './common';
 import timeout from './common/timeout';
 
-describe('Basic', () => {
+describe('Form.Basic', () => {
   describe('create form', () => {
     function renderContent() {
       return (
@@ -422,5 +422,29 @@ describe('Basic', () => {
     await changeValue(getField(wrapper, 'password'), '');
     expect(isAllTouched).toBeTruthy();
     expect(hasError).toBeTruthy();
+  });
+
+  it('setFields', () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField name="username">
+            <Input />
+          </InfoField>
+        </Form>
+      </div>,
+    );
+
+    form.setFields([{ name: 'username', touched: false, validating: true, errors: ['Set It!'] }]);
+    wrapper.update();
+
+    matchError(wrapper, 'Set It!');
+    expect(wrapper.find('.validating').length).toBeTruthy();
+    expect(form.isFieldsTouched()).toBeFalsy();
   });
 });

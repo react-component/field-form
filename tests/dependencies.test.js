@@ -4,7 +4,7 @@ import Form, { Field } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 
-describe('dependencies', () => {
+describe('Form.Dependencies', () => {
   it('touched', async () => {
     let form = null;
 

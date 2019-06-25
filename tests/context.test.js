@@ -4,7 +4,7 @@ import Form, { FormProvider } from '../src';
 import InfoField from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 
-describe('context', () => {
+describe('Form.Context', () => {
   it('validateMessages', async () => {
     const wrapper = mount(
       <FormProvider validateMessages={{ required: "I'm global" }}>

@@ -24,11 +24,12 @@ const Demo = () => {
       >
         <List name="users">
           {(fields, { add, remove }) => {
+            console.log('Demo Fields:', fields);
             return (
               <div>
                 <h4>List of `users`</h4>
                 {fields.map((field, index) => (
-                  <LabelField {...field}>
+                  <LabelField {...field} rules={[{ required: true }]}>
                     {control => (
                       <div style={{ position: 'relative' }}>
                         <Input {...control} />

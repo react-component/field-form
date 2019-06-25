@@ -12,12 +12,6 @@ interface KV<T> {
 class NameMap<T> {
   private list: KV<T>[] = [];
 
-  public clone(): NameMap<T> {
-    const clone: NameMap<T> = new NameMap();
-    clone.list = this.list.concat();
-    return clone;
-  }
-
   public set(key: InternalNamePath, value: T) {
     const index = this.list.findIndex(item => matchNamePath(item.key, key));
     if (index !== -1) {

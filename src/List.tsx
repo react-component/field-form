@@ -1,9 +1,9 @@
 import * as React from 'react';
 import warning from 'warning';
-import { InternalNamePath, NamePath, InternalFormInstance, StoreValue } from './interface';
-import FieldContext, { HOOK_MARK } from './FieldContext';
+import { InternalNamePath, NamePath, StoreValue } from './interface';
+import FieldContext from './FieldContext';
 import Field from './Field';
-import { getNamePath, setValue } from './utils/valueUtil';
+import { getNamePath } from './utils/valueUtil';
 
 interface ListField {
   name: number;
@@ -21,85 +21,90 @@ interface ListProps {
 }
 
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
+  const context = React.useContext(FieldContext);
+  const keyRef = React.useRef({
+    keys: [],
+    id: 0,
+  });
+  const keyManager = keyRef.current;
+
   // User should not pass `children` as other type.
   if (typeof children !== 'function') {
     warning(false, 'Form.List only accepts function as children.');
     return null;
   }
 
+  const parentPrefixName = getNamePath(context.prefixName) || [];
+  const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
+
+  const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }) => {
+    if (source === 'internal') {
+      return false;
+    }
+    return prevValue !== nextValue;
+  };
+
   return (
-    <FieldContext.Consumer>
-      {(context: InternalFormInstance) => {
-        const parentPrefixName = getNamePath(context.prefixName) || [];
-        const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
+    <FieldContext.Provider value={{ ...context, prefixName }}>
+      <Field name={[]} shouldUpdate={shouldUpdate}>
+        {({ value = [], onChange }) => {
+          const { getFieldValue } = context;
 
-        const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }) => {
-          if (source === 'internal') {
-            return false;
-          }
-          return prevValue !== nextValue;
-        };
+          /**
+           * Always get latest value in case user update fields by `form` api.
+           */
+          const operations: ListOperations = {
+            add: () => {
+              // Mapping keys
+              keyManager.keys = [...keyManager.keys, keyManager.id];
+              keyManager.id += 1;
 
-        return (
-          <FieldContext.Provider value={{ ...context, prefixName }}>
-            <Field name={[]} shouldUpdate={shouldUpdate}>
-              {({ value = [], onChange }) => {
-                const { getInternalHooks, getFieldValue, setFieldsValue, setFields } = context;
+              const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
+              onChange([...newValue, undefined]);
+            },
+            remove: (index: number) => {
+              const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
 
-                /**
-                 * Always get latest value in case user update fields by `form` api.
-                 */
-                const operations: ListOperations = {
-                  add: () => {
-                    const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
-                    onChange([...newValue, undefined]);
-                  },
-                  remove: (index: number) => {
-                    const { getFields } = getInternalHooks(HOOK_MARK);
-                    const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
-                    const namePathList: InternalNamePath[] = newValue.map((__, i) => [
-                      ...prefixName,
-                      i,
-                    ]);
+              // Do not handle out of range
+              if (index < 0 || index >= newValue.length) {
+                return;
+              }
 
-                    const fields = getFields(namePathList)
-                      .filter((__, i) => i !== index)
-                      .map((fieldData, i) => ({
-                        ...fieldData,
-                        name: [...prefixName, i],
-                      }));
+              // Update key mapping
+              const newKeys = keyManager.keys.map((key, id) => {
+                if (id < index) {
+                  return key;
+                }
+                return keyManager.keys[id + 1];
+              });
+              keyManager.keys = newKeys.slice(0, -1);
 
-                    const nextValue = [...newValue];
-                    nextValue.splice(index, 1);
+              // Trigger store change
+              onChange(newValue.filter((_, id) => id !== index));
+            },
+          };
 
-                    setFieldsValue(setValue({}, prefixName, []));
+          return children(
+            (value as StoreValue[]).map(
+              (__, index): ListField => {
+                let key = keyManager.keys[index];
+                if (key === undefined) {
+                  keyManager.keys[index] = keyManager.id;
+                  key = keyManager.keys[index];
+                  keyManager.id += 1;
+                }
 
-                    // Set value back.
-                    // We should add current list name also to let it re-render
-                    setFields([
-                      ...fields,
-                      {
-                        name: prefixName,
-                      },
-                    ]);
-                  },
+                return {
+                  name: index,
+                  key,
                 };
-
-                return children(
-                  (value as StoreValue[]).map(
-                    (__, index): ListField => ({
-                      name: index,
-                      key: index,
-                    }),
-                  ),
-                  operations,
-                );
-              }}
-            </Field>
-          </FieldContext.Provider>
-        );
-      }}
-    </FieldContext.Consumer>
+              },
+            ),
+            operations,
+          );
+        }}
+      </Field>
+    </FieldContext.Provider>
   );
 };
 

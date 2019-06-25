@@ -6,7 +6,7 @@ import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
 
-describe('validate', () => {
+describe('Form.Validate', () => {
   it('required', async () => {
     let form;
     const wrapper = mount(
@@ -28,6 +28,18 @@ describe('validate', () => {
       {
         name: ['username'],
         errors: ["'username' is required"],
+      },
+    ]);
+
+    // Contains not exists
+    expect(form.getFieldsError(['username', 'not-exist'])).toEqual([
+      {
+        name: ['username'],
+        errors: ["'username' is required"],
+      },
+      {
+        name: ['not-exist'],
+        errors: [],
       },
     ]);
   });

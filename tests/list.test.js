@@ -2,11 +2,10 @@ import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import Form, { Field, List } from '../src';
-import InfoField, { Input } from './common/InfoField';
-import { changeValue, matchError, getField } from './common';
-import timeout from './common/timeout';
+import { Input } from './common/InfoField';
+import { changeValue, getField } from './common';
 
-describe('list', () => {
+describe('Form.List', () => {
   let form;
 
   function generateForm(renderList, formProps) {
@@ -44,6 +43,19 @@ describe('list', () => {
       },
     );
 
+    function matchKey(index, key) {
+      expect(
+        getList()
+          .find(Field)
+          .at(index)
+          .key(),
+      ).toEqual(key);
+    }
+
+    matchKey(0, '0');
+    matchKey(1, '1');
+    matchKey(2, '2');
+
     const listNode = getList();
 
     await changeValue(getField(listNode, 0), '111');
@@ -70,12 +82,32 @@ describe('list', () => {
       );
     });
 
+    function matchKey(index, key) {
+      expect(
+        getList()
+          .find(Field)
+          .at(index)
+          .key(),
+      ).toEqual(key);
+    }
+
     // Add
-    operation.add();
-    operation.add();
-    operation.add();
+    act(() => {
+      operation.add();
+    });
+    act(() => {
+      operation.add();
+    });
+    act(() => {
+      operation.add();
+    });
+
     wrapper.update();
     expect(getList().find(Field).length).toEqual(3);
+
+    matchKey(0, '0');
+    matchKey(1, '1');
+    matchKey(2, '2');
 
     // Modify
     await changeValue(getField(getList(), 1), '222');
@@ -85,6 +117,10 @@ describe('list', () => {
     expect(form.isFieldTouched(['list', 0])).toBeFalsy();
     expect(form.isFieldTouched(['list', 1])).toBeTruthy();
     expect(form.isFieldTouched(['list', 2])).toBeFalsy();
+
+    matchKey(0, '0');
+    matchKey(1, '1');
+    matchKey(2, '2');
 
     // Remove
     act(() => {
@@ -97,6 +133,27 @@ describe('list', () => {
     });
     expect(form.isFieldTouched(['list', 0])).toBeFalsy();
     expect(form.isFieldTouched(['list', 2])).toBeFalsy();
+
+    matchKey(0, '0');
+    matchKey(1, '2');
+
+    // Remove not exist: less
+    act(() => {
+      operation.remove(-1);
+    });
+    wrapper.update();
+
+    matchKey(0, '0');
+    matchKey(1, '2');
+
+    // Remove not exist: more
+    act(() => {
+      operation.remove(99);
+    });
+    wrapper.update();
+
+    matchKey(0, '0');
+    matchKey(1, '2');
   });
 
   it('validate', async () => {

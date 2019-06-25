@@ -10,6 +10,7 @@ import {
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import FormContext, { FormContextProps } from './FormContext';
+import { isSimilar } from './utils/valueUtil';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
 
@@ -105,10 +106,12 @@ const Form: React.FunctionComponent<FormProps> = (
 
   // Listen if fields provided. We use ref to save prev data here to avoid additional render
   const prevFieldsRef = React.useRef<FieldData[] | undefined>();
-  if (prevFieldsRef.current !== fields) {
-    formInstance.setFields(fields || []);
-  }
-  prevFieldsRef.current = fields;
+  React.useEffect(() => {
+    if (!isSimilar(prevFieldsRef.current || [], fields || [])) {
+      formInstance.setFields(fields || []);
+    }
+    prevFieldsRef.current = fields;
+  }, [fields, formInstance]);
 
   if (
     __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__ &&

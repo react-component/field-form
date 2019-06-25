@@ -2,7 +2,6 @@ import AsyncValidator from 'async-validator';
 import * as React from 'react';
 import warning from 'warning';
 import {
-  FieldError,
   InternalNamePath,
   ValidateOptions,
   ValidateMessages,
@@ -10,8 +9,7 @@ import {
   Rule,
   StoreValue,
 } from '../interface';
-import NameMap from './NameMap';
-import { containsNamePath, getNamePath, setValues } from './valueUtil';
+import { setValues } from './valueUtil';
 import { defaultValidateMessages } from './messages';
 
 /**
@@ -202,40 +200,4 @@ export function validateRules(
   summaryPromise.catch(e => e);
 
   return summaryPromise;
-}
-
-/**
- * Convert `NameMap<string[]>` into `[{ name, errors }]` format.
- */
-function nameMapToErrorList(nameMap: NameMap<string[]>): FieldError[] {
-  return nameMap.map(({ key, value }) => ({
-    name: key,
-    errors: value,
-  }));
-}
-
-export class ErrorCache {
-  private cache: NameMap<string[]> = new NameMap();
-
-  public updateError = (fieldErrors: FieldError[]) => {
-    this.cache = this.cache.clone();
-    fieldErrors.forEach(({ name, errors }) => {
-      this.cache.set(name, errors);
-    });
-  };
-
-  public getFieldsError = (namePathList?: InternalNamePath[]): FieldError[] => {
-    const fullErrors: FieldError[] = nameMapToErrorList(this.cache);
-
-    return !namePathList
-      ? fullErrors
-      : fullErrors.filter(({ name }) => {
-          const errorNamePath = getNamePath(name);
-          return containsNamePath(namePathList, errorNamePath);
-        });
-  };
-
-  public resetField = (namePath: InternalNamePath) => {
-    this.cache.delete(namePath);
-  };
 }

@@ -86,6 +86,7 @@ export interface FieldEntity {
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
+  getErrors: () => string[];
   props: {
     name?: NamePath;
     rules?: Rule[];
@@ -111,7 +112,7 @@ export type ValidateFields = (nameList?: NamePath[]) => Promise<Store>;
 
 export type NotifyInfo =
   | {
-      type: 'valueUpdate' | 'errorUpdate' | 'reset';
+      type: 'valueUpdate' | 'validateFinish' | 'reset';
       source?: 'internal' | 'external';
     }
   | {

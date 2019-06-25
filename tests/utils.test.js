@@ -4,6 +4,7 @@ import NameMap from '../src/utils/NameMap';
 describe('utils', () => {
   describe('valueUtil', () => {
     it('isSimilar', () => {
+      expect(isSimilar(1, 1)).toBeTruthy();
       expect(isSimilar(1, 2)).toBeFalsy();
       expect(isSimilar({}, {})).toBeTruthy();
       expect(isSimilar({ a: 1 }, { a: 2 })).toBeFalsy();
@@ -38,6 +39,11 @@ describe('utils', () => {
 
       expect(map.toJSON()).toEqual({
         'user.name': 'Bamboo',
+      });
+
+      map.set(['user', 'name'], 'Light');
+      expect(map.toJSON()).toEqual({
+        'user.name': 'Light',
       });
     });
   });

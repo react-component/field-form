@@ -23,7 +23,6 @@ import {
   defaultGetValueFromEvent,
   getNamePath,
   getValue,
-  isSimilar,
 } from './utils/valueUtil';
 
 interface ChildProps {
@@ -84,10 +83,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   private validatePromise: Promise<string[]> | null = null;
 
-  // We reuse the promise to check if is `validating`
-  private prevErrors: string[];
-
   private prevValidating: boolean;
+
+  private errors: string[] = [];
 
   // ============================== Subscriptions ==============================
   public componentDidMount() {
@@ -159,7 +157,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     info: NotifyInfo,
   ) => {
     const { shouldUpdate, dependencies = [], onReset } = this.props;
-    const { getFieldsValue, getFieldError }: FormInstance = this.context;
+    const { getFieldsValue }: FormInstance = this.context;
     const values = getFieldsValue();
     const namePath = this.getNamePath();
     const prevValue = this.getValue(prevStore);
@@ -171,6 +169,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           // Clean up state
           this.touched = false;
           this.validatePromise = null;
+          this.errors = [];
 
           if (onReset) {
             onReset();
@@ -190,19 +189,11 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
           if ('validating' in data) {
             this.validatePromise = data.validating ? Promise.resolve([]) : null;
           }
+          if ('errors' in data) {
+            this.errors = data.errors || [];
+          }
 
           this.refresh();
-          return;
-        }
-        break;
-      }
-
-      case 'errorUpdate': {
-        const errors = getFieldError(namePath);
-        const validating = this.isFieldValidating();
-
-        if (this.prevValidating !== validating || !isSimilar(this.prevErrors, errors)) {
-          this.reRender();
           return;
         }
         break;
@@ -250,8 +241,6 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     }
   };
 
-  public isFieldTouched = () => this.touched;
-
   public validateRules = (options?: ValidateOptions) => {
     const { triggerName } = (options || {}) as ValidateOptions;
     const namePath = this.getNamePath();
@@ -270,12 +259,15 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
     const promise = validateRules(namePath, this.getValue(), filteredRules, options);
     this.validatePromise = promise;
+    this.errors = [];
 
     promise
       .catch(e => e)
-      .then(() => {
+      .then((errors: string[] = []) => {
         if (this.validatePromise === promise) {
           this.validatePromise = null;
+          this.errors = errors;
+          this.reRender();
         }
       });
 
@@ -284,17 +276,19 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   public isFieldValidating = () => !!this.validatePromise;
 
+  public isFieldTouched = () => this.touched;
+
+  public getErrors = () => this.errors;
+
   // ============================= Child Component =============================
   public getMeta = (): Meta => {
-    const { getFieldError } = this.context;
     // Make error & validating in cache to save perf
     this.prevValidating = this.isFieldValidating();
-    this.prevErrors = getFieldError(this.getNamePath());
 
     const meta: Meta = {
       touched: this.isFieldTouched(),
       validating: this.prevValidating,
-      errors: this.prevErrors,
+      errors: this.errors,
     };
 
     return meta;

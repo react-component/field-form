@@ -21,7 +21,6 @@ import {
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
 import NameMap from './utils/NameMap';
-import { ErrorCache } from './utils/validateUtil';
 import { defaultValidateMessages } from './utils/messages';
 import {
   cloneByNamePathList,
@@ -54,8 +53,6 @@ export class FormStore {
   private store: Store = {};
 
   private fieldEntities: FieldEntity[] = [];
-
-  private errorCache: ErrorCache = new ErrorCache();
 
   private initialValues: Store = {};
 
@@ -141,6 +138,15 @@ export class FormStore {
     return this.fieldEntities.filter(field => field.getNamePath().length);
   };
 
+  private getFieldsMap = (pure: boolean = false) => {
+    const cache: NameMap<FieldEntity> = new NameMap();
+    this.getFieldEntities(pure).forEach(field => {
+      const namePath = field.getNamePath();
+      cache.set(namePath, field);
+    });
+    return cache;
+  };
+
   private getFieldsValue = (nameList?: NamePath[]) => {
     if (!nameList) {
       return this.store;
@@ -155,21 +161,36 @@ export class FormStore {
   };
 
   private getFieldsError = (nameList?: NamePath[]) => {
-    if (!nameList) {
-      return this.errorCache.getFieldsError();
+    let fieldEntities = this.getFieldEntities(true);
+
+    if (nameList) {
+      const cache = this.getFieldsMap(true);
+
+      fieldEntities = nameList.map(name => {
+        const namePath = getNamePath(name);
+        return cache.get(namePath);
+      });
     }
 
-    const namePathList = nameList.map(getNamePath);
-    return this.errorCache.getFieldsError(namePathList);
+    return fieldEntities.map((entity, index) => {
+      if (entity) {
+        return {
+          name: entity.getNamePath(),
+          errors: entity.getErrors(),
+        };
+      }
+
+      return {
+        name: getNamePath(nameList[index]),
+        errors: [],
+      };
+    });
   };
 
   private getFieldError = (name: NamePath): string[] => {
     const namePath = getNamePath(name);
     const fieldError = this.getFieldsError([namePath])[0];
-    if (fieldError) {
-      return fieldError.errors;
-    }
-    return [];
+    return fieldError.errors;
   };
 
   private isFieldsTouched = (...args) => {
@@ -231,7 +252,6 @@ export class FormStore {
     const prevStore = this.store;
     if (!nameList) {
       this.store = setValues({}, this.initialValues);
-      this.errorCache = new ErrorCache();
       this.notifyObservers(prevStore, null, { type: 'reset' });
       return;
     }
@@ -239,7 +259,6 @@ export class FormStore {
     // Reset by `nameList`
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
     namePathList.forEach(namePath => {
-      this.errorCache.resetField(namePath);
       const initialValue = this.getInitialValue(namePath);
       this.store = setValue(this.store, namePath, initialValue);
     });
@@ -258,49 +277,22 @@ export class FormStore {
         this.store = setValue(this.store, namePath, data.value);
       }
 
-      // Error
-      if (errors) {
-        this.errorCache.updateError([{ name: namePath, errors }]);
-      }
-
       this.notifyObservers(prevStore, [namePath], { type: 'setField', data: fieldData });
     });
   };
 
-  private getFields = (namePathList?: InternalNamePath[]): FieldData[] => {
-    let fields: FieldData[];
-
-    if (!namePathList) {
-      fields = this.getFieldEntities(true).map(
-        (field: FieldEntity): FieldData => {
-          const namePath = field.getNamePath();
-          const meta = field.getMeta();
-          return {
-            ...meta,
-            name: namePath,
-            value: this.getFieldValue(namePath),
-          };
-        },
-      );
-    } else {
-      const cache: NameMap<FieldEntity> = new NameMap();
-      this.getFieldEntities().forEach(field => {
+  private getFields = (): FieldData[] =>
+    this.getFieldEntities(true).map(
+      (field: FieldEntity): FieldData => {
         const namePath = field.getNamePath();
-        cache.set(namePath, field);
-      });
-
-      fields = namePathList.map(namePath => {
-        const field = cache.get(namePath);
+        const meta = field.getMeta();
         return {
+          ...meta,
           name: namePath,
-          ...field.getMeta(),
           value: this.getFieldValue(namePath),
         };
-      });
-    }
-
-    return fields;
-  };
+      },
+    );
 
   // =========================== Observer ===========================
   private registerField = (entity: FieldEntity) => {
@@ -440,18 +432,6 @@ export class FormStore {
   ) => {
     const namePathList: InternalNamePath[] | undefined = nameList && nameList.map(getNamePath);
 
-    // Clean up origin errors
-    if (namePathList) {
-      this.errorCache.updateError(
-        namePathList.map(name => ({
-          name,
-          errors: [],
-        })),
-      );
-    } else {
-      this.errorCache = new ErrorCache();
-    }
-
     // Collect result in promise list
     const promiseList: Promise<{
       name: InternalNamePath;
@@ -496,9 +476,7 @@ export class FormStore {
       .catch(results => results)
       .then((results: FieldError[]) => {
         const resultNamePathList: InternalNamePath[] = results.map(({ name }) => name);
-
-        this.errorCache.updateError(results);
-        this.notifyObservers(this.store, resultNamePathList, { type: 'errorUpdate' });
+        this.notifyObservers(this.store, resultNamePathList, { type: 'validateFinish' });
         this.triggerOnFieldsChange(resultNamePathList);
       });
 
