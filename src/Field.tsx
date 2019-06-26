@@ -289,6 +289,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
       touched: this.isFieldTouched(),
       validating: this.prevValidating,
       errors: this.errors,
+      name: this.getNamePath(),
     };
 
     return meta;

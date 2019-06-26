@@ -14,12 +14,13 @@ export interface Meta {
   touched: boolean;
   validating: boolean;
   errors: string[];
+  name: InternalNamePath;
 }
 
 /**
  * Used by `setFields` config
  */
-export interface FieldData extends Partial<Meta> {
+export interface FieldData extends Partial<Omit<Meta, 'name'>> {
   name: NamePath;
   value?: StoreValue;
 }

@@ -447,4 +447,31 @@ describe('Form.Basic', () => {
     expect(wrapper.find('.validating').length).toBeTruthy();
     expect(form.isFieldsTouched()).toBeFalsy();
   });
+
+  it('render props get meta', () => {
+    let called1 = false;
+    let called2 = false;
+
+    mount(
+      <Form>
+        <Field name="Light">
+          {(_, meta) => {
+            expect(meta.name).toEqual(['Light']);
+            called1 = true;
+            return null;
+          }}
+        </Field>
+        <Field name={['Bamboo', 'Best']}>
+          {(_, meta) => {
+            expect(meta.name).toEqual(['Bamboo', 'Best']);
+            called2 = true;
+            return null;
+          }}
+        </Field>
+      </Form>,
+    );
+
+    expect(called1).toBeTruthy();
+    expect(called2).toBeTruthy();
+  });
 });
