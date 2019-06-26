@@ -163,9 +163,18 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     const prevValue = this.getValue(prevStore);
     const curValue = this.getValue();
 
+    const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
+
+    // `setFieldsValue` is a quick access to update related status
+    if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
+      this.touched = true;
+      this.validatePromise = null;
+      this.errors = [];
+    }
+
     switch (info.type) {
       case 'reset':
-        if (!namePathList || (namePathList && containsNamePath(namePathList, namePath))) {
+        if (!namePathList || namePathMatch) {
           // Clean up state
           this.touched = false;
           this.validatePromise = null;
@@ -181,7 +190,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         break;
 
       case 'setField': {
-        if (namePathList && containsNamePath(namePathList, namePath)) {
+        if (namePathMatch) {
           const { data } = info;
           if ('touched' in data) {
             this.touched = data.touched;
@@ -205,7 +214,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
          */
         const dependencyList = dependencies.map(getNamePath);
         if (
-          (namePathList && containsNamePath(namePathList, namePath)) ||
+          namePathMatch ||
           dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
         ) {
           this.reRender();
@@ -222,12 +231,12 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
          *   - else to check if value changed
          */
         if (
-          (namePathList && containsNamePath(namePathList, namePath)) ||
+          namePathMatch ||
           dependencies.some(dependency =>
             containsNamePath(namePathList, getNamePath(dependency)),
           ) ||
           (typeof shouldUpdate === 'function'
-            ? shouldUpdate(prevStore, values, info)
+            ? shouldUpdate(prevStore, values, 'source' in info ? { source: info.source } : {})
             : prevValue !== curValue)
         ) {
           this.reRender();

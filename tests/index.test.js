@@ -474,4 +474,60 @@ describe('Form.Basic', () => {
     expect(called1).toBeTruthy();
     expect(called2).toBeTruthy();
   });
+
+  it('setFieldsValue should clean up status', async () => {
+    let form;
+    let currentMeta;
+
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <Field name="normal" rules={[{ validator: () => new Promise(() => {}) }]}>
+            {(control, meta) => {
+              currentMeta = meta;
+              return <Input {...control} />;
+            }}
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    // Init
+    expect(form.getFieldValue('normal')).toBe(undefined);
+    expect(form.isFieldTouched('normal')).toBeFalsy();
+    expect(form.getFieldError('normal')).toEqual([]);
+    expect(currentMeta.validating).toBeFalsy();
+
+    // Set it
+    form.setFieldsValue({
+      normal: 'Light',
+    });
+
+    expect(form.getFieldValue('normal')).toBe('Light');
+    expect(form.isFieldTouched('normal')).toBeTruthy();
+    expect(form.getFieldError('normal')).toEqual([]);
+    expect(currentMeta.validating).toBeFalsy();
+
+    // Input it
+    await changeValue(getField(wrapper), 'Bamboo');
+
+    expect(form.getFieldValue('normal')).toBe('Bamboo');
+    expect(form.isFieldTouched('normal')).toBeTruthy();
+    expect(form.getFieldError('normal')).toEqual([]);
+    expect(currentMeta.validating).toBeTruthy();
+
+    // Set it again
+    form.setFieldsValue({
+      normal: 'Light',
+    });
+
+    expect(form.getFieldValue('normal')).toBe('Light');
+    expect(form.isFieldTouched('normal')).toBeTruthy();
+    expect(form.getFieldError('normal')).toEqual([]);
+    expect(currentMeta.validating).toBeFalsy();
+  });
 });

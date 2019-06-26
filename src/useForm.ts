@@ -369,7 +369,7 @@ export class FormStore {
       this.store = setValues(this.store, store);
     }
 
-    this.notifyObservers(prevStore, null, { type: 'valueUpdate' });
+    this.notifyObservers(prevStore, null, { type: 'valueUpdate', source: 'external' });
   };
 
   private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {

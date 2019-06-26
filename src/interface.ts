@@ -111,10 +111,15 @@ export type InternalValidateFields = (
 ) => Promise<Store>;
 export type ValidateFields = (nameList?: NamePath[]) => Promise<Store>;
 
+interface ValueUpdateInfo {
+  type: 'valueUpdate';
+  source: 'internal' | 'external';
+}
+
 export type NotifyInfo =
+  | ValueUpdateInfo
   | {
-      type: 'valueUpdate' | 'validateFinish' | 'reset';
-      source?: 'internal' | 'external';
+      type: 'validateFinish' | 'reset';
     }
   | {
       type: 'setField';
