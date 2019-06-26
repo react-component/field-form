@@ -193,7 +193,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
             this.errors = data.errors || [];
           }
 
-          this.refresh();
+          this.reRender();
           return;
         }
         break;
