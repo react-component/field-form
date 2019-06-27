@@ -20,7 +20,7 @@ export function allPromiseFinish(promiseList: Promise<FieldError>[]): Promise<Fi
           count -= 1;
           results[index] = result;
 
-          if (count !== 0) {
+          if (count > 0) {
             return;
           }
 
