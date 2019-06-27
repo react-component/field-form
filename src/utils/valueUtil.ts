@@ -10,7 +10,7 @@ import { toArray } from './typeUtil';
  * 123 => [123]
  * ['a', 123] => ['a', 123]
  */
-export function getNamePath(path: NamePath | null): (string | number)[] {
+export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
