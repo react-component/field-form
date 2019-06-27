@@ -73,7 +73,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   private cancelRegisterFunc: () => void | null = null;
 
-  private destroy: boolean = false;
+  private destroy = false;
 
   /**
    * Follow state should not management in State since it will async update by React.
