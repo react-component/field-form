@@ -24,7 +24,7 @@ export function setValue(store: Store, namePath: InternalNamePath, value: StoreV
   return newStore;
 }
 
-export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]) {
+export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
   let newStore = {};
   namePathList.forEach(namePath => {
     const value = getValue(store, namePath);
