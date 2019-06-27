@@ -6,3 +6,4 @@ es/
 lib/
 ~*
 yarn.lock
+package-lock.json
