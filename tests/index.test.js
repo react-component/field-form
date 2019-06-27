@@ -25,19 +25,27 @@ describe('Form.Basic', () => {
       expect(wrapper.find('input').length).toBe(2);
     });
 
-    it('notContainForm', () => {
-      const wrapper = mount(
-        <Form
-          __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__={{
-            NOT_CONTAIN_FORM: true,
-            HOOK_MARK: 'asdihasiodhaohdioahfoihsoefhisihifhsiofhiosfd',
-          }}
-        >
-          {renderContent()}
-        </Form>,
-      );
-      expect(wrapper.find('form').length).toBe(0);
-      expect(wrapper.find('input').length).toBe(2);
+    describe('component', () => {
+      it('without dom', () => {
+        const wrapper = mount(<Form component={false}>{renderContent()}</Form>);
+        expect(wrapper.find('form').length).toBe(0);
+        expect(wrapper.find('input').length).toBe(2);
+      });
+
+      it('use string', () => {
+        const wrapper = mount(<Form component="pre">{renderContent()}</Form>);
+        expect(wrapper.find('form').length).toBe(0);
+        expect(wrapper.find('pre').length).toBe(1);
+        expect(wrapper.find('input').length).toBe(2);
+      });
+
+      it('use component', () => {
+        const MyComponent = ({ children }) => <div>{children}</div>;
+        const wrapper = mount(<Form component={MyComponent}>{renderContent()}</Form>);
+        expect(wrapper.find('form').length).toBe(0);
+        expect(wrapper.find(MyComponent).length).toBe(1);
+        expect(wrapper.find('input').length).toBe(2);
+      });
     });
 
     describe('render props', () => {

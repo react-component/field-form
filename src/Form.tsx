@@ -20,13 +20,11 @@ export interface FormProps extends BaseFormProps {
   initialValues?: Store;
   form?: FormInstance;
   children?: RenderProps | React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component?: false | string | React.FC<any> | React.ComponentClass<any>;
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
-  __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__?: {
-    NOT_CONTAIN_FORM?: boolean;
-    HOOK_MARK: string;
-  };
   onValuesChange?: Callbacks['onValuesChange'];
   onFieldsChange?: Callbacks['onFieldsChange'];
   onFinish?: (values: Store) => void;
@@ -39,11 +37,11 @@ const Form: React.FunctionComponent<FormProps> = (
     fields,
     form,
     children,
+    component: Component = 'form',
     validateMessages,
     onValuesChange,
     onFieldsChange,
     onFinish,
-    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__,
     ...restProps
   }: FormProps,
   ref,
@@ -113,21 +111,18 @@ const Form: React.FunctionComponent<FormProps> = (
     prevFieldsRef.current = fields;
   }, [fields, formInstance]);
 
-  if (
-    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__ &&
-    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__.NOT_CONTAIN_FORM &&
-    __COMPATIBILITY_USAGE_OR_YOU_WILL_BE_FIRED__.HOOK_MARK ===
-      'asdihasiodhaohdioahfoihsoefhisihifhsiofhiosfd'
-  ) {
-    return (
-      <FieldContext.Provider value={formInstance as InternalFormInstance}>
-        {childrenNode}
-      </FieldContext.Provider>
-    );
+  const wrapperNode = (
+    <FieldContext.Provider value={formInstance as InternalFormInstance}>
+      {childrenNode}
+    </FieldContext.Provider>
+  );
+
+  if (Component === false) {
+    return wrapperNode;
   }
 
   return (
-    <form
+    <Component
       {...restProps}
       onSubmit={event => {
         event.preventDefault();
@@ -144,10 +139,8 @@ const Form: React.FunctionComponent<FormProps> = (
           .catch(e => e);
       }}
     >
-      <FieldContext.Provider value={formInstance as InternalFormInstance}>
-        {childrenNode}
-      </FieldContext.Provider>
-    </form>
+      {wrapperNode}
+    </Component>
   );
 };
 

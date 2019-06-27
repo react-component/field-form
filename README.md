@@ -63,6 +63,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 | Prop             | Description                                        | Type                                  | Default          |
 | ---------------- | -------------------------------------------------- | ------------------------------------- | ---------------- |
+| component        | Customize Form render component                    | string \| Component \| false          | form             |
 | fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]             | -                |
 | form             | Set form instance created by `useForm`             | [FormInstance](#useform)              | `Form.useForm()` |
 | initialValues    | Initial value of Form                              | Object                                | -                |
