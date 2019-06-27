@@ -38,10 +38,8 @@ function convertMessages(
     enum: (rule.enum || []).join(', '),
   };
 
-  const replaceFunc = (template: string, additionalKV?: Record<string, string>) => {
-    if (!template) return null;
-    return () => replaceMessage(template, { ...kv, ...additionalKV });
-  };
+  const replaceFunc = (template: string, additionalKV?: Record<string, string>) => () =>
+    replaceMessage(template, { ...kv, ...additionalKV });
 
   /* eslint-disable no-param-reassign */
   type Template =
