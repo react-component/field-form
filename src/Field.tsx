@@ -110,8 +110,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getNamePath = (): InternalNamePath => {
     const { name } = this.props;
     const { prefixName = [] }: InternalFormInstance = this.context;
+    const namePath = getNamePath(name);
 
-    return [...prefixName, ...getNamePath(name)];
+    return 'name' in this.props ? [...prefixName, ...namePath] : [];
   };
 
   public getRules = (): RuleObject[] => {
@@ -356,7 +357,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
       // Mark as touched
       this.touched = true;
 
-      let newValue;
+      let newValue: StoreValue;
       if (getValueFromEvent) {
         newValue = getValueFromEvent(...args);
       } else {
