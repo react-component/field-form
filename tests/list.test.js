@@ -108,6 +108,21 @@ describe('Form.List', () => {
     matchKey(0, '0');
     matchKey(1, '1');
     matchKey(2, '2');
+    
+    //Move
+    act(()=>{
+        operation.move(2,0);
+    });
+    wrapper.update();
+    matchKey(0,'2');
+    matchKey(1, '0');
+    matchKey(2, '1');
+  
+    //Revert Move
+    act(()=>{
+      operation.move(0,2);
+    });
+    wrapper.update();
 
     // Modify
     await changeValue(getField(getList(), 1), '222');

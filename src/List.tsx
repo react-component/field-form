@@ -4,6 +4,7 @@ import { InternalNamePath, NamePath, StoreValue } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
 import { getNamePath } from './utils/valueUtil';
+import move from "lodash-move";
 
 interface ListField {
   name: number;
@@ -13,6 +14,7 @@ interface ListField {
 interface ListOperations {
   add: () => void;
   remove: (index: number) => void;
+  move:(from:number,to:number)=>void;
 }
 
 interface ListProps {
@@ -49,7 +51,10 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
       <Field name={[]} shouldUpdate={shouldUpdate}>
         {({ value = [], onChange }) => {
           const { getFieldValue } = context;
-
+          const getNewValue = ()=>{
+            const values =  getFieldValue(prefixName || []) as StoreValue[];
+            return values || [];
+          };
           /**
            * Always get latest value in case user update fields by `form` api.
            */
@@ -59,11 +64,11 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
               keyManager.keys = [...keyManager.keys, keyManager.id];
               keyManager.id += 1;
 
-              const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
+              const newValue = getNewValue();
               onChange([...newValue, undefined]);
             },
             remove: (index: number) => {
-              const newValue = (getFieldValue(prefixName) || []) as StoreValue[];
+              const newValue = getNewValue();
 
               // Do not handle out of range
               if (index < 0 || index >= newValue.length) {
@@ -82,6 +87,27 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
               // Trigger store change
               onChange(newValue.filter((_, id) => id !== index));
             },
+            move(from:number,to:number){
+              if(from === to){
+                 return;
+              }
+              const newValue = getNewValue();
+
+              // Do not handle out of range
+              if (from < 0 || from >= newValue.length) {
+                return;
+              }
+
+              // Do not handle out of range
+              if(to < 0 || to >= newValue.length){
+                return;
+              }
+
+              keyManager.keys = move(keyManager.keys,from,to);
+
+              // Trigger store change
+              onChange(move(newValue,from,to));
+            }
           };
 
           return children(
