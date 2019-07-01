@@ -27,7 +27,7 @@ export interface FormProps extends BaseFormProps {
   validateMessages?: ValidateMessages;
   onValuesChange?: Callbacks['onValuesChange'];
   onFieldsChange?: Callbacks['onFieldsChange'];
-  onFinish?: (values: Store) => void;
+  onFinish?: Callbacks['onFinish'];
 }
 
 const Form: React.FunctionComponent<FormProps> = (
@@ -83,6 +83,13 @@ const Form: React.FunctionComponent<FormProps> = (
         onFieldsChange(changedFields, ...rest);
       }
     },
+    onFinish: (values: Store) => {
+      formContext.triggerFormFinish(name, values);
+
+      if (onFinish) {
+        onFinish(values);
+      }
+    },
   });
 
   // Set initial value, init store value when first mount
@@ -125,19 +132,11 @@ const Form: React.FunctionComponent<FormProps> = (
   return (
     <Component
       {...restProps}
-      onSubmit={event => {
+      onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
 
-        formInstance
-          .validateFields()
-          .then(values => {
-            if (onFinish) {
-              onFinish(values);
-            }
-          })
-          // Do nothing about submit catch
-          .catch(e => e);
+        formInstance.submit();
       }}
     >
       {wrapperNode}

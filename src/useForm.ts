@@ -79,6 +79,7 @@ export class FormStore {
     setFields: this.setFields,
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
+    submit: this.submit,
 
     getInternalHooks: this.getInternalHooks,
   });
@@ -502,6 +503,19 @@ export class FormStore {
     returnPromise.catch<ValidateErrorEntity>(e => e);
 
     return returnPromise as Promise<Store>;
+  };
+
+  // ============================ Submit ============================
+  private submit = () => {
+    this.validateFields()
+      .then(values => {
+        const { onFinish } = this.callbacks;
+        if (onFinish) {
+          onFinish(values);
+        }
+      })
+      // Do nothing about submit catch
+      .catch(e => e);
   };
 }
 
