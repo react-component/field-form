@@ -49,7 +49,7 @@ const Demo = () => {
                 {fields.map((field, index) => (
                   <DraggableField move={move} index={index} id={field.key} {...field} rules={[{ required: true }]}>
                     {control => (
-                      <div style={{ position: 'relative'}}>
+                      <div style={{ position: 'relative' }}>
                         <Input {...control} />
                         <a style={{ position: 'absolute', top: 12, right: -300 }} onClick={() => {
                           remove(index);
