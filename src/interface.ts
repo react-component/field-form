@@ -138,6 +138,7 @@ export type NotifyInfo =
 export interface Callbacks {
   onValuesChange?: (changedValues: Store, values: Store) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
+  onFinish?: (values: Store) => void;
 }
 
 export interface InternalHooks {
@@ -165,6 +166,9 @@ export interface FormInstance {
   setFields: (fields: FieldData[]) => void;
   setFieldsValue: (value: Store) => void;
   validateFields: ValidateFields;
+
+  // New API
+  submit: () => void;
 }
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
