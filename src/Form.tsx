@@ -62,11 +62,12 @@ const Form: React.FunctionComponent<FormProps> = (
   React.useImperativeHandle(ref, () => formInstance);
 
   // Register form into Context
-  React.useEffect(() => formContext.registerForm(name, formInstance), [
-    formContext,
-    formInstance,
-    name,
-  ]);
+  React.useEffect(() => {
+    formContext.registerForm(name, formInstance);
+    return () => {
+      formContext.unregisterForm(name);
+    };
+  }, [formContext, formInstance, name]);
 
   // Pass props to store
   setValidateMessages({

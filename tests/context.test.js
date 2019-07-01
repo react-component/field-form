@@ -43,26 +43,56 @@ describe('Form.Context', () => {
     );
   });
 
-  it('adjust sub form', async () => {
-    const onFormChange = jest.fn();
+  describe('adjust sub form', () => {
+    it('basic', async () => {
+      const onFormChange = jest.fn();
 
-    const wrapper = mount(
-      <FormProvider onFormChange={onFormChange}>
-        <Form name="form1" />
-      </FormProvider>,
-    );
+      const wrapper = mount(
+        <FormProvider onFormChange={onFormChange}>
+          <Form name="form1" />
+        </FormProvider>,
+      );
 
-    wrapper.setProps({
-      children: (
-        <Form name="form2">
-          <InfoField name="test" />
-        </Form>
-      ),
+      wrapper.setProps({
+        children: (
+          <Form name="form2">
+            <InfoField name="test" />
+          </Form>
+        ),
+      });
+
+      await changeValue(getField(wrapper), 'Bamboo');
+      const { forms } = onFormChange.mock.calls[0][1];
+      expect(Object.keys(forms)).toEqual(['form2']);
     });
 
-    await changeValue(getField(wrapper), 'Bamboo');
-    const { forms } = onFormChange.mock.calls[0][1];
-    expect(Object.keys(forms)).toEqual(['form2']);
+    it('multiple context', async () => {
+      const onFormChange = jest.fn();
+
+      const Demo = changed => (
+        <FormProvider onFormChange={onFormChange}>
+          <FormProvider>
+            {!changed ? (
+              <Form name="form1" />
+            ) : (
+              <Form name="form2">
+                <InfoField name="test" />
+              </Form>
+            )}
+          </FormProvider>
+        </FormProvider>
+      );
+
+      const wrapper = mount(<Demo />);
+
+      wrapper.setProps({
+        changed: true,
+      });
+
+      await changeValue(getField(wrapper), 'Bamboo');
+      const { forms } = onFormChange.mock.calls[0][1];
+      expect(Object.keys(forms)).toEqual(['form2']);
+    });
   });
 
   it('do nothing if no Provider in use', () => {

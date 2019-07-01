@@ -17,12 +17,14 @@ export interface FormProviderProps {
 
 export interface FormContextProps extends FormProviderProps {
   triggerFormChange: (name: string, changedFields: FieldData[]) => void;
-  registerForm: (name: string, form: FormInstance) => () => void;
+  registerForm: (name: string, form: FormInstance) => void;
+  unregisterForm: (name: string) => void;
 }
 
 const FormContext = React.createContext<FormContextProps>({
   triggerFormChange: () => {},
-  registerForm: () => () => {},
+  registerForm: () => {},
+  unregisterForm: () => {},
 });
 
 const FormProvider: React.FunctionComponent<FormProviderProps> = ({
@@ -38,7 +40,7 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
     <FormContext.Provider
       value={{
         ...formContext,
-        validateMessages,
+        validateMessages: { ...formContext.validateMessages, ...validateMessages },
 
         // =========================================================
         // =                  Global Form Control                  =
@@ -50,6 +52,8 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
               forms: formsRef.current,
             });
           }
+
+          formContext.triggerFormChange(name, changedFields);
         },
         registerForm: (name, form) => {
           if (name) {
@@ -59,11 +63,14 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
             };
           }
 
-          return () => {
-            const newForms = { ...formsRef.current };
-            delete newForms[name];
-            formsRef.current = newForms;
-          };
+          formContext.registerForm(name, form);
+        },
+        unregisterForm: name => {
+          const newForms = { ...formsRef.current };
+          delete newForms[name];
+          formsRef.current = newForms;
+
+          formContext.unregisterForm(name);
         },
       }}
     >
