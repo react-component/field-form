@@ -130,6 +130,7 @@ class Demo extends React.Component {
 | resetFields       | Reset fields status                        | (fields?: [NamePath](#namepath)[]) => void                                 |
 | setFields         | Set fields status                          | (fields: FieldData[]) => void                                              |
 | setFieldsValue    | Set fields value                           | (values) => void                                                           |
+| submit            | Trigger form submit                        | () => void                                                                 |
 | validateFields    | Trigger fields to validate                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
 
 ## FormProvider
@@ -138,6 +139,7 @@ class Demo extends React.Component {
 | ---------------- | ----------------------------------------- | ---------------------------------------- | ------- |
 | validateMessages | Config global `validateMessages` template | [ValidateMessages](#validatemessages)    | -       |
 | onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
+| onFormFinish     | Trigger by named form fields finish       | (name, { values, forms }) => void        | -       |
 
 ## Interface
 
