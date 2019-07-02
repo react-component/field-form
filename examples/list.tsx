@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import Form from '../src/';
+import Form from '../src';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 
