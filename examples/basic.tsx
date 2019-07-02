@@ -1,5 +1,5 @@
 import React from 'react';
-import Form, { Field } from '../src/';
+import Form, { Field } from '../src';
 import Input from './components/Input';
 
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import Form, { Field, useForm } from '../src/';
+import Form, { Field, useForm } from '../src';
 import Input from './components/Input';
 
 
@@ -16,7 +16,7 @@ export default () => {
         return e;
       });
     }}>
-      <Form notContainForm form={form}>
+      <Form component={false} form={form}>
         <Field name="username">
           <Input placeholder="Username" />
         </Field>
