@@ -515,7 +515,12 @@ export class FormStore {
         }
       })
       // Do nothing about submit catch
-      .catch(e => e);
+      .catch(e => {
+        const { onFinishFailed } = this.callbacks;
+        if (onFinishFailed) {
+          onFinishFailed(e);
+        }
+      });
   };
 }
 

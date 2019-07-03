@@ -30,6 +30,10 @@ export default class Demo extends React.Component {
     console.log('Finish:', values);
   };
 
+  public onFinishFailed = errorInfo => {
+    console.log('Failed:', errorInfo);
+  };
+
   public render() {
     return (
       <div>
@@ -38,6 +42,7 @@ export default class Demo extends React.Component {
           ref={this.setForm}
           style={{ padding: 16 }}
           onFinish={this.onFinish}
+          onFinishFailed={this.onFinishFailed}
           validateMessages={myMessages}
           initialValues={{ remember: true }}
         >

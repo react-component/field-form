@@ -28,6 +28,7 @@ export interface FormProps extends BaseFormProps {
   onValuesChange?: Callbacks['onValuesChange'];
   onFieldsChange?: Callbacks['onFieldsChange'];
   onFinish?: Callbacks['onFinish'];
+  onFinishFailed?: Callbacks['onFinishFailed'];
 }
 
 const Form: React.FunctionComponent<FormProps> = (
@@ -42,6 +43,7 @@ const Form: React.FunctionComponent<FormProps> = (
     onValuesChange,
     onFieldsChange,
     onFinish,
+    onFinishFailed,
     ...restProps
   }: FormProps,
   ref,
@@ -90,6 +92,7 @@ const Form: React.FunctionComponent<FormProps> = (
         onFinish(values);
       }
     },
+    onFinishFailed,
   });
 
   // Set initial value, init store value when first mount

@@ -319,9 +319,10 @@ describe('Form.Basic', () => {
 
   it('submit', async () => {
     const onFinish = jest.fn();
+    const onFinishFailed = jest.fn();
 
     const wrapper = mount(
-      <Form onFinish={onFinish}>
+      <Form onFinish={onFinish} onFinishFailed={onFinishFailed}>
         <InfoField name="user" rules={[{ required: true }]}>
           <Input />
         </InfoField>
@@ -335,6 +336,14 @@ describe('Form.Basic', () => {
     wrapper.update();
     matchError(wrapper, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
+    expect(onFinishFailed).toHaveBeenCalledWith({
+      errorFields: [{ name: ['user'], errors: ["'user' is required"] }],
+      outOfDate: false,
+      values: {},
+    });
+
+    onFinish.mockReset();
+    onFinishFailed.mockReset();
 
     // Trigger
     await changeValue(getField(wrapper), 'Bamboo');
@@ -342,6 +351,7 @@ describe('Form.Basic', () => {
     await timeout();
     matchError(wrapper, false);
     expect(onFinish).toHaveBeenCalledWith({ user: 'Bamboo' });
+    expect(onFinishFailed).not.toHaveBeenCalled();
   });
 
   it('getInternalHooks should not usable by user', () => {
