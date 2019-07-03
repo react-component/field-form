@@ -1,12 +1,12 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import Form from '../src/';
+import HTML5Backend from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import Form from '../src';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
-import useDraggable from "./components/useDraggable";
-import HTML5Backend from 'react-dnd-html5-backend'
-import { DndProvider} from 'react-dnd'
+import useDraggable from './components/useDraggable';
 
 const { List, useForm } = Form;
 
@@ -14,22 +14,22 @@ type LabelFieldProps = Parameters<typeof LabelField>[0];
 interface DraggableProps extends LabelFieldProps{
   id : string|number,
   index : number,
-  move : (from:number,to :number)=>void,
+  move : (from:number, to :number)=>void,
 }
 const DisableDraggable = {
-    onDragStart(event){
+    onDragStart(event) {
         event.stopPropagation();
         event.preventDefault();
     },
-    draggable : true,
+    draggable: true,
 };
-const Draggable :React.FunctionComponent<DraggableProps>= ({id,index,move,children})=>{
-    const {ref,isDragging} = useDraggable("list-draggable",id,index,move);
+const Draggable :React.FunctionComponent<DraggableProps> = ({ id, index, move, children }) => {
+    const { ref, isDragging } = useDraggable('list-draggable', id, index, move);
     return <div ref={ref} style={{
-      opacity : isDragging ? 0.5 : 1,
+      opacity: isDragging ? 0.5 : 1,
     }}>
         {children}
-    </div>
+    </div>;
 };
 const Demo = () => {
   const [form] = useForm();
@@ -48,13 +48,13 @@ const Demo = () => {
         style={{ border: '1px solid red', padding: 15 }}
       >
         <List name="users">
-          {(fields, { add, remove,move }) => {
-            console.log('Demo Fields:', fields);
+          {(fields, { add, remove, move }) => {
             return (
               <div>
                 <h4>List of `users`</h4>
                 {fields.map((field, index) => (
-                  <Draggable move={move} index={index} id={field.key} {...field} rules={[{ required: true }]}>
+                  <Draggable move={move}
+                             index={index} id={field.key} {...field} rules={[{ required: true }]}>
                     <LabelField {...field} rules={[{ required: true }]}>
                     {control => (
                       <div style={{ position: 'relative' }}>
@@ -78,32 +78,11 @@ const Demo = () => {
                 >
                   + New User
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    remove(1);
-                  }}
-                >
-                  Remove index: 1
-                </button>
               </div>
             );
           }}
         </List>
       </Form>
-
-      <div style={{ border: '1px solid #000', padding: 15 }}>
-        <h4>Out Of Form</h4>
-        <button
-          onClick={() => {
-            form.setFieldsValue({
-              users: ['light', 'bamboo'],
-            });
-          }}
-        >
-          Set List Value
-        </button>
-      </div>
     </div>
     </DndProvider>
   );
