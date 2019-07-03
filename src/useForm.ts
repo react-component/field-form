@@ -487,7 +487,7 @@ export class FormStore {
           if (this.lastValidatePromise === summaryPromise) {
             return Promise.resolve(this.store);
           }
-          return Promise.reject([]);
+          return Promise.reject<string[]>([]);
         },
       )
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
@@ -514,8 +514,12 @@ export class FormStore {
           onFinish(values);
         }
       })
-      // Do nothing about submit catch
-      .catch(e => e);
+      .catch(e => {
+        const { onFinishFailed } = this.callbacks;
+        if (onFinishFailed) {
+          onFinishFailed(e);
+        }
+      });
   };
 }
 
