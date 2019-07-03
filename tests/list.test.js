@@ -108,19 +108,34 @@ describe('Form.List', () => {
     matchKey(0, '0');
     matchKey(1, '1');
     matchKey(2, '2');
-    
-    //Move
-    act(()=>{
-        operation.move(2,0);
+
+    // Move
+    act(() => {
+        operation.move(2, 0);
+    });
+
+    // noneffective move
+    act(() => {
+      operation.move(-1, 0);
+    });
+
+    // noneffective move
+    act(() => {
+      operation.move(0, 10);
+    });
+
+    // noneffective move
+    act(() => {
+      operation.move(0, 0);
     });
     wrapper.update();
-    matchKey(0,'2');
+    matchKey(0, '2');
     matchKey(1, '0');
     matchKey(2, '1');
-  
-    //Revert Move
-    act(()=>{
-      operation.move(0,2);
+
+    // Revert Move
+    act(() => {
+      operation.move(0, 2);
     });
     wrapper.update();
 
