@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'warning';
-import move from 'lodash-move';
+import { arrayMove } from './utils/arrayMove';
 import { InternalNamePath, NamePath, StoreValue } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
@@ -14,7 +14,7 @@ interface ListField {
 interface ListOperations {
   add: () => void;
   remove: (index: number) => void;
-  move:(from:number, to:number)=>void;
+  move: (from: number, to: number) => void;
 }
 
 interface ListProps {
@@ -103,10 +103,10 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                 return;
               }
 
-              keyManager.keys = move(keyManager.keys, from, to);
+              keyManager.keys = arrayMove(keyManager.keys, from, to);
 
               // Trigger store change
-              onChange(move(newValue, from, to));
+              onChange(arrayMove(newValue, from, to));
             },
           };
 

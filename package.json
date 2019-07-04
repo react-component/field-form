@@ -64,7 +64,6 @@
   "dependencies": {
     "async-validator": "^1.11.2",
     "lodash": "^4.17.4",
-    "lodash-move": "^1.1.1",
     "rc-util": "^4.6.0",
     "warning": "^4.0.3"
   }
