@@ -133,10 +133,7 @@ export function defaultGetValueFromEvent(valuePropName: string, ...args: EventAr
  */
 export function move<T>(array: T[], moveIndex: number, toIndex: number) {
   const { length } = array;
-  if (moveIndex < 0 || moveIndex >= length) {
-    return array;
-  }
-  if (toIndex < 0 || toIndex >= length) {
+  if (moveIndex < 0 || moveIndex >= length || toIndex < 0 || toIndex >= length) {
     return array;
   }
   const item = array[moveIndex];

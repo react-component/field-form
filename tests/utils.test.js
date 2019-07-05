@@ -10,6 +10,12 @@ describe('utils', () => {
       expect(move([0, 1, 2, 3], -1, 3)).toEqual([0, 1, 2, 3]);
       expect(move([0, 1, 2, 3], -1, 5)).toEqual([0, 1, 2, 3]);
       expect(move([0, 1, 2, 3], 1, 5)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 0, 0)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 0, 1)).toEqual([1, 0, 2, 3]);
+      expect(move([0, 1, 2, 3], 1, 0)).toEqual([1, 0, 2, 3]);
+      expect(move([0, 1, 2, 3], 2, 3)).toEqual([0, 1, 3, 2]);
+      expect(move([0, 1, 2, 3], 3, 3)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 3, 2)).toEqual([0, 1, 3, 2]);
     });
   });
   describe('valueUtil', () => {

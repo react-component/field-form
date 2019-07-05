@@ -93,12 +93,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
               const newValue = getNewValue();
 
               // Do not handle out of range
-              if (from < 0 || from >= newValue.length) {
-                return;
-              }
-
-              // Do not handle out of range
-              if (to < 0 || to >= newValue.length) {
+              if (from < 0 || from >= newValue.length || to < 0 || to >= newValue.length) {
                 return;
               }
 
