@@ -1,10 +1,9 @@
 import * as React from 'react';
 import warning from 'warning';
-import { arrayMove } from './utils/arrayMove';
 import { InternalNamePath, NamePath, StoreValue } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
-import { getNamePath } from './utils/valueUtil';
+import { move, getNamePath } from './utils/valueUtil';
 
 interface ListField {
   name: number;
@@ -103,10 +102,10 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                 return;
               }
 
-              keyManager.keys = arrayMove(keyManager.keys, from, to);
+              keyManager.keys = move(keyManager.keys, from, to);
 
               // Trigger store change
-              onChange(arrayMove(newValue, from, to));
+              onChange(move(newValue, from, to));
             },
           };
 

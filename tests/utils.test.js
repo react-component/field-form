@@ -1,13 +1,15 @@
-import { arrayMove } from '../src/utils/arrayMove';
-import { isSimilar, setValues } from '../src/utils/valueUtil';
+import { move, isSimilar, setValues } from '../src/utils/valueUtil';
 import NameMap from '../src/utils/NameMap';
 
 describe('utils', () => {
   describe('arrayMove', () => {
     it('move', () => {
-      expect(arrayMove([0, 1, 2, 3], 0, 2)).toEqual([1, 2, 0, 3]);
-      expect(arrayMove([0, 1, 2, 3], 3, 1)).toEqual([0, 3, 1, 2]);
-      expect(arrayMove([0, 1, 2, 3], 1, 1)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 0, 2)).toEqual([1, 2, 0, 3]);
+      expect(move([0, 1, 2, 3], 3, 1)).toEqual([0, 3, 1, 2]);
+      expect(move([0, 1, 2, 3], 1, 1)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], -1, 3)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], -1, 5)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 1, 5)).toEqual([0, 1, 2, 3]);
     });
   });
   describe('valueUtil', () => {
