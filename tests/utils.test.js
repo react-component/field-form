@@ -1,7 +1,23 @@
-import { isSimilar, setValues } from '../src/utils/valueUtil';
+import { move, isSimilar, setValues } from '../src/utils/valueUtil';
 import NameMap from '../src/utils/NameMap';
 
 describe('utils', () => {
+  describe('arrayMove', () => {
+    it('move', () => {
+      expect(move([0, 1, 2, 3], 0, 2)).toEqual([1, 2, 0, 3]);
+      expect(move([0, 1, 2, 3], 3, 1)).toEqual([0, 3, 1, 2]);
+      expect(move([0, 1, 2, 3], 1, 1)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], -1, 3)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], -1, 5)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 1, 5)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 0, 0)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 0, 1)).toEqual([1, 0, 2, 3]);
+      expect(move([0, 1, 2, 3], 1, 0)).toEqual([1, 0, 2, 3]);
+      expect(move([0, 1, 2, 3], 2, 3)).toEqual([0, 1, 3, 2]);
+      expect(move([0, 1, 2, 3], 3, 3)).toEqual([0, 1, 2, 3]);
+      expect(move([0, 1, 2, 3], 3, 2)).toEqual([0, 1, 3, 2]);
+    });
+  });
   describe('valueUtil', () => {
     it('isSimilar', () => {
       expect(isSimilar(1, 1)).toBeTruthy();
