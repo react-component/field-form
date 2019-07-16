@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import Form, { Field, FormInstance } from '../src/';
+import Form, { Field, FormInstance } from '../src';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 import { ValidateMessages } from '../src/interface';
@@ -30,6 +30,10 @@ export default class Demo extends React.Component {
     console.log('Finish:', values);
   };
 
+  public onFinishFailed = errorInfo => {
+    console.log('Failed:', errorInfo);
+  };
+
   public render() {
     return (
       <div>
@@ -38,6 +42,7 @@ export default class Demo extends React.Component {
           ref={this.setForm}
           style={{ padding: 16 }}
           onFinish={this.onFinish}
+          onFinishFailed={this.onFinishFailed}
           validateMessages={myMessages}
           initialValues={{ remember: true }}
         >

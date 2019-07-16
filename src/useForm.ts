@@ -79,6 +79,7 @@ export class FormStore {
     setFields: this.setFields,
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
+    submit: this.submit,
 
     getInternalHooks: this.getInternalHooks,
   });
@@ -486,7 +487,7 @@ export class FormStore {
           if (this.lastValidatePromise === summaryPromise) {
             return Promise.resolve(this.store);
           }
-          return Promise.reject([]);
+          return Promise.reject<string[]>([]);
         },
       )
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
@@ -502,6 +503,23 @@ export class FormStore {
     returnPromise.catch<ValidateErrorEntity>(e => e);
 
     return returnPromise as Promise<Store>;
+  };
+
+  // ============================ Submit ============================
+  private submit = () => {
+    this.validateFields()
+      .then(values => {
+        const { onFinish } = this.callbacks;
+        if (onFinish) {
+          onFinish(values);
+        }
+      })
+      .catch(e => {
+        const { onFinishFailed } = this.callbacks;
+        if (onFinishFailed) {
+          onFinishFailed(e);
+        }
+      });
   };
 }
 

@@ -40,7 +40,7 @@ const Form2 = () => {
   return (
     <Form form={form} style={{ ...formStyle, border: '1px solid #F00' }} name="second">
       <h4>Form 2</h4>
-      <p>Will follow Form 1 but not sync back</p>
+      <p>Will follow Form 1 but sync back only when submit</p>
       <LabelField name="username" rules={[{ required: true }]}>
         <Input placeholder="username" />
       </LabelField>
@@ -64,6 +64,12 @@ const Demo = () => {
           console.log('change from:', name, changedFields, forms);
           if (name === 'first') {
             forms.second.setFields(changedFields);
+          }
+        }}
+        onFormFinish={(name, { values, forms }) => {
+          console.log('finish from:', name, values, forms);
+          if (name === 'second') {
+            forms.first.setFieldsValue(values);
           }
         }}
       >

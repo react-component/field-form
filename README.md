@@ -61,16 +61,18 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ## Form
 
-| Prop             | Description                                        | Type                                  | Default          |
-| ---------------- | -------------------------------------------------- | ------------------------------------- | ---------------- |
-| component        | Customize Form render component                    | string \| Component \| false          | form             |
-| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]             | -                |
-| form             | Set form instance created by `useForm`             | [FormInstance](#useform)              | `Form.useForm()` |
-| initialValues    | Initial value of Form                              | Object                                | -                |
-| name             | Config name with [FormProvider](#formprovider)     | string                                | -                |
-| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages) | -                |
-| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void      | -                |
-| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values): void         | -                |
+| Prop             | Description                                        | Type                                       | Default          |
+| ---------------- | -------------------------------------------------- | ------------------------------------------ | ---------------- |
+| component        | Customize Form render component                    | string \| Component \| false               | form             |
+| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]                  | -                |
+| form             | Set form instance created by `useForm`             | [FormInstance](#useform)                   | `Form.useForm()` |
+| initialValues    | Initial value of Form                              | Object                                     | -                |
+| name             | Config name with [FormProvider](#formprovider)     | string                                     | -                |
+| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages)      | -                |
+| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void           | -                |
+| onFinish         | Trigger when form submit and success               | (values): void                             | -                |
+| onFinishFailed   | Trigger when form submit and failed                | ({ values, errorFields, outOfDate }): void | -                |
+| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values): void              | -                |
 
 ## Field
 
@@ -130,6 +132,7 @@ class Demo extends React.Component {
 | resetFields       | Reset fields status                        | (fields?: [NamePath](#namepath)[]) => void                                 |
 | setFields         | Set fields status                          | (fields: FieldData[]) => void                                              |
 | setFieldsValue    | Set fields value                           | (values) => void                                                           |
+| submit            | Trigger form submit                        | () => void                                                                 |
 | validateFields    | Trigger fields to validate                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
 
 ## FormProvider
@@ -138,6 +141,7 @@ class Demo extends React.Component {
 | ---------------- | ----------------------------------------- | ---------------------------------------- | ------- |
 | validateMessages | Config global `validateMessages` template | [ValidateMessages](#validatemessages)    | -       |
 | onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
+| onFormFinish     | Trigger by named form fields finish       | (name, { values, forms }) => void        | -       |
 
 ## Interface
 
