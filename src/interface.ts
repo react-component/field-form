@@ -41,7 +41,7 @@ export type RuleType =
   | 'email';
 
 type Validator = (
-  rule: Rule,
+  rule: RuleObject,
   value: StoreValue,
   callback: (error?: string) => void,
 ) => Promise<void> | void;
