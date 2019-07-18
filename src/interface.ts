@@ -41,7 +41,7 @@ export type RuleType =
   | 'email';
 
 type Validator = (
-  rule: Rule,
+  rule: RuleObject,
   value: StoreValue,
   callback: (error?: string) => void,
 ) => Promise<void> | void;
@@ -63,6 +63,8 @@ interface BaseRule {
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
+  /** from async-validator */
+  field?: string;
 }
 
 interface ArrayRule extends Omit<BaseRule, 'type'> {
