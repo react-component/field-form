@@ -20,6 +20,12 @@ describe('legacy.form', () => {
           <Field name="normal">
             <Input />
           </Field>
+          <Field name={['children', 0, 'level']}>
+            <Input />
+          </Field>
+          <Field name={['children', 1, 'level']}>
+            <Input />
+          </Field>
         </Form>
       </div>,
     );
@@ -27,9 +33,16 @@ describe('legacy.form', () => {
     form.setFieldsValue({
       normal: '2',
       notExist: 'oh',
+      children: [{ level: 'Medium' }],
     });
 
     expect(form.getFieldValue('normal')).toBe('2');
+    expect(form.getFieldValue(['children', 0, 'level'])).toBe('Medium');
+
+    form.setFieldsValueByPath({
+      'children[1].level': 'High',
+    });
+    expect(form.getFieldValue(['children', 1, 'level'])).toBe('High');
   });
 
   // [Legacy] Seems useless

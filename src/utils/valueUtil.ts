@@ -72,6 +72,12 @@ export function setValues<T>(store: T, ...restValues: T[]): T {
   );
 }
 
+export function setValuesByPath(store: Store, values: Store): Store {
+  return Object.keys(values).reduce(
+    (current: Store, path: string): Store => setIn(path, values[path], current),
+    store,
+  );
+}
 export function matchNamePath(
   namePath: InternalNamePath,
   changedNamePath: InternalNamePath | null,

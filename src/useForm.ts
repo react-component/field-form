@@ -29,6 +29,7 @@ import {
   getValue,
   setValue,
   setValues,
+  setValuesByPath,
 } from './utils/valueUtil';
 
 interface UpdateAction {
@@ -78,6 +79,7 @@ export class FormStore {
     resetFields: this.resetFields,
     setFields: this.setFields,
     setFieldsValue: this.setFieldsValue,
+    setFieldsValueByPath: this.setFieldsValueByPath,
     validateFields: this.validateFields,
     submit: this.submit,
 
@@ -368,6 +370,19 @@ export class FormStore {
 
     if (store) {
       this.store = setValues(this.store, store);
+    }
+
+    this.notifyObservers(prevStore, null, { type: 'valueUpdate', source: 'external' });
+  };
+
+  /**
+   * support `{'a.b.c': 1}` format.
+   */
+  private setFieldsValueByPath = (store: Store) => {
+    const prevStore = this.store;
+
+    if (store) {
+      this.store = setValuesByPath(this.store, store);
     }
 
     this.notifyObservers(prevStore, null, { type: 'valueUpdate', source: 'external' });

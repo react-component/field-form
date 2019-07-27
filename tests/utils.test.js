@@ -1,4 +1,4 @@
-import { move, isSimilar, setValues } from '../src/utils/valueUtil';
+import { move, isSimilar, setValues, setValuesByPath } from '../src/utils/valueUtil';
 import NameMap from '../src/utils/NameMap';
 
 describe('utils', () => {
@@ -34,6 +34,16 @@ describe('utils', () => {
     it('setValues', () => {
       expect(setValues({}, { a: 1 }, { b: 2 })).toEqual({ a: 1, b: 2 });
       expect(setValues([], [123])).toEqual([123]);
+    });
+
+    it('setValuesByPath', () => {
+      const store = { children: [{ a: 1 }, { b: 2 }] };
+      const newStore = { children: [{ a: 1 }, { b: 3 }] };
+      expect(setValuesByPath(store, { 'children.1.b': 3 })).toEqual(newStore);
+      expect(store.children[1].b).toBe(2);
+      expect(newStore.children[1].b).toBe(3);
+      expect(newStore.children[0]).not.toBe(store.children[0]);
+      expect(newStore.children[0]).toEqual(store.children[0]);
     });
   });
 

@@ -166,6 +166,7 @@ export interface FormInstance {
   resetFields: (fields?: NamePath[]) => void;
   setFields: (fields: FieldData[]) => void;
   setFieldsValue: (value: Store) => void;
+  setFieldsValueByPath: (value: Store) => void;
   validateFields: ValidateFields;
 
   // New API

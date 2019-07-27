@@ -125,5 +125,34 @@ describe('legacy.basic-form', () => {
       form.setFieldsValue({ user: { name: 'Light' } });
       expect(onValuesChange).not.toHaveBeenCalled();
     });
+
+    it('**Not** trigger `onValuesChange` when `setFieldsValueByPath`', () => {
+      let form;
+      const onValuesChange = jest.fn();
+
+      mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+            onValuesChange={onValuesChange}
+          >
+            <Field name={['user', 'name']}>
+              <Input />
+            </Field>
+            <Field name={['user', 'age']}>
+              <Input type="number" />
+            </Field>
+            <Field name="agreement">
+              <Input type="checkbox" />
+            </Field>
+          </Form>
+        </div>,
+      );
+
+      form.setFieldsValueByPath({ 'user.name': 'Light' });
+      expect(onValuesChange).not.toHaveBeenCalled();
+    });
   });
 });
