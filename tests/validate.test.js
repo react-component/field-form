@@ -68,32 +68,60 @@ describe('Form.Validate', () => {
     });
   });
 
-  it('customize validator', async () => {
-    const wrapper = mount(
-      <Form>
-        <InfoField
-          name="username"
-          rules={[
-            {
-              async validator(_, value) {
-                if (value !== 'bamboo') {
-                  return Promise.reject(new Error('should be bamboo!'));
-                }
-                return '';
+  describe('customize validator', () => {
+    it('work', async () => {
+      const wrapper = mount(
+        <Form>
+          <InfoField
+            name="username"
+            rules={[
+              {
+                async validator(_, value) {
+                  if (value !== 'bamboo') {
+                    return Promise.reject(new Error('should be bamboo!'));
+                  }
+                  return '';
+                },
               },
-            },
-          ]}
-        />
-      </Form>,
-    );
+            ]}
+          />
+        </Form>,
+      );
 
-    // Wrong value
-    await changeValue(wrapper, 'light');
-    matchError(wrapper, 'should be bamboo!');
+      // Wrong value
+      await changeValue(wrapper, 'light');
+      matchError(wrapper, 'should be bamboo!');
 
-    // Correct value
-    await changeValue(wrapper, 'bamboo');
-    matchError(wrapper, false);
+      // Correct value
+      await changeValue(wrapper, 'bamboo');
+      matchError(wrapper, false);
+    });
+
+    it('should error if throw in validate', async () => {
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const wrapper = mount(
+        <Form>
+          <InfoField
+            name="username"
+            rules={[
+              {
+                validator() {
+                  throw new Error('without thinking');
+                },
+              },
+            ]}
+          />
+        </Form>,
+      );
+
+      await changeValue(wrapper, 'light');
+      matchError(wrapper, "Validation error on field 'username'");
+
+      const consoleErr = String(errorSpy.mock.calls[0][0]);
+      expect(consoleErr).toBe('Error: without thinking');
+
+      errorSpy.mockRestore();
+    });
   });
 
   it('fail validate if throw', async () => {
