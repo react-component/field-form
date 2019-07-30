@@ -6,7 +6,6 @@ import {
   ValidateOptions,
   ValidateMessages,
   RuleObject,
-  Rule,
   StoreValue,
 } from '../interface';
 import { setValues } from './valueUtil';
