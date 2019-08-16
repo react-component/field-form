@@ -271,5 +271,36 @@ describe('Form.Validate', () => {
     expect(form.getFieldValue('title')).toBe('1');
     expect(form.getFieldError('title')).toEqual(['Title should be 3+ characters']);
   });
+
+  it('validate only accept exist fields', async () => {
+    let form;
+    const onFinish = jest.fn();
+
+    const wrapper = mount(
+      <div>
+        <Form
+          onFinish={onFinish}
+          ref={instance => {
+            form = instance;
+          }}
+          initialValues={{ user: 'light', pass: 'bamboo' }}
+        >
+          <InfoField name="user">
+            <Input />
+          </InfoField>
+          <button type="submit">submit</button>
+        </Form>
+      </div>,
+    );
+
+    // Validate callback
+    expect(await form.validateFields(['user'])).toEqual({ user: 'light' });
+    expect(await form.validateFields()).toEqual({ user: 'light' });
+
+    // Submit callback
+    wrapper.find('button').simulate('submit');
+    await timeout();
+    expect(onFinish).toHaveBeenCalledWith({ user: 'light' });
+  });
 });
 /* eslint-enable no-template-curly-in-string */

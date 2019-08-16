@@ -431,7 +431,10 @@ export class FormStore {
     nameList?: NamePath[],
     options?: ValidateOptions,
   ) => {
-    const namePathList: InternalNamePath[] | undefined = nameList && nameList.map(getNamePath);
+    const provideNameList = !!nameList;
+    const namePathList: InternalNamePath[] | undefined = provideNameList
+      ? nameList.map(getNamePath)
+      : [];
 
     // Collect result in promise list
     const promiseList: Promise<{
@@ -440,13 +443,20 @@ export class FormStore {
     }>[] = [];
 
     this.getFieldEntities().forEach((field: FieldEntity) => {
+      // Add field if not provide `nameList`
+      if (!provideNameList) {
+        namePathList.push(field.getNamePath());
+      }
+
+      // Skip if without rule
       if (!field.props.rules || !field.props.rules.length) {
         return;
       }
 
       const fieldNamePath = field.getNamePath();
 
-      if (!namePathList || containsNamePath(namePathList, fieldNamePath)) {
+      // Add field validate rule in to promise list
+      if (!provideNameList || containsNamePath(namePathList, fieldNamePath)) {
         const promise = field.validateRules({
           validateMessages: {
             ...defaultValidateMessages,
@@ -485,7 +495,7 @@ export class FormStore {
       .then(
         (): Promise<Store | string[]> => {
           if (this.lastValidatePromise === summaryPromise) {
-            return Promise.resolve(this.store);
+            return Promise.resolve(this.getFieldsValue(namePathList));
           }
           return Promise.reject<string[]>([]);
         },
@@ -493,7 +503,7 @@ export class FormStore {
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
         const errorList = results.filter(result => result && result.errors.length);
         return Promise.reject({
-          values: this.store,
+          values: this.getFieldsValue(namePathList),
           errorFields: errorList,
           outOfDate: this.lastValidatePromise !== summaryPromise,
         });
