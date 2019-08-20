@@ -58,7 +58,7 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
-    "async-validator": "^1.11.2",
+    "async-validator": "^3.0.3",
     "lodash": "^4.17.4",
     "rc-util": "^4.6.0",
     "warning": "^4.0.3"
