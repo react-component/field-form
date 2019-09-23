@@ -4,8 +4,7 @@ import { ReducerAction } from './useForm';
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
 
-type StoreBaseValue = string | number | boolean;
-export type StoreValue = StoreBaseValue | Store | StoreBaseValue[];
+export type StoreValue = any;
 export interface Store {
   [name: string]: StoreValue;
 }
