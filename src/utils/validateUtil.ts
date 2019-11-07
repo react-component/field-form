@@ -1,4 +1,4 @@
-import AsyncValidator from 'async-validator';
+import RawAsyncValidator from 'async-validator';
 import * as React from 'react';
 import warning from 'warning';
 import {
@@ -10,6 +10,9 @@ import {
 } from '../interface';
 import { setValues } from './valueUtil';
 import { defaultValidateMessages } from './messages';
+
+// Remove incorrect original ts define
+const AsyncValidator: any = RawAsyncValidator;
 
 /**
  * Replace with template.
@@ -41,13 +44,7 @@ function convertMessages(
     replaceMessage(template, { ...kv, ...additionalKV });
 
   /* eslint-disable no-param-reassign */
-  type Template =
-    | {
-        [name: string]: string | (() => string) | { [name: string]: Template };
-      }
-    | string;
-
-  function fillTemplate(source: Template, target: Template = {}) {
+  function fillTemplate(source: ValidateMessages, target: ValidateMessages = {}) {
     Object.keys(source).forEach(ruleName => {
       const value = source[ruleName];
       if (typeof value === 'string') {
@@ -96,9 +93,9 @@ async function validateRule(
     if (errObj.errors) {
       result = errObj.errors.map(({ message }, index) =>
         // Wrap ReactNode with `key`
-        (React.isValidElement(message)
+        React.isValidElement(message)
           ? React.cloneElement(message, { key: `error_${index}` })
-          : message),
+          : message,
       );
     } else {
       console.error(errObj);
