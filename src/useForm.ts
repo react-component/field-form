@@ -521,7 +521,12 @@ export class FormStore {
       .then(values => {
         const { onFinish } = this.callbacks;
         if (onFinish) {
-          onFinish(values);
+          try {
+            onFinish(values);
+          } catch (err) {
+            // Should print error if user `onFinish` callback failed
+            console.error(err);
+          }
         }
       })
       .catch(e => {

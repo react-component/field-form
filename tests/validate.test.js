@@ -302,5 +302,28 @@ describe('Form.Validate', () => {
     await timeout();
     expect(onFinish).toHaveBeenCalledWith({ user: 'light' });
   });
+
+  it('should error in console if user script failed', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const wrapper = mount(
+      <Form
+        onFinish={() => {
+          throw new Error('should console this');
+        }}
+        initialValues={{ user: 'light' }}
+      >
+        <InfoField name="user">
+          <Input />
+        </InfoField>
+      </Form>,
+    );
+
+    wrapper.find('form').simulate('submit');
+    await timeout();
+    expect(errorSpy.mock.calls[0][0].message).toEqual('should console this');
+
+    errorSpy.mockRestore();
+  });
 });
 /* eslint-enable no-template-curly-in-string */
