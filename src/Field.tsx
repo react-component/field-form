@@ -50,6 +50,7 @@ export interface FieldProps {
   trigger?: string;
   validateTrigger?: string | string[] | false;
   valuePropName?: string;
+  label?: string;
   onReset?: () => void;
 }
 
@@ -252,6 +253,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   public validateRules = (options?: ValidateOptions) => {
+    const { label } = this.props;
     const { triggerName } = (options || {}) as ValidateOptions;
     const namePath = this.getNamePath();
 
@@ -267,7 +269,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
       });
     }
 
-    const promise = validateRules(namePath, this.getValue(), filteredRules, options);
+    const promise = validateRules(namePath, this.getValue(), filteredRules, options, label);
     this.validatePromise = promise;
     this.errors = [];
 

@@ -8,7 +8,7 @@ import { ValidateMessages } from '../src/interface';
 
 const myMessages: ValidateMessages = {
   default: '${name} 看起来怪怪的……',
-  required: '你需要一个 ${name}',
+  required: '你需要一个 ${label}',
   types: {
     number: '嗨，这个 ${name} 不是一个合格的 ${type}',
   },
@@ -46,7 +46,7 @@ export default class Demo extends React.Component {
           validateMessages={myMessages}
           initialValues={{ remember: true }}
         >
-          <LabelField name="password" rules={[{ required: true }]}>
+          <LabelField name="password" rules={[{ required: true }]} label="密码">
             <Input placeholder="password" />
           </LabelField>
 

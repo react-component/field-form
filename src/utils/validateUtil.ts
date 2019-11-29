@@ -33,10 +33,12 @@ function convertMessages(
   messages: ValidateMessages,
   name: string,
   rule: RuleObject,
+  label?: string,
 ): ValidateMessages {
   const kv = {
     ...(rule as Record<string, string | number>),
     name,
+    label,
     enum: (rule.enum || []).join(', '),
   };
 
@@ -69,6 +71,7 @@ async function validateRule(
   value: StoreValue,
   rule: RuleObject,
   options: ValidateOptions,
+  label?: string,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
   // We should special handle array validate
@@ -82,7 +85,12 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const messages: ValidateMessages = convertMessages(options.validateMessages, name, cloneRule);
+  const messages: ValidateMessages = convertMessages(
+    options.validateMessages,
+    name,
+    cloneRule,
+    label,
+  );
   validator.messages(messages);
 
   let result = [];
@@ -125,6 +133,7 @@ export function validateRules(
   value: StoreValue,
   rules: RuleObject[],
   options: ValidateOptions,
+  label?: string,
 ) {
   const name = namePath.join('.');
 
@@ -180,7 +189,7 @@ export function validateRules(
   });
 
   const summaryPromise: Promise<string[]> = Promise.all(
-    filledRules.map(rule => validateRule(name, value, rule, options)),
+    filledRules.map(rule => validateRule(name, value, rule, options, label)),
   ).then((errorsList: string[][]): string[] | Promise<string[]> => {
     const errors: string[] = [].concat(...errorsList);
 
