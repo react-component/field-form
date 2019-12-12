@@ -1,35 +1,15 @@
 import * as React from 'react';
 import {
   Store,
-  FormInstance,
   FieldData,
-  ValidateMessages,
-  Callbacks,
   InternalFormInstance,
+  RenderProps,
+  FormContextProps,
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
-import FormContext, { FormContextProps } from './FormContext';
+import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
-
-type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
-
-type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
-
-export interface FormProps extends BaseFormProps {
-  initialValues?: Store;
-  form?: FormInstance;
-  children?: RenderProps | React.ReactNode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component?: false | string | React.FC<any> | React.ComponentClass<any>;
-  fields?: FieldData[];
-  name?: string;
-  validateMessages?: ValidateMessages;
-  onValuesChange?: Callbacks['onValuesChange'];
-  onFieldsChange?: Callbacks['onFieldsChange'];
-  onFinish?: Callbacks['onFinish'];
-  onFinishFailed?: Callbacks['onFinishFailed'];
-}
 
 const Form: React.FunctionComponent<FormProps> = (
   {

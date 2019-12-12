@@ -4,9 +4,124 @@ import { ReducerAction } from './useForm';
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
 
+export type BaseFormProps = Omit<
+  React.FormHTMLAttributes<HTMLFormElement>,
+  'onSubmit'
+>;
+
+export type RenderProps = (
+  values: Store,
+  form: FormInstance,
+) => JSX.Element | React.ReactNode;
+
+export interface FormProps extends BaseFormProps {
+  initialValues?: Store;
+  form?: FormInstance;
+  children?: RenderProps | React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component?: false | string | React.FC<any> | React.ComponentClass<any>;
+  fields?: FieldData[];
+  name?: string;
+  validateMessages?: ValidateMessages;
+  onValuesChange?: Callbacks['onValuesChange'];
+  onFieldsChange?: Callbacks['onFieldsChange'];
+  onFinish?: Callbacks['onFinish'];
+  onFinishFailed?: Callbacks['onFinishFailed'];
+}
+
 export type StoreValue = any;
 export interface Store {
   [name: string]: StoreValue;
+}
+
+export interface Forms {
+  [name: string]: FormInstance;
+}
+
+export interface FormChangeInfo {
+  changedFields: FieldData[];
+  forms: Forms;
+}
+
+export interface FormFinishInfo {
+  values: Store;
+  forms: Forms;
+}
+
+export interface FormProviderProps {
+  validateMessages?: ValidateMessages;
+  onFormChange?: (name: string, info: FormChangeInfo) => void;
+  onFormFinish?: (name: string, info: FormFinishInfo) => void;
+}
+
+export interface FormContextProps extends FormProviderProps {
+  triggerFormChange: (name: string, changedFields: FieldData[]) => void;
+  triggerFormFinish: (name: string, values: Store) => void;
+  registerForm: (name: string, form: FormInstance) => void;
+  unregisterForm: (name: string) => void;
+}
+
+export interface ListField {
+  name: number;
+  key: number;
+}
+
+export interface ListOperations {
+  add: () => void;
+  remove: (index: number) => void;
+  move: (from: number, to: number) => void;
+}
+
+export interface ListProps {
+  name: NamePath;
+  children?: (
+    fields: ListField[],
+    operations: ListOperations,
+  ) => JSX.Element | React.ReactNode;
+}
+
+export interface ChildProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [name: string]: any;
+}
+
+export interface FieldProps {
+  children?:
+    | React.ReactElement
+    | ((
+        control: ChildProps,
+        meta: Meta,
+        form: FormInstance,
+      ) => React.ReactNode);
+  /**
+   * Set up `dependencies` field.
+   * When dependencies field update and current field is touched,
+   * will trigger validate rules and render.
+   */
+  dependencies?: NamePath[];
+  getValueFromEvent?: (...args: EventArgs) => StoreValue;
+  name?: NamePath;
+  normalize?: (
+    value: StoreValue,
+    prevValue: StoreValue,
+    allValues: Store,
+  ) => StoreValue;
+  rules?: Rule[];
+  shouldUpdate?:
+    | true
+    | ((
+        prevValues: Store,
+        nextValues: Store,
+        info: { source?: string },
+      ) => boolean);
+  trigger?: string;
+  validateTrigger?: string | string[] | false;
+  valuePropName?: string;
+  onReset?: () => void;
+}
+
+export interface FieldState {
+  reset: boolean;
 }
 
 export interface Meta {
@@ -80,7 +195,11 @@ export interface ValidateErrorEntity {
 }
 
 export interface FieldEntity {
-  onStoreChange: (store: Store, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
+  onStoreChange: (
+    store: Store,
+    namePathList: InternalNamePath[] | null,
+    info: NotifyInfo,
+  ) => void;
   isFieldTouched: () => boolean;
   isFieldValidating: () => boolean;
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
