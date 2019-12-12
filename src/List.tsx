@@ -1,25 +1,15 @@
 import * as React from 'react';
 import warning from 'warning';
-import { InternalNamePath, NamePath, StoreValue } from './interface';
+import {
+  InternalNamePath,
+  StoreValue,
+  ListField,
+  ListOperations,
+  ListProps,
+} from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
-
-interface ListField {
-  name: number;
-  key: number;
-}
-
-interface ListOperations {
-  add: () => void;
-  remove: (index: number) => void;
-  move: (from: number, to: number) => void;
-}
-
-interface ListProps {
-  name: NamePath;
-  children?: (fields: ListField[], operations: ListOperations) => JSX.Element | React.ReactNode;
-}
 
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
   const context = React.useContext(FieldContext);
@@ -36,9 +26,16 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
   }
 
   const parentPrefixName = getNamePath(context.prefixName) || [];
-  const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
+  const prefixName: InternalNamePath = [
+    ...parentPrefixName,
+    ...getNamePath(name),
+  ];
 
-  const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }) => {
+  const shouldUpdate = (
+    prevValue: StoreValue,
+    nextValue: StoreValue,
+    { source },
+  ) => {
     if (source === 'internal') {
       return false;
     }
@@ -93,7 +90,12 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
               const newValue = getNewValue();
 
               // Do not handle out of range
-              if (from < 0 || from >= newValue.length || to < 0 || to >= newValue.length) {
+              if (
+                from < 0 ||
+                from >= newValue.length ||
+                to < 0 ||
+                to >= newValue.length
+              ) {
                 return;
               }
 

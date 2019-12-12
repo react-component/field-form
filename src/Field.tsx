@@ -6,7 +6,6 @@ import {
   FormInstance,
   InternalNamePath,
   Meta,
-  NamePath,
   NotifyInfo,
   Rule,
   Store,
@@ -15,6 +14,9 @@ import {
   RuleObject,
   StoreValue,
   EventArgs,
+  FieldState,
+  FieldProps,
+  ChildProps,
 } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
@@ -25,50 +27,6 @@ import {
   getNamePath,
   getValue,
 } from './utils/valueUtil';
-
-interface ChildProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [name: string]: any;
-}
-
-export interface FieldProps {
-  children?:
-    | React.ReactElement
-    | ((
-        control: ChildProps,
-        meta: Meta,
-        form: FormInstance,
-      ) => React.ReactNode);
-  /**
-   * Set up `dependencies` field.
-   * When dependencies field update and current field is touched,
-   * will trigger validate rules and render.
-   */
-  dependencies?: NamePath[];
-  getValueFromEvent?: (...args: EventArgs) => StoreValue;
-  name?: NamePath;
-  normalize?: (
-    value: StoreValue,
-    prevValue: StoreValue,
-    allValues: Store,
-  ) => StoreValue;
-  rules?: Rule[];
-  shouldUpdate?:
-    | true
-    | ((
-        prevValues: Store,
-        nextValues: Store,
-        info: { source?: string },
-      ) => boolean);
-  trigger?: string;
-  validateTrigger?: string | string[] | false;
-  valuePropName?: string;
-  onReset?: () => void;
-}
-
-export interface FieldState {
-  reset: boolean;
-}
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
 class Field extends React.Component<FieldProps, FieldState>
