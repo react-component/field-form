@@ -1,5 +1,5 @@
-import setIn from 'lodash/fp/set';
-import get from 'lodash/get';
+import get from 'rc-util/lib/utils/get';
+import set from 'rc-util/lib/utils/set';
 import {
   InternalNamePath,
   NamePath,
@@ -30,7 +30,7 @@ export function setValue(
   namePath: InternalNamePath,
   value: StoreValue,
 ): Store {
-  const newStore = setIn(namePath, value, store);
+  const newStore = set(store, namePath, value);
   return newStore;
 }
 

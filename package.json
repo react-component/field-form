@@ -59,8 +59,7 @@
   },
   "dependencies": {
     "async-validator": "^3.0.3",
-    "lodash": "^4.17.4",
-    "rc-util": "^4.6.0",
+    "rc-util": "^4.17.0",
     "warning": "^4.0.3"
   }
 }
