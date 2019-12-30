@@ -1,7 +1,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
-import Form, { Field } from '../src';
+import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, getField, matchError } from './common';
 import timeout from './common/timeout';
@@ -595,6 +595,25 @@ describe('Form.Basic', () => {
     );
     expect(errorSpy).toHaveBeenCalledWith(
       'Warning: `children` of Field is not validate ReactElement.',
+    );
+    errorSpy.mockRestore();
+  });
+
+  it('warning if call function before set prop', () => {
+    resetWarned();
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const Test = () => {
+      const [form] = useForm();
+      form.getFieldsValue();
+
+      return <Form />;
+    };
+
+    mount(<Test />);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: Instance created by `useForm` is not connect to any Form element. Forget to pass `form` prop?',
     );
     errorSpy.mockRestore();
   });

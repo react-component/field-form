@@ -46,6 +46,8 @@ interface ValidateAction {
 export type ReducerAction = UpdateAction | ValidateAction;
 
 export class FormStore {
+  private formHooked: boolean = false;
+
   private forceRootUpdate: () => void;
 
   private subscribable: boolean = true;
@@ -87,6 +89,8 @@ export class FormStore {
   // ======================== Internal Hooks ========================
   private getInternalHooks = (key: string): InternalHooks | null => {
     if (key === HOOK_MARK) {
+      this.formHooked = true;
+
       return {
         dispatch: this.dispatch,
         registerField: this.registerField,
@@ -98,7 +102,10 @@ export class FormStore {
       };
     }
 
-    warning(false, '`getInternalHooks` is internal usage. Should not call directly.');
+    warning(
+      false,
+      '`getInternalHooks` is internal usage. Should not call directly.',
+    );
     return null;
   };
 
@@ -116,7 +123,8 @@ export class FormStore {
     }
   };
 
-  private getInitialValue = (namePath: InternalNamePath) => getValue(this.initialValues, namePath);
+  private getInitialValue = (namePath: InternalNamePath) =>
+    getValue(this.initialValues, namePath);
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
@@ -124,6 +132,15 @@ export class FormStore {
 
   private setValidateMessages = (validateMessages: ValidateMessages) => {
     this.validateMessages = validateMessages;
+  };
+
+  private warningUnhooked = () => {
+    if (process.env.NODE_ENV !== 'production' && !this.formHooked) {
+      warning(
+        false,
+        'Instance created by `useForm` is not connect to any Form element. Forget to pass `form` prop?',
+      );
+    }
   };
 
   // ============================ Fields ============================
@@ -149,6 +166,8 @@ export class FormStore {
   };
 
   private getFieldsValue = (nameList?: NamePath[]) => {
+    this.warningUnhooked();
+
     if (!nameList) {
       return this.store;
     }
@@ -157,11 +176,15 @@ export class FormStore {
   };
 
   private getFieldValue = (name: NamePath) => {
+    this.warningUnhooked();
+
     const namePath: InternalNamePath = getNamePath(name);
     return getValue(this.store, namePath);
   };
 
   private getFieldsError = (nameList?: NamePath[]) => {
+    this.warningUnhooked();
+
     let fieldEntities = this.getFieldEntities(true);
 
     if (nameList) {
@@ -189,12 +212,16 @@ export class FormStore {
   };
 
   private getFieldError = (name: NamePath): string[] => {
+    this.warningUnhooked();
+
     const namePath = getNamePath(name);
     const fieldError = this.getFieldsError([namePath])[0];
     return fieldError.errors;
   };
 
   private isFieldsTouched = (...args) => {
+    this.warningUnhooked();
+
     const [arg0, arg1] = args;
     let namePathList: InternalNamePath[] | null;
     let isAllFieldsTouched = false;
@@ -232,9 +259,14 @@ export class FormStore {
       : this.getFieldEntities(true).some(testTouched);
   };
 
-  private isFieldTouched = (name: NamePath) => this.isFieldsTouched([name]);
+  private isFieldTouched = (name: NamePath) => {
+    this.warningUnhooked();
+    return this.isFieldsTouched([name]);
+  };
 
   private isFieldsValidating = (nameList?: NamePath[]) => {
+    this.warningUnhooked();
+
     const fieldEntities = this.getFieldEntities();
     if (!nameList) {
       return fieldEntities.some(testField => testField.isFieldValidating());
@@ -243,13 +275,22 @@ export class FormStore {
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
     return fieldEntities.some(testField => {
       const fieldNamePath = testField.getNamePath();
-      return containsNamePath(namePathList, fieldNamePath) && testField.isFieldValidating();
+      return (
+        containsNamePath(namePathList, fieldNamePath) &&
+        testField.isFieldValidating()
+      );
     });
   };
 
-  private isFieldValidating = (name: NamePath) => this.isFieldsValidating([name]);
+  private isFieldValidating = (name: NamePath) => {
+    this.warningUnhooked();
+
+    return this.isFieldsValidating([name]);
+  };
 
   private resetFields = (nameList?: NamePath[]) => {
+    this.warningUnhooked();
+
     const prevStore = this.store;
     if (!nameList) {
       this.store = setValues({}, this.initialValues);
@@ -267,6 +308,8 @@ export class FormStore {
   };
 
   private setFields = (fields: FieldData[]) => {
+    this.warningUnhooked();
+
     const prevStore = this.store;
 
     fields.forEach((fieldData: FieldData) => {
@@ -278,7 +321,10 @@ export class FormStore {
         this.store = setValue(this.store, namePath, data.value);
       }
 
-      this.notifyObservers(prevStore, [namePath], { type: 'setField', data: fieldData });
+      this.notifyObservers(prevStore, [namePath], {
+        type: 'setField',
+        data: fieldData,
+      });
     });
   };
 
@@ -340,7 +386,10 @@ export class FormStore {
     const prevStore = this.store;
     this.store = setValue(this.store, namePath, value);
 
-    this.notifyObservers(prevStore, [namePath], { type: 'valueUpdate', source: 'internal' });
+    this.notifyObservers(prevStore, [namePath], {
+      type: 'valueUpdate',
+      source: 'internal',
+    });
 
     // Notify dependencies children with parent update
     const childrenFields = this.getDependencyChildrenFields(namePath);
@@ -364,16 +413,23 @@ export class FormStore {
 
   // Let all child Field get update.
   private setFieldsValue = (store: Store) => {
+    this.warningUnhooked();
+
     const prevStore = this.store;
 
     if (store) {
       this.store = setValues(this.store, store);
     }
 
-    this.notifyObservers(prevStore, null, { type: 'valueUpdate', source: 'external' });
+    this.notifyObservers(prevStore, null, {
+      type: 'valueUpdate',
+      source: 'external',
+    });
   };
 
-  private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {
+  private getDependencyChildrenFields = (
+    rootNamePath: InternalNamePath,
+  ): InternalNamePath[] => {
     const children: Set<FieldEntity> = new Set();
     const childrenFields: InternalNamePath[] = [];
 
@@ -431,6 +487,8 @@ export class FormStore {
     nameList?: NamePath[],
     options?: ValidateOptions,
   ) => {
+    this.warningUnhooked();
+
     const provideNameList = !!nameList;
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
@@ -486,12 +544,18 @@ export class FormStore {
     summaryPromise
       .catch(results => results)
       .then((results: FieldError[]) => {
-        const resultNamePathList: InternalNamePath[] = results.map(({ name }) => name);
-        this.notifyObservers(this.store, resultNamePathList, { type: 'validateFinish' });
+        const resultNamePathList: InternalNamePath[] = results.map(
+          ({ name }) => name,
+        );
+        this.notifyObservers(this.store, resultNamePathList, {
+          type: 'validateFinish',
+        });
         this.triggerOnFieldsChange(resultNamePathList);
       });
 
-    const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
+    const returnPromise: Promise<
+      Store | ValidateErrorEntity | string[]
+    > = summaryPromise
       .then(
         (): Promise<Store | string[]> => {
           if (this.lastValidatePromise === summaryPromise) {
@@ -501,7 +565,9 @@ export class FormStore {
         },
       )
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
-        const errorList = results.filter(result => result && result.errors.length);
+        const errorList = results.filter(
+          result => result && result.errors.length,
+        );
         return Promise.reject({
           values: this.getFieldsValue(namePathList),
           errorFields: errorList,
@@ -517,6 +583,8 @@ export class FormStore {
 
   // ============================ Submit ============================
   private submit = () => {
+    this.warningUnhooked();
+
     this.validateFields()
       .then(values => {
         const { onFinish } = this.callbacks;
