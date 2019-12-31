@@ -11,7 +11,7 @@ interface ListField {
 }
 
 interface ListOperations {
-  add: () => void;
+  add: (defaultValue?: StoreValue) => void;
   remove: (index: number) => void;
   move: (from: number, to: number) => void;
 }
@@ -58,13 +58,13 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
            * Always get latest value in case user update fields by `form` api.
            */
           const operations: ListOperations = {
-            add: () => {
+            add: defaultValue => {
               // Mapping keys
               keyManager.keys = [...keyManager.keys, keyManager.id];
               keyManager.id += 1;
 
               const newValue = getNewValue();
-              onChange([...newValue, undefined]);
+              onChange([...newValue, defaultValue]);
             },
             remove: (index: number) => {
               const newValue = getNewValue();

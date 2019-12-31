@@ -95,15 +95,20 @@ describe('Form.List', () => {
     act(() => {
       operation.add();
     });
+    // Add default value
     act(() => {
-      operation.add();
+      operation.add('2');
     });
+
     act(() => {
       operation.add();
     });
 
     wrapper.update();
     expect(getList().find(Field).length).toEqual(3);
+    expect(form.getFieldsValue()).toEqual({
+      list: [undefined, '2', undefined],
+    });
 
     matchKey(0, '0');
     matchKey(1, '1');
@@ -111,7 +116,7 @@ describe('Form.List', () => {
 
     // Move
     act(() => {
-        operation.move(2, 0);
+      operation.move(2, 0);
     });
     wrapper.update();
     matchKey(0, '2');
