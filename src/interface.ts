@@ -75,7 +75,7 @@ export type Rule = RuleObject | RuleRender;
 
 export interface ValidateErrorEntity {
   values: Store;
-  errorFields: { name: InternalNamePath; errors: string[] };
+  errorFields: { name: InternalNamePath; errors: string[] }[];
   outOfDate: boolean;
 }
 
