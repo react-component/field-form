@@ -67,7 +67,7 @@ export interface FieldProps {
 }
 
 export interface FieldState {
-  reset: boolean;
+  resetCount: number;
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
@@ -82,7 +82,7 @@ class Field extends React.Component<FieldProps, FieldState>
   };
 
   public state = {
-    reset: false,
+    resetCount: 0,
   };
 
   private cancelRegisterFunc: () => void | null = null;
@@ -151,17 +151,11 @@ class Field extends React.Component<FieldProps, FieldState>
     if (this.destroy) return;
 
     /**
-     * We update `reset` state twice to clean up current node.
-     * Which helps to reset value without define the type.
+     * Clean up current node.
      */
-    this.setState(
-      {
-        reset: true,
-      },
-      () => {
-        this.setState({ reset: false });
-      },
-    );
+    this.setState(prevState => ({
+      resetCount: prevState.resetCount + 1,
+    }));
   };
 
   // ========================= Field Entity Interfaces =========================
@@ -453,7 +447,7 @@ class Field extends React.Component<FieldProps, FieldState>
   };
 
   public render() {
-    const { reset } = this.state;
+    const { resetCount } = this.state;
     const { children } = this.props;
 
     const { child, isFunction } = this.getOnlyChild(children);
@@ -472,12 +466,7 @@ class Field extends React.Component<FieldProps, FieldState>
       returnChildNode = child;
     }
 
-    // Force render a new component to reset all the data
-    if (reset) {
-      return React.createElement(() => <>{returnChildNode}</>);
-    }
-
-    return returnChildNode;
+    return <React.Fragment key={resetCount}>{returnChildNode}</React.Fragment>;
   }
 }
 
