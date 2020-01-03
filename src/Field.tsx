@@ -153,8 +153,8 @@ class Field extends React.Component<FieldProps, FieldState>
     /**
      * Clean up current node.
      */
-    this.setState(prevState => ({
-      resetCount: prevState.resetCount + 1,
+    this.setState(({ resetCount }) => ({
+      resetCount: resetCount + 1,
     }));
   };
 
