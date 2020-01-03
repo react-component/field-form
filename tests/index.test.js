@@ -246,6 +246,15 @@ describe('Form.Basic', () => {
 
     it('update and reset should use new initialValues', () => {
       let form;
+      let mountCount = 0;
+
+      const TestInput = props => {
+        React.useEffect(() => {
+          mountCount += 1;
+        }, []);
+
+        return <Input {...props} />;
+      };
 
       const Test = ({ initialValues }) => (
         <Form
@@ -256,6 +265,9 @@ describe('Form.Basic', () => {
         >
           <Field name="username">
             <Input />
+          </Field>
+          <Field name="email">
+            <TestInput />
           </Field>
         </Form>
       );
@@ -285,6 +297,7 @@ describe('Form.Basic', () => {
       // Should change it
       form.resetFields();
       wrapper.update();
+      expect(mountCount).toEqual(1);
       expect(form.getFieldsValue()).toEqual({
         username: 'Light',
       });
