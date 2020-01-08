@@ -186,7 +186,7 @@ To keep sync with `rc-form` legacy usage of `validator`, we still provides `call
 
 | Prop   | Type                    |
 | ------ | ----------------------- |
-| add    | () => void              |
+| add    | (initValue: any) => void              |
 | remove | (index: number) => void |
 
 ### ValidateMessages
