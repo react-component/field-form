@@ -508,7 +508,7 @@ describe('Form.Basic', () => {
       expect(form.isFieldsTouched()).toBeFalsy();
     });
 
-    it('should trigger by setField', () => {
+    it.only('should trigger by setField', () => {
       const triggerUpdate = jest.fn();
       const formRef = React.createRef();
 
