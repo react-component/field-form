@@ -476,7 +476,7 @@ describe('Form.Basic', () => {
     expect(hasError).toBeTruthy();
   });
 
-  describe.only('setFields', () => {
+  describe('setFields', () => {
     it('should work', () => {
       let form;
       const wrapper = mount(
@@ -508,7 +508,7 @@ describe('Form.Basic', () => {
       expect(form.isFieldsTouched()).toBeFalsy();
     });
 
-    it.only('should trigger by setField', () => {
+    it('should trigger by setField', () => {
       const triggerUpdate = jest.fn();
       const formRef = React.createRef();
 
