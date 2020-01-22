@@ -476,35 +476,69 @@ describe('Form.Basic', () => {
     expect(hasError).toBeTruthy();
   });
 
-  it('setFields', () => {
-    let form;
-    const wrapper = mount(
-      <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
-          <InfoField name="username">
-            <Input />
-          </InfoField>
-        </Form>
-      </div>,
-    );
+  describe('setFields', () => {
+    it('should work', () => {
+      let form;
+      const wrapper = mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+          >
+            <InfoField name="username">
+              <Input />
+            </InfoField>
+          </Form>
+        </div>,
+      );
 
-    form.setFields([
-      {
-        name: 'username',
-        touched: false,
-        validating: true,
-        errors: ['Set It!'],
-      },
-    ]);
-    wrapper.update();
+      form.setFields([
+        {
+          name: 'username',
+          touched: false,
+          validating: true,
+          errors: ['Set It!'],
+        },
+      ]);
+      wrapper.update();
 
-    matchError(wrapper, 'Set It!');
-    expect(wrapper.find('.validating').length).toBeTruthy();
-    expect(form.isFieldsTouched()).toBeFalsy();
+      matchError(wrapper, 'Set It!');
+      expect(wrapper.find('.validating').length).toBeTruthy();
+      expect(form.isFieldsTouched()).toBeFalsy();
+    });
+
+    it('should trigger by setField', () => {
+      const triggerUpdate = jest.fn();
+      const formRef = React.createRef();
+
+      const wrapper = mount(
+        <div>
+          <Form ref={formRef}>
+            <Field shouldUpdate={(prev, next) => prev.value !== next.value}>
+              {() => {
+                triggerUpdate();
+                return <input />;
+              }}
+            </Field>
+          </Form>
+        </div>,
+      );
+      wrapper.update();
+      triggerUpdate.mockReset();
+
+      // Not trigger render
+      formRef.current.setFields([
+        { name: 'others', value: 'no need to update' },
+      ]);
+      wrapper.update();
+      expect(triggerUpdate).not.toHaveBeenCalled();
+
+      // Trigger render
+      formRef.current.setFields([{ name: 'value', value: 'should update' }]);
+      wrapper.update();
+      expect(triggerUpdate).toHaveBeenCalled();
+    });
   });
 
   it('render props get meta', () => {

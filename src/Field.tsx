@@ -26,6 +26,32 @@ import {
   getValue,
 } from './utils/valueUtil';
 
+export type ShouldUpdate =
+  | true
+  | ((
+      prevValues: Store,
+      nextValues: Store,
+      info: { source?: string },
+    ) => boolean);
+
+function requireUpdate(
+  shouldUpdate: ShouldUpdate,
+  prev: StoreValue,
+  next: StoreValue,
+  prevValue: StoreValue,
+  nextValue: StoreValue,
+  info: NotifyInfo,
+): boolean {
+  if (typeof shouldUpdate === 'function') {
+    return shouldUpdate(
+      prev,
+      next,
+      'source' in info ? { source: info.source } : {},
+    );
+  }
+  return prevValue !== nextValue;
+}
+
 interface ChildProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [name: string]: any;
@@ -53,13 +79,7 @@ export interface FieldProps {
     allValues: Store,
   ) => StoreValue;
   rules?: Rule[];
-  shouldUpdate?:
-    | true
-    | ((
-        prevValues: Store,
-        nextValues: Store,
-        info: { source?: string },
-      ) => boolean);
+  shouldUpdate?: ShouldUpdate;
   trigger?: string;
   validateTrigger?: string | string[] | false;
   valuePropName?: string;
@@ -219,6 +239,23 @@ class Field extends React.Component<FieldProps, FieldState>
           this.reRender();
           return;
         }
+
+        // Handle update by `setField` with `shouldUpdate`
+        if (
+          shouldUpdate &&
+          !namePath.length &&
+          requireUpdate(
+            shouldUpdate,
+            prevStore,
+            values,
+            prevValue,
+            curValue,
+            info,
+          )
+        ) {
+          this.reRender();
+          return;
+        }
         break;
       }
 
@@ -251,13 +288,14 @@ class Field extends React.Component<FieldProps, FieldState>
           dependencies.some(dependency =>
             containsNamePath(namePathList, getNamePath(dependency)),
           ) ||
-          (typeof shouldUpdate === 'function'
-            ? shouldUpdate(
-                prevStore,
-                values,
-                'source' in info ? { source: info.source } : {},
-              )
-            : prevValue !== curValue)
+          requireUpdate(
+            shouldUpdate,
+            prevStore,
+            values,
+            prevValue,
+            curValue,
+            info,
+          )
         ) {
           this.reRender();
           return;
