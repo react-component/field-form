@@ -17,6 +17,7 @@ import {
   InternalFormInstance,
   ValidateErrorEntity,
   StoreValue,
+  Meta,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -165,14 +166,42 @@ export class FormStore {
     return cache;
   };
 
-  private getFieldsValue = (nameList?: NamePath[]) => {
+  private getFieldEntitiesForNamePathList = (nameList?: NamePath[]) => {
+    if (!nameList) {
+      return this.getFieldEntities(true);
+    }
+    const cache = this.getFieldsMap(true);
+    return nameList.map(name => {
+      const namePath = getNamePath(name);
+      return cache.get(namePath);
+    });
+  };
+
+  private getFieldsValue = (
+    nameList?: NamePath[],
+    filterFunc?: (meta: Meta) => boolean,
+  ) => {
     this.warningUnhooked();
 
-    if (!nameList) {
+    if (!nameList && !filterFunc) {
       return this.store;
     }
+    if (!filterFunc) {
+      return cloneByNamePathList(this.store, nameList.map(getNamePath));
+    }
 
-    return cloneByNamePathList(this.store, nameList.map(getNamePath));
+    const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
+
+    const filteredNameList: NamePath[] = [];
+    fieldEntities.forEach((field: FieldEntity) => {
+      const namePath = field.getNamePath();
+      const meta = field.getMeta();
+      if (filterFunc(meta)) {
+        filteredNameList.push(namePath);
+      }
+    });
+
+    return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
   };
 
   private getFieldValue = (name: NamePath) => {
@@ -185,16 +214,7 @@ export class FormStore {
   private getFieldsError = (nameList?: NamePath[]) => {
     this.warningUnhooked();
 
-    let fieldEntities = this.getFieldEntities(true);
-
-    if (nameList) {
-      const cache = this.getFieldsMap(true);
-
-      fieldEntities = nameList.map(name => {
-        const namePath = getNamePath(name);
-        return cache.get(namePath);
-      });
-    }
+    const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
 
     return fieldEntities.map((entity, index) => {
       if (entity) {
