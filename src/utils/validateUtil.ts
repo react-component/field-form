@@ -125,6 +125,7 @@ export function validateRules(
   value: StoreValue,
   rules: RuleObject[],
   options: ValidateOptions,
+  validateFirst?: boolean,
 ) {
   const name = namePath.join('.');
 
@@ -179,20 +180,40 @@ export function validateRules(
     };
   });
 
-  const summaryPromise: Promise<string[]> = Promise.all(
-    filledRules.map(rule => validateRule(name, value, rule, options)),
-  ).then((errorsList: string[][]): string[] | Promise<string[]> => {
-    const errors: string[] = [].concat(...errorsList);
+  const rulePromises = filledRules.map(rule => validateRule(name, value, rule, options));
 
-    if (!errors.length) {
-      return [];
-    }
+  const summaryPromise: Promise<string[]> = validateFirst
+    ? finishOnFirstFailed(rulePromises)
+    : finishOnAllFailed(rulePromises).then((errors: string[]): string[] | Promise<string[]> => {
+        if (!errors.length) {
+          return [];
+        }
 
-    return Promise.reject<string[]>(errors);
-  });
+        return Promise.reject<string[]>(errors);
+      });
 
   // Internal catch error to avoid console error log.
   summaryPromise.catch(e => e);
 
   return summaryPromise;
+}
+
+async function finishOnAllFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+  return Promise.all(rulePromises).then((errorsList: string[][]): string[] | Promise<string[]> => {
+    const errors: string[] = [].concat(...errorsList);
+
+    return errors;
+  });
+}
+
+async function finishOnFirstFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+  return new Promise(resolve => {
+    rulePromises.forEach(promise => {
+      promise.then(errors => {
+        if (errors.length) {
+          resolve(errors);
+        }
+      });
+    });
+  });
 }
