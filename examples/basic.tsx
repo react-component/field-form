@@ -2,7 +2,6 @@ import React from 'react';
 import Form, { Field } from '../src';
 import Input from './components/Input';
 
-
 const list = new Array(1111).fill(() => null);
 
 export default class Demo extends React.Component {

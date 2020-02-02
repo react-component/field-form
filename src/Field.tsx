@@ -28,11 +28,7 @@ import {
 
 export type ShouldUpdate =
   | true
-  | ((
-      prevValues: Store,
-      nextValues: Store,
-      info: { source?: string },
-    ) => boolean);
+  | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
 
 function requireUpdate(
   shouldUpdate: ShouldUpdate,
@@ -43,11 +39,7 @@ function requireUpdate(
   info: NotifyInfo,
 ): boolean {
   if (typeof shouldUpdate === 'function') {
-    return shouldUpdate(
-      prev,
-      next,
-      'source' in info ? { source: info.source } : {},
-    );
+    return shouldUpdate(prev, next, 'source' in info ? { source: info.source } : {});
   }
   return prevValue !== nextValue;
 }
@@ -60,11 +52,7 @@ interface ChildProps {
 export interface FieldProps {
   children?:
     | React.ReactElement
-    | ((
-        control: ChildProps,
-        meta: Meta,
-        form: FormInstance,
-      ) => React.ReactNode);
+    | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
   /**
    * Set up `dependencies` field.
    * When dependencies field update and current field is touched,
@@ -73,11 +61,7 @@ export interface FieldProps {
   dependencies?: NamePath[];
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
   name?: NamePath;
-  normalize?: (
-    value: StoreValue,
-    prevValue: StoreValue,
-    allValues: Store,
-  ) => StoreValue;
+  normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
   shouldUpdate?: ShouldUpdate;
   trigger?: string;
@@ -91,8 +75,7 @@ export interface FieldState {
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<FieldProps, FieldState>
-  implements FieldEntity {
+class Field extends React.Component<FieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
 
   public static defaultProps = {
@@ -192,15 +175,10 @@ class Field extends React.Component<FieldProps, FieldState>
     const prevValue = this.getValue(prevStore);
     const curValue = this.getValue();
 
-    const namePathMatch =
-      namePathList && containsNamePath(namePathList, namePath);
+    const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
     // `setFieldsValue` is a quick access to update related status
-    if (
-      info.type === 'valueUpdate' &&
-      info.source === 'external' &&
-      prevValue !== curValue
-    ) {
+    if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
       this.touched = true;
       this.validatePromise = null;
       this.errors = [];
@@ -244,14 +222,7 @@ class Field extends React.Component<FieldProps, FieldState>
         if (
           shouldUpdate &&
           !namePath.length &&
-          requireUpdate(
-            shouldUpdate,
-            prevStore,
-            values,
-            prevValue,
-            curValue,
-            info,
-          )
+          requireUpdate(shouldUpdate, prevStore, values, prevValue, curValue, info)
         ) {
           this.reRender();
           return;
@@ -266,9 +237,7 @@ class Field extends React.Component<FieldProps, FieldState>
         const dependencyList = dependencies.map(getNamePath);
         if (
           namePathMatch ||
-          dependencyList.some(dependency =>
-            containsNamePath(info.relatedFields, dependency),
-          )
+          dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
         ) {
           this.reRender();
           return;
@@ -288,14 +257,7 @@ class Field extends React.Component<FieldProps, FieldState>
           dependencies.some(dependency =>
             containsNamePath(namePathList, getNamePath(dependency)),
           ) ||
-          requireUpdate(
-            shouldUpdate,
-            prevStore,
-            values,
-            prevValue,
-            curValue,
-            info,
-          )
+          requireUpdate(shouldUpdate, prevStore, values, prevValue, curValue, info)
         ) {
           this.reRender();
           return;
@@ -324,12 +286,7 @@ class Field extends React.Component<FieldProps, FieldState>
       });
     }
 
-    const promise = validateRules(
-      namePath,
-      this.getValue(),
-      filteredRules,
-      options,
-    );
+    const promise = validateRules(namePath, this.getValue(), filteredRules, options);
     this.validatePromise = promise;
     this.errors = [];
 
@@ -371,20 +328,14 @@ class Field extends React.Component<FieldProps, FieldState>
   public getOnlyChild = (
     children:
       | React.ReactNode
-      | ((
-          control: ChildProps,
-          meta: Meta,
-          context: FormInstance,
-        ) => React.ReactNode),
+      | ((control: ChildProps, meta: Meta, context: FormInstance) => React.ReactNode),
   ): { child: React.ReactNode | null; isFunction: boolean } => {
     // Support render props
     if (typeof children === 'function') {
       const meta = this.getMeta();
 
       return {
-        ...this.getOnlyChild(
-          children(this.getControlled(), meta, this.context),
-        ),
+        ...this.getOnlyChild(children(this.getControlled(), meta, this.context)),
         isFunction: true,
       };
     }
@@ -406,18 +357,9 @@ class Field extends React.Component<FieldProps, FieldState>
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
-    const {
-      trigger,
-      validateTrigger,
-      getValueFromEvent,
-      normalize,
-      valuePropName,
-    } = this.props;
+    const { trigger, validateTrigger, getValueFromEvent, normalize, valuePropName } = this.props;
     const namePath = this.getNamePath();
-    const {
-      getInternalHooks,
-      getFieldsValue,
-    }: InternalFormInstance = this.context;
+    const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
 

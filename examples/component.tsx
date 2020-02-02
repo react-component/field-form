@@ -2,20 +2,21 @@ import React from 'react';
 import Form, { Field, useForm } from '../src';
 import Input from './components/Input';
 
-
 export default () => {
   const [form] = useForm();
   return (
-    <form onSubmit={event => {
-      event.preventDefault();
-      event.stopPropagation();
-      form.validateFields().then(function (values) {
-        console.log(values);
-      }) // Do nothing about submit catch
-      .catch(function (e) {
-        return e;
-      });
-    }}>
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        event.stopPropagation();
+        form
+          .validateFields()
+          .then(values => {
+            console.log(values);
+          }) // Do nothing about submit catch
+          .catch(e => e);
+      }}
+    >
       <Form component={false} form={form}>
         <Field name="username">
           <Input placeholder="Username" />
@@ -27,4 +28,4 @@ export default () => {
       <button type="submit">submit</button>
     </form>
   );
-}
+};

@@ -49,7 +49,10 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
     <FormContext.Provider
       value={{
         ...formContext,
-        validateMessages: { ...formContext.validateMessages, ...validateMessages },
+        validateMessages: {
+          ...formContext.validateMessages,
+          ...validateMessages,
+        },
 
         // =========================================================
         // =                  Global Form Control                  =

@@ -102,10 +102,7 @@ export class FormStore {
       };
     }
 
-    warning(
-      false,
-      '`getInternalHooks` is internal usage. Should not call directly.',
-    );
+    warning(false, '`getInternalHooks` is internal usage. Should not call directly.');
     return null;
   };
 
@@ -123,8 +120,7 @@ export class FormStore {
     }
   };
 
-  private getInitialValue = (namePath: InternalNamePath) =>
-    getValue(this.initialValues, namePath);
+  private getInitialValue = (namePath: InternalNamePath) => getValue(this.initialValues, namePath);
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
@@ -275,10 +271,7 @@ export class FormStore {
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
     return fieldEntities.some(testField => {
       const fieldNamePath = testField.getNamePath();
-      return (
-        containsNamePath(namePathList, fieldNamePath) &&
-        testField.isFieldValidating()
-      );
+      return containsNamePath(namePathList, fieldNamePath) && testField.isFieldValidating();
     });
   };
 
@@ -427,9 +420,7 @@ export class FormStore {
     });
   };
 
-  private getDependencyChildrenFields = (
-    rootNamePath: InternalNamePath,
-  ): InternalNamePath[] => {
+  private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {
     const children: Set<FieldEntity> = new Set();
     const childrenFields: InternalNamePath[] = [];
 
@@ -544,18 +535,14 @@ export class FormStore {
     summaryPromise
       .catch(results => results)
       .then((results: FieldError[]) => {
-        const resultNamePathList: InternalNamePath[] = results.map(
-          ({ name }) => name,
-        );
+        const resultNamePathList: InternalNamePath[] = results.map(({ name }) => name);
         this.notifyObservers(this.store, resultNamePathList, {
           type: 'validateFinish',
         });
         this.triggerOnFieldsChange(resultNamePathList);
       });
 
-    const returnPromise: Promise<
-      Store | ValidateErrorEntity | string[]
-    > = summaryPromise
+    const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
       .then(
         (): Promise<Store | string[]> => {
           if (this.lastValidatePromise === summaryPromise) {
@@ -565,9 +552,7 @@ export class FormStore {
         },
       )
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
-        const errorList = results.filter(
-          result => result && result.errors.length,
-        );
+        const errorList = results.filter(result => result && result.errors.length);
         return Promise.reject({
           values: this.getFieldsValue(namePathList),
           errorFields: errorList,

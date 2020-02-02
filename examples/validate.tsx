@@ -19,7 +19,14 @@ const FieldState = ({ form, name }) => {
   const validating = form.isFieldValidating(name);
 
   return (
-    <div style={{ color: 'green', position: 'absolute', marginTop: -35, left: 200 }}>
+    <div
+      style={{
+        color: 'green',
+        position: 'absolute',
+        marginTop: -35,
+        left: 200,
+      }}
+    >
       {touched ? <span>Touched!</span> : null}
       {validating ? <span>Validating!</span> : null}
     </div>
@@ -100,16 +107,14 @@ export default class Demo extends React.Component {
                 <Error>{password2Error}</Error>
 
                 <Field name="renderProps" rules={[{ required: true }]}>
-                  {(control, meta) => {
-                    return (
-                      <div>
-                        Use Meta:
-                        <Input {...control} placeholder="render props" />
-                        <FieldState form={form} name="renderProps" />
-                        <Error>{meta.errors}</Error>
-                      </div>
-                    );
-                  }}
+                  {(control, meta) => (
+                    <div>
+                      Use Meta:
+                      <Input {...control} placeholder="render props" />
+                      <FieldState form={form} name="renderProps" />
+                      <Error>{meta.errors}</Error>
+                    </div>
+                  )}
                 </Field>
 
                 <Field
@@ -130,20 +135,18 @@ export default class Demo extends React.Component {
                     },
                   ]}
                 >
-                  {(control, meta) => {
-                    return (
-                      <div>
-                        Multiple `validateTrigger`:
-                        <ul>
-                          <li>Required check on submit</li>
-                          <li>Number check on change</li>
-                        </ul>
-                        <Input {...control} placeholder="validateTrigger" />
-                        <FieldState form={form} name="validateTrigger" />
-                        <Error>{meta.errors}</Error>
-                      </div>
-                    );
-                  }}
+                  {(control, meta) => (
+                    <div>
+                      Multiple `validateTrigger`:
+                      <ul>
+                        <li>Required check on submit</li>
+                        <li>Number check on change</li>
+                      </ul>
+                      <Input {...control} placeholder="validateTrigger" />
+                      <FieldState form={form} name="validateTrigger" />
+                      <Error>{meta.errors}</Error>
+                    </div>
+                  )}
                 </Field>
 
                 <br />

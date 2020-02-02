@@ -21,7 +21,7 @@ export default class Demo extends React.Component {
           <LabelField name="password">
             <Input placeholder="Password" />
           </LabelField>
-          <LabelField name={['path1', 'path2']} label="Nest Path" rules={[ { required: true } ]}>
+          <LabelField name={['path1', 'path2']} label="Nest Path" rules={[{ required: true }]}>
             <Input placeholder="nest" />
           </LabelField>
         </Form>

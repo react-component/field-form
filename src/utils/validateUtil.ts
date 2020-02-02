@@ -99,7 +99,7 @@ async function validateRule(
       );
     } else {
       console.error(errObj);
-      result = [(messages.default as (() => string))()];
+      result = [(messages.default as () => string)()];
     }
   }
 
