@@ -325,5 +325,38 @@ describe('Form.Validate', () => {
 
     errorSpy.mockRestore();
   });
+
+  it('validateFirst', async () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField
+            name="username"
+            validateFirst
+            rules={[
+              // Follow promise will never end
+              { validator: () => new Promise(() => null) },
+              { required: true },
+            ]}
+          />
+        </Form>
+      </div>,
+    );
+
+    await changeValue(wrapper, '');
+    matchError(wrapper, true);
+    expect(form.getFieldError('username')).toEqual(["'username' is required"]);
+    expect(form.getFieldsError()).toEqual([
+      {
+        name: ['username'],
+        errors: ["'username' is required"],
+      },
+    ]);
+  });
 });
 /* eslint-enable no-template-curly-in-string */
