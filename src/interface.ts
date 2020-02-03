@@ -80,7 +80,11 @@ export interface ValidateErrorEntity {
 }
 
 export interface FieldEntity {
-  onStoreChange: (store: Store, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
+  onStoreChange: (
+    store: Store,
+    namePathList: InternalNamePath[] | null,
+    info: NotifyInfo,
+  ) => void;
   isFieldTouched: () => boolean;
   isFieldValidating: () => boolean;
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
@@ -154,7 +158,10 @@ export interface InternalHooks {
 export interface FormInstance {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
-  getFieldsValue: (nameList?: NamePath[]) => Store;
+  getFieldsValue: (
+    nameList?: NamePath[],
+    filterFunc?: (meta: Meta) => boolean,
+  ) => Store;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;

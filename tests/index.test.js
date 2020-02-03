@@ -664,4 +664,51 @@ describe('Form.Basic', () => {
     );
     errorSpy.mockRestore();
   });
+
+  it('filtering fields by meta', async () => {
+    let form;
+
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField name="username" />
+          <InfoField name="password" />
+          <Field>{() => null}</Field>
+        </Form>
+      </div>,
+    );
+
+    expect(
+      form.getFieldsValue(null, meta => {
+        expect(Object.keys(meta)).toEqual([
+          'touched',
+          'validating',
+          'errors',
+          'name',
+        ]);
+        return false;
+      }),
+    ).toEqual({});
+
+    expect(form.getFieldsValue(null, () => true)).toEqual(
+      form.getFieldsValue(),
+    );
+    expect(form.getFieldsValue(null, meta => meta.touched)).toEqual({});
+
+    await changeValue(getField(wrapper, 0), 'Bamboo');
+    expect(form.getFieldsValue(null, () => true)).toEqual(
+      form.getFieldsValue(),
+    );
+    expect(form.getFieldsValue(null, meta => meta.touched)).toEqual({
+      username: 'Bamboo',
+    });
+    expect(form.getFieldsValue(['username'], meta => meta.touched)).toEqual({
+      username: 'Bamboo',
+    });
+    expect(form.getFieldsValue(['password'], meta => meta.touched)).toEqual({});
+  });
 });
