@@ -182,15 +182,16 @@ export function validateRules(
 
   const rulePromises = filledRules.map(rule => validateRule(name, value, rule, options));
 
-  const summaryPromise: Promise<string[]> = validateFirst
+  const summaryPromise: Promise<string[]> = (validateFirst
     ? finishOnFirstFailed(rulePromises)
-    : finishOnAllFailed(rulePromises).then((errors: string[]): string[] | Promise<string[]> => {
-        if (!errors.length) {
-          return [];
-        }
+    : finishOnAllFailed(rulePromises)
+  ).then((errors: string[]): string[] | Promise<string[]> => {
+    if (!errors.length) {
+      return [];
+    }
 
-        return Promise.reject<string[]>(errors);
-      });
+    return Promise.reject<string[]>(errors);
+  });
 
   // Internal catch error to avoid console error log.
   summaryPromise.catch(e => e);
@@ -207,11 +208,18 @@ async function finishOnAllFailed(rulePromises: Promise<string[]>[]): Promise<str
 }
 
 async function finishOnFirstFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+  let count = 0;
+
   return new Promise(resolve => {
     rulePromises.forEach(promise => {
       promise.then(errors => {
         if (errors.length) {
           resolve(errors);
+        }
+
+        count += 1;
+        if (count === rulePromises.length) {
+          resolve([]);
         }
       });
     });

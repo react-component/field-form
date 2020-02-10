@@ -328,26 +328,38 @@ describe('Form.Validate', () => {
 
   it('validateFirst', async () => {
     let form;
+    let canEnd = false;
+    const onFinish = jest.fn();
+
     const wrapper = mount(
       <div>
         <Form
           ref={instance => {
             form = instance;
           }}
+          onFinish={onFinish}
         >
           <InfoField
             name="username"
             validateFirst
             rules={[
               // Follow promise will never end
-              { validator: () => new Promise(() => null) },
               { required: true },
+              {
+                validator: () =>
+                  new Promise(resolve => {
+                    if (canEnd) {
+                      resolve();
+                    }
+                  }),
+              },
             ]}
           />
         </Form>
       </div>,
     );
 
+    // Not pass
     await changeValue(wrapper, '');
     matchError(wrapper, true);
     expect(form.getFieldError('username')).toEqual(["'username' is required"]);
@@ -357,6 +369,15 @@ describe('Form.Validate', () => {
         errors: ["'username' is required"],
       },
     ]);
+    expect(onFinish).not.toHaveBeenCalled();
+
+    console.log('=============');
+    // Should pass
+    canEnd = true;
+    await changeValue(wrapper, 'test');
+    wrapper.find('form').simulate('submit');
+    matchError(wrapper, false);
+    expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
   });
 });
 /* eslint-enable no-template-curly-in-string */
