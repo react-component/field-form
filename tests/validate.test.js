@@ -326,37 +326,101 @@ describe('Form.Validate', () => {
     errorSpy.mockRestore();
   });
 
-  it('validateFirst', async () => {
-    let form;
-    const wrapper = mount(
-      <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
-          <InfoField
-            name="username"
-            validateFirst
-            rules={[
-              // Follow promise will never end
-              { validator: () => new Promise(() => null) },
-              { required: true },
-            ]}
-          />
-        </Form>
-      </div>,
-    );
+  describe('validateFirst', () => {
+    const setup = ({ validateFirst }) => {
+      let form;
+      const onFinish = jest.fn();
+      const onFinishFailed = jest.fn();
+      const wrapper = mount(
+        <div>
+          <Form
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            ref={instance => {
+              form = instance;
+            }}
+          >
+            <InfoField
+              name="username"
+              validateFirst={validateFirst}
+              rules={[
+                { required: true, message: 'required error' },
+                {
+                  validator: async (rule, value) => {
+                    if (value === 'test') {
+                      return;
+                    }
+                    throw new Error('validator error');
+                  },
+                },
+              ]}
+            />
+            <button type="submit">submit</button>
+          </Form>
+        </div>,
+      );
+      return { form, onFinish, onFinishFailed, wrapper };
+    };
 
-    await changeValue(wrapper, '');
-    matchError(wrapper, true);
-    expect(form.getFieldError('username')).toEqual(["'username' is required"]);
-    expect(form.getFieldsError()).toEqual([
-      {
-        name: ['username'],
-        errors: ["'username' is required"],
-      },
-    ]);
+    it('should only show first error when validateFirst is true', async () => {
+      const { form, wrapper } = setup({ validateFirst: true });
+      const expectedErrors = ['required error'];
+      await changeValue(wrapper, '');
+      matchError(wrapper, true);
+      expect(form.getFieldError('username')).toEqual(expectedErrors);
+      expect(form.getFieldsError()).toEqual([{ name: ['username'], errors: expectedErrors }]);
+    });
+
+    it('should show all errors when validateFirst is false', async () => {
+      const { form, wrapper } = setup({ validateFirst: false });
+      const expectedErrors = ['required error', 'validator error'];
+      await changeValue(wrapper, '');
+      matchError(wrapper, true);
+      expect(form.getFieldError('username')).toEqual(expectedErrors);
+      expect(form.getFieldsError()).toEqual([{ name: ['username'], errors: expectedErrors }]);
+    });
+
+    it('should call onFinishFailed with first error when form is submitted and validateFirst is true', async () => {
+      const { onFinishFailed, wrapper } = setup({ validateFirst: true });
+      const expectedErrors = ['required error'];
+      await changeValue(wrapper, '');
+      matchError(wrapper, true);
+      wrapper.find('button').simulate('submit');
+      await timeout();
+      expect(onFinishFailed).toHaveBeenCalledWith(
+        expect.objectContaining({ errorFields: [{ name: ['username'], errors: expectedErrors }] }),
+      );
+    });
+
+    it('should call onFinishFailed with all errors when form is submitted and validateFirst is false', async () => {
+      const { onFinishFailed, wrapper } = setup({ validateFirst: false });
+      const expectedErrors = ['required error', 'validator error'];
+      await changeValue(wrapper, '');
+      matchError(wrapper, true);
+      wrapper.find('button').simulate('submit');
+      await timeout();
+      expect(onFinishFailed).toHaveBeenCalledWith(
+        expect.objectContaining({ errorFields: [{ name: ['username'], errors: expectedErrors }] }),
+      );
+    });
+
+    it('should call onFinish when form is submitted and validateFirst is true', async () => {
+      const { onFinish, wrapper } = setup({ validateFirst: true });
+      await changeValue(wrapper, 'test');
+      matchError(wrapper, false);
+      wrapper.find('button').simulate('submit');
+      await timeout();
+      expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
+    });
+
+    it('should call onFinish when form is submitted and validateFirst is false', async () => {
+      const { onFinish, wrapper } = setup({ validateFirst: false });
+      await changeValue(wrapper, 'test');
+      matchError(wrapper, false);
+      wrapper.find('button').simulate('submit');
+      await timeout();
+      expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
+    });
   });
 });
 /* eslint-enable no-template-curly-in-string */
