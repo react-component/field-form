@@ -371,11 +371,12 @@ describe('Form.Validate', () => {
     ]);
     expect(onFinish).not.toHaveBeenCalled();
 
-    console.log('=============');
     // Should pass
     canEnd = true;
     await changeValue(wrapper, 'test');
     wrapper.find('form').simulate('submit');
+    await timeout();
+
     matchError(wrapper, false);
     expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
   });
