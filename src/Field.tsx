@@ -171,7 +171,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   ) => {
     const { shouldUpdate, dependencies = [], onReset } = this.props;
     const { getFieldsValue }: FormInstance = this.context;
-    const values = getFieldsValue();
+    const values = getFieldsValue(true);
     const namePath = this.getNamePath();
     const prevValue = this.getValue(prevStore);
     const curValue = this.getValue();
@@ -355,7 +355,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getValue = (store?: Store) => {
     const { getFieldsValue }: FormInstance = this.context;
     const namePath = this.getNamePath();
-    return getValue(store || getFieldsValue(), namePath);
+    return getValue(store || getFieldsValue(true), namePath);
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
@@ -386,7 +386,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
       }
 
       if (normalize) {
-        newValue = normalize(newValue, value, getFieldsValue());
+        newValue = normalize(newValue, value, getFieldsValue(true));
       }
 
       dispatch({

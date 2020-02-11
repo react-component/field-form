@@ -106,7 +106,7 @@ const Form: React.FunctionComponent<FormProps> = (
   let childrenNode = children;
   const childrenRenderProps = typeof children === 'function';
   if (childrenRenderProps) {
-    const values = formInstance.getFieldsValue();
+    const values = formInstance.getFieldsValue(true);
     childrenNode = (children as RenderProps)(values, formInstance);
   }
 
