@@ -45,10 +45,10 @@ describe('Form.Validate', () => {
   });
 
   describe('validateMessages', () => {
-    function renderForm(messages) {
+    function renderForm(messages, fieldProps = {}) {
       return mount(
         <Form validateMessages={messages}>
-          <InfoField name="username" rules={[{ required: true }]} />
+          <InfoField name="username" rules={[{ required: true }]} {...fieldProps} />
         </Form>,
       );
     }
@@ -65,6 +65,20 @@ describe('Form.Validate', () => {
 
       await changeValue(wrapper, '');
       matchError(wrapper, 'Bamboo & Light');
+    });
+
+    it('messageVariables', async () => {
+      const wrapper = renderForm(
+        { required: "You miss '${label}'!" },
+        {
+          messageVariables: {
+            label: 'Light&Bamboo',
+          },
+        },
+      );
+
+      await changeValue(wrapper, '');
+      matchError(wrapper, "You miss 'Light&Bamboo'!");
     });
   });
 
