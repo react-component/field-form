@@ -33,6 +33,7 @@ function convertMessages(
   messages: ValidateMessages,
   name: string,
   rule: RuleObject,
+  messageVariables?: Record<string, string>,
 ): ValidateMessages {
   const kv = {
     ...(rule as Record<string, string | number>),
@@ -48,7 +49,7 @@ function convertMessages(
     Object.keys(source).forEach(ruleName => {
       const value = source[ruleName];
       if (typeof value === 'string') {
-        target[ruleName] = replaceFunc(value);
+        target[ruleName] = replaceFunc(value, messageVariables);
       } else if (value && typeof value === 'object') {
         target[ruleName] = {};
         fillTemplate(value, target[ruleName]);
@@ -69,6 +70,7 @@ async function validateRule(
   value: StoreValue,
   rule: RuleObject,
   options: ValidateOptions,
+  messageVariables?: Record<string, string>,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
   // We should special handle array validate
@@ -82,7 +84,12 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const messages: ValidateMessages = convertMessages(options.validateMessages, name, cloneRule);
+  const messages: ValidateMessages = convertMessages(
+    options.validateMessages,
+    name,
+    cloneRule,
+    messageVariables,
+  );
   validator.messages(messages);
 
   let result = [];
@@ -106,7 +113,7 @@ async function validateRule(
   if (!result.length && subRuleField) {
     const subResults: string[][] = await Promise.all(
       (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
-        validateRule(`${name}.${i}`, subValue, subRuleField, options),
+        validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
       ),
     );
 
@@ -125,7 +132,8 @@ export function validateRules(
   value: StoreValue,
   rules: RuleObject[],
   options: ValidateOptions,
-  validateFirst?: boolean,
+  validateFirst: boolean,
+  messageVariables?: Record<string, string>,
 ) {
   const name = namePath.join('.');
 
@@ -180,7 +188,9 @@ export function validateRules(
     };
   });
 
-  const rulePromises = filledRules.map(rule => validateRule(name, value, rule, options));
+  const rulePromises = filledRules.map(rule =>
+    validateRule(name, value, rule, options, messageVariables),
+  );
 
   const summaryPromise: Promise<string[]> = (validateFirst
     ? finishOnFirstFailed(rulePromises)
