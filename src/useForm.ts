@@ -32,6 +32,8 @@ import {
   setValues,
 } from './utils/valueUtil';
 
+type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
+
 interface UpdateAction {
   type: 'updateValue';
   namePath: InternalNamePath;
@@ -162,14 +164,16 @@ export class FormStore {
     return cache;
   };
 
-  private getFieldEntitiesForNamePathList = (nameList?: NamePath[]) => {
+  private getFieldEntitiesForNamePathList = (
+    nameList?: NamePath[],
+  ): (FieldEntity | InvalidateFieldEntity)[] => {
     if (!nameList) {
       return this.getFieldEntities(true);
     }
     const cache = this.getFieldsMap(true);
     return nameList.map(name => {
       const namePath = getNamePath(name);
-      return cache.get(namePath);
+      return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
     });
   };
 
@@ -185,11 +189,17 @@ export class FormStore {
     );
 
     const filteredNameList: NamePath[] = [];
-    fieldEntities.forEach((field: FieldEntity) => {
-      const namePath = field.getNamePath();
-      const meta = field.getMeta();
-      if (!filterFunc || filterFunc(meta)) {
+    fieldEntities.forEach((entity: FieldEntity | InvalidateFieldEntity) => {
+      const namePath =
+        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
+
+      if (!filterFunc) {
         filteredNameList.push(namePath);
+      } else {
+        const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
+        if (filterFunc(meta)) {
+          filteredNameList.push(namePath);
+        }
       }
     });
 
@@ -209,7 +219,7 @@ export class FormStore {
     const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
 
     return fieldEntities.map((entity, index) => {
-      if (entity) {
+      if (entity && !('INVALIDATE_NAME_PATH' in entity)) {
         return {
           name: entity.getNamePath(),
           errors: entity.getErrors(),
