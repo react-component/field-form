@@ -123,7 +123,7 @@ class Demo extends React.Component {
 | Prop              | Description                                | Type                                                                       |
 | ----------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
 | getFieldValue     | Get field value by name path               | (name: [NamePath](#namepath)) => any                                       |
-| getFieldsValue    | Get list of field values by name path list | (nameList?: [NamePath](#namepath)[]) => any                                |
+| getFieldsValue    | Get list of field values by name path list | (nameList?: ([NamePath](#namepath)[]) => any) \| true                      |
 | getFieldError     | Get field errors by name path              | (name: [NamePath](#namepath)) => string[]                                  |
 | getFieldsError    | Get list of field errors by name path list | (nameList?: [NamePath](#namepath)[]) => FieldError[]                       |
 | isFieldsTouched   | Check if list of fields are touched        | (nameList?: [NamePath](#namepath)[], allTouched?: boolean) => boolean      |
@@ -184,10 +184,10 @@ To keep sync with `rc-form` legacy usage of `validator`, we still provides `call
 
 ### ListOperations
 
-| Prop   | Type                    |
-| ------ | ----------------------- |
-| add    | (initValue: any) => void              |
-| remove | (index: number) => void |
+| Prop   | Type                     |
+| ------ | ------------------------ |
+| add    | (initValue: any) => void |
+| remove | (index: number) => void  |
 
 ### ValidateMessages
 
