@@ -30,12 +30,7 @@ interface LabelFieldProps extends FieldProps {
   label?: React.ReactNode;
 }
 
-const LabelField: React.FunctionComponent<LabelFieldProps> = ({
-  name,
-  label,
-  children,
-  ...restProps
-}) => (
+const LabelField: React.FunctionComponent<LabelFieldProps> = ({ name, children, ...restProps }) => (
   <Field name={name} {...restProps}>
     {(control, meta, form) => {
       const childNode =
@@ -44,12 +39,10 @@ const LabelField: React.FunctionComponent<LabelFieldProps> = ({
           : React.cloneElement(children as React.ReactElement, {
               ...control,
             });
-
       return (
         <div style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <label style={{ flex: 'none', width: 100 }}>{label || name}</label>
-
+            <label style={{ flex: 'none', width: 100 }}>{restProps.label || name}</label>
             {childNode}
           </div>
 

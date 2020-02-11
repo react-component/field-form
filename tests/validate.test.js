@@ -44,6 +44,30 @@ describe('Form.Validate', () => {
     ]);
   });
 
+  it('messageTemplatePropsName', async () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField
+            name="username"
+            label="用户名"
+            messageTemplatePropsName="label"
+            rules={[{ required: true }]}
+          />
+        </Form>
+      </div>,
+    );
+
+    await changeValue(wrapper, '');
+    matchError(wrapper, true);
+    expect(form.getFieldError('username')).toEqual(["'用户名' is required"]);
+  });
+
   describe('validateMessages', () => {
     function renderForm(messages) {
       return mount(
@@ -58,6 +82,35 @@ describe('Form.Validate', () => {
 
       await changeValue(wrapper, '');
       matchError(wrapper, "You miss 'username'!");
+    });
+
+    it('function message', async () => {
+      const wrapper = renderForm({ required: () => 'Bamboo & Light' });
+
+      await changeValue(wrapper, '');
+      matchError(wrapper, 'Bamboo & Light');
+    });
+  });
+
+  describe('messageTemplatePropsName validateMessages', () => {
+    function renderForm(messages) {
+      return mount(
+        <Form validateMessages={messages}>
+          <InfoField
+            name="username"
+            label="用户名"
+            messageTemplatePropsName="label"
+            rules={[{ required: true }]}
+          />
+        </Form>,
+      );
+    }
+
+    it('template message', async () => {
+      const wrapper = renderForm({ required: "你没有输入 '${name}'!" });
+
+      await changeValue(wrapper, '');
+      matchError(wrapper, "你没有输入 '用户名'!");
     });
 
     it('function message', async () => {

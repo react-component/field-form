@@ -69,6 +69,7 @@ export interface FieldProps {
   validateFirst?: boolean;
   valuePropName?: string;
   onReset?: () => void;
+  messageTemplatePropsName?: string;
 }
 
 export interface FieldState {
@@ -125,12 +126,12 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   // ================================== Utils ==================================
-  public getNamePath = (): InternalNamePath => {
-    const { name } = this.props;
+  public getNamePath = (propsName: string = 'name'): InternalNamePath => {
+    const name = this.props[propsName];
     const { prefixName = [] }: InternalFormInstance = this.context;
     const namePath = getNamePath(name);
 
-    return 'name' in this.props ? [...prefixName, ...namePath] : [];
+    return propsName in this.props ? [...prefixName, ...namePath] : [];
   };
 
   public getRules = (): RuleObject[] => {
@@ -272,9 +273,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   public validateRules = (options?: ValidateOptions) => {
-    const { validateFirst } = this.props;
+    const { validateFirst, messageTemplatePropsName } = this.props;
     const { triggerName } = (options || {}) as ValidateOptions;
-    const namePath = this.getNamePath();
+    const namePath = this.getNamePath(messageTemplatePropsName);
 
     let filteredRules = this.getRules();
     if (triggerName) {
@@ -287,7 +288,6 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         return triggerList.includes(triggerName);
       });
     }
-
     const promise = validateRules(namePath, this.getValue(), filteredRules, options, validateFirst);
     this.validatePromise = promise;
     this.errors = [];
