@@ -173,26 +173,22 @@ export class FormStore {
     });
   };
 
-  private getFieldsValue = (
-    nameList?: NamePath[],
-    filterFunc?: (meta: Meta) => boolean,
-  ) => {
+  private getFieldsValue = (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => {
     this.warningUnhooked();
 
-    if (!nameList && !filterFunc) {
+    if (nameList === true && !filterFunc) {
       return this.store;
     }
-    if (!filterFunc) {
-      return cloneByNamePathList(this.store, nameList.map(getNamePath));
-    }
 
-    const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
+    const fieldEntities = this.getFieldEntitiesForNamePathList(
+      Array.isArray(nameList) ? nameList : null,
+    );
 
     const filteredNameList: NamePath[] = [];
     fieldEntities.forEach((field: FieldEntity) => {
       const namePath = field.getNamePath();
       const meta = field.getMeta();
-      if (filterFunc(meta)) {
+      if (!filterFunc || filterFunc(meta)) {
         filteredNameList.push(namePath);
       }
     });
