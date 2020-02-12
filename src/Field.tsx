@@ -164,11 +164,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
-  public onStoreChange = (
-    prevStore: Store,
-    namePathList: InternalNamePath[] | null,
-    info: NotifyInfo,
-  ) => {
+  public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathList, info) => {
     const { shouldUpdate, dependencies = [], onReset } = this.props;
     const { getFieldsValue }: FormInstance = this.context;
     const values = getFieldsValue(true);
