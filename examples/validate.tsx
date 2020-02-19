@@ -92,7 +92,7 @@ export default class Demo extends React.Component {
                     { required: true },
                     context => ({
                       validator(rule, value, callback) {
-                        const { password } = context.getFieldsValue(true);
+                        const { password } = context.getFieldsValue();
                         if (password !== value) {
                           callback('Not Same as password1!!!');
                         }

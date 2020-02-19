@@ -32,8 +32,6 @@ import {
   setValues,
 } from './utils/valueUtil';
 
-type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
-
 interface UpdateAction {
   type: 'updateValue';
   namePath: InternalNamePath;
@@ -164,42 +162,38 @@ export class FormStore {
     return cache;
   };
 
-  private getFieldEntitiesForNamePathList = (
-    nameList?: NamePath[],
-  ): (FieldEntity | InvalidateFieldEntity)[] => {
+  private getFieldEntitiesForNamePathList = (nameList?: NamePath[]) => {
     if (!nameList) {
       return this.getFieldEntities(true);
     }
     const cache = this.getFieldsMap(true);
     return nameList.map(name => {
       const namePath = getNamePath(name);
-      return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
+      return cache.get(namePath);
     });
   };
 
-  private getFieldsValue = (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => {
+  private getFieldsValue = (
+    nameList?: NamePath[],
+    filterFunc?: (meta: Meta) => boolean,
+  ) => {
     this.warningUnhooked();
 
-    if (nameList === true && !filterFunc) {
+    if (!nameList && !filterFunc) {
       return this.store;
     }
+    if (!filterFunc) {
+      return cloneByNamePathList(this.store, nameList.map(getNamePath));
+    }
 
-    const fieldEntities = this.getFieldEntitiesForNamePathList(
-      Array.isArray(nameList) ? nameList : null,
-    );
+    const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
 
     const filteredNameList: NamePath[] = [];
-    fieldEntities.forEach((entity: FieldEntity | InvalidateFieldEntity) => {
-      const namePath =
-        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
-
-      if (!filterFunc) {
+    fieldEntities.forEach((field: FieldEntity) => {
+      const namePath = field.getNamePath();
+      const meta = field.getMeta();
+      if (filterFunc(meta)) {
         filteredNameList.push(namePath);
-      } else {
-        const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
-        if (filterFunc(meta)) {
-          filteredNameList.push(namePath);
-        }
       }
     });
 
@@ -219,7 +213,7 @@ export class FormStore {
     const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
 
     return fieldEntities.map((entity, index) => {
-      if (entity && !('INVALIDATE_NAME_PATH' in entity)) {
+      if (entity) {
         return {
           name: entity.getNamePath(),
           errors: entity.getErrors(),
