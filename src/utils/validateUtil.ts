@@ -181,7 +181,7 @@ export function validateRules(
               callback();
             })
             .catch(err => {
-              callback(err);
+              callback(err || rule.message || 'error');
             });
         }
       },
