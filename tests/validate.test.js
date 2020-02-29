@@ -272,35 +272,80 @@ describe('Form.Validate', () => {
     expect(form.getFieldError('title')).toEqual(['Title should be 3+ characters']);
   });
 
-  it('validate only accept exist fields', async () => {
-    let form;
-    const onFinish = jest.fn();
+  describe('validate only accept exist fields', () => {
+    it('skip init value', async () => {
+      let form;
+      const onFinish = jest.fn();
 
-    const wrapper = mount(
-      <div>
+      const wrapper = mount(
+        <div>
+          <Form
+            onFinish={onFinish}
+            ref={instance => {
+              form = instance;
+            }}
+            initialValues={{ user: 'light', pass: 'bamboo' }}
+          >
+            <InfoField name="user">
+              <Input />
+            </InfoField>
+            <button type="submit">submit</button>
+          </Form>
+        </div>,
+      );
+
+      // Validate callback
+      expect(await form.validateFields(['user'])).toEqual({ user: 'light' });
+      expect(await form.validateFields()).toEqual({ user: 'light' });
+
+      // Submit callback
+      wrapper.find('button').simulate('submit');
+      await timeout();
+      expect(onFinish).toHaveBeenCalledWith({ user: 'light' });
+    });
+
+    it('remove from fields', async () => {
+      const onFinish = jest.fn();
+      const wrapper = mount(
         <Form
           onFinish={onFinish}
-          ref={instance => {
-            form = instance;
+          initialValues={{
+            switch: true,
+            ignore: 'test',
           }}
-          initialValues={{ user: 'light', pass: 'bamboo' }}
         >
-          <InfoField name="user">
-            <Input />
+          <InfoField name="switch" valuePropName="checked">
+            <Input type="checkbox" className="switch" />
           </InfoField>
+          <Field shouldUpdate>
+            {(_, __, { getFieldValue }) =>
+              getFieldValue('switch') && (
+                <InfoField name="ignore">
+                  <Input className="ignore" />
+                </InfoField>
+              )
+            }
+          </Field>
           <button type="submit">submit</button>
-        </Form>
-      </div>,
-    );
+        </Form>,
+      );
 
-    // Validate callback
-    expect(await form.validateFields(['user'])).toEqual({ user: 'light' });
-    expect(await form.validateFields()).toEqual({ user: 'light' });
+      // Submit callback
+      wrapper.find('button').simulate('submit');
+      await timeout();
+      expect(onFinish).toHaveBeenCalledWith({ switch: true, ignore: 'test' });
+      onFinish.mockReset();
 
-    // Submit callback
-    wrapper.find('button').simulate('submit');
-    await timeout();
-    expect(onFinish).toHaveBeenCalledWith({ user: 'light' });
+      // Hide one
+      wrapper.find('input.switch').simulate('change', {
+        target: {
+          checked: false,
+        },
+      });
+      wrapper.find('button').simulate('submit');
+      await timeout();
+      expect(onFinish).toHaveBeenCalledWith({ switch: false });
+    });
   });
 
   it('should error in console if user script failed', async () => {
