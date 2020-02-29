@@ -517,7 +517,7 @@ export class FormStore {
       errors: string[];
     }>[] = [];
 
-    this.getFieldEntities().forEach((field: FieldEntity) => {
+    this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
       if (!provideNameList) {
         namePathList.push(field.getNamePath());
