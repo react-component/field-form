@@ -31,7 +31,7 @@ export interface FormProps extends BaseFormProps {
   onFinishFailed?: Callbacks['onFinishFailed'];
 }
 
-const Form: React.FunctionComponent<FormProps> = (
+const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   {
     name,
     initialValues,
