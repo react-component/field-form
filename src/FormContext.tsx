@@ -1,41 +1,41 @@
 import * as React from 'react';
-import { ValidateMessages, FormInstance, FieldData, Store } from './interface';
+import { ValidateMessages, FormInstance, FieldData, FormValues } from './interface';
 
-interface Forms {
-  [name: string]: FormInstance;
+interface Forms<T extends FormValues> {
+  [name: string]: FormInstance<T>;
 }
 
-interface FormChangeInfo {
+interface FormChangeInfo<T extends FormValues> {
   changedFields: FieldData[];
-  forms: Forms;
+  forms: Forms<T>;
 }
 
-interface FormFinishInfo {
-  values: Store;
-  forms: Forms;
+interface FormFinishInfo<T extends FormValues> {
+  values: Partial<T>;
+  forms: Forms<T>;
 }
 
-export interface FormProviderProps {
+export interface FormProviderProps<T extends FormValues> {
   validateMessages?: ValidateMessages;
-  onFormChange?: (name: string, info: FormChangeInfo) => void;
-  onFormFinish?: (name: string, info: FormFinishInfo) => void;
+  onFormChange?: (name: string, info: FormChangeInfo<T>) => void;
+  onFormFinish?: (name: string, info: FormFinishInfo<T>) => void;
 }
 
-export interface FormContextProps extends FormProviderProps {
+export interface FormContextProps<T extends FormValues> extends FormProviderProps<T> {
   triggerFormChange: (name: string, changedFields: FieldData[]) => void;
-  triggerFormFinish: (name: string, values: Store) => void;
-  registerForm: (name: string, form: FormInstance) => void;
+  triggerFormFinish: (name: string, values: Partial<T>) => void;
+  registerForm: (name: string, form: FormInstance<T>) => void;
   unregisterForm: (name: string) => void;
 }
 
-const FormContext = React.createContext<FormContextProps>({
+const FormContext = React.createContext<FormContextProps<FormValues>>({
   triggerFormChange: () => {},
   triggerFormFinish: () => {},
   registerForm: () => {},
   unregisterForm: () => {},
 });
 
-const FormProvider: React.FunctionComponent<FormProviderProps> = ({
+const FormProvider: React.FunctionComponent<FormProviderProps<FormValues>> = ({
   validateMessages,
   onFormChange,
   onFormFinish,
@@ -43,7 +43,7 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
 }) => {
   const formContext = React.useContext(FormContext);
 
-  const formsRef = React.useRef<Forms>({});
+  const formsRef = React.useRef<Forms<FormValues>>({});
 
   return (
     <FormContext.Provider

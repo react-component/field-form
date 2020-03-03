@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { FormInstance } from './interface';
+import { FormInstance, FormValues } from './interface';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';
 import FieldForm, { FormProps } from './Form';
 import { FormProvider } from './FormContext';
 
-const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm);
+const InternalForm = React.forwardRef<FormInstance<FormValues>, FormProps<FormValues>>(FieldForm);
 
 type InternalForm = typeof InternalForm;
 interface RefForm extends InternalForm {

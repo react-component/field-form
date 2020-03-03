@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
-  Store,
   FormInstance,
+  FormValues,
   FieldData,
   ValidateMessages,
   Callbacks,
@@ -14,27 +14,30 @@ import { isSimilar } from './utils/valueUtil';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
 
-type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
+type RenderProps<T extends FormValues> = (
+  values: Partial<T>,
+  form: FormInstance<T>,
+) => JSX.Element | React.ReactNode;
 
-export interface FormProps extends BaseFormProps {
-  initialValues?: Store;
-  form?: FormInstance;
-  children?: RenderProps | React.ReactNode;
+export interface FormProps<T extends FormValues> extends BaseFormProps {
+  initialValues?: Partial<T>;
+  form?: FormInstance<T>;
+  children?: RenderProps<T> | React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component?: false | string | React.FC<any> | React.ComponentClass<any>;
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
-  onValuesChange?: Callbacks['onValuesChange'];
-  onFieldsChange?: Callbacks['onFieldsChange'];
-  onFinish?: Callbacks['onFinish'];
-  onFinishFailed?: Callbacks['onFinishFailed'];
+  onValuesChange?: Callbacks<T>['onValuesChange'];
+  onFieldsChange?: Callbacks<T>['onFieldsChange'];
+  onFinish?: Callbacks<T>['onFinish'];
+  onFinishFailed?: Callbacks<T>['onFinishFailed'];
 }
 
-const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
+const Form: React.ForwardRefRenderFunction<FormInstance<FormValues>, FormProps<FormValues>> = (
   {
-    name,
-    initialValues,
+    name = 'form',
+    initialValues = {},
     fields,
     form,
     children,
@@ -45,10 +48,10 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFinish,
     onFinishFailed,
     ...restProps
-  }: FormProps,
+  },
   ref,
 ) => {
-  const formContext: FormContextProps = React.useContext(FormContext);
+  const formContext: FormContextProps<FormValues> = React.useContext(FormContext);
 
   // We customize handle event since Context will makes all the consumer re-render:
   // https://reactjs.org/docs/context.html#contextprovider
@@ -58,7 +61,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setInitialValues,
     setCallbacks,
     setValidateMessages,
-  } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
+  } = (formInstance as InternalFormInstance<FormValues>).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
   React.useImperativeHandle(ref, () => formInstance);
@@ -85,7 +88,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
         onFieldsChange(changedFields, ...rest);
       }
     },
-    onFinish: (values: Store) => {
+    onFinish: (values: Partial<FormValues>) => {
       formContext.triggerFormFinish(name, values);
 
       if (onFinish) {
@@ -96,7 +99,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   });
 
   // Set initial value, init store value when first mount
-  const mountRef = React.useRef(null);
+  const mountRef = React.useRef<null | boolean>(null);
   setInitialValues(initialValues, !mountRef.current);
   if (!mountRef.current) {
     mountRef.current = true;
@@ -107,7 +110,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   const childrenRenderProps = typeof children === 'function';
   if (childrenRenderProps) {
     const values = formInstance.getFieldsValue(true);
-    childrenNode = (children as RenderProps)(values, formInstance);
+    childrenNode = (children as RenderProps<FormValues>)(values, formInstance);
   }
 
   // Not use subscribe when using render props
@@ -123,7 +126,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   }, [fields, formInstance]);
 
   const wrapperNode = (
-    <FieldContext.Provider value={formInstance as InternalFormInstance}>
+    <FieldContext.Provider value={formInstance as InternalFormInstance<FormValues>}>
       {childrenNode}
     </FieldContext.Provider>
   );

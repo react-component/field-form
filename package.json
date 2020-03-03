@@ -43,22 +43,22 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.135",
-    "@types/react": "^16.8.19",
-    "@types/react-dom": "^16.8.4",
+    "@types/react": "^16.9.23",
+    "@types/react-dom": "^16.9.5",
     "@types/warning": "^3.0.0",
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "enzyme-to-json": "^3.1.4",
     "father": "^2.13.6",
     "np": "^5.0.3",
-    "react": "^v16.9.0-alpha.0",
+    "react": "^v16.13.0",
     "react-dnd": "^8.0.3",
     "react-dnd-html5-backend": "^8.0.3",
-    "react-dom": "^v16.9.0-alpha.0",
+    "react-dom": "^v16.13.0",
     "react-redux": "^4.4.10",
     "react-router": "^3.0.0",
     "redux": "^3.7.2",
-    "typescript": "^3.5.2"
+    "typescript": "^3.8.3"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",

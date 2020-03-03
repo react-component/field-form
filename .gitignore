@@ -1,6 +1,8 @@
 .storybook
 .doc
 *.log
+.idea/
+.history/
 node_modules
 coverage/
 es/
@@ -8,4 +10,3 @@ lib/
 ~*
 yarn.lock
 package-lock.json
-.idea/

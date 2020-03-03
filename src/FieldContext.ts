@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'warning';
-import { InternalFormInstance } from './interface';
+import { InternalFormInstance, FormValues } from './interface';
 
 export const HOOK_MARK = 'RC_FORM_INTERNAL_HOOKS';
 
@@ -9,7 +9,7 @@ const warningFunc: any = () => {
   warning(false, 'Can not find FormContext. Please make sure you wrap Field under Form.');
 };
 
-const Context = React.createContext<InternalFormInstance>({
+const Context = React.createContext<InternalFormInstance<FormValues>>({
   getFieldValue: warningFunc,
   getFieldsValue: warningFunc,
   getFieldError: warningFunc,
