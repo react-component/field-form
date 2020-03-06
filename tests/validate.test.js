@@ -166,7 +166,7 @@ describe('Form.Validate', () => {
           name="username"
           rules={[
             {
-              message: 'Validation error on field username 123',
+              message: "Validation error on field '${name}' 123",
               validator() {
                 return Promise.reject();
               },
