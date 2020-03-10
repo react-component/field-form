@@ -368,13 +368,21 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
-
+    const { defaultValue } = childProps;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
+    // dispatch default value at first
+    if (defaultValue && value === undefined && !this.isFieldTouched()) {
+      dispatch({
+        type: 'updateValue',
+        namePath,
+        value: defaultValue,
+      });
+    }
 
     const control = {
       ...childProps,
-      [valuePropName]: value,
+      [valuePropName]: value === undefined ? defaultValue : value,
     };
 
     // Add trigger
