@@ -123,7 +123,10 @@ export class FormStore {
     }
   };
 
-  private getInitialValue = (namePath: InternalNamePath) => getValue(this.initialValues, namePath);
+  private getInitialValue = (entity: FieldEntity) => {
+    const formInitialValue = getValue(this.initialValues, entity.getNamePath());
+    return formInitialValue === undefined ? entity.props.initialValue : formInitialValue;
+  };
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
@@ -312,16 +315,23 @@ export class FormStore {
 
     const prevStore = this.store;
     if (!nameList) {
-      this.store = setValues({}, this.initialValues);
+      this.store = {};
+      this.fieldEntities.forEach(entity => {
+        this.store = setValue(this.store, entity.getNamePath(), entity.props.initialValue);
+      });
+      this.store = setValues(this.store, this.initialValues);
       this.notifyObservers(prevStore, null, { type: 'reset' });
       return;
     }
 
     // Reset by `nameList`
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
-    namePathList.forEach(namePath => {
-      const initialValue = this.getInitialValue(namePath);
-      this.store = setValue(this.store, namePath, initialValue);
+    const entities: FieldEntity[] = namePathList.map(namePath =>
+      this.fieldEntities.find(field => field.getNamePath().join('') === namePath.join('')),
+    );
+    entities.forEach(entity => {
+      const initialValue = this.getInitialValue(entity);
+      this.store = setValue(this.store, entity.getNamePath(), initialValue);
     });
     this.notifyObservers(prevStore, namePathList, { type: 'reset' });
   };
@@ -363,6 +373,21 @@ export class FormStore {
   // =========================== Observer ===========================
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
+
+    warning(
+      entity.props.initialValue === undefined ||
+        getValue(this.store, entity.getNamePath()) === undefined,
+      `Field \`${entity
+        .getNamePath()
+        .join('.')}\` is initialized more than once, check Form[initialValues]`,
+    );
+
+    if (
+      entity.props.initialValue !== undefined &&
+      getValue(this.store, entity.getNamePath()) === undefined
+    ) {
+      this.store = setValue(this.store, entity.getNamePath(), entity.props.initialValue);
+    }
 
     return () => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);

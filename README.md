@@ -78,6 +78,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 | Prop              | Description                             | Type                                      | Default  |
 | ----------------- | --------------------------------------- | ----------------------------------------- | -------- |
+| initialValue      | Initial value of Field                  | Object                                    | -        |
 | dependencies      | Will re-render if dependencies changed  | [NamePath](#namepath)[]                   | -        |
 | getValueFromEvent | Specify how to get value from event     | (..args: any[]) => any                    | -        |
 | name              | Field name path                         | [NamePath](#namepath)                     | -        |
