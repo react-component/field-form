@@ -439,5 +439,44 @@ describe('Form.Validate', () => {
     matchError(wrapper, false);
     expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
   });
+
+  it('switch to remove errors', async () => {
+    const Demo = () => {
+      const [checked, setChecked] = React.useState(true);
+
+      return (
+        <Form>
+          <button
+            type="button"
+            onClick={() => {
+              setChecked(!checked);
+            }}
+          />
+          <InfoField
+            name={checked ? 'username' : 'age'}
+            rules={
+              checked
+                ? [
+                    {
+                      validator(rule, value, callback) {
+                        callback('Integer number only!');
+                      },
+                    },
+                  ]
+                : []
+            }
+          />
+        </Form>
+      );
+    };
+    const wrapper = mount(<Demo />);
+
+    await changeValue(wrapper, '233');
+    matchError(wrapper, true);
+
+    wrapper.find('button').simulate('click');
+    wrapper.update();
+    matchError(wrapper, false);
+  });
 });
 /* eslint-enable no-template-curly-in-string */
