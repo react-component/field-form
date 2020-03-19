@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import Form from '../src';
 import Input from './components/Input';
+import { FieldProps } from '../src/Field';
 
 const { Field } = Form;
 
-function Item({ children, ...restProps }) {
+const Item: FunctionComponent<FieldProps> = ({ children, ...restProps }) => {
   return (
     <Field {...restProps}>
       {(control, meta) => (
@@ -19,7 +20,7 @@ function Item({ children, ...restProps }) {
       )}
     </Field>
   );
-}
+};
 
 const Demo = () => {
   const [form] = Form.useForm();

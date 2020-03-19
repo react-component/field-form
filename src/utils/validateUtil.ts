@@ -1,4 +1,4 @@
-import RawAsyncValidator from 'async-validator';
+import AsyncValidator, { Rules, ValidateOption } from 'async-validator';
 import * as React from 'react';
 import warning from 'warning';
 import {
@@ -6,13 +6,18 @@ import {
   ValidateOptions,
   ValidateMessages,
   RuleObject,
-  StoreValue,
+  FormValue,
+  FormValues,
+  ValidateMessage,
 } from '../interface';
 import { setValues } from './valueUtil';
 import { defaultValidateMessages } from './messages';
 
 // Remove incorrect original ts define
-const AsyncValidator: any = RawAsyncValidator;
+// const AsyncValidator: unknown = RawAsyncValidator;
+type CustomAsyncValidator = AsyncValidator & {
+  messages: (messages: ValidateMessages) => void;
+};
 
 /**
  * Replace with template.
@@ -46,46 +51,52 @@ function convertMessages(
 
   /* eslint-disable no-param-reassign */
   function fillTemplate(source: ValidateMessages, target: ValidateMessages = {}) {
-    Object.keys(source).forEach(ruleName => {
+    // @ts-ignore
+    Object.keys(source).forEach((ruleName: keyof ValidateMessages) => {
       const value = source[ruleName];
       if (typeof value === 'string') {
         target[ruleName] = replaceFunc(value, messageVariables);
       } else if (value && typeof value === 'object') {
+        // @ts-ignore
         target[ruleName] = {};
-        fillTemplate(value, target[ruleName]);
+        fillTemplate(value as ValidateMessages, target[ruleName] as ValidateMessages);
       } else {
-        target[ruleName] = value;
+        target[ruleName] = value as ValidateMessage;
       }
     });
 
     return target;
   }
   /* eslint-enable */
-
-  return fillTemplate(setValues({}, defaultValidateMessages, messages)) as ValidateMessages;
+  // @NOTE setValues does not seem to be supposed to receive ValidateMessages, bug?
+  const messagesAsFormValues = messages as Partial<FormValues>;
+  return fillTemplate(
+    setValues({}, defaultValidateMessages, messagesAsFormValues),
+  ) as ValidateMessages;
 }
 
 async function validateRule(
   name: string,
-  value: StoreValue,
+  value: FormValue,
   rule: RuleObject,
   options: ValidateOptions,
   messageVariables?: Record<string, string>,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
   // We should special handle array validate
-  let subRuleField: RuleObject = null;
+  let subRuleField: RuleObject | null = null;
   if (cloneRule && cloneRule.type === 'array' && cloneRule.defaultField) {
     subRuleField = cloneRule.defaultField;
     delete cloneRule.defaultField;
   }
 
-  const validator = new AsyncValidator({
+  const rules = {
     [name]: [cloneRule],
-  });
+  };
+  const validator = new AsyncValidator(rules as Rules) as CustomAsyncValidator;
 
   const messages: ValidateMessages = convertMessages(
-    options.validateMessages,
+    options.validateMessages!,
     name,
     cloneRule,
     messageVariables,
@@ -95,25 +106,33 @@ async function validateRule(
   let result = [];
 
   try {
-    await Promise.resolve(validator.validate({ [name]: value }, { ...options }));
+    const validateOptions = ({ ...options } as unknown) as ValidateOption;
+    await Promise.resolve(validator.validate({ [name]: value }, validateOptions));
   } catch (errObj) {
     if (errObj.errors) {
-      result = errObj.errors.map(({ message }, index) =>
-        // Wrap ReactNode with `key`
-        React.isValidElement(message)
-          ? React.cloneElement(message, { key: `error_${index}` })
-          : message,
+      result = errObj.errors.map(
+        ({ message }: { message: React.ReactElement | string }, index: number) =>
+          // Wrap ReactNode with `key`
+          React.isValidElement(message)
+            ? React.cloneElement(message, { key: `error_${index}` })
+            : message,
       );
     } else {
-      console.error(errObj);
+      console.error(errObj); // eslint-disable-line no-console
       result = [(messages.default as () => string)()];
     }
   }
 
   if (!result.length && subRuleField) {
     const subResults: string[][] = await Promise.all(
-      (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
-        validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
+      (value as FormValue[]).map((subValue: FormValue, i: number) =>
+        validateRule(
+          `${name}.${i}`,
+          subValue,
+          subRuleField as RuleObject,
+          options,
+          messageVariables,
+        ),
       ),
     );
 
@@ -129,7 +148,7 @@ async function validateRule(
  */
 export function validateRules(
   namePath: InternalNamePath,
-  value: StoreValue,
+  value: FormValue,
   rules: RuleObject[],
   options: ValidateOptions,
   validateFirst: boolean,
@@ -146,11 +165,11 @@ export function validateRules(
     }
     return {
       ...currentRule,
-      validator(rule: RuleObject, val: StoreValue, callback: (error?: string) => void) {
+      validator(rule: RuleObject, val: FormValue, callback: (error?: string) => void) {
         let hasPromise = false;
 
         // Wrap callback only accept when promise not provided
-        const wrappedCallback = (...args: string[]) => {
+        const wrappedCallback = (...args: (string | undefined)[]) => {
           // Wait a tick to make sure return type is a promise
           Promise.resolve().then(() => {
             warning(
@@ -167,7 +186,7 @@ export function validateRules(
         // Get promise
         const promise = originValidatorFunc(rule, val, wrappedCallback);
         hasPromise =
-          promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
+          !!promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
 
         /**
          * 1. Use promise as the first priority.
@@ -211,7 +230,7 @@ export function validateRules(
 
 async function finishOnAllFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
   return Promise.all(rulePromises).then((errorsList: string[][]): string[] | Promise<string[]> => {
-    const errors: string[] = [].concat(...errorsList);
+    const errors: string[] = ([] as string[]).concat(...errorsList);
 
     return errors;
   });

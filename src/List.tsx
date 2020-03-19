@@ -1,8 +1,8 @@
 import * as React from 'react';
 import warning from 'warning';
-import { InternalNamePath, NamePath, StoreValue } from './interface';
+import { InternalNamePath, NamePath, FormValue, ValueUpdateInfo } from './interface';
 import FieldContext from './FieldContext';
-import Field from './Field';
+import Field, { ShouldUpdate } from './Field';
 import { move, getNamePath } from './utils/valueUtil';
 
 interface ListField {
@@ -11,7 +11,7 @@ interface ListField {
 }
 
 interface ListOperations {
-  add: (defaultValue?: StoreValue) => void;
+  add: (defaultValue?: FormValue) => void;
   remove: (index: number) => void;
   move: (from: number, to: number) => void;
 }
@@ -21,9 +21,14 @@ interface ListProps {
   children?: (fields: ListField[], operations: ListOperations) => JSX.Element | React.ReactNode;
 }
 
+interface KeyRef {
+  keys: React.ReactText[];
+  id: number;
+}
+
 const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
   const context = React.useContext(FieldContext);
-  const keyRef = React.useRef({
+  const keyRef = React.useRef<KeyRef>({
     keys: [],
     id: 0,
   });
@@ -38,7 +43,11 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
   const parentPrefixName = getNamePath(context.prefixName) || [];
   const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
 
-  const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }) => {
+  const shouldUpdate = (
+    prevValue: FormValue,
+    nextValue: FormValue,
+    { source }: ValueUpdateInfo,
+  ): boolean => {
     if (source === 'internal') {
       return false;
     }
@@ -47,11 +56,11 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
 
   return (
     <FieldContext.Provider value={{ ...context, prefixName }}>
-      <Field name={[]} shouldUpdate={shouldUpdate}>
+      <Field name={[]} shouldUpdate={shouldUpdate as ShouldUpdate}>
         {({ value = [], onChange }) => {
           const { getFieldValue } = context;
           const getNewValue = () => {
-            const values = getFieldValue(prefixName || []) as StoreValue[];
+            const values = getFieldValue(prefixName || []) as FormValue[];
             return values || [];
           };
           /**
@@ -105,7 +114,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
           };
 
           return children(
-            (value as StoreValue[]).map(
+            (value as FormValue[]).map(
               (__, index): ListField => {
                 let key = keyManager.keys[index];
                 if (key === undefined) {
@@ -116,7 +125,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
 
                 return {
                   name: index,
-                  key,
+                  key: key as number,
                 };
               },
             ),

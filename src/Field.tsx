@@ -13,8 +13,10 @@ import {
   ValidateOptions,
   InternalFormInstance,
   RuleObject,
-  StoreValue,
+  FormValue,
+  FormValues,
   EventArgs,
+  AnyFormValues,
 } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
@@ -28,14 +30,18 @@ import {
 
 export type ShouldUpdate =
   | true
-  | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
+  | ((
+      prevValues: Partial<FormValues>,
+      nextValues: Partial<FormValues>,
+      info: { source?: string },
+    ) => boolean);
 
 function requireUpdate(
   shouldUpdate: ShouldUpdate,
-  prev: StoreValue,
-  next: StoreValue,
-  prevValue: StoreValue,
-  nextValue: StoreValue,
+  prev: Partial<FormValues>,
+  next: Partial<FormValues>,
+  prevValue: FormValue,
+  nextValue: FormValue,
   info: NotifyInfo,
 ): boolean {
   if (typeof shouldUpdate === 'function') {
@@ -49,20 +55,17 @@ interface ChildProps {
   [name: string]: any;
 }
 
-export interface FieldProps {
-  children?:
-    | React.ReactElement
-    | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
+export interface FieldProps<T extends FormValues = AnyFormValues> {
   /**
    * Set up `dependencies` field.
    * When dependencies field update and current field is touched,
    * will trigger validate rules and render.
    */
   dependencies?: NamePath[];
-  getValueFromEvent?: (...args: EventArgs) => StoreValue;
+  getValueFromEvent?: (...args: EventArgs) => FormValue;
   name?: NamePath;
-  normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
-  rules?: Rule[];
+  normalize?: (value: FormValue, prevValue: FormValue, allValues: Partial<T>) => FormValue;
+  rules?: Rule<T>[];
   shouldUpdate?: ShouldUpdate;
   trigger?: string;
   validateTrigger?: string | string[] | false;
@@ -77,7 +80,8 @@ export interface FieldState {
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<FieldProps, FieldState> implements FieldEntity {
+class Field<T extends FormValues = AnyFormValues> extends React.Component<FieldProps<T>, FieldState>
+  implements FieldEntity<T> {
   public static contextType = FieldContext;
 
   public static defaultProps = {
@@ -90,7 +94,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     resetCount: 0,
   };
 
-  private cancelRegisterFunc: () => void | null = null;
+  private cancelRegisterFunc: (() => void) | null = null;
 
   private destroy = false;
 
@@ -102,13 +106,13 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   private validatePromise: Promise<string[]> | null = null;
 
-  private prevValidating: boolean;
+  private prevValidating: boolean = false;
 
   private errors: string[] = [];
 
   // ============================== Subscriptions ==============================
   public componentDidMount() {
-    const { getInternalHooks }: InternalFormInstance = this.context;
+    const { getInternalHooks }: InternalFormInstance<T> = this.context;
     const { registerField } = getInternalHooks(HOOK_MARK);
     this.cancelRegisterFunc = registerField(this);
   }
@@ -128,7 +132,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   // ================================== Utils ==================================
   public getNamePath = (): InternalNamePath => {
     const { name } = this.props;
-    const { prefixName = [] }: InternalFormInstance = this.context;
+    const { prefixName = [] }: InternalFormInstance<T> = this.context;
     const namePath = getNamePath(name);
 
     return 'name' in this.props ? [...prefixName, ...namePath] : [];
@@ -138,7 +142,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     const { rules = [] } = this.props;
 
     return rules.map(
-      (rule: Rule): RuleObject => {
+      (rule: Rule<T>): RuleObject => {
         if (typeof rule === 'function') {
           return rule(this.context);
         }
@@ -165,9 +169,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
 
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
-  public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathList, info) => {
+  public onStoreChange: FieldEntity<T>['onStoreChange'] = (prevStore, namePathList, info) => {
     const { shouldUpdate, dependencies = [], onReset } = this.props;
-    const { getFieldsValue }: FormInstance = this.context;
+    const { getFieldsValue }: FormInstance<T> = this.context;
     const values = getFieldsValue(true);
     const namePath = this.getNamePath();
     const prevValue = this.getValue(prevStore);
@@ -203,7 +207,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         if (namePathMatch) {
           const { data } = info;
           if ('touched' in data) {
-            this.touched = data.touched;
+            this.touched = !!data.touched;
           }
           if ('validating' in data) {
             this.validatePromise = data.validating ? Promise.resolve([]) : null;
@@ -253,9 +257,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
         if (
           namePathMatch ||
           dependencies.some(dependency =>
-            containsNamePath(namePathList, getNamePath(dependency)),
+            containsNamePath(namePathList as InternalNamePath[], getNamePath(dependency)),
           ) ||
-          requireUpdate(shouldUpdate, prevStore, values, prevValue, curValue, info)
+          requireUpdate(shouldUpdate as ShouldUpdate, prevStore, values, prevValue, curValue, info)
         ) {
           this.reRender();
           return;
@@ -268,9 +272,9 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
     }
   };
 
-  public validateRules = (options?: ValidateOptions) => {
+  public validateRules = (options: ValidateOptions = {}) => {
     const { validateFirst = false, messageVariables } = this.props;
-    const { triggerName } = (options || {}) as ValidateOptions;
+    const { triggerName } = options;
     const namePath = this.getNamePath();
 
     let filteredRules = this.getRules();
@@ -334,7 +338,7 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getOnlyChild = (
     children:
       | React.ReactNode
-      | ((control: ChildProps, meta: Meta, context: FormInstance) => React.ReactNode),
+      | ((control: ChildProps, meta: Meta, context: FormInstance<T>) => React.ReactNode),
   ): { child: React.ReactNode | null; isFunction: boolean } => {
     // Support render props
     if (typeof children === 'function') {
@@ -356,8 +360,8 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   };
 
   // ============================== Field Control ==============================
-  public getValue = (store?: Store) => {
-    const { getFieldsValue }: FormInstance = this.context;
+  public getValue = (store?: Store<T>) => {
+    const { getFieldsValue }: FormInstance<T> = this.context;
     const namePath = this.getNamePath();
     return getValue(store || getFieldsValue(true), namePath);
   };
@@ -365,28 +369,28 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getControlled = (childProps: ChildProps = {}) => {
     const { trigger, validateTrigger, getValueFromEvent, normalize, valuePropName } = this.props;
     const namePath = this.getNamePath();
-    const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
+    const { getInternalHooks, getFieldsValue }: InternalFormInstance<T> = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originTriggerFunc: any = childProps[trigger];
+    const originTriggerFunc: any = childProps[trigger as string];
 
     const control = {
       ...childProps,
-      [valuePropName]: value,
+      [valuePropName as string]: value,
     };
 
     // Add trigger
-    control[trigger] = (...args: EventArgs) => {
+    control[trigger as string] = (...args: EventArgs) => {
       // Mark as touched
       this.touched = true;
 
-      let newValue: StoreValue;
+      let newValue: FormValue;
       if (getValueFromEvent) {
         newValue = getValueFromEvent(...args);
       } else {
-        newValue = defaultGetValueFromEvent(valuePropName, ...args);
+        newValue = defaultGetValueFromEvent(valuePropName as string, ...args);
       }
 
       if (normalize) {

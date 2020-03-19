@@ -1,6 +1,6 @@
 import get from 'rc-util/lib/utils/get';
 import set from 'rc-util/lib/utils/set';
-import { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
+import { InternalNamePath, NamePath, FormValue, EventArgs, Store, FormValues } from '../interface';
 import { toArray } from './typeUtil';
 
 /**
@@ -10,21 +10,28 @@ import { toArray } from './typeUtil';
  * 123 => [123]
  * ['a', 123] => ['a', 123]
  */
-export function getNamePath(path: NamePath | null): InternalNamePath {
+export function getNamePath(path?: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
-export function getValue(store: Store, namePath: InternalNamePath) {
+export function getValue<FormValues>(store: FormValues, namePath: InternalNamePath) {
   const value = get(store, namePath);
   return value;
 }
 
-export function setValue(store: Store, namePath: InternalNamePath, value: StoreValue): Store {
+export function setValue<T extends FormValues>(
+  store: Store<T>,
+  namePath: InternalNamePath,
+  value: FormValue,
+): Store<T> {
   const newStore = set(store, namePath, value);
   return newStore;
 }
 
-export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
+export function cloneByNamePathList<T extends FormValues>(
+  store: Store<T>,
+  namePathList: InternalNamePath[],
+): Store<T> {
   let newStore = {};
   namePathList.forEach(namePath => {
     const value = getValue(store, namePath);
@@ -38,7 +45,7 @@ export function containsNamePath(namePathList: InternalNamePath[], namePath: Int
   return namePathList && namePathList.some(path => matchNamePath(path, namePath));
 }
 
-function isObject(obj: StoreValue) {
+function isObject(obj: unknown): obj is Record<string, unknown> {
   return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
@@ -46,7 +53,7 @@ function isObject(obj: StoreValue) {
  * Copy values into store and return a new values object
  * ({ a: 1, b: { c: 2 } }, { a: 4, b: { d: 5 } }) => { a: 4, b: { c: 2, d: 5 } }
  */
-function internalSetValues<T>(store: T, values: T): T {
+function internalSetValues<T extends FormValues>(store: Store<T>, values: Partial<T>): Store<T> {
   const newStore: T = (Array.isArray(store) ? [...store] : { ...store }) as T;
 
   if (!values) {
@@ -59,15 +66,20 @@ function internalSetValues<T>(store: T, values: T): T {
 
     // If both are object (but target is not array), we use recursion to set deep value
     const recursive = isObject(prevValue) && isObject(value);
-    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : value;
+    newStore[key as keyof T] = (recursive
+      ? internalSetValues(prevValue as Store<T>, (value as Partial<T>) || {})
+      : value) as T[keyof T];
   });
 
   return newStore;
 }
 
-export function setValues<T>(store: T, ...restValues: T[]): T {
-  return restValues.reduce(
-    (current: T, newStore: T): T => internalSetValues<T>(current, newStore),
+export function setValues<T extends FormValues>(
+  store: Store<T>,
+  ...restValues: Partial<T>[]
+): Store<T> {
+  return restValues.reduce<Store<T>>(
+    (current, values) => internalSetValues<T>(current, values),
     store,
   );
 }
@@ -83,8 +95,8 @@ export function matchNamePath(
 }
 
 // Like `shallowEqual`, but we not check the data which may cause re-render
-type SimilarObject = string | number | {};
-export function isSimilar(source: SimilarObject, target: SimilarObject) {
+type SimilarObject = string | number | Record<string, unknown> | unknown[];
+export function isSimilar<T extends SimilarObject>(source: T, target: T) {
   if (source === target) {
     return true;
   }
@@ -102,8 +114,8 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
   const keys = new Set([...sourceKeys, ...targetKeys]);
 
   return [...keys].every(key => {
-    const sourceValue = source[key];
-    const targetValue = target[key];
+    const sourceValue = (source as Record<string, unknown>)[key];
+    const targetValue = (target as Record<string, unknown>)[key];
 
     if (typeof sourceValue === 'function' && typeof targetValue === 'function') {
       return true;
@@ -115,7 +127,7 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
 export function defaultGetValueFromEvent(valuePropName: string, ...args: EventArgs) {
   const event = args[0];
   if (event && event.target && valuePropName in event.target) {
-    return (event.target as HTMLInputElement)[valuePropName];
+    return (event.target as Record<string, unknown>)[valuePropName];
   }
 
   return event;

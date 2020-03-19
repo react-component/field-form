@@ -9,15 +9,17 @@ import {
   InternalHooks,
   NamePath,
   NotifyInfo,
-  Store,
   ValidateOptions,
   FormInstance,
   ValidateMessages,
   InternalValidateFields,
   InternalFormInstance,
   ValidateErrorEntity,
-  StoreValue,
+  FormValue,
   Meta,
+  FormValues,
+  Store,
+  InvalidateFieldEntity,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -32,12 +34,10 @@ import {
   setValues,
 } from './utils/valueUtil';
 
-type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
-
 interface UpdateAction {
   type: 'updateValue';
   namePath: InternalNamePath;
-  value: StoreValue;
+  value: FormValue;
 }
 
 interface ValidateAction {
@@ -48,30 +48,30 @@ interface ValidateAction {
 
 export type ReducerAction = UpdateAction | ValidateAction;
 
-export class FormStore {
+export class FormStore<T extends FormValues> {
   private formHooked: boolean = false;
 
   private forceRootUpdate: () => void;
 
   private subscribable: boolean = true;
 
-  private store: Store = {};
+  private store: Store<T> = {};
 
-  private fieldEntities: FieldEntity[] = [];
+  private fieldEntities: FieldEntity<T>[] = [];
 
-  private initialValues: Store = {};
+  private initialValues: Partial<T> = {};
 
-  private callbacks: Callbacks = {};
+  private callbacks: Callbacks<T> = {};
 
-  private validateMessages: ValidateMessages = null;
+  private validateMessages: ValidateMessages | null = null;
 
-  private lastValidatePromise: Promise<FieldError[]> = null;
+  private lastValidatePromise: Promise<FieldError[]> | null = null;
 
   constructor(forceRootUpdate: () => void) {
     this.forceRootUpdate = forceRootUpdate;
   }
 
-  public getForm = (): InternalFormInstance => ({
+  public getForm = (): InternalFormInstance<T> => ({
     getFieldValue: this.getFieldValue,
     getFieldsValue: this.getFieldsValue,
     getFieldError: this.getFieldError,
@@ -90,7 +90,7 @@ export class FormStore {
   });
 
   // ======================== Internal Hooks ========================
-  private getInternalHooks = (key: string): InternalHooks | null => {
+  private getInternalHooks = (key: string): InternalHooks<T> => {
     if (key === HOOK_MARK) {
       this.formHooked = true;
 
@@ -106,7 +106,7 @@ export class FormStore {
     }
 
     warning(false, '`getInternalHooks` is internal usage. Should not call directly.');
-    return null;
+    return (null as unknown) as InternalHooks<T>; // @NOTE should throw an error
   };
 
   private useSubscribe = (subscribable: boolean) => {
@@ -116,7 +116,7 @@ export class FormStore {
   /**
    * First time `setInitialValues` should update store with initial value
    */
-  private setInitialValues = (initialValues: Store, init: boolean) => {
+  private setInitialValues = (initialValues: Partial<T>, init: boolean) => {
     this.initialValues = initialValues || {};
     if (init) {
       this.store = setValues({}, initialValues, this.store);
@@ -125,7 +125,7 @@ export class FormStore {
 
   private getInitialValue = (namePath: InternalNamePath) => getValue(this.initialValues, namePath);
 
-  private setCallbacks = (callbacks: Callbacks) => {
+  private setCallbacks = (callbacks: Callbacks<T>) => {
     this.callbacks = callbacks;
   };
 
@@ -156,7 +156,7 @@ export class FormStore {
   };
 
   private getFieldsMap = (pure: boolean = false) => {
-    const cache: NameMap<FieldEntity> = new NameMap();
+    const cache: NameMap<FieldEntity<T>> = new NameMap();
     this.getFieldEntities(pure).forEach(field => {
       const namePath = field.getNamePath();
       cache.set(namePath, field);
@@ -166,7 +166,7 @@ export class FormStore {
 
   private getFieldEntitiesForNamePathList = (
     nameList?: NamePath[],
-  ): (FieldEntity | InvalidateFieldEntity)[] => {
+  ): (FieldEntity<T> | InvalidateFieldEntity)[] => {
     if (!nameList) {
       return this.getFieldEntities(true);
     }
@@ -177,7 +177,10 @@ export class FormStore {
     });
   };
 
-  private getFieldsValue = (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => {
+  private getFieldsValue = (
+    nameList?: NamePath[] | true,
+    filterFunc?: (meta: Meta) => boolean,
+  ): Partial<T> => {
     this.warningUnhooked();
 
     if (nameList === true && !filterFunc) {
@@ -185,19 +188,19 @@ export class FormStore {
     }
 
     const fieldEntities = this.getFieldEntitiesForNamePathList(
-      Array.isArray(nameList) ? nameList : null,
+      Array.isArray(nameList) ? nameList : undefined,
     );
 
     const filteredNameList: NamePath[] = [];
-    fieldEntities.forEach((entity: FieldEntity | InvalidateFieldEntity) => {
+    fieldEntities.forEach((entity: FieldEntity<T> | InvalidateFieldEntity) => {
       const namePath =
         'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
 
       if (!filterFunc) {
         filteredNameList.push(namePath);
       } else {
-        const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
-        if (filterFunc(meta)) {
+        const meta: Meta | null = 'getMeta' in entity ? entity.getMeta() : null;
+        if (filterFunc(meta as Meta)) {
           filteredNameList.push(namePath);
         }
       }
@@ -227,7 +230,7 @@ export class FormStore {
       }
 
       return {
-        name: getNamePath(nameList[index]),
+        name: getNamePath(nameList![index]),
         errors: [],
       };
     });
@@ -241,7 +244,7 @@ export class FormStore {
     return fieldError.errors;
   };
 
-  private isFieldsTouched = (...args) => {
+  private isFieldsTouched = (...args: [(NamePath[] | boolean)?, boolean?]) => {
     this.warningUnhooked();
 
     const [arg0, arg1] = args;
@@ -256,14 +259,14 @@ export class FormStore {
         isAllFieldsTouched = false;
       } else {
         namePathList = null;
-        isAllFieldsTouched = arg0;
+        isAllFieldsTouched = arg0 as boolean;
       }
     } else {
-      namePathList = arg0.map(getNamePath);
-      isAllFieldsTouched = arg1;
+      namePathList = (arg0 as NamePath[]).map(getNamePath);
+      isAllFieldsTouched = arg1 as boolean;
     }
 
-    const testTouched = (field: FieldEntity) => {
+    const testTouched = (field: FieldEntity<T>) => {
       // Not provide `nameList` will check all the fields
       if (!namePathList) {
         return field.isFieldTouched();
@@ -349,7 +352,7 @@ export class FormStore {
 
   private getFields = (): FieldData[] =>
     this.getFieldEntities(true).map(
-      (field: FieldEntity): FieldData => {
+      (field: FieldEntity<T>): FieldData => {
         const namePath = field.getNamePath();
         const meta = field.getMeta();
         return {
@@ -361,7 +364,7 @@ export class FormStore {
     );
 
   // =========================== Observer ===========================
-  private registerField = (entity: FieldEntity) => {
+  private registerField = (entity: FieldEntity<T>) => {
     this.fieldEntities.push(entity);
 
     return () => {
@@ -387,7 +390,7 @@ export class FormStore {
   };
 
   private notifyObservers = (
-    prevStore: Store,
+    prevStore: Partial<T>,
     namePathList: InternalNamePath[] | null,
     info: NotifyInfo,
   ) => {
@@ -400,7 +403,7 @@ export class FormStore {
     }
   };
 
-  private updateValue = (name: NamePath, value: StoreValue) => {
+  private updateValue = (name: NamePath, value: FormValue) => {
     const namePath = getNamePath(name);
     const prevStore = this.store;
     this.store = setValue(this.store, namePath, value);
@@ -431,13 +434,13 @@ export class FormStore {
   };
 
   // Let all child Field get update.
-  private setFieldsValue = (store: Store) => {
+  private setFieldsValue = (store: Store<T>) => {
     this.warningUnhooked();
 
     const prevStore = this.store;
 
     if (store) {
-      this.store = setValues(this.store, store);
+      this.store = setValues<T>(this.store, store);
     }
 
     this.notifyObservers(prevStore, null, {
@@ -447,10 +450,10 @@ export class FormStore {
   };
 
   private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {
-    const children: Set<FieldEntity> = new Set();
+    const children: Set<FieldEntity<T>> = new Set();
     const childrenFields: InternalNamePath[] = [];
 
-    const dependencies2fields: NameMap<Set<FieldEntity>> = new NameMap();
+    const dependencies2fields: NameMap<Set<FieldEntity<T>>> = new NameMap();
 
     /**
      * Generate maps
@@ -500,15 +503,15 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
-  private validateFields: InternalValidateFields = (
+  private validateFields: InternalValidateFields<T> = (
     nameList?: NamePath[],
     options?: ValidateOptions,
-  ) => {
+  ): Promise<Partial<T>> => {
     this.warningUnhooked();
 
     const provideNameList = !!nameList;
     const namePathList: InternalNamePath[] | undefined = provideNameList
-      ? nameList.map(getNamePath)
+      ? nameList!.map(getNamePath)
       : [];
 
     // Collect result in promise list
@@ -517,7 +520,7 @@ export class FormStore {
       errors: string[];
     }>[] = [];
 
-    this.getFieldEntities(true).forEach((field: FieldEntity) => {
+    this.getFieldEntities(true).forEach((field: FieldEntity<T>) => {
       // Add field if not provide `nameList`
       if (!provideNameList) {
         namePathList.push(field.getNamePath());
@@ -568,15 +571,13 @@ export class FormStore {
         this.triggerOnFieldsChange(resultNamePathList);
       });
 
-    const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
-      .then(
-        (): Promise<Store | string[]> => {
-          if (this.lastValidatePromise === summaryPromise) {
-            return Promise.resolve(this.getFieldsValue(namePathList));
-          }
-          return Promise.reject<string[]>([]);
-        },
-      )
+    const returnPromise: Promise<Partial<T>> = summaryPromise
+      .then(() => {
+        if (this.lastValidatePromise === summaryPromise) {
+          return Promise.resolve(this.getFieldsValue(namePathList));
+        }
+        throw []; // eslint-disable-line no-throw-literal
+      })
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
         const errorList = results.filter(result => result && result.errors.length);
         return Promise.reject({
@@ -587,9 +588,9 @@ export class FormStore {
       });
 
     // Do not throw in console
-    returnPromise.catch<ValidateErrorEntity>(e => e);
+    returnPromise.catch<ValidateErrorEntity<T>>(e => e);
 
-    return returnPromise as Promise<Store>;
+    return returnPromise;
   };
 
   // ============================ Submit ============================
@@ -604,7 +605,7 @@ export class FormStore {
             onFinish(values);
           } catch (err) {
             // Should print error if user `onFinish` callback failed
-            console.error(err);
+            console.error(err); // eslint-disable-line no-console
           }
         }
       })
@@ -617,8 +618,8 @@ export class FormStore {
   };
 }
 
-function useForm(form?: FormInstance): [FormInstance] {
-  const formRef = React.useRef<FormInstance>();
+function useForm<T extends FormValues = FormValues>(form?: FormInstance<T>): [FormInstance<T>] {
+  const formRef = React.useRef<FormInstance<T>>();
   const [, forceUpdate] = React.useState();
 
   if (!formRef.current) {
@@ -630,9 +631,10 @@ function useForm(form?: FormInstance): [FormInstance] {
         forceUpdate({});
       };
 
-      const formStore: FormStore = new FormStore(forceReRender);
+      const formStore: FormStore<T> = new FormStore<T>(forceReRender);
 
-      formRef.current = formStore.getForm();
+      // @NOTE getForm() and formRef types do not match, bug?
+      formRef.current = (formStore.getForm() as unknown) as FormInstance<T>;
     }
   }
 

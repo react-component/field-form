@@ -30,7 +30,7 @@ class NameMap<T> {
   }
 
   public update(key: InternalNamePath, updater: (origin: T) => T | null) {
-    const origin = this.get(key);
+    const origin = this.get(key) as T;
     const next = updater(origin);
 
     if (!next) {
