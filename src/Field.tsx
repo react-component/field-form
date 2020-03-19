@@ -459,8 +459,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 }
 
-const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => (
-  <Field name={name !== undefined ? getNamePath(name) : undefined} {...restProps} />
-);
+const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => {
+  const namePath = name !== undefined ? getNamePath(name) : undefined;
+  return <Field key={`_${(namePath || []).join('_')}`} name={namePath} {...restProps} />;
+};
 
 export default WrapperField;
