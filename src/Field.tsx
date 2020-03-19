@@ -49,7 +49,7 @@ interface ChildProps {
   [name: string]: any;
 }
 
-export interface FieldProps {
+export interface InternalFieldProps {
   children?:
     | React.ReactElement
     | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
@@ -60,7 +60,7 @@ export interface FieldProps {
    */
   dependencies?: NamePath[];
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
-  name?: NamePath;
+  name?: InternalNamePath;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
   shouldUpdate?: ShouldUpdate;
@@ -72,12 +72,16 @@ export interface FieldProps {
   onReset?: () => void;
 }
 
+export interface FieldProps extends Omit<InternalFieldProps, 'name'> {
+  name?: NamePath;
+}
+
 export interface FieldState {
   resetCount: number;
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<FieldProps, FieldState> implements FieldEntity {
+class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
 
   public static defaultProps = {
@@ -129,9 +133,8 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   public getNamePath = (): InternalNamePath => {
     const { name } = this.props;
     const { prefixName = [] }: InternalFormInstance = this.context;
-    const namePath = getNamePath(name);
 
-    return 'name' in this.props ? [...prefixName, ...namePath] : [];
+    return name !== undefined ? [...prefixName, ...name] : [];
   };
 
   public getRules = (): RuleObject[] => {
@@ -456,4 +459,8 @@ class Field extends React.Component<FieldProps, FieldState> implements FieldEnti
   }
 }
 
-export default Field;
+const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => (
+  <Field name={name !== undefined ? getNamePath(name) : undefined} {...restProps} />
+);
+
+export default WrapperField;
