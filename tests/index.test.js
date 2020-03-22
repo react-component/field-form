@@ -660,7 +660,7 @@ describe('Form.Basic', () => {
     mount(<Test />);
 
     expect(errorSpy).toHaveBeenCalledWith(
-      'Warning: Instance created by `useForm` is not connect to any Form element. Forget to pass `form` prop?',
+      'Warning: Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?',
     );
     errorSpy.mockRestore();
   });
