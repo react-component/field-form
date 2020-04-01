@@ -85,11 +85,12 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
         onFieldsChange(changedFields, ...rest);
       }
     },
+    // eslint-disable-next-line consistent-return
     onFinish: (values: Store) => {
       formContext.triggerFormFinish(name, values);
 
       if (onFinish) {
-        onFinish(values);
+        return onFinish(values);
       }
     },
     onFinishFailed,

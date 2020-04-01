@@ -593,27 +593,22 @@ export class FormStore {
   };
 
   // ============================ Submit ============================
-  private submit = () => {
+  private submit = async () => {
     this.warningUnhooked();
 
-    this.validateFields()
-      .then(values => {
-        const { onFinish } = this.callbacks;
-        if (onFinish) {
-          try {
-            onFinish(values);
-          } catch (err) {
-            // Should print error if user `onFinish` callback failed
-            console.error(err);
-          }
-        }
-      })
-      .catch(e => {
-        const { onFinishFailed } = this.callbacks;
-        if (onFinishFailed) {
-          onFinishFailed(e);
-        }
-      });
+    try {
+      const values = await this.validateFields();
+      const { onFinish } = this.callbacks;
+
+      if (onFinish) {
+        onFinish(values);
+      }
+    } catch (error) {
+      const { onFinishFailed } = this.callbacks;
+      if (onFinishFailed) {
+        onFinishFailed(error);
+      }
+    }
   };
 }
 

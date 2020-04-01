@@ -137,7 +137,7 @@ export type NotifyInfo =
 export interface Callbacks {
   onValuesChange?: (changedValues: Store, values: Store) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
-  onFinish?: (values: Store) => void;
+  onFinish?: (values: Store) => Promise<any> | undefined;
   onFinishFailed?: (errorInfo: ValidateErrorEntity) => void;
 }
 

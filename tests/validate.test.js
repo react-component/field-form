@@ -363,13 +363,14 @@ describe('Form.Validate', () => {
   });
 
   it('should error in console if user script failed', async () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const onFinishFailedMock = jest.fn();
 
     const wrapper = mount(
       <Form
         onFinish={() => {
           throw new Error('should console this');
         }}
+        onFinishFailed={onFinishFailedMock}
         initialValues={{ user: 'light' }}
       >
         <InfoField name="user">
@@ -380,9 +381,9 @@ describe('Form.Validate', () => {
 
     wrapper.find('form').simulate('submit');
     await timeout();
-    expect(errorSpy.mock.calls[0][0].message).toEqual('should console this');
+    expect(onFinishFailedMock.mock.calls[0][0].message).toEqual('should console this');
 
-    errorSpy.mockRestore();
+    onFinishFailedMock.mockRestore();
   });
 
   it('validateFirst', async () => {
