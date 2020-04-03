@@ -352,11 +352,17 @@ export class FormStore {
       (field: FieldEntity): FieldData => {
         const namePath = field.getNamePath();
         const meta = field.getMeta();
-        return {
+        const fieldData = {
           ...meta,
           name: namePath,
           value: this.getFieldValue(namePath),
         };
+
+        Object.defineProperty(fieldData, 'originRCField', {
+          value: true,
+        });
+
+        return fieldData;
       },
     );
 
