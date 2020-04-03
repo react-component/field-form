@@ -18,6 +18,7 @@ import {
   ValidateErrorEntity,
   StoreValue,
   Meta,
+  InternalFieldData,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -347,9 +348,9 @@ export class FormStore {
     });
   };
 
-  private getFields = (): FieldData[] =>
+  private getFields = (): InternalFieldData[] =>
     this.getFieldEntities(true).map(
-      (field: FieldEntity): FieldData => {
+      (field: FieldEntity): InternalFieldData => {
         const namePath = field.getNamePath();
         const meta = field.getMeta();
         const fieldData = {
@@ -493,11 +494,30 @@ export class FormStore {
     return childrenFields;
   };
 
-  private triggerOnFieldsChange = (namePathList: InternalNamePath[]) => {
+  private triggerOnFieldsChange = (
+    namePathList: InternalNamePath[],
+    filedErrors?: FieldError[],
+  ) => {
     const { onFieldsChange } = this.callbacks;
 
     if (onFieldsChange) {
       const fields = this.getFields();
+
+      /**
+       * Fill errors since `fields` may be replaced by controlled fields
+       */
+      if (filedErrors) {
+        const cache = new NameMap<string[]>();
+        filedErrors.forEach(({ name, errors }) => {
+          cache.set(name, errors);
+        });
+
+        fields.forEach(field => {
+          // eslint-disable-next-line no-param-reassign
+          field.errors = cache.get(field.name) || field.errors;
+        });
+      }
+
       const changedFields = fields.filter(({ name: fieldName }) =>
         containsNamePath(namePathList, fieldName as InternalNamePath),
       );
@@ -571,7 +591,7 @@ export class FormStore {
         this.notifyObservers(this.store, resultNamePathList, {
           type: 'validateFinish',
         });
-        this.triggerOnFieldsChange(resultNamePathList);
+        this.triggerOnFieldsChange(resultNamePathList, results);
       });
 
     const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise

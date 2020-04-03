@@ -16,12 +16,15 @@ export interface Meta {
   name: InternalNamePath;
 }
 
+export interface InternalFieldData extends Meta {
+  value: StoreValue;
+}
+
 /**
  * Used by `setFields` config
  */
-export interface FieldData extends Partial<Omit<Meta, 'name'>> {
+export interface FieldData extends Partial<Omit<InternalFieldData, 'name'>> {
   name: NamePath;
-  value?: StoreValue;
 }
 
 export type RuleType =

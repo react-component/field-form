@@ -205,19 +205,17 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       case 'setField': {
         if (namePathMatch) {
           const { data } = info;
-          if ((data as any).originRCField !== true) {
-            if ('touched' in data) {
-              this.touched = data.touched;
-            }
-            if ('validating' in data) {
-              this.validatePromise = data.validating ? Promise.resolve([]) : null;
-            }
-            if ('errors' in data) {
-              this.errors = data.errors || [];
-            }
-
-            this.reRender();
+          if ('touched' in data) {
+            this.touched = data.touched;
           }
+          if ('validating' in data && !('originRCField' in data)) {
+            this.validatePromise = data.validating ? Promise.resolve([]) : null;
+          }
+          if ('errors' in data) {
+            this.errors = data.errors || [];
+          }
+
+          this.reRender();
           return;
         }
 
