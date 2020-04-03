@@ -208,7 +208,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           if ('touched' in data) {
             this.touched = data.touched;
           }
-          if ('validating' in data) {
+          if ('validating' in data && !('originRCField' in data)) {
             this.validatePromise = data.validating ? Promise.resolve([]) : null;
           }
           if ('errors' in data) {
