@@ -94,6 +94,7 @@ export interface FieldEntity {
     name?: NamePath;
     rules?: Rule[];
     dependencies?: NamePath[];
+    initialValue?: any;
   };
 }
 

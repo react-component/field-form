@@ -70,6 +70,7 @@ export interface InternalFieldProps {
   valuePropName?: string;
   getValueProps?: (value: StoreValue) => object;
   messageVariables?: Record<string, string>;
+  initialValue?: any;
   onReset?: () => void;
 }
 

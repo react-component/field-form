@@ -1,5 +1,5 @@
 import * as React from 'react';
-import warning from 'warning';
+import warning from 'rc-util/lib/warning';
 import {
   Callbacks,
   FieldData,
@@ -371,6 +371,21 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
 
+    // Set initial values
+    if (entity.props.initialValue !== undefined) {
+      const namePath = entity.getNamePath();
+      const formInitialValue = getValue(this.initialValues, namePath);
+      if (formInitialValue !== undefined) {
+        warning(
+          false,
+          `Form already set 'initialValues' with path '${namePath.join(
+            '.',
+          )}'. Field can not overwrite it.`,
+        );
+      }
+    }
+
+    // un-register field callback
     return () => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
     };
