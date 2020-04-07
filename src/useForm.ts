@@ -138,7 +138,7 @@ export class FormStore {
     if (process.env.NODE_ENV !== 'production' && !this.formHooked) {
       warning(
         false,
-        'Instance created by `useForm` is not connect to any Form element. Forget to pass `form` prop?',
+        'Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?',
       );
     }
   };
