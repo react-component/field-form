@@ -1,5 +1,5 @@
 import * as React from 'react';
-import warning from 'warning';
+import warning from 'rc-util/lib/warning';
 import {
   Callbacks,
   FieldData,
@@ -308,12 +308,100 @@ export class FormStore {
     return this.isFieldsValidating([name]);
   };
 
+  /**
+   * Reset Field with field `initialValue` prop.
+   * Can pass `entities` or `namePathList` or just nothing.
+   */
+  private resetWithFieldInitialValue = (
+    info: {
+      entities?: FieldEntity[];
+      namePathList?: InternalNamePath[];
+      /** Skip reset if store exist value. This is only used for field register reset */
+      skipExist?: boolean;
+    } = {},
+  ) => {
+    // Create cache
+    const cache: NameMap<Set<{ entity: FieldEntity; value: any }>> = new NameMap();
+
+    const fieldEntities = this.getFieldEntities(true);
+    fieldEntities.forEach(field => {
+      const { initialValue } = field.props;
+      const namePath = field.getNamePath();
+
+      // Record only if has `initialValue`
+      if (initialValue !== undefined) {
+        const records = cache.get(namePath) || new Set();
+        records.add({ entity: field, value: initialValue });
+
+        cache.set(namePath, records);
+      }
+    });
+
+    // Reset
+    const resetWithFields = (entities: FieldEntity[]) => {
+      entities.forEach(field => {
+        const { initialValue } = field.props;
+
+        if (initialValue !== undefined) {
+          const namePath = field.getNamePath();
+          const formInitialValue = this.getInitialValue(namePath);
+
+          if (formInitialValue !== undefined) {
+            // Warning if conflict with form initialValues and do not modify value
+            warning(
+              false,
+              `Form already set 'initialValues' with path '${namePath.join(
+                '.',
+              )}'. Field can not overwrite it.`,
+            );
+          } else {
+            const records = cache.get(namePath);
+            if (records && records.size > 1) {
+              // Warning if multiple field set `initialValue`and do not modify value
+              warning(
+                false,
+                `Multiple Field with path '${namePath.join(
+                  '.',
+                )}' set 'initialValue'. Can not decide which one to pick.`,
+              );
+            } else if (records) {
+              const originValue = this.getFieldValue(namePath);
+              // Set `initialValue`
+              if (!info.skipExist || originValue === undefined) {
+                this.store = setValue(this.store, namePath, [...records][0].value);
+              }
+            }
+          }
+        }
+      });
+    };
+
+    let requiredFieldEntities: FieldEntity[];
+    if (info.entities) {
+      requiredFieldEntities = info.entities;
+    } else if (info.namePathList) {
+      requiredFieldEntities = [];
+
+      info.namePathList.forEach(namePath => {
+        const records = cache.get(namePath);
+        if (records) {
+          requiredFieldEntities.push(...[...records].map(r => r.entity));
+        }
+      });
+    } else {
+      requiredFieldEntities = fieldEntities;
+    }
+
+    resetWithFields(requiredFieldEntities);
+  };
+
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
 
     const prevStore = this.store;
     if (!nameList) {
       this.store = setValues({}, this.initialValues);
+      this.resetWithFieldInitialValue();
       this.notifyObservers(prevStore, null, { type: 'reset' });
       return;
     }
@@ -324,6 +412,7 @@ export class FormStore {
       const initialValue = this.getInitialValue(namePath);
       this.store = setValue(this.store, namePath, initialValue);
     });
+    this.resetWithFieldInitialValue({ namePathList });
     this.notifyObservers(prevStore, namePathList, { type: 'reset' });
   };
 
@@ -371,6 +460,17 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
 
+    // Set initial values
+    if (entity.props.initialValue !== undefined) {
+      const prevStore = this.store;
+      this.resetWithFieldInitialValue({ entities: [entity], skipExist: true });
+      this.notifyObservers(prevStore, [entity.getNamePath()], {
+        type: 'valueUpdate',
+        source: 'internal',
+      });
+    }
+
+    // un-register field callback
     return () => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
     };

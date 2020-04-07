@@ -1,5 +1,5 @@
 import * as React from 'react';
-import warning from 'warning';
+import warning from 'rc-util/lib/warning';
 import { InternalFormInstance } from './interface';
 
 export const HOOK_MARK = 'RC_FORM_INTERNAL_HOOKS';

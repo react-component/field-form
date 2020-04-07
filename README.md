@@ -81,6 +81,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 | dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                   | -        |
 | getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                    | -        |
 | getValueProps     | Customize additional props with value. This prop will disable `valuePropName` | (value) => any                            | -        |
+| initialValue      | Field initial value                                                           | any                                       | -        |
 | name              | Field name path                                                               | [NamePath](#namepath)                     | -        |
 | normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any     | -        |
 | rules             | Validate rules                                                                | [Rule](#rule)[]                           | -        |
