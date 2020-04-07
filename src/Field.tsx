@@ -68,6 +68,7 @@ export interface InternalFieldProps {
   validateTrigger?: string | string[] | false;
   validateFirst?: boolean;
   valuePropName?: string;
+  getValueProps?: (value: StoreValue) => object;
   messageVariables?: Record<string, string>;
   onReset?: () => void;
 }
@@ -366,18 +367,26 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
-    const { trigger, validateTrigger, getValueFromEvent, normalize, valuePropName } = this.props;
+    const {
+      trigger,
+      validateTrigger,
+      getValueFromEvent,
+      normalize,
+      valuePropName,
+      getValueProps,
+    } = this.props;
     const namePath = this.getNamePath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
+    const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
     const control = {
       ...childProps,
-      [valuePropName]: value,
+      ...mergedGetValueProps(value),
     };
 
     // Add trigger
