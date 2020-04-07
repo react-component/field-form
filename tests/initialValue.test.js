@@ -3,8 +3,7 @@ import { mount } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, useForm } from '../src';
 import { Input } from './common/InfoField';
-import { changeValue, getField, matchError } from './common';
-import timeout from './common/timeout';
+import { changeValue, getField } from './common';
 
 describe('Form.InitialValues', () => {
   it('works', () => {
@@ -202,6 +201,58 @@ describe('Form.InitialValues', () => {
       wrapper.find('button').simulate('click');
       wrapper.update();
       expect(wrapper.find('input').props().value).toEqual('bamboo');
+    });
+
+    it('form reset should work', async () => {
+      const Test = () => {
+        const [form] = useForm();
+        const [initVal, setInitVal] = React.useState(undefined);
+
+        return (
+          <Form form={form}>
+            <Field name="bamboo" initialValue={initVal}>
+              <Input />
+            </Field>
+            <button
+              type="button"
+              onClick={() => {
+                form.resetFields();
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setInitVal('light');
+              }}
+            />
+          </Form>
+        );
+      };
+
+      const wrapper = mount(<Test />);
+      expect(wrapper.find('input').props().value).toEqual('');
+
+      // User input
+      await changeValue(wrapper, 'story');
+      expect(wrapper.find('input').props().value).toEqual('story');
+
+      // First reset will get nothing
+      wrapper
+        .find('button')
+        .first()
+        .simulate('click');
+      expect(wrapper.find('input').props().value).toEqual('');
+
+      // Change field initialValue and reset
+      wrapper
+        .find('button')
+        .last()
+        .simulate('click');
+      wrapper
+        .find('button')
+        .first()
+        .simulate('click');
+      expect(wrapper.find('input').props().value).toEqual('light');
     });
   });
 });
