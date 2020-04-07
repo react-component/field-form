@@ -131,7 +131,7 @@ describe('Form.InitialValues', () => {
       const wrapper = mount(
         <Form initialValues={{ conflict: 'bamboo' }}>
           <Field name="conflict" initialValue="light">
-            <input />
+            <Input />
           </Field>
         </Form>,
       );
@@ -151,10 +151,10 @@ describe('Form.InitialValues', () => {
       mount(
         <Form>
           <Field name="conflict" initialValue="bamboo">
-            <input />
+            <Input />
           </Field>
           <Field name="conflict" initialValue="light">
-            <input />
+            <Input />
           </Field>
         </Form>,
       );
@@ -164,6 +164,35 @@ describe('Form.InitialValues', () => {
       );
 
       errorSpy.mockRestore();
+    });
+
+    it('should not replace user input', () => {
+      const Test = () => {
+        const [show, setShow] = React.useState(false);
+
+        return (
+          <Form>
+            {show && (
+              <Field name="test" initialValue="light">
+                <Input />
+              </Field>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setShow(!show);
+              }}
+            />
+          </Form>
+        );
+      };
+
+      const wrapper = mount(<Test />);
+      wrapper.find('button').simulate('click');
+      wrapper.update();
+
+      // First mount should reset value
+      expect(wrapper.find('input').props().value).toEqual('light');
     });
   });
 });

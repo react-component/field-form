@@ -462,7 +462,12 @@ export class FormStore {
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
+      const prevStore = this.store;
       this.resetWithFieldInitialValue({ entities: [entity], skipExist: true });
+      this.notifyObservers(prevStore, [entity.getNamePath()], {
+        type: 'valueUpdate',
+        source: 'internal',
+      });
     }
 
     // un-register field callback
