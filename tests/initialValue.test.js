@@ -2,7 +2,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, useForm } from '../src';
-import InfoField, { Input } from './common/InfoField';
+import { Input } from './common/InfoField';
 import { changeValue, getField, matchError } from './common';
 import timeout from './common/timeout';
 
@@ -166,7 +166,7 @@ describe('Form.InitialValues', () => {
       errorSpy.mockRestore();
     });
 
-    it('should not replace user input', () => {
+    it('should not replace user input', async () => {
       const Test = () => {
         const [show, setShow] = React.useState(false);
 
@@ -193,6 +193,15 @@ describe('Form.InitialValues', () => {
 
       // First mount should reset value
       expect(wrapper.find('input').props().value).toEqual('light');
+
+      // Do not reset value when value already exist
+      await changeValue(wrapper, 'bamboo');
+      expect(wrapper.find('input').props().value).toEqual('bamboo');
+
+      wrapper.find('button').simulate('click');
+      wrapper.find('button').simulate('click');
+      wrapper.update();
+      expect(wrapper.find('input').props().value).toEqual('bamboo');
     });
   });
 });
