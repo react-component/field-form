@@ -254,5 +254,32 @@ describe('Form.InitialValues', () => {
         .simulate('click');
       expect(wrapper.find('input').props().value).toEqual('light');
     });
+
+    it('reset by namePath', async () => {
+      const Test = () => {
+        const [form] = useForm();
+
+        return (
+          <Form form={form}>
+            <Field name="bamboo" initialValue="light">
+              <Input />
+            </Field>
+            <button
+              type="button"
+              onClick={() => {
+                form.resetFields(['bamboo']);
+              }}
+            />
+          </Form>
+        );
+      };
+
+      const wrapper = mount(<Test />);
+      await changeValue(wrapper, 'story');
+      expect(wrapper.find('input').props().value).toEqual('story');
+
+      wrapper.find('button').simulate('click');
+      expect(wrapper.find('input').props().value).toEqual('light');
+    });
   });
 });
