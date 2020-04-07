@@ -281,5 +281,30 @@ describe('Form.InitialValues', () => {
       wrapper.find('button').simulate('click');
       expect(wrapper.find('input').props().value).toEqual('light');
     });
+
+    it('ignore dynamic initialValue', () => {
+      const Test = () => {
+        const [initVal, setInitVal] = React.useState('bamboo');
+        return (
+          <Form>
+            <Field name="test" initialValue={initVal}>
+              <Input />
+            </Field>
+            <button
+              type="button"
+              onClick={() => {
+                setInitVal('light');
+              }}
+            />
+          </Form>
+        );
+      };
+
+      const wrapper = mount(<Test />);
+      expect(wrapper.find('input').props().value).toEqual('bamboo');
+
+      wrapper.find('button').simulate('click');
+      expect(wrapper.find('input').props().value).toEqual('bamboo');
+    });
   });
 });
