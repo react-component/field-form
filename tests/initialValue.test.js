@@ -125,7 +125,7 @@ describe('Form.InitialValues', () => {
   });
 
   describe('Field with initialValue', () => {
-    it('warning if Form already has', () => {
+    it('warning if Form already has initialValues', () => {
       resetWarned();
       const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       const wrapper = mount(
@@ -140,6 +140,27 @@ describe('Form.InitialValues', () => {
 
       expect(errorSpy).toHaveBeenCalledWith(
         "Warning: Form already set 'initialValues' with path 'conflict'. Field can not overwrite it.",
+      );
+
+      errorSpy.mockRestore();
+    });
+
+    it('warning if multiple Field with same name set `initialValue`', () => {
+      resetWarned();
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      mount(
+        <Form>
+          <Field name="conflict" initialValue="bamboo">
+            <input />
+          </Field>
+          <Field name="conflict" initialValue="light">
+            <input />
+          </Field>
+        </Form>,
+      );
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        "Warning: Multiple Field with path 'conflict' set 'initialValue'. Can not decide which one to pick.",
       );
 
       errorSpy.mockRestore();

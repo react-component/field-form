@@ -316,6 +316,8 @@ export class FormStore {
     info: {
       entities?: FieldEntity[];
       namePathList?: InternalNamePath[];
+      /** Skip reset if store exist value. This is only used for field register reset */
+      skipExist?: boolean;
     } = {},
   ) => {
     // Create cache
@@ -363,8 +365,11 @@ export class FormStore {
                 )}' set 'initialValue'. Can not decide which one to pick.`,
               );
             } else if (records) {
+              const originValue = this.getFieldValue(namePath);
               // Set `initialValue`
-              this.store = setValue(this.store, namePath, [...records][0].value);
+              if (!info.skipExist || originValue === undefined) {
+                this.store = setValue(this.store, namePath, [...records][0].value);
+              }
             }
           }
         }
@@ -457,7 +462,7 @@ export class FormStore {
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
-      this.resetWithFieldInitialValue({ entities: [entity] });
+      this.resetWithFieldInitialValue({ entities: [entity], skipExist: true });
     }
 
     // un-register field callback
