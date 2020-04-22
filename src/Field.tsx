@@ -27,7 +27,7 @@ import {
 } from './utils/valueUtil';
 
 export type ShouldUpdate =
-  | true
+  | boolean
   | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
 
 function requireUpdate(
