@@ -366,8 +366,8 @@ describe('Form.Basic', () => {
               return (
                 <span
                   id="holder"
-                  touched={form.isFieldsTouched(true)}
-                  value={form.getFieldsValue()}
+                  data-touched={form.isFieldsTouched(true)}
+                  data-value={form.getFieldsValue()}
                 />
               );
             }}
@@ -377,8 +377,8 @@ describe('Form.Basic', () => {
 
       const props = wrapper.find('#holder').props();
       expect(renderPhase).toEqual(2);
-      expect(props.touched).toBeFalsy();
-      expect(props.value).toEqual({ username: 'light' });
+      expect(props['data-touched']).toBeFalsy();
+      expect(props['data-value']).toEqual({ username: 'light' });
     });
   });
 

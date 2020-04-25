@@ -114,9 +114,15 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ============================== Subscriptions ==============================
   public componentDidMount() {
+    const { shouldUpdate } = this.props;
     const { getInternalHooks }: InternalFormInstance = this.context;
     const { registerField } = getInternalHooks(HOOK_MARK);
     this.cancelRegisterFunc = registerField(this);
+
+    // One more render for component in case fields not ready
+    if (shouldUpdate === true) {
+      this.reRender();
+    }
   }
 
   public componentWillUnmount() {
