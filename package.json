@@ -1,6 +1,6 @@
 {
   "name": "rc-field-form",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "React Form Component",
   "engines": {
     "node": ">=8.x"
