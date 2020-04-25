@@ -311,44 +311,75 @@ describe('Form.Basic', () => {
     expect(wrapper.find('.anything').props().light).toEqual('bamboo');
   });
 
-  it('shouldUpdate', async () => {
-    let isAllTouched;
-    let hasError;
+  describe('shouldUpdate', () => {
+    it('work', async () => {
+      let isAllTouched;
+      let hasError;
 
-    const wrapper = mount(
-      <Form>
-        <Field name="username" rules={[{ required: true }]}>
-          <Input />
-        </Field>
-        <Field name="password" rules={[{ required: true }]}>
-          <Input />
-        </Field>
-        <Field shouldUpdate>
-          {(_, __, { getFieldsError, isFieldsTouched }) => {
-            isAllTouched = isFieldsTouched(true);
-            hasError = getFieldsError().filter(({ errors }) => errors.length).length;
+      const wrapper = mount(
+        <Form>
+          <Field name="username" rules={[{ required: true }]}>
+            <Input />
+          </Field>
+          <Field name="password" rules={[{ required: true }]}>
+            <Input />
+          </Field>
+          <Field shouldUpdate>
+            {(_, __, { getFieldsError, isFieldsTouched }) => {
+              isAllTouched = isFieldsTouched(true);
+              hasError = getFieldsError().filter(({ errors }) => errors.length).length;
 
-            return null;
-          }}
-        </Field>
-      </Form>,
-    );
+              return null;
+            }}
+          </Field>
+        </Form>,
+      );
 
-    await changeValue(getField(wrapper, 'username'), '');
-    expect(isAllTouched).toBeFalsy();
-    expect(hasError).toBeTruthy();
+      await changeValue(getField(wrapper, 'username'), '');
+      expect(isAllTouched).toBeFalsy();
+      expect(hasError).toBeTruthy();
 
-    await changeValue(getField(wrapper, 'username'), 'Bamboo');
-    expect(isAllTouched).toBeFalsy();
-    expect(hasError).toBeFalsy();
+      await changeValue(getField(wrapper, 'username'), 'Bamboo');
+      expect(isAllTouched).toBeFalsy();
+      expect(hasError).toBeFalsy();
 
-    await changeValue(getField(wrapper, 'password'), 'Light');
-    expect(isAllTouched).toBeTruthy();
-    expect(hasError).toBeFalsy();
+      await changeValue(getField(wrapper, 'password'), 'Light');
+      expect(isAllTouched).toBeTruthy();
+      expect(hasError).toBeFalsy();
 
-    await changeValue(getField(wrapper, 'password'), '');
-    expect(isAllTouched).toBeTruthy();
-    expect(hasError).toBeTruthy();
+      await changeValue(getField(wrapper, 'password'), '');
+      expect(isAllTouched).toBeTruthy();
+      expect(hasError).toBeTruthy();
+    });
+
+    it('true will force one more update', async () => {
+      let renderPhase = 0;
+
+      const wrapper = mount(
+        <Form initialValues={{ username: 'light' }}>
+          <Field name="username">
+            <Input />
+          </Field>
+          <Field shouldUpdate>
+            {(_, __, form) => {
+              renderPhase += 1;
+              return (
+                <span
+                  id="holder"
+                  data-touched={form.isFieldsTouched(true)}
+                  data-value={form.getFieldsValue()}
+                />
+              );
+            }}
+          </Field>
+        </Form>,
+      );
+
+      const props = wrapper.find('#holder').props();
+      expect(renderPhase).toEqual(2);
+      expect(props['data-touched']).toBeFalsy();
+      expect(props['data-value']).toEqual({ username: 'light' });
+    });
   });
 
   describe('setFields', () => {
