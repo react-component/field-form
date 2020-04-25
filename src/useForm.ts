@@ -135,11 +135,15 @@ export class FormStore {
   };
 
   private warningUnhooked = () => {
-    if (process.env.NODE_ENV !== 'production' && !this.formHooked) {
-      warning(
-        false,
-        'Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?',
-      );
+    if (process.env.NODE_ENV !== 'production') {
+      setTimeout(() => {
+        if (!this.formHooked) {
+          warning(
+            false,
+            'Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?',
+          );
+        }
+      });
     }
   };
 

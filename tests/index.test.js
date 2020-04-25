@@ -517,6 +517,7 @@ describe('Form.Basic', () => {
   });
 
   it('warning if call function before set prop', () => {
+    jest.useFakeTimers();
     resetWarned();
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -529,10 +530,12 @@ describe('Form.Basic', () => {
 
     mount(<Test />);
 
+    jest.runAllTimers();
     expect(errorSpy).toHaveBeenCalledWith(
       'Warning: Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?',
     );
     errorSpy.mockRestore();
+    jest.useRealTimers();
   });
 
   it('filtering fields by meta', async () => {
