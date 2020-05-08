@@ -83,14 +83,16 @@ export interface FieldState {
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
+class Field extends React.Component<InternalFieldProps, FieldState, InternalFormInstance>
+  implements FieldEntity {
   public static contextType = FieldContext;
 
   public static defaultProps = {
     trigger: 'onChange',
-    validateTrigger: 'onChange',
     valuePropName: 'value',
   };
+
+  context: InternalFormInstance;
 
   public state = {
     resetCount: 0,
@@ -391,6 +393,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       valuePropName,
       getValueProps,
     } = this.props;
+
+    const mergedValidateTrigger =
+      validateTrigger !== undefined ? validateTrigger : this.context.validateTrigger;
+
     const namePath = this.getNamePath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
     const { dispatch } = getInternalHooks(HOOK_MARK);
@@ -434,7 +440,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     };
 
     // Add validateTrigger
-    const validateTriggerList: string[] = toArray(validateTrigger || []);
+    const validateTriggerList: string[] = toArray(mergedValidateTrigger || []);
 
     validateTriggerList.forEach((triggerName: string) => {
       // Wrap additional function of component, so that we can get latest value from store

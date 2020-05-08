@@ -184,6 +184,8 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
    */
   prefixName?: InternalNamePath;
 
+  validateTrigger?: string | string[] | false;
+
   /**
    * Form component should register some content into store.
    * We pass the `HOOK_MARK` as key to avoid user call the function.
