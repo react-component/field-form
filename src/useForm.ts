@@ -585,7 +585,7 @@ export class FormStore {
           children.add(field);
 
           const fieldNamePath = field.getNamePath();
-          if (field.isFieldTouched() && fieldNamePath.length) {
+          if (field.isFieldDirty() && fieldNamePath.length) {
             childrenFields.push(fieldNamePath);
             fillChildren(fieldNamePath);
           }
