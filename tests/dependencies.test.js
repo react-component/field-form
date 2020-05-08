@@ -1,6 +1,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../src';
+import timeout from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 
@@ -68,5 +69,57 @@ describe('Form.Dependencies', () => {
     await changeValue(getField(wrapper), '1');
 
     expect(rendered).toBeTruthy();
+  });
+
+  it('should work when field is dirty', async () => {
+    let pass = false;
+
+    const wrapper = mount(
+      <Form>
+        <InfoField
+          name="field_1"
+          rules={[
+            {
+              validator: () => {
+                if (pass) {
+                  return Promise.resolve();
+                }
+                return Promise.reject('You should not pass');
+              },
+            },
+          ]}
+          dependencies={['field_2']}
+        />
+
+        <InfoField name="field_2" />
+
+        <Field shouldUpdate>
+          {(_, __, { resetFields }) => (
+            <button
+              type="button"
+              onClick={() => {
+                resetFields();
+              }}
+            />
+          )}
+        </Field>
+      </Form>,
+    );
+
+    wrapper.find('form').simulate('submit');
+    await timeout();
+    wrapper.update();
+    matchError(getField(wrapper, 0), 'You should not pass');
+
+    // Mock new validate
+    pass = true;
+    await changeValue(getField(wrapper, 1), 'bamboo');
+    matchError(getField(wrapper, 0), false);
+
+    // Should not validate after reset
+    pass = false;
+    wrapper.find('button').simulate('click');
+    await changeValue(getField(wrapper, 1), 'light');
+    matchError(getField(wrapper, 0), false);
   });
 });
