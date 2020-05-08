@@ -292,10 +292,20 @@ describe('Form.Validate', () => {
         </Form>,
       );
 
+      // Not trigger validate since Form set `onBlur`
+      await changeValue(getField(wrapper), '');
+      matchError(wrapper, false);
+
+      // Trigger onBlur
       wrapper.find('input').simulate('blur');
       await timeout();
       wrapper.update();
       matchError(wrapper, true);
+
+      // Update Form context
+      wrapper.setProps({ validateTrigger: 'onChange' });
+      await changeValue(getField(wrapper), '1');
+      matchError(wrapper, false);
     });
   });
 
