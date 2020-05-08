@@ -85,6 +85,7 @@ export interface ValidateErrorEntity {
 export interface FieldEntity {
   onStoreChange: (store: Store, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
   isFieldTouched: () => boolean;
+  isFieldDirty: () => boolean;
   isFieldValidating: () => boolean;
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
   getMeta: () => Meta;

@@ -106,6 +106,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
    */
   private touched: boolean = false;
 
+  /** Mark when touched & validated. Currently only used for `dependencies` */
+  private dirty: boolean = false;
+
   private validatePromise: Promise<string[]> | null = null;
 
   private prevValidating: boolean;
@@ -189,6 +192,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // `setFieldsValue` is a quick access to update related status
     if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
       this.touched = true;
+      this.dirty = true;
       this.validatePromise = null;
       this.errors = [];
     }
@@ -198,6 +202,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (!namePathList || namePathMatch) {
           // Clean up state
           this.touched = false;
+          this.dirty = false;
           this.validatePromise = null;
           this.errors = [];
 
@@ -222,6 +227,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           if ('errors' in data) {
             this.errors = data.errors || [];
           }
+          this.dirty = true;
 
           this.reRender();
           return;
@@ -304,6 +310,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       validateFirst,
       messageVariables,
     );
+    this.dirty = true;
     this.validatePromise = promise;
     this.errors = [];
 
@@ -323,6 +330,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public isFieldValidating = () => !!this.validatePromise;
 
   public isFieldTouched = () => this.touched;
+
+  public isFieldDirty = () => this.dirty;
 
   public getErrors = () => this.errors;
 
@@ -400,6 +409,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     control[trigger] = (...args: EventArgs) => {
       // Mark as touched
       this.touched = true;
+      this.dirty = true;
 
       let newValue: StoreValue;
       if (getValueFromEvent) {
