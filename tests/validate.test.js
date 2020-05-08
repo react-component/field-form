@@ -250,40 +250,63 @@ describe('Form.Validate', () => {
       await timeout();
       expect(form.getFieldError('test')).toEqual(["'test' is required"]);
     });
-  });
 
-  it('change validateTrigger', async () => {
-    let form;
+    it('change validateTrigger', async () => {
+      let form;
 
-    const Test = ({ init = false }) => (
-      <Form
-        ref={instance => {
-          form = instance;
-        }}
-      >
-        <Field
-          name="title"
-          validateTrigger={init ? 'onChange' : 'onBlur'}
-          rules={[
-            { required: true, message: 'Title is required' },
-            { min: 3, message: 'Title should be 3+ characters' },
-          ]}
+      const Test = ({ init = false }) => (
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
         >
-          <Input />
-        </Field>
-      </Form>
-    );
+          <Field
+            name="title"
+            validateTrigger={init ? 'onChange' : 'onBlur'}
+            rules={[
+              { required: true, message: 'Title is required' },
+              { min: 3, message: 'Title should be 3+ characters' },
+            ]}
+          >
+            <Input />
+          </Field>
+        </Form>
+      );
 
-    const wrapper = mount(<Test />);
+      const wrapper = mount(<Test />);
 
-    getField(wrapper).simulate('blur');
-    await timeout();
-    expect(form.getFieldError('title')).toEqual(['Title is required']);
+      getField(wrapper).simulate('blur');
+      await timeout();
+      expect(form.getFieldError('title')).toEqual(['Title is required']);
 
-    wrapper.setProps({ init: true });
-    await changeValue(getField(wrapper), '1');
-    expect(form.getFieldValue('title')).toBe('1');
-    expect(form.getFieldError('title')).toEqual(['Title should be 3+ characters']);
+      wrapper.setProps({ init: true });
+      await changeValue(getField(wrapper), '1');
+      expect(form.getFieldValue('title')).toBe('1');
+      expect(form.getFieldError('title')).toEqual(['Title should be 3+ characters']);
+    });
+
+    it('form context', async () => {
+      const wrapper = mount(
+        <Form validateTrigger="onBlur">
+          <InfoField name="test" rules={[{ required: true }]} />
+        </Form>,
+      );
+
+      // Not trigger validate since Form set `onBlur`
+      await changeValue(getField(wrapper), '');
+      matchError(wrapper, false);
+
+      // Trigger onBlur
+      wrapper.find('input').simulate('blur');
+      await timeout();
+      wrapper.update();
+      matchError(wrapper, true);
+
+      // Update Form context
+      wrapper.setProps({ validateTrigger: 'onChange' });
+      await changeValue(getField(wrapper), '1');
+      matchError(wrapper, false);
+    });
   });
 
   describe('validate only accept exist fields', () => {

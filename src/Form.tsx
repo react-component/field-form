@@ -29,6 +29,7 @@ export interface FormProps extends BaseFormProps {
   onFieldsChange?: Callbacks['onFieldsChange'];
   onFinish?: Callbacks['onFinish'];
   onFinishFailed?: Callbacks['onFinishFailed'];
+  validateTrigger?: string | string[] | false;
 }
 
 const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
@@ -40,6 +41,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     children,
     component: Component = 'form',
     validateMessages,
+    validateTrigger = 'onChange',
     onValuesChange,
     onFieldsChange,
     onFinish,
@@ -122,10 +124,16 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     prevFieldsRef.current = fields;
   }, [fields, formInstance]);
 
+  const formContextValue = React.useMemo(
+    () => ({
+      ...(formInstance as InternalFormInstance),
+      validateTrigger,
+    }),
+    [formInstance, validateTrigger],
+  );
+
   const wrapperNode = (
-    <FieldContext.Provider value={formInstance as InternalFormInstance}>
-      {childrenNode}
-    </FieldContext.Provider>
+    <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
   );
 
   if (Component === false) {
