@@ -76,6 +76,9 @@ export interface InternalFieldProps {
 
 export interface FieldProps extends Omit<InternalFieldProps, 'name'> {
   name?: NamePath;
+
+  /** @private Passed by Form.List props. */
+  isListField?: boolean;
 }
 
 export interface FieldState {
@@ -491,9 +494,14 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   }
 }
 
-const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => {
+const WrapperField: React.FC<FieldProps> = ({ name, isListField, ...restProps }) => {
   const namePath = name !== undefined ? getNamePath(name) : undefined;
-  return <Field key={`_${(namePath || []).join('_')}`} name={namePath} {...restProps} />;
+
+  let key: string = 'keep';
+  if (!isListField) {
+    key = `_${(namePath || []).join('_')}`;
+  }
+  return <Field key={key} name={namePath} {...restProps} />;
 };
 
 export default WrapperField;
