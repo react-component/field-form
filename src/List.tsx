@@ -8,6 +8,7 @@ import { move, getNamePath } from './utils/valueUtil';
 interface ListField {
   name: number;
   key: number;
+  isListField: boolean;
 }
 
 interface ListOperations {
@@ -117,6 +118,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                 return {
                   name: index,
                   key,
+                  isListField: true,
                 };
               },
             ),
