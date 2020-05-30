@@ -442,8 +442,13 @@ export class FormStore {
     });
   };
 
-  private getFields = (): InternalFieldData[] =>
-    this.getFieldEntities(true).map(
+  private getFields = (): InternalFieldData[] => {
+    console.time('getFieldEntities');
+    const entities = this.getFieldEntities(true);
+    console.timeEnd('getFieldEntities');
+
+    console.time('map fields');
+    const fields = entities.map(
       (field: FieldEntity): InternalFieldData => {
         const namePath = field.getNamePath();
         const meta = field.getMeta();
@@ -460,6 +465,10 @@ export class FormStore {
         return fieldData;
       },
     );
+    console.timeEnd('map fields');
+
+    return fields;
+  };
 
   // =========================== Observer ===========================
   private registerField = (entity: FieldEntity) => {
@@ -612,7 +621,9 @@ export class FormStore {
     const { onFieldsChange } = this.callbacks;
 
     if (onFieldsChange) {
+      console.time('getFields');
       const fields = this.getFields();
+      console.timeEnd('getFields');
 
       /**
        * Fill errors since `fields` may be replaced by controlled fields
