@@ -186,11 +186,10 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   // Trigger by store update. Check if need update the component
   public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathList, info) => {
     const { shouldUpdate, dependencies = [], onReset } = this.props;
-    const { getFieldsValue }: FormInstance = this.context;
-    const values = getFieldsValue(true);
+    const { store } = info;
     const namePath = this.getNamePath();
     const prevValue = this.getValue(prevStore);
-    const curValue = this.getValue();
+    const curValue = this.getValue(store);
 
     const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
@@ -242,7 +241,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
         if (
           shouldUpdate &&
           !namePath.length &&
-          requireUpdate(shouldUpdate, prevStore, values, prevValue, curValue, info)
+          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
         ) {
           this.reRender();
           return;
@@ -277,7 +276,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
           dependencies.some(dependency =>
             containsNamePath(namePathList, getNamePath(dependency)),
           ) ||
-          requireUpdate(shouldUpdate, prevStore, values, prevValue, curValue, info)
+          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
         ) {
           this.reRender();
           return;

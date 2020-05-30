@@ -19,6 +19,7 @@ import {
   StoreValue,
   Meta,
   InternalFieldData,
+  ValuedNotifyInfo,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -134,9 +135,14 @@ export class FormStore {
     this.validateMessages = validateMessages;
   };
 
+  // ========================== Dev Warning =========================
+  private timeoutId: number = null;
+
   private warningUnhooked = () => {
-    if (process.env.NODE_ENV !== 'production') {
-      setTimeout(() => {
+    if (process.env.NODE_ENV !== 'production' && !this.timeoutId) {
+      this.timeoutId = window.setTimeout(() => {
+        this.timeoutId = null;
+
         if (!this.formHooked) {
           warning(
             false,
@@ -441,8 +447,13 @@ export class FormStore {
     });
   };
 
-  private getFields = (): InternalFieldData[] =>
-    this.getFieldEntities(true).map(
+  private getFields = (): InternalFieldData[] => {
+    console.time('getFieldEntities');
+    const entities = this.getFieldEntities(true);
+    console.timeEnd('getFieldEntities');
+
+    console.time('map fields');
+    const fields = entities.map(
       (field: FieldEntity): InternalFieldData => {
         const namePath = field.getNamePath();
         const meta = field.getMeta();
@@ -459,6 +470,10 @@ export class FormStore {
         return fieldData;
       },
     );
+    console.timeEnd('map fields');
+
+    return fields;
+  };
 
   // =========================== Observer ===========================
   private registerField = (entity: FieldEntity) => {
@@ -503,9 +518,15 @@ export class FormStore {
     info: NotifyInfo,
   ) => {
     if (this.subscribable) {
+      const mergedInfo: ValuedNotifyInfo = {
+        ...info,
+        store: this.getFieldsValue(true),
+      };
+      console.time(`notify ${info.type}`);
       this.getFieldEntities().forEach(({ onStoreChange }) => {
-        onStoreChange(prevStore, namePathList, info);
+        onStoreChange(prevStore, namePathList, mergedInfo);
       });
+      console.timeEnd(`notify ${info.type}`);
     } else {
       this.forceRootUpdate();
     }
@@ -605,7 +626,9 @@ export class FormStore {
     const { onFieldsChange } = this.callbacks;
 
     if (onFieldsChange) {
+      console.time('getFields');
       const fields = this.getFields();
+      console.timeEnd('getFields');
 
       /**
        * Fill errors since `fields` may be replaced by controlled fields
