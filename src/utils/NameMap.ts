@@ -1,6 +1,5 @@
 import { InternalNamePath } from '../interface';
-
-const INTERNAL_SPLIT = '__FORM__SPLIT__';
+import { matchNamePath } from './valueUtil';
 
 interface KV<T> {
   key: InternalNamePath;
@@ -11,17 +10,23 @@ interface KV<T> {
  * NameMap like a `Map` but accepts `string[]` as key.
  */
 class NameMap<T> {
-  // private list: KV<T>[] = [];
-
-  private cache = new Map<string, KV<T>>();
+  private list: KV<T>[] = [];
 
   public set(key: InternalNamePath, value: T) {
-    this.cache.set(key.join(INTERNAL_SPLIT), { key, value });
+    const index = this.list.findIndex(item => matchNamePath(item.key, key));
+    if (index !== -1) {
+      this.list[index].value = value;
+    } else {
+      this.list.push({
+        key,
+        value,
+      });
+    }
   }
 
-  public get(key: InternalNamePath): T {
-    const ret = this.cache.get(key.join(INTERNAL_SPLIT));
-    return ret && ret.value;
+  public get(key: InternalNamePath) {
+    const result = this.list.find(item => matchNamePath(item.key, key));
+    return result && result.value;
   }
 
   public update(key: InternalNamePath, updater: (origin: T) => T | null) {
@@ -36,11 +41,11 @@ class NameMap<T> {
   }
 
   public delete(key: InternalNamePath) {
-    this.cache.delete(key.join(INTERNAL_SPLIT));
+    this.list = this.list.filter(item => !matchNamePath(item.key, key));
   }
 
   public map<U>(callback: (kv: KV<T>) => U) {
-    return [...this.cache.values()].map(callback);
+    return this.list.map(callback);
   }
 
   public toJSON(): { [name: string]: T } {
