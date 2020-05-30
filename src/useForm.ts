@@ -135,9 +135,14 @@ export class FormStore {
     this.validateMessages = validateMessages;
   };
 
+  // ========================== Dev Warning =========================
+  private timeoutId: number = null;
+
   private warningUnhooked = () => {
-    if (process.env.NODE_ENV !== 'production') {
-      setTimeout(() => {
+    if (process.env.NODE_ENV !== 'production' && !this.timeoutId) {
+      this.timeoutId = window.setTimeout(() => {
+        this.timeoutId = null;
+
         if (!this.formHooked) {
           warning(
             false,
