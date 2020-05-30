@@ -83,7 +83,11 @@ export interface ValidateErrorEntity {
 }
 
 export interface FieldEntity {
-  onStoreChange: (store: Store, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
+  onStoreChange: (
+    store: Store,
+    namePathList: InternalNamePath[] | null,
+    info: ValuedNotifyInfo,
+  ) => void;
   isFieldTouched: () => boolean;
   isFieldDirty: () => boolean;
   isFieldValidating: () => boolean;
@@ -115,29 +119,45 @@ export type InternalValidateFields = (
 ) => Promise<Store>;
 export type ValidateFields = (nameList?: NamePath[]) => Promise<Store>;
 
+// >>>>>> Info
 interface ValueUpdateInfo {
   type: 'valueUpdate';
   source: 'internal' | 'external';
 }
 
+interface ValidateFinishInfo {
+  type: 'validateFinish';
+}
+
+interface ResetInfo {
+  type: 'reset';
+}
+
+interface SetFieldInfo {
+  type: 'setField';
+  data: FieldData;
+}
+
+interface DependenciesUpdateInfo {
+  type: 'dependenciesUpdate';
+  /**
+   * Contains all the related `InternalNamePath[]`.
+   * a <- b <- c : change `a`
+   * relatedFields=[a, b, c]
+   */
+  relatedFields: InternalNamePath[];
+}
+
 export type NotifyInfo =
   | ValueUpdateInfo
-  | {
-      type: 'validateFinish' | 'reset';
-    }
-  | {
-      type: 'setField';
-      data: FieldData;
-    }
-  | {
-      type: 'dependenciesUpdate';
-      /**
-       * Contains all the related `InternalNamePath[]`.
-       * a <- b <- c : change `a`
-       * relatedFields=[a, b, c]
-       */
-      relatedFields: InternalNamePath[];
-    };
+  | ValidateFinishInfo
+  | ResetInfo
+  | SetFieldInfo
+  | DependenciesUpdateInfo;
+
+export type ValuedNotifyInfo = NotifyInfo & {
+  store: Store;
+};
 
 export interface Callbacks {
   onValuesChange?: (changedValues: Store, values: Store) => void;

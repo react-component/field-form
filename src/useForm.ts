@@ -19,6 +19,7 @@ import {
   StoreValue,
   Meta,
   InternalFieldData,
+  ValuedNotifyInfo,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -503,9 +504,15 @@ export class FormStore {
     info: NotifyInfo,
   ) => {
     if (this.subscribable) {
+      const mergedInfo: ValuedNotifyInfo = {
+        ...info,
+        store: this.getFieldsValue(true),
+      };
+      console.time(`notify ${info.type}`);
       this.getFieldEntities().forEach(({ onStoreChange }) => {
-        onStoreChange(prevStore, namePathList, info);
+        onStoreChange(prevStore, namePathList, mergedInfo);
       });
+      console.timeEnd(`notify ${info.type}`);
     } else {
       this.forceRootUpdate();
     }
