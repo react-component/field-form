@@ -140,7 +140,7 @@ export class FormStore {
 
   private warningUnhooked = () => {
     if (process.env.NODE_ENV !== 'production' && !this.timeoutId) {
-      this.timeoutId = window.setTimeout(() => {
+      this.timeoutId = setTimeout(() => {
         this.timeoutId = null;
 
         if (!this.formHooked) {
