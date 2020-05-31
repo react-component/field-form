@@ -448,11 +448,8 @@ export class FormStore {
   };
 
   private getFields = (): InternalFieldData[] => {
-    console.time('getFieldEntities');
     const entities = this.getFieldEntities(true);
-    console.timeEnd('getFieldEntities');
 
-    console.time('map fields');
     const fields = entities.map(
       (field: FieldEntity): InternalFieldData => {
         const namePath = field.getNamePath();
@@ -470,7 +467,6 @@ export class FormStore {
         return fieldData;
       },
     );
-    console.timeEnd('map fields');
 
     return fields;
   };
@@ -522,11 +518,9 @@ export class FormStore {
         ...info,
         store: this.getFieldsValue(true),
       };
-      console.time(`notify ${info.type}`);
       this.getFieldEntities().forEach(({ onStoreChange }) => {
         onStoreChange(prevStore, namePathList, mergedInfo);
       });
-      console.timeEnd(`notify ${info.type}`);
     } else {
       this.forceRootUpdate();
     }
@@ -626,9 +620,7 @@ export class FormStore {
     const { onFieldsChange } = this.callbacks;
 
     if (onFieldsChange) {
-      console.time('getFields');
       const fields = this.getFields();
-      console.timeEnd('getFields');
 
       /**
        * Fill errors since `fields` may be replaced by controlled fields
