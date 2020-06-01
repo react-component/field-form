@@ -72,6 +72,7 @@ export interface InternalFieldProps {
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
+  usePrefix?: boolean;
 }
 
 export interface FieldProps extends Omit<InternalFieldProps, 'name'> {
@@ -91,6 +92,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   public static contextType = FieldContext;
 
   public static defaultProps = {
+    usePrefix: true,
     trigger: 'onChange',
     valuePropName: 'value',
   };
@@ -147,10 +149,14 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 
   // ================================== Utils ==================================
   public getNamePath = (): InternalNamePath => {
-    const { name } = this.props;
+    const { name, usePrefix } = this.props;
     const { prefixName = [] }: InternalFormInstance = this.context;
 
-    return name !== undefined ? [...prefixName, ...name] : [];
+    if (name === undefined) {
+      return [];
+    }
+
+    return usePrefix ? [...prefixName, ...name] : name;
   };
 
   public getRules = (): RuleObject[] => {
