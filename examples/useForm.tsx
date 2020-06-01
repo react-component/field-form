@@ -13,12 +13,15 @@ export default () => {
     <div>
       <h3>useForm ({list.length} inputs)</h3>
 
-      <button type="button" onClick={() => {
-        form.setFieldsValue({
-          username: 'light',
-          password: 'bamboo',
-        });
-      }}>
+      <button
+        type="button"
+        onClick={() => {
+          form.setFieldsValue({
+            username: 'light',
+            password: 'bamboo',
+          });
+        }}
+      >
         Fill Values
       </button>
 
@@ -33,7 +36,7 @@ export default () => {
           <Field name="username">
             <Input placeholder="Shadow of Username" />
           </Field>
-          <Field name={[ 'path1', 'path2' ]}>
+          <Field name={['path1', 'path2']}>
             <Input placeholder="nest" />
           </Field>
 

@@ -2,7 +2,6 @@ import React from 'react';
 import Form, { Field } from '../src';
 import Input from './components/Input';
 
-
 const list = new Array(1111).fill(() => null);
 
 export default class Demo extends React.Component {
@@ -37,7 +36,7 @@ export default class Demo extends React.Component {
           <h4>Show additional field when `username` is `111`</h4>
           <Field dependencies={['username']}>
             {(control, meta, context) => {
-              const { username } = context.getFieldsValue();
+              const { username } = context.getFieldsValue(true);
               console.log('my render!', username);
               return username === '111' && <Input {...control} placeholder="I am secret!" />;
             }}

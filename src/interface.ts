@@ -16,12 +16,15 @@ export interface Meta {
   name: InternalNamePath;
 }
 
+export interface InternalFieldData extends Meta {
+  value: StoreValue;
+}
+
 /**
  * Used by `setFields` config
  */
-export interface FieldData extends Partial<Omit<Meta, 'name'>> {
+export interface FieldData extends Partial<Omit<InternalFieldData, 'name'>> {
   name: NamePath;
-  value?: StoreValue;
 }
 
 export type RuleType =
@@ -80,8 +83,13 @@ export interface ValidateErrorEntity {
 }
 
 export interface FieldEntity {
-  onStoreChange: (store: Store, namePathList: InternalNamePath[] | null, info: NotifyInfo) => void;
+  onStoreChange: (
+    store: Store,
+    namePathList: InternalNamePath[] | null,
+    info: ValuedNotifyInfo,
+  ) => void;
   isFieldTouched: () => boolean;
+  isFieldDirty: () => boolean;
   isFieldValidating: () => boolean;
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
   getMeta: () => Meta;
@@ -91,6 +99,7 @@ export interface FieldEntity {
     name?: NamePath;
     rules?: Rule[];
     dependencies?: NamePath[];
+    initialValue?: any;
   };
 }
 
@@ -110,29 +119,45 @@ export type InternalValidateFields = (
 ) => Promise<Store>;
 export type ValidateFields = (nameList?: NamePath[]) => Promise<Store>;
 
+// >>>>>> Info
 interface ValueUpdateInfo {
   type: 'valueUpdate';
   source: 'internal' | 'external';
 }
 
+interface ValidateFinishInfo {
+  type: 'validateFinish';
+}
+
+interface ResetInfo {
+  type: 'reset';
+}
+
+interface SetFieldInfo {
+  type: 'setField';
+  data: FieldData;
+}
+
+interface DependenciesUpdateInfo {
+  type: 'dependenciesUpdate';
+  /**
+   * Contains all the related `InternalNamePath[]`.
+   * a <- b <- c : change `a`
+   * relatedFields=[a, b, c]
+   */
+  relatedFields: InternalNamePath[];
+}
+
 export type NotifyInfo =
   | ValueUpdateInfo
-  | {
-      type: 'validateFinish' | 'reset';
-    }
-  | {
-      type: 'setField';
-      data: FieldData;
-    }
-  | {
-      type: 'dependenciesUpdate';
-      /**
-       * Contains all the related `InternalNamePath[]`.
-       * a <- b <- c : change `a`
-       * relatedFields=[a, b, c]
-       */
-      relatedFields: InternalNamePath[];
-    };
+  | ValidateFinishInfo
+  | ResetInfo
+  | SetFieldInfo
+  | DependenciesUpdateInfo;
+
+export type ValuedNotifyInfo = NotifyInfo & {
+  store: Store;
+};
 
 export interface Callbacks {
   onValuesChange?: (changedValues: Store, values: Store) => void;
@@ -154,7 +179,7 @@ export interface InternalHooks {
 export interface FormInstance {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
-  getFieldsValue: (nameList?: NamePath[]) => Store;
+  getFieldsValue: (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => Store;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
@@ -178,6 +203,8 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
    * Passed by field context props
    */
   prefixName?: InternalNamePath;
+
+  validateTrigger?: string | string[] | false;
 
   /**
    * Form component should register some content into store.

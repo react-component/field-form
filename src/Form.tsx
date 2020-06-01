@@ -29,9 +29,10 @@ export interface FormProps extends BaseFormProps {
   onFieldsChange?: Callbacks['onFieldsChange'];
   onFinish?: Callbacks['onFinish'];
   onFinishFailed?: Callbacks['onFinishFailed'];
+  validateTrigger?: string | string[] | false;
 }
 
-const Form: React.FunctionComponent<FormProps> = (
+const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   {
     name,
     initialValues,
@@ -40,6 +41,7 @@ const Form: React.FunctionComponent<FormProps> = (
     children,
     component: Component = 'form',
     validateMessages,
+    validateTrigger = 'onChange',
     onValuesChange,
     onFieldsChange,
     onFinish,
@@ -106,7 +108,7 @@ const Form: React.FunctionComponent<FormProps> = (
   let childrenNode = children;
   const childrenRenderProps = typeof children === 'function';
   if (childrenRenderProps) {
-    const values = formInstance.getFieldsValue();
+    const values = formInstance.getFieldsValue(true);
     childrenNode = (children as RenderProps)(values, formInstance);
   }
 
@@ -122,10 +124,16 @@ const Form: React.FunctionComponent<FormProps> = (
     prevFieldsRef.current = fields;
   }, [fields, formInstance]);
 
+  const formContextValue = React.useMemo(
+    () => ({
+      ...(formInstance as InternalFormInstance),
+      validateTrigger,
+    }),
+    [formInstance, validateTrigger],
+  );
+
   const wrapperNode = (
-    <FieldContext.Provider value={formInstance as InternalFormInstance}>
-      {childrenNode}
-    </FieldContext.Provider>
+    <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
   );
 
   if (Component === false) {

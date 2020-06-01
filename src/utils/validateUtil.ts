@@ -1,6 +1,6 @@
 import RawAsyncValidator from 'async-validator';
 import * as React from 'react';
-import warning from 'warning';
+import warning from 'rc-util/lib/warning';
 import {
   InternalNamePath,
   ValidateOptions,
@@ -33,6 +33,7 @@ function convertMessages(
   messages: ValidateMessages,
   name: string,
   rule: RuleObject,
+  messageVariables?: Record<string, string>,
 ): ValidateMessages {
   const kv = {
     ...(rule as Record<string, string | number>),
@@ -48,7 +49,7 @@ function convertMessages(
     Object.keys(source).forEach(ruleName => {
       const value = source[ruleName];
       if (typeof value === 'string') {
-        target[ruleName] = replaceFunc(value);
+        target[ruleName] = replaceFunc(value, messageVariables);
       } else if (value && typeof value === 'object') {
         target[ruleName] = {};
         fillTemplate(value, target[ruleName]);
@@ -69,6 +70,7 @@ async function validateRule(
   value: StoreValue,
   rule: RuleObject,
   options: ValidateOptions,
+  messageVariables?: Record<string, string>,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
   // We should special handle array validate
@@ -82,7 +84,12 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const messages: ValidateMessages = convertMessages(options.validateMessages, name, cloneRule);
+  const messages: ValidateMessages = convertMessages(
+    options.validateMessages,
+    name,
+    cloneRule,
+    messageVariables,
+  );
   validator.messages(messages);
 
   let result = [];
@@ -99,14 +106,14 @@ async function validateRule(
       );
     } else {
       console.error(errObj);
-      result = [(messages.default as (() => string))()];
+      result = [(messages.default as () => string)()];
     }
   }
 
   if (!result.length && subRuleField) {
     const subResults: string[][] = await Promise.all(
       (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
-        validateRule(`${name}.${i}`, subValue, subRuleField, options),
+        validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
       ),
     );
 
@@ -125,6 +132,8 @@ export function validateRules(
   value: StoreValue,
   rules: RuleObject[],
   options: ValidateOptions,
+  validateFirst: boolean,
+  messageVariables?: Record<string, string>,
 ) {
   const name = namePath.join('.');
 
@@ -179,11 +188,14 @@ export function validateRules(
     };
   });
 
-  const summaryPromise: Promise<string[]> = Promise.all(
-    filledRules.map(rule => validateRule(name, value, rule, options)),
-  ).then((errorsList: string[][]): string[] | Promise<string[]> => {
-    const errors: string[] = [].concat(...errorsList);
+  const rulePromises = filledRules.map(rule =>
+    validateRule(name, value, rule, options, messageVariables),
+  );
 
+  const summaryPromise: Promise<string[]> = (validateFirst
+    ? finishOnFirstFailed(rulePromises)
+    : finishOnAllFailed(rulePromises)
+  ).then((errors: string[]): string[] | Promise<string[]> => {
     if (!errors.length) {
       return [];
     }
@@ -195,4 +207,31 @@ export function validateRules(
   summaryPromise.catch(e => e);
 
   return summaryPromise;
+}
+
+async function finishOnAllFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+  return Promise.all(rulePromises).then((errorsList: string[][]): string[] | Promise<string[]> => {
+    const errors: string[] = [].concat(...errorsList);
+
+    return errors;
+  });
+}
+
+async function finishOnFirstFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+  let count = 0;
+
+  return new Promise(resolve => {
+    rulePromises.forEach(promise => {
+      promise.then(errors => {
+        if (errors.length) {
+          resolve(errors);
+        }
+
+        count += 1;
+        if (count === rulePromises.length) {
+          resolve([]);
+        }
+      });
+    });
+  });
 }

@@ -2,7 +2,7 @@
 
 React Performance First Form Component.
 
-[![NPM version][npm-image]][npm-url] [![build status][circleci-image]][circleci-url] [![Test coverage][coveralls-image]][coveralls-url] [![node version][node-image]][node-url] [![npm download][download-image]][download-url]
+[![NPM version][npm-image]][npm-url] [![build status][circleci-image]][circleci-url] [![Test coverage][coveralls-image]][coveralls-url] [![npm download][download-image]][download-url]
 
 [npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
 [npm-url]: http://npmjs.org/package/rc-field-form
@@ -10,8 +10,6 @@ React Performance First Form Component.
 [circleci-url]: https://circleci.com/gh/react-component/field-form/tree/master
 [coveralls-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
 [coveralls-url]: https://codecov.io/gh/react-component/field-form
-[node-image]: https://img.shields.io/badge/node.js-%3E=_6.0-green.svg?style=flat-square
-[node-url]: http://nodejs.org/download/
 [download-image]: https://img.shields.io/npm/dm/rc-field-form.svg?style=flat-square
 [download-url]: https://npmjs.org/package/rc-field-form
 
@@ -76,17 +74,19 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ## Field
 
-| Prop              | Description                             | Type                                      | Default  |
-| ----------------- | --------------------------------------- | ----------------------------------------- | -------- |
-| dependencies      | Will re-render if dependencies changed  | [NamePath](#namepath)[]                   | -        |
-| getValueFromEvent | Specify how to get value from event     | (..args: any[]) => any                    | -        |
-| name              | Field name path                         | [NamePath](#namepath)                     | -        |
-| normalize         | Normalize value before update           | (value, prevValue, prevValues) => any     | -        |
-| rules             | Validate rules                          | [Rule](#rule)[]                           | -        |
-| shouldUpdate      | Check if Field should update            | true \| (prevValues, nextValues): boolean | -        |
-| trigger           | Collect value update by event trigger   | string                                    | onChange |
-| validateTrigger   | Config trigger point with rule validate | string \| string[]                        | onChange |
-| valuePropName     | Config value mapping prop with element  | string                                    | value    |
+| Prop              | Description                                                                   | Type                                      | Default  |
+| ----------------- | ----------------------------------------------------------------------------- | ----------------------------------------- | -------- |
+| dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                   | -        |
+| getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                    | -        |
+| getValueProps     | Customize additional props with value. This prop will disable `valuePropName` | (value) => any                            | -        |
+| initialValue      | Field initial value                                                           | any                                       | -        |
+| name              | Field name path                                                               | [NamePath](#namepath)                     | -        |
+| normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any     | -        |
+| rules             | Validate rules                                                                | [Rule](#rule)[]                           | -        |
+| shouldUpdate      | Check if Field should update                                                  | true \| (prevValues, nextValues): boolean | -        |
+| trigger           | Collect value update by event trigger                                         | string                                    | onChange |
+| validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                        | onChange |
+| valuePropName     | Config value mapping prop with element                                        | string                                    | value    |
 
 ## List
 
@@ -123,7 +123,7 @@ class Demo extends React.Component {
 | Prop              | Description                                | Type                                                                       |
 | ----------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
 | getFieldValue     | Get field value by name path               | (name: [NamePath](#namepath)) => any                                       |
-| getFieldsValue    | Get list of field values by name path list | (nameList?: [NamePath](#namepath)[]) => any                                |
+| getFieldsValue    | Get list of field values by name path list | (nameList?: ([NamePath](#namepath)[]) => any) \| true                      |
 | getFieldError     | Get field errors by name path              | (name: [NamePath](#namepath)) => string[]                                  |
 | getFieldsError    | Get list of field errors by name path list | (nameList?: [NamePath](#namepath)[]) => FieldError[]                       |
 | isFieldsTouched   | Check if list of fields are touched        | (nameList?: [NamePath](#namepath)[], allTouched?: boolean) => boolean      |
@@ -184,10 +184,10 @@ To keep sync with `rc-form` legacy usage of `validator`, we still provides `call
 
 ### ListOperations
 
-| Prop   | Type                    |
-| ------ | ----------------------- |
-| add    | () => void              |
-| remove | (index: number) => void |
+| Prop   | Type                     |
+| ------ | ------------------------ |
+| add    | (initValue: any) => void |
+| remove | (index: number) => void  |
 
 ### ValidateMessages
 

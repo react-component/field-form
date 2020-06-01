@@ -1,5 +1,5 @@
 import * as React from 'react';
-import warning from 'warning';
+import warning from 'rc-util/lib/warning';
 import {
   Callbacks,
   FieldData,
@@ -17,6 +17,9 @@ import {
   InternalFormInstance,
   ValidateErrorEntity,
   StoreValue,
+  Meta,
+  InternalFieldData,
+  ValuedNotifyInfo,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -30,6 +33,8 @@ import {
   setValue,
   setValues,
 } from './utils/valueUtil';
+
+type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
 interface UpdateAction {
   type: 'updateValue';
@@ -102,10 +107,7 @@ export class FormStore {
       };
     }
 
-    warning(
-      false,
-      '`getInternalHooks` is internal usage. Should not call directly.',
-    );
+    warning(false, '`getInternalHooks` is internal usage. Should not call directly.');
     return null;
   };
 
@@ -123,8 +125,7 @@ export class FormStore {
     }
   };
 
-  private getInitialValue = (namePath: InternalNamePath) =>
-    getValue(this.initialValues, namePath);
+  private getInitialValue = (namePath: InternalNamePath) => getValue(this.initialValues, namePath);
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
@@ -134,12 +135,21 @@ export class FormStore {
     this.validateMessages = validateMessages;
   };
 
+  // ========================== Dev Warning =========================
+  private timeoutId: number = null;
+
   private warningUnhooked = () => {
-    if (process.env.NODE_ENV !== 'production' && !this.formHooked) {
-      warning(
-        false,
-        'Instance created by `useForm` is not connect to any Form element. Forget to pass `form` prop?',
-      );
+    if (process.env.NODE_ENV !== 'production' && !this.timeoutId && typeof window !== 'undefined') {
+      this.timeoutId = window.setTimeout(() => {
+        this.timeoutId = null;
+
+        if (!this.formHooked) {
+          warning(
+            false,
+            'Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?',
+          );
+        }
+      });
     }
   };
 
@@ -165,14 +175,46 @@ export class FormStore {
     return cache;
   };
 
-  private getFieldsValue = (nameList?: NamePath[]) => {
+  private getFieldEntitiesForNamePathList = (
+    nameList?: NamePath[],
+  ): (FieldEntity | InvalidateFieldEntity)[] => {
+    if (!nameList) {
+      return this.getFieldEntities(true);
+    }
+    const cache = this.getFieldsMap(true);
+    return nameList.map(name => {
+      const namePath = getNamePath(name);
+      return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
+    });
+  };
+
+  private getFieldsValue = (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => {
     this.warningUnhooked();
 
-    if (!nameList) {
+    if (nameList === true && !filterFunc) {
       return this.store;
     }
 
-    return cloneByNamePathList(this.store, nameList.map(getNamePath));
+    const fieldEntities = this.getFieldEntitiesForNamePathList(
+      Array.isArray(nameList) ? nameList : null,
+    );
+
+    const filteredNameList: NamePath[] = [];
+    fieldEntities.forEach((entity: FieldEntity | InvalidateFieldEntity) => {
+      const namePath =
+        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
+
+      if (!filterFunc) {
+        filteredNameList.push(namePath);
+      } else {
+        const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
+        if (filterFunc(meta)) {
+          filteredNameList.push(namePath);
+        }
+      }
+    });
+
+    return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
   };
 
   private getFieldValue = (name: NamePath) => {
@@ -185,19 +227,10 @@ export class FormStore {
   private getFieldsError = (nameList?: NamePath[]) => {
     this.warningUnhooked();
 
-    let fieldEntities = this.getFieldEntities(true);
-
-    if (nameList) {
-      const cache = this.getFieldsMap(true);
-
-      fieldEntities = nameList.map(name => {
-        const namePath = getNamePath(name);
-        return cache.get(namePath);
-      });
-    }
+    const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
 
     return fieldEntities.map((entity, index) => {
-      if (entity) {
+      if (entity && !('INVALIDATE_NAME_PATH' in entity)) {
         return {
           name: entity.getNamePath(),
           errors: entity.getErrors(),
@@ -275,10 +308,7 @@ export class FormStore {
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
     return fieldEntities.some(testField => {
       const fieldNamePath = testField.getNamePath();
-      return (
-        containsNamePath(namePathList, fieldNamePath) &&
-        testField.isFieldValidating()
-      );
+      return containsNamePath(namePathList, fieldNamePath) && testField.isFieldValidating();
     });
   };
 
@@ -288,12 +318,100 @@ export class FormStore {
     return this.isFieldsValidating([name]);
   };
 
+  /**
+   * Reset Field with field `initialValue` prop.
+   * Can pass `entities` or `namePathList` or just nothing.
+   */
+  private resetWithFieldInitialValue = (
+    info: {
+      entities?: FieldEntity[];
+      namePathList?: InternalNamePath[];
+      /** Skip reset if store exist value. This is only used for field register reset */
+      skipExist?: boolean;
+    } = {},
+  ) => {
+    // Create cache
+    const cache: NameMap<Set<{ entity: FieldEntity; value: any }>> = new NameMap();
+
+    const fieldEntities = this.getFieldEntities(true);
+    fieldEntities.forEach(field => {
+      const { initialValue } = field.props;
+      const namePath = field.getNamePath();
+
+      // Record only if has `initialValue`
+      if (initialValue !== undefined) {
+        const records = cache.get(namePath) || new Set();
+        records.add({ entity: field, value: initialValue });
+
+        cache.set(namePath, records);
+      }
+    });
+
+    // Reset
+    const resetWithFields = (entities: FieldEntity[]) => {
+      entities.forEach(field => {
+        const { initialValue } = field.props;
+
+        if (initialValue !== undefined) {
+          const namePath = field.getNamePath();
+          const formInitialValue = this.getInitialValue(namePath);
+
+          if (formInitialValue !== undefined) {
+            // Warning if conflict with form initialValues and do not modify value
+            warning(
+              false,
+              `Form already set 'initialValues' with path '${namePath.join(
+                '.',
+              )}'. Field can not overwrite it.`,
+            );
+          } else {
+            const records = cache.get(namePath);
+            if (records && records.size > 1) {
+              // Warning if multiple field set `initialValue`and do not modify value
+              warning(
+                false,
+                `Multiple Field with path '${namePath.join(
+                  '.',
+                )}' set 'initialValue'. Can not decide which one to pick.`,
+              );
+            } else if (records) {
+              const originValue = this.getFieldValue(namePath);
+              // Set `initialValue`
+              if (!info.skipExist || originValue === undefined) {
+                this.store = setValue(this.store, namePath, [...records][0].value);
+              }
+            }
+          }
+        }
+      });
+    };
+
+    let requiredFieldEntities: FieldEntity[];
+    if (info.entities) {
+      requiredFieldEntities = info.entities;
+    } else if (info.namePathList) {
+      requiredFieldEntities = [];
+
+      info.namePathList.forEach(namePath => {
+        const records = cache.get(namePath);
+        if (records) {
+          requiredFieldEntities.push(...[...records].map(r => r.entity));
+        }
+      });
+    } else {
+      requiredFieldEntities = fieldEntities;
+    }
+
+    resetWithFields(requiredFieldEntities);
+  };
+
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
 
     const prevStore = this.store;
     if (!nameList) {
       this.store = setValues({}, this.initialValues);
+      this.resetWithFieldInitialValue();
       this.notifyObservers(prevStore, null, { type: 'reset' });
       return;
     }
@@ -304,6 +422,7 @@ export class FormStore {
       const initialValue = this.getInitialValue(namePath);
       this.store = setValue(this.store, namePath, initialValue);
     });
+    this.resetWithFieldInitialValue({ namePathList });
     this.notifyObservers(prevStore, namePathList, { type: 'reset' });
   };
 
@@ -328,23 +447,45 @@ export class FormStore {
     });
   };
 
-  private getFields = (): FieldData[] =>
-    this.getFieldEntities(true).map(
-      (field: FieldEntity): FieldData => {
+  private getFields = (): InternalFieldData[] => {
+    const entities = this.getFieldEntities(true);
+
+    const fields = entities.map(
+      (field: FieldEntity): InternalFieldData => {
         const namePath = field.getNamePath();
         const meta = field.getMeta();
-        return {
+        const fieldData = {
           ...meta,
           name: namePath,
           value: this.getFieldValue(namePath),
         };
+
+        Object.defineProperty(fieldData, 'originRCField', {
+          value: true,
+        });
+
+        return fieldData;
       },
     );
+
+    return fields;
+  };
 
   // =========================== Observer ===========================
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
 
+    // Set initial values
+    if (entity.props.initialValue !== undefined) {
+      const prevStore = this.store;
+      this.resetWithFieldInitialValue({ entities: [entity], skipExist: true });
+      this.notifyObservers(prevStore, [entity.getNamePath()], {
+        type: 'valueUpdate',
+        source: 'internal',
+      });
+    }
+
+    // un-register field callback
     return () => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
     };
@@ -373,8 +514,12 @@ export class FormStore {
     info: NotifyInfo,
   ) => {
     if (this.subscribable) {
+      const mergedInfo: ValuedNotifyInfo = {
+        ...info,
+        store: this.getFieldsValue(true),
+      };
       this.getFieldEntities().forEach(({ onStoreChange }) => {
-        onStoreChange(prevStore, namePathList, info);
+        onStoreChange(prevStore, namePathList, mergedInfo);
       });
     } else {
       this.forceRootUpdate();
@@ -427,9 +572,7 @@ export class FormStore {
     });
   };
 
-  private getDependencyChildrenFields = (
-    rootNamePath: InternalNamePath,
-  ): InternalNamePath[] => {
+  private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {
     const children: Set<FieldEntity> = new Set();
     const childrenFields: InternalNamePath[] = [];
 
@@ -457,7 +600,7 @@ export class FormStore {
           children.add(field);
 
           const fieldNamePath = field.getNamePath();
-          if (field.isFieldTouched() && fieldNamePath.length) {
+          if (field.isFieldDirty() && fieldNamePath.length) {
             childrenFields.push(fieldNamePath);
             fillChildren(fieldNamePath);
           }
@@ -470,11 +613,30 @@ export class FormStore {
     return childrenFields;
   };
 
-  private triggerOnFieldsChange = (namePathList: InternalNamePath[]) => {
+  private triggerOnFieldsChange = (
+    namePathList: InternalNamePath[],
+    filedErrors?: FieldError[],
+  ) => {
     const { onFieldsChange } = this.callbacks;
 
     if (onFieldsChange) {
       const fields = this.getFields();
+
+      /**
+       * Fill errors since `fields` may be replaced by controlled fields
+       */
+      if (filedErrors) {
+        const cache = new NameMap<string[]>();
+        filedErrors.forEach(({ name, errors }) => {
+          cache.set(name, errors);
+        });
+
+        fields.forEach(field => {
+          // eslint-disable-next-line no-param-reassign
+          field.errors = cache.get(field.name) || field.errors;
+        });
+      }
+
       const changedFields = fields.filter(({ name: fieldName }) =>
         containsNamePath(namePathList, fieldName as InternalNamePath),
       );
@@ -500,7 +662,7 @@ export class FormStore {
       errors: string[];
     }>[] = [];
 
-    this.getFieldEntities().forEach((field: FieldEntity) => {
+    this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
       if (!provideNameList) {
         namePathList.push(field.getNamePath());
@@ -544,18 +706,14 @@ export class FormStore {
     summaryPromise
       .catch(results => results)
       .then((results: FieldError[]) => {
-        const resultNamePathList: InternalNamePath[] = results.map(
-          ({ name }) => name,
-        );
+        const resultNamePathList: InternalNamePath[] = results.map(({ name }) => name);
         this.notifyObservers(this.store, resultNamePathList, {
           type: 'validateFinish',
         });
-        this.triggerOnFieldsChange(resultNamePathList);
+        this.triggerOnFieldsChange(resultNamePathList, results);
       });
 
-    const returnPromise: Promise<
-      Store | ValidateErrorEntity | string[]
-    > = summaryPromise
+    const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
       .then(
         (): Promise<Store | string[]> => {
           if (this.lastValidatePromise === summaryPromise) {
@@ -565,9 +723,7 @@ export class FormStore {
         },
       )
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
-        const errorList = results.filter(
-          result => result && result.errors.length,
-        );
+        const errorList = results.filter(result => result && result.errors.length);
         return Promise.reject({
           values: this.getFieldsValue(namePathList),
           errorFields: errorList,

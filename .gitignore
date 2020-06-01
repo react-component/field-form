@@ -8,3 +8,5 @@ lib/
 ~*
 yarn.lock
 package-lock.json
+.idea/
+examples/debug.tsx

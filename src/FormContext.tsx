@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { ValidateMessages, FormInstance, FieldData, Store } from './interface';
 
-interface Forms {
+export interface Forms {
   [name: string]: FormInstance;
 }
 
-interface FormChangeInfo {
+export interface FormChangeInfo {
   changedFields: FieldData[];
   forms: Forms;
 }
 
-interface FormFinishInfo {
+export interface FormFinishInfo {
   values: Store;
   forms: Forms;
 }
@@ -49,7 +49,10 @@ const FormProvider: React.FunctionComponent<FormProviderProps> = ({
     <FormContext.Provider
       value={{
         ...formContext,
-        validateMessages: { ...formContext.validateMessages, ...validateMessages },
+        validateMessages: {
+          ...formContext.validateMessages,
+          ...validateMessages,
+        },
 
         // =========================================================
         // =                  Global Form Control                  =

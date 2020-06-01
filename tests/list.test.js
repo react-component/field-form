@@ -217,25 +217,61 @@ describe('Form.List', () => {
     matchKey(1, '2');
   });
 
-  it('validate', async () => {
-    const [, getList] = generateForm(
-      fields => (
-        <div>
-          {fields.map(field => (
-            <Field {...field} rules={[{ required: true }]}>
-              <Input />
-            </Field>
-          ))}
-        </div>
-      ),
-      {
-        initialValues: { list: [''] },
-      },
-    );
+  describe('validate', () => {
+    it('basic', async () => {
+      const [, getList] = generateForm(
+        fields => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }]}>
+                <Input />
+              </Field>
+            ))}
+          </div>
+        ),
+        {
+          initialValues: { list: [''] },
+        },
+      );
 
-    await changeValue(getField(getList()), '');
+      await changeValue(getField(getList()), '');
 
-    expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+    });
+
+    it('remove should keep error', async () => {
+      const [wrapper, getList] = generateForm(
+        (fields, { remove }) => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }]}>
+                <Input />
+              </Field>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                remove(0);
+              }}
+            />
+          </div>
+        ),
+        {
+          initialValues: { list: ['', ''] },
+        },
+      );
+
+      expect(wrapper.find(Input)).toHaveLength(2);
+      await changeValue(getField(getList(), 1), '');
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
+
+      wrapper.find('button').simulate('click');
+      wrapper.update();
+
+      expect(wrapper.find(Input)).toHaveLength(1);
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
+    });
   });
 
   it('warning if children is not function', () => {

@@ -36,7 +36,7 @@ let App: any = ({ dispatch, fields }) => {
       }}
     >
       <h3>Redux Form</h3>
-      <p>It's no need to put data into redux store. But you can still do this.</p>
+      <p>It is no need to put data into redux store. But you can still do this.</p>
 
       <LabelField name="field">
         <Input />
@@ -76,12 +76,10 @@ let App: any = ({ dispatch, fields }) => {
 };
 App = connect((fields: any) => ({ fields }))(App);
 
-const Demo = () => {
-  return (
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
-};
+const Demo = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
 
 export default Demo;
