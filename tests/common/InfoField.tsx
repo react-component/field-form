@@ -3,7 +3,7 @@ import { Field } from '../../src';
 import { FieldProps } from '../../src/Field';
 
 interface InfoFieldProps extends FieldProps {
-  children: ReactElement;
+  children?: ReactElement;
 }
 
 export const Input = ({ value = '', ...props }) => <input {...props} value={value} />;

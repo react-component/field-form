@@ -174,6 +174,7 @@ export interface InternalHooks {
   setCallbacks: (callbacks: Callbacks) => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
+  setPerishable: (perishable?: boolean) => void;
 }
 
 export interface FormInstance {

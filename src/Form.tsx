@@ -30,6 +30,7 @@ export interface FormProps extends BaseFormProps {
   onFinish?: Callbacks['onFinish'];
   onFinishFailed?: Callbacks['onFinishFailed'];
   validateTrigger?: string | string[] | false;
+  perishable?: boolean;
 }
 
 const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
@@ -38,6 +39,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     initialValues,
     fields,
     form,
+    perishable,
     children,
     component: Component = 'form',
     validateMessages,
@@ -60,6 +62,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setInitialValues,
     setCallbacks,
     setValidateMessages,
+    setPerishable,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
@@ -96,6 +99,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     },
     onFinishFailed,
   });
+  setPerishable(perishable);
 
   // Set initial value, init store value when first mount
   const mountRef = React.useRef(null);
