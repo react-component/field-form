@@ -271,7 +271,7 @@ async function() {
 
 ## 🔥 `preserve` is default to false
 
-In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed. But you can still use `preserve=false` to disable value keeping.
+In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed. But you can still use `preserve=false` to disable value keeping since `1.5.0`.
 
 ## 🔥 `setFields` not trigger `onFieldsChange` and `setFieldsValue` not trigger `onValuesChange`
 
