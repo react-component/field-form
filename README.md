@@ -66,6 +66,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 | form             | Set form instance created by `useForm`             | [FormInstance](#useform)                   | `Form.useForm()` |
 | initialValues    | Initial value of Form                              | Object                                     | -                |
 | name             | Config name with [FormProvider](#formprovider)     | string                                     | -                |
+| preserve         | preserve value when field removed                  | boolean                                    | false            |
 | validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages)      | -                |
 | onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void           | -                |
 | onFinish         | Trigger when form submit and success               | (values): void                             | -                |
@@ -82,6 +83,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 | initialValue      | Field initial value                                                           | any                                       | -        |
 | name              | Field name path                                                               | [NamePath](#namepath)                     | -        |
 | normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any     | -        |
+| preserve          | preserve value when field removed                                             | boolean                                   | false    |
 | rules             | Validate rules                                                                | [Rule](#rule)[]                           | -        |
 | shouldUpdate      | Check if Field should update                                                  | true \| (prevValues, nextValues): boolean | -        |
 | trigger           | Collect value update by event trigger                                         | string                                    | onChange |
@@ -267,9 +269,9 @@ async function() {
 
 **Notice: Now if your validator return an `Error(message)`, not need to get error by `e => e.message`. FieldForm will handle this.**
 
-## 🔥 `preserve` is no need anymore
+## 🔥 `preserve` is default to false
 
-In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed.
+In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed. But you can still use `preserve=false` to disable value keeping since `1.5.0`.
 
 ## 🔥 `setFields` not trigger `onFieldsChange` and `setFieldsValue` not trigger `onValuesChange`
 

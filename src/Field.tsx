@@ -72,6 +72,7 @@ export interface InternalFieldProps {
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
+  preserve?: boolean;
 }
 
 export interface FieldProps extends Omit<InternalFieldProps, 'name'> {
@@ -101,7 +102,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
     resetCount: 0,
   };
 
-  private cancelRegisterFunc: () => void | null = null;
+  private cancelRegisterFunc: (preserve?: boolean) => void | null = null;
 
   private destroy = false;
 
@@ -139,8 +140,10 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   }
 
   public cancelRegister = () => {
+    const { preserve } = this.props;
+
     if (this.cancelRegisterFunc) {
-      this.cancelRegisterFunc();
+      this.cancelRegisterFunc(preserve);
     }
     this.cancelRegisterFunc = null;
   };

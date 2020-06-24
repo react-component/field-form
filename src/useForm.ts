@@ -67,6 +67,8 @@ export class FormStore {
 
   private validateMessages: ValidateMessages = null;
 
+  private preserve?: boolean = null;
+
   private lastValidatePromise: Promise<FieldError[]> = null;
 
   constructor(forceRootUpdate: () => void) {
@@ -104,6 +106,7 @@ export class FormStore {
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
+        setPreserve: this.setPreserve,
       };
     }
 
@@ -133,6 +136,10 @@ export class FormStore {
 
   private setValidateMessages = (validateMessages: ValidateMessages) => {
     this.validateMessages = validateMessages;
+  };
+
+  private setPreserve = (preserve?: boolean) => {
+    this.preserve = preserve;
   };
 
   // ========================== Dev Warning =========================
@@ -486,8 +493,14 @@ export class FormStore {
     }
 
     // un-register field callback
-    return () => {
+    return (preserve?: boolean) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
+
+      // Clean up store value if preserve
+      const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
+      if (mergedPreserve === false) {
+        this.store = setValue(this.store, entity.getNamePath(), undefined);
+      }
     };
   };
 
