@@ -67,7 +67,7 @@ export class FormStore {
 
   private validateMessages: ValidateMessages = null;
 
-  private perishable?: boolean = null;
+  private preserve?: boolean = null;
 
   private lastValidatePromise: Promise<FieldError[]> = null;
 
@@ -106,7 +106,7 @@ export class FormStore {
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
-        setPerishable: this.setPerishable,
+        setPreserve: this.setPreserve,
       };
     }
 
@@ -138,8 +138,8 @@ export class FormStore {
     this.validateMessages = validateMessages;
   };
 
-  private setPerishable = (perishable?: boolean) => {
-    this.perishable = perishable;
+  private setPreserve = (preserve?: boolean) => {
+    this.preserve = preserve;
   };
 
   // ========================== Dev Warning =========================
@@ -493,11 +493,12 @@ export class FormStore {
     }
 
     // un-register field callback
-    return (perishable?: boolean) => {
+    return (preserve?: boolean) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
 
-      // Clean up store value if perishable
-      if (perishable !== undefined ? perishable : this.perishable) {
+      // Clean up store value if preserve
+      const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
+      if (mergedPreserve === false) {
         this.store = setValue(this.store, entity.getNamePath(), undefined);
       }
     };

@@ -5,31 +5,27 @@ import Form from '../src';
 import InfoField from './common/InfoField';
 import timeout from './common/timeout';
 
-describe('Form.Perishable', () => {
+describe('Form.Preserve', () => {
   const Demo = ({
     removeField,
-    formPerishable,
-    fieldPerishable,
+    formPreserve,
+    fieldPreserve,
     onFinish,
   }: {
     removeField: boolean;
-    formPerishable?: boolean;
-    fieldPerishable?: boolean;
+    formPreserve?: boolean;
+    fieldPreserve?: boolean;
     onFinish: (values: object) => void;
   }) => (
-    <Form
-      onFinish={onFinish}
-      initialValues={{ keep: 233, remove: 666 }}
-      perishable={formPerishable}
-    >
+    <Form onFinish={onFinish} initialValues={{ keep: 233, remove: 666 }} preserve={formPreserve}>
       <InfoField name="keep" />
-      {!removeField && <InfoField name="remove" perishable={fieldPerishable} />}
+      {!removeField && <InfoField name="remove" preserve={fieldPreserve} />}
     </Form>
   );
 
   it('field', async () => {
     const onFinish = jest.fn();
-    const wrapper = mount(<Demo removeField={false} onFinish={onFinish} fieldPerishable />);
+    const wrapper = mount(<Demo removeField={false} onFinish={onFinish} fieldPreserve={false} />);
 
     async function matchTest(removeField: boolean, match: object) {
       onFinish.mockReset();
@@ -46,7 +42,7 @@ describe('Form.Perishable', () => {
 
   it('form', async () => {
     const onFinish = jest.fn();
-    const wrapper = mount(<Demo removeField={false} onFinish={onFinish} formPerishable />);
+    const wrapper = mount(<Demo removeField={false} onFinish={onFinish} formPreserve={false} />);
 
     async function matchTest(removeField: boolean, match: object) {
       onFinish.mockReset();
@@ -64,7 +60,7 @@ describe('Form.Perishable', () => {
   it('form perishable but field !perishable', async () => {
     const onFinish = jest.fn();
     const wrapper = mount(
-      <Demo removeField={false} onFinish={onFinish} formPerishable fieldPerishable={false} />,
+      <Demo removeField={false} onFinish={onFinish} formPreserve={false} fieldPreserve />,
     );
 
     async function matchTest(removeField: boolean, match: object) {
