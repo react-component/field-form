@@ -59,43 +59,43 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ## Form
 
-| Prop             | Description                                        | Type                                       | Default          |
-| ---------------- | -------------------------------------------------- | ------------------------------------------ | ---------------- |
-| component        | Customize Form render component                    | string \| Component \| false               | form             |
-| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]                  | -                |
-| form             | Set form instance created by `useForm`             | [FormInstance](#useform)                   | `Form.useForm()` |
-| initialValues    | Initial value of Form                              | Object                                     | -                |
-| name             | Config name with [FormProvider](#formprovider)     | string                                     | -                |
-| preserve         | preserve value when field removed                  | boolean                                    | false            |
-| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages)      | -                |
-| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void           | -                |
-| onFinish         | Trigger when form submit and success               | (values): void                             | -                |
-| onFinishFailed   | Trigger when form submit and failed                | ({ values, errorFields, outOfDate }): void | -                |
-| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values): void              | -                |
+| Prop             | Description                                        | Type                                         | Default          |
+| ---------------- | -------------------------------------------------- | -------------------------------------------- | ---------------- |
+| component        | Customize Form render component                    | string \| Component \| false                 | form             |
+| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]                    | -                |
+| form             | Set form instance created by `useForm`             | [FormInstance](#useform)                     | `Form.useForm()` |
+| initialValues    | Initial value of Form                              | Object                                       | -                |
+| name             | Config name with [FormProvider](#formprovider)     | string                                       | -                |
+| preserve         | Preserve value when field removed                  | boolean                                      | false            |
+| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages)        | -                |
+| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields) => void           | -                |
+| onFinish         | Trigger when form submit and success               | (values) => void                             | -                |
+| onFinishFailed   | Trigger when form submit and failed                | ({ values, errorFields, outOfDate }) => void | -                |
+| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values) => void              | -                |
 
 ## Field
 
-| Prop              | Description                                                                   | Type                                      | Default  |
-| ----------------- | ----------------------------------------------------------------------------- | ----------------------------------------- | -------- |
-| dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                   | -        |
-| getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                    | -        |
-| getValueProps     | Customize additional props with value. This prop will disable `valuePropName` | (value) => any                            | -        |
-| initialValue      | Field initial value                                                           | any                                       | -        |
-| name              | Field name path                                                               | [NamePath](#namepath)                     | -        |
-| normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any     | -        |
-| preserve          | preserve value when field removed                                             | boolean                                   | false    |
-| rules             | Validate rules                                                                | [Rule](#rule)[]                           | -        |
-| shouldUpdate      | Check if Field should update                                                  | true \| (prevValues, nextValues): boolean | -        |
-| trigger           | Collect value update by event trigger                                         | string                                    | onChange |
-| validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                        | onChange |
-| valuePropName     | Config value mapping prop with element                                        | string                                    | value    |
+| Prop              | Description                                                                   | Type                                        | Default  |
+| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------- | -------- |
+| dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                     | -        |
+| getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                      | -        |
+| getValueProps     | Customize additional props with value. This prop will disable `valuePropName` | (value) => any                              | -        |
+| initialValue      | Field initial value                                                           | any                                         | -        |
+| name              | Field name path                                                               | [NamePath](#namepath)                       | -        |
+| normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any       | -        |
+| preserve          | Preserve value when field removed                                             | boolean                                     | false    |
+| rules             | Validate rules                                                                | [Rule](#rule)[]                             | -        |
+| shouldUpdate      | Check if Field should update                                                  | true \| (prevValues, nextValues) => boolean | -        |
+| trigger           | Collect value update by event trigger                                         | string                                      | onChange |
+| validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                          | onChange |
+| valuePropName     | Config value mapping prop with element                                        | string                                      | value    |
 
 ## List
 
-| Prop     | Description                     | Type                                                                                                  | Default |
-| -------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
-| name     | List field name path            | [NamePath](#namepath)[]                                                                               | -       |
-| children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)): ReactNode | -       |
+| Prop     | Description                     | Type                                                                                                    | Default |
+| -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- | ------- |
+| name     | List field name path            | [NamePath](#namepath)[]                                                                                 | -       |
+| children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)) => ReactNode | -       |
 
 ## useForm
 
