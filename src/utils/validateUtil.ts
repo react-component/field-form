@@ -198,6 +198,7 @@ export function validateRules(
         const errors = await validateRule(name, value, filledRules[i], options, messageVariables);
         if (errors.length) {
           resolve(errors);
+          return;
         }
       }
       /* eslint-enable */
