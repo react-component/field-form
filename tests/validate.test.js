@@ -408,59 +408,104 @@ describe('Form.Validate', () => {
     errorSpy.mockRestore();
   });
 
-  it('validateFirst', async () => {
-    let form;
-    let canEnd = false;
-    const onFinish = jest.fn();
+  describe('validateFirst', () => {
+    it('work', async () => {
+      let form;
+      let canEnd = false;
+      const onFinish = jest.fn();
 
-    const wrapper = mount(
-      <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-          onFinish={onFinish}
-        >
-          <InfoField
-            name="username"
-            validateFirst
-            rules={[
-              // Follow promise will never end
-              { required: true },
-              {
-                validator: () =>
-                  new Promise(resolve => {
-                    if (canEnd) {
-                      resolve();
-                    }
-                  }),
-              },
-            ]}
-          />
-        </Form>
-      </div>,
-    );
+      const wrapper = mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+            onFinish={onFinish}
+          >
+            <InfoField
+              name="username"
+              validateFirst
+              rules={[
+                // Follow promise will never end
+                { required: true },
+                {
+                  validator: () =>
+                    new Promise(resolve => {
+                      if (canEnd) {
+                        resolve();
+                      }
+                    }),
+                },
+              ]}
+            />
+          </Form>
+        </div>,
+      );
 
-    // Not pass
-    await changeValue(wrapper, '');
-    matchError(wrapper, true);
-    expect(form.getFieldError('username')).toEqual(["'username' is required"]);
-    expect(form.getFieldsError()).toEqual([
-      {
-        name: ['username'],
-        errors: ["'username' is required"],
-      },
-    ]);
-    expect(onFinish).not.toHaveBeenCalled();
+      // Not pass
+      await changeValue(wrapper, '');
+      matchError(wrapper, true);
+      expect(form.getFieldError('username')).toEqual(["'username' is required"]);
+      expect(form.getFieldsError()).toEqual([
+        {
+          name: ['username'],
+          errors: ["'username' is required"],
+        },
+      ]);
+      expect(onFinish).not.toHaveBeenCalled();
 
-    // Should pass
-    canEnd = true;
-    await changeValue(wrapper, 'test');
-    wrapper.find('form').simulate('submit');
-    await timeout();
+      // Should pass
+      canEnd = true;
+      await changeValue(wrapper, 'test');
+      wrapper.find('form').simulate('submit');
+      await timeout();
 
-    matchError(wrapper, false);
-    expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
+      matchError(wrapper, false);
+      expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
+    });
+
+    [
+      { name: 'serialization', first: true, second: false, validateFirst: true },
+      { name: 'parallel', first: true, second: true, validateFirst: 'parallel' },
+    ].forEach(({ name, first, second, validateFirst }) => {
+      it(name, async () => {
+        let ruleFirst = false;
+        let ruleSecond = false;
+
+        const wrapper = mount(
+          <Form>
+            <InfoField
+              name="username"
+              validateFirst={validateFirst}
+              rules={[
+                {
+                  validator: async () => {
+                    ruleFirst = true;
+                    await timeout();
+                    throw new Error('failed first');
+                  },
+                },
+                {
+                  validator: async () => {
+                    ruleSecond = true;
+                    await timeout();
+                    throw new Error('failed second');
+                  },
+                },
+              ]}
+            />
+          </Form>,
+        );
+
+        await changeValue(wrapper, 'test');
+        await timeout();
+
+        matchError(wrapper, 'failed first');
+
+        expect(ruleFirst).toEqual(first);
+        expect(ruleSecond).toEqual(second);
+      });
+    });
   });
 
   it('switch to remove errors', async () => {

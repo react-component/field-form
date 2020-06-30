@@ -66,7 +66,7 @@ export interface InternalFieldProps {
   shouldUpdate?: ShouldUpdate;
   trigger?: string;
   validateTrigger?: string | string[] | false;
-  validateFirst?: boolean;
+  validateFirst?: boolean | 'parallel';
   valuePropName?: string;
   getValueProps?: (value: StoreValue) => object;
   messageVariables?: Record<string, string>;
