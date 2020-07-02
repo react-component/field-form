@@ -268,25 +268,25 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
       }
 
       default: {
-        // If `shouldUpdate` is set, don't check deps
-        //   else if `dependencies` exists in `namePathList`, means upstream trigger update
-        const shouldRerenderCausedByDeps =
-          !shouldUpdate &&
-          dependencies.some(dependency => containsNamePath(namePathList, getNamePath(dependency)));
-
-        // If `dependencies` is set, `name` is not set and `shouldUpdate` is not set,
-        // don't use `shouldUpdate`. `dependencies` is view as a shortcut if `shouldUpdate`
-        // is not provided
-        const notUseShouldUpdate = dependencies.length && !namePath.length && !shouldUpdate;
-
-        // If `shouldUpdate` provided, use customize logic to update the field
-        //   else to check if value changed
-        const shouldRendererCausedByShouldUpdate =
-          !notUseShouldUpdate &&
-          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info);
-
-        // If `namePath` exists in `namePathList`, means it's related value and should update
-        if (namePathMatch || shouldRerenderCausedByDeps || shouldRendererCausedByShouldUpdate) {
+        // 1. If `namePath` exists in `namePathList`, means it's related value and should update
+        // 2.
+        //   2.1 If `shouldUpdate` is set, don't check deps
+        //   2.2 else if `dependencies` exists in `namePathList`, means upstream trigger update
+        // 3.
+        //   3.1 If `dependencies` is set, `name` is not set and `shouldUpdate` is not set,
+        //       don't use `shouldUpdate`. `dependencies` is view as a shortcut if `shouldUpdate`
+        //       is not provided
+        //   3.2 If `shouldUpdate` provided, use customize logic to update the field
+        //       else to check if value changed
+        if (
+          namePathMatch ||
+          (!shouldUpdate &&
+            dependencies.some(dependency =>
+              containsNamePath(namePathList, getNamePath(dependency)),
+            )) ||
+          (!(dependencies.length && !namePath.length && !shouldUpdate) &&
+            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
+        ) {
           this.reRender();
           return;
         }
