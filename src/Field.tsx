@@ -267,7 +267,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
         break;
       }
 
-      default: {
+      default:
         // 1. If `namePath` exists in `namePathList`, means it's related value and should update
         // 2.
         //   2.1 If `shouldUpdate` is set, don't check deps
@@ -291,7 +291,6 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
           return;
         }
         break;
-      }
     }
 
     if (shouldUpdate === true) {
