@@ -122,4 +122,130 @@ describe('Form.Dependencies', () => {
     await changeValue(getField(wrapper, 1), 'light');
     matchError(getField(wrapper, 0), false);
   });
+
+  it('should work as a shortcut when name is not provided', async () => {
+    const spy = jest.fn();
+    const wrapper = mount(
+      <Form>
+        <Field dependencies={['field_1']}>
+          {() => {
+            spy();
+            return 'gogogo';
+          }}
+        </Field>
+        <Field name="field_1">
+          <Input />
+        </Field>
+        <Field name="field_2">
+          <Input />
+        </Field>
+      </Form>,
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
+    await changeValue(getField(wrapper, 2), 'value2');
+    // sync start
+    //   valueUpdate -> not rerender
+    //   depsUpdate  -> not rerender
+    // sync end
+    // async start
+    //   validateFinish -> not rerender
+    // async end
+    expect(spy).toHaveBeenCalledTimes(1);
+    await changeValue(getField(wrapper, 1), 'value1');
+    // sync start
+    //   valueUpdate -> rerender by deps
+    //   depsUpdate  -> rerender by deps
+    //   [ react rerender once -> 2 ]
+    // sync end
+    // async start
+    //   validateFinish -> not rerender
+    // async end
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it("shouldn't work when shouldUpdate is set", async () => {
+    const spy = jest.fn();
+    const wrapper = mount(
+      <Form>
+        <Field dependencies={['field_1']} shouldUpdate={() => true}>
+          {() => {
+            spy();
+            return 'gogogo';
+          }}
+        </Field>
+        <Field name="field_1">
+          <Input />
+        </Field>
+        <Field name="field_2">
+          <Input />
+        </Field>
+      </Form>,
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
+    await changeValue(getField(wrapper, 2), 'value2');
+    // sync start
+    //   valueUpdate -> rerender by shouldUpdate
+    //   depsUpdate  -> rerender by deps
+    //   [ react rerender once -> 2 ]
+    // sync end
+    // async start
+    //   validateFinish -> rerender by shouldUpdate
+    //   [ react rerender once -> 3 ]
+    // async end
+    expect(spy).toHaveBeenCalledTimes(3);
+    await changeValue(getField(wrapper, 1), 'value1');
+    // sync start
+    //   valueUpdate -> rerender by shouldUpdate
+    //   depsUpdate  -> rerender by deps
+    //   [ react rerender once -> 4 ]
+    // sync end
+    // async start
+    //   validateFinish -> rerender by shouldUpdate
+    //   [ react rerender once -> 5 ]
+    // async end
+    expect(spy).toHaveBeenCalledTimes(5);
+  });
+
+  it('should render once when only shouldUpdate is set', async () => {
+    const spy = jest.fn();
+    const wrapper = mount(
+      <Form>
+        <Field shouldUpdate={() => true}>
+          {() => {
+            spy();
+            return 'gogogo';
+          }}
+        </Field>
+        <Field name="field_1">
+          <Input />
+        </Field>
+        <Field name="field_2">
+          <Input />
+        </Field>
+      </Form>,
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
+    await changeValue(getField(wrapper, 2), 'value2');
+    // sync start
+    //   valueUpdate -> rerender by shouldUpdate
+    //   depsUpdate  -> rerender by deps
+    //   [ react rerender once -> 2 ]
+    // sync end
+    // async start
+    //   validateFinish -> rerender by shouldUpdate
+    //   [ react rerender once -> 3 ]
+    // async end
+    expect(spy).toHaveBeenCalledTimes(3);
+    await changeValue(getField(wrapper, 1), 'value1');
+    // sync start
+    //   valueUpdate -> rerender by shouldUpdate
+    //   depsUpdate  -> rerender by deps
+    //   [ react rerender once -> 4 ]
+    // sync end
+    // async start
+    //   validateFinish -> rerender by shouldUpdate
+    //   [ react rerender once -> 5 ]
+    // async end
+    expect(spy).toHaveBeenCalledTimes(5);
+  });
 });
