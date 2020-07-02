@@ -153,7 +153,7 @@ describe('Form.Dependencies', () => {
     expect(spy).toHaveBeenCalledTimes(1);
     await changeValue(getField(wrapper, 1), 'value1');
     // sync start
-    //   valueUpdate -> rerender by deps
+    //   valueUpdate -> not rerender
     //   depsUpdate  -> rerender by deps
     //   [ react rerender once -> 2 ]
     // sync end
