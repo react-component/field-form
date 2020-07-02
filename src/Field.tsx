@@ -257,7 +257,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
          * Trigger when marked `dependencies` updated. Related fields will all update
          */
         const dependencyList = dependencies.map(getNamePath);
-        // No need for using `shouldUpdate` to check, since `valueUpdate` will be emitted early
+        // No need for using `shouldUpdate` to check, since `valueUpdate` will be emitted earlier
         // `shouldUpdate` will work there
         // If set it may cause unnecessary twice rerendering
         if (
