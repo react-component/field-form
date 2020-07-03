@@ -257,13 +257,10 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
          * Trigger when marked `dependencies` updated. Related fields will all update
          */
         const dependencyList = dependencies.map(getNamePath);
-        // No need for using `shouldUpdate` to check, since `valueUpdate` will be emitted earlier
-        // `shouldUpdate` will work there
+        // No need for `namePathMath` check and `shouldUpdate` check, since `valueUpdate` will be
+        // emitted earlier and they will work there
         // If set it may cause unnecessary twice rerendering
-        if (
-          namePathMatch ||
-          dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
-        ) {
+        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))) {
           this.reRender();
           return;
         }
@@ -272,6 +269,9 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 
       default:
         // 1. If `namePath` exists in `namePathList`, means it's related value and should update
+        //      For example <List name="list"><Field name={['list', 0]}></List>
+        //      If `namePathList` is [['list']] (List value update), Field should be updated
+        //      If `namePathList` is [['list', 0]] (Field value update), List shouldn't be updated
         // 2.
         //   2.1 If `dependencies` is set, `name` is not set and `shouldUpdate` is not set,
         //       don't use `shouldUpdate`. `dependencies` is view as a shortcut if `shouldUpdate`
@@ -280,7 +280,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
         //       else to check if value changed
         if (
           namePathMatch ||
-          (!(dependencies.length && !namePath.length && !shouldUpdate) &&
+          ((!dependencies.length || namePath.length || shouldUpdate) &&
             requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
         ) {
           this.reRender();
