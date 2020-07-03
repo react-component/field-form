@@ -257,10 +257,10 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
          * Trigger when marked `dependencies` updated. Related fields will all update
          */
         const dependencyList = dependencies.map(getNamePath);
-        if (
-          namePathMatch ||
-          dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
-        ) {
+        // No need for `namePathMath` check and `shouldUpdate` check, since `valueUpdate` will be
+        // emitted earlier and they will work there
+        // If set it may cause unnecessary twice rerendering
+        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))) {
           this.reRender();
           return;
         }
@@ -268,18 +268,20 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
       }
 
       default:
-        /**
-         * - If `namePath` exists in `namePathList`, means it's related value and should update.
-         * - If `dependencies` exists in `namePathList`, means upstream trigger update.
-         * - If `shouldUpdate` provided, use customize logic to update the field
-         *   - else to check if value changed
-         */
+        // 1. If `namePath` exists in `namePathList`, means it's related value and should update
+        //      For example <List name="list"><Field name={['list', 0]}></List>
+        //      If `namePathList` is [['list']] (List value update), Field should be updated
+        //      If `namePathList` is [['list', 0]] (Field value update), List shouldn't be updated
+        // 2.
+        //   2.1 If `dependencies` is set, `name` is not set and `shouldUpdate` is not set,
+        //       don't use `shouldUpdate`. `dependencies` is view as a shortcut if `shouldUpdate`
+        //       is not provided
+        //   2.2 If `shouldUpdate` provided, use customize logic to update the field
+        //       else to check if value changed
         if (
           namePathMatch ||
-          dependencies.some(dependency =>
-            containsNamePath(namePathList, getNamePath(dependency)),
-          ) ||
-          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+          ((!dependencies.length || namePath.length || shouldUpdate) &&
+            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
         ) {
           this.reRender();
           return;
