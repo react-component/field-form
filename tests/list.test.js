@@ -283,4 +283,45 @@ describe('Form.List', () => {
 
     errorSpy.mockRestore();
   });
+
+  // https://github.com/ant-design/ant-design/issues/25584
+  it('preserve should not break list', async () => {
+    let operation;
+    const [wrapper] = generateForm(
+      (fields, opt) => {
+        operation = opt;
+        return (
+          <div>
+            {fields.map(field => (
+              <Field {...field}>
+                <Input />
+              </Field>
+            ))}
+          </div>
+        );
+      },
+      { preserve: false },
+    );
+
+    // Add
+    act(() => {
+      operation.add();
+    });
+    wrapper.update();
+    expect(wrapper.find(Input)).toHaveLength(1);
+
+    // Remove
+    act(() => {
+      operation.remove(0);
+    });
+    wrapper.update();
+    expect(wrapper.find(Input)).toHaveLength(0);
+
+    // Add
+    act(() => {
+      operation.add();
+    });
+    wrapper.update();
+    expect(wrapper.find(Input)).toHaveLength(1);
+  });
 });
