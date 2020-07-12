@@ -499,7 +499,10 @@ export class FormStore {
       // Clean up store value if preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
       if (mergedPreserve === false) {
-        this.store = setValue(this.store, entity.getNamePath(), undefined);
+        const namePath = entity.getNamePath();
+        if (this.getFieldValue(namePath) !== undefined) {
+          this.store = setValue(this.store, namePath, undefined);
+        }
       }
     };
   };
