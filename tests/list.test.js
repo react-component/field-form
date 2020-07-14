@@ -215,6 +215,34 @@ describe('Form.List', () => {
 
     matchKey(0, '0');
     matchKey(1, '2');
+
+    // Remove empty array
+    act(() => {
+      operation.remove([]);
+    });
+    wrapper.update();
+
+    matchKey(0, '0');
+    matchKey(1, '2');
+
+    // remove not exist in array
+    act(() => {
+      operation.remove([-1, 99]);
+    });
+    wrapper.update();
+
+    matchKey(0, '0');
+    matchKey(1, '2');
+
+    // remove element in array
+    act(() => {
+      operation.remove([0, 1]);
+    });
+    wrapper.update();
+
+    expect(form.getFieldsValue()).toEqual({
+      list: [],
+    });
   });
 
   describe('validate', () => {
