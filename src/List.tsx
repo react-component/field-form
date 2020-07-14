@@ -93,12 +93,19 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                 if (id < index) {
                   return key;
                 }
-                return keyManager.keys[id + 1];
-              });
-              keyManager.keys = newKeys.slice(0, -1);
 
-              // Trigger store change
-              onChange(newValue.filter((_, id) => id !== index));
+                // Update key mapping
+                const newKeys = keyManager.keys.map((key, id) => {
+                  if (id < index) {
+                    return key;
+                  }
+                  return keyManager.keys[id + 1];
+                });
+                keyManager.keys = newKeys.slice(0, -1);
+
+                // Trigger store change
+                onChange(newValue.filter((_, id) => id !== index));
+              }
             },
             move(from: number, to: number) {
               if (from === to) {
