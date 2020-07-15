@@ -361,7 +361,7 @@ describe('Form.List', () => {
         (fields, { remove }) => (
           <div>
             {fields.map(field => (
-              <Field {...field} rules={[{ required: true }]}>
+              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
                 <Input />
               </Field>
             ))}
@@ -383,8 +383,8 @@ describe('Form.List', () => {
       await changeValue(getField(getList(), 0), '');
       expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
 
-      await changeValue(getField(getList(), 1), '');
-      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
+      await changeValue(getField(getList(), 1), 'test');
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' must be at least 5 characters"]);
 
       await changeValue(getField(getList(), 2), '');
       expect(form.getFieldError(['list', 2])).toEqual(["'list.2' is required"]);
@@ -393,7 +393,7 @@ describe('Form.List', () => {
       wrapper.update();
 
       expect(wrapper.find(Input)).toHaveLength(1);
-      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' must be at least 5 characters"]);
     });
   });
 
