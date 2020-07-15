@@ -69,15 +69,15 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
             },
             remove: (index: number | number[]) => {
               const newValue = getNewValue();
-              const indexList = new Set(Array.isArray(index) ? index : [index]);
+              const indexSet = new Set(Array.isArray(index) ? index : [index]);
 
-              if (indexList.size <= 0) {
+              if (indexSet.size <= 0) {
                 return;
               }
-              keyManager.keys = keyManager.keys.filter((_, keysIndex) => !indexList.has(keysIndex));
+              keyManager.keys = keyManager.keys.filter((_, keysIndex) => !indexSet.has(keysIndex));
 
               // Trigger store change
-              onChange(newValue.filter((_, valueIndex) => !indexList.has(valueIndex)));
+              onChange(newValue.filter((_, valueIndex) => !indexSet.has(valueIndex)));
             },
             move(from: number, to: number) {
               if (from === to) {
