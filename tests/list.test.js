@@ -215,15 +215,6 @@ describe('Form.List', () => {
 
     matchKey(0, '0');
     matchKey(1, '2');
-
-    // Remove empty array
-    act(() => {
-      operation.remove([]);
-    });
-    wrapper.update();
-
-    matchKey(0, '0');
-    matchKey(1, '2');
   });
 
   it('remove when the param is Array', () => {
@@ -261,6 +252,7 @@ describe('Form.List', () => {
     wrapper.update();
     expect(getList().find(Field).length).toEqual(2);
 
+    // remove empty array
     act(() => {
       operation.remove([]);
     });
@@ -270,6 +262,7 @@ describe('Form.List', () => {
     matchKey(0, '0');
     matchKey(1, '1');
 
+    // remove not esist element in array
     act(() => {
       operation.remove([-1, 99]);
     });
@@ -376,7 +369,7 @@ describe('Form.List', () => {
             <button
               type="button"
               onClick={() => {
-                remove([0, 1]);
+                remove([0, 2]);
               }}
             />
           </div>
@@ -387,15 +380,20 @@ describe('Form.List', () => {
       );
 
       expect(wrapper.find(Input)).toHaveLength(3);
+      await changeValue(getField(getList(), 0), '');
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+
       await changeValue(getField(getList(), 1), '');
       expect(form.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
+
+      await changeValue(getField(getList(), 2), '');
+      expect(form.getFieldError(['list', 2])).toEqual(["'list.2' is required"]);
 
       wrapper.find('button').simulate('click');
       wrapper.update();
 
       expect(wrapper.find(Input)).toHaveLength(1);
-      await changeValue(getField(getList(), 0), '');
-      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
     });
   });
 
