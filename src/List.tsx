@@ -69,43 +69,17 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
             },
             remove: (index: number | number[]) => {
               const newValue = getNewValue();
-              if (Array.isArray(index)) {
-                if (index.length <= 0) {
-                  return;
-                }
-                // delete unvalid index
-                index.filter(item => item >= 0 && item < newValue.length);
+              const indexList = Array.isArray(index) ? index : [index];
 
-                let tempValue = newValue;
-                index.forEach(item => {
-                  tempValue = newValue.filter((_, id) => id !== item);
-                });
-
-                onChange(tempValue);
-              }
-              // Do not handle out of range
-              if (index < 0 || index >= newValue.length) {
+              if (indexList.length <= 0) {
                 return;
               }
+              keyManager.keys = keyManager.keys.filter(
+                (_, keysIndex) => !indexList.includes(keysIndex),
+              );
 
-              // Update key mapping
-              const newKeys = keyManager.keys.map((key, id) => {
-                if (id < index) {
-                  return key;
-                }
-
-                // Update key mapping
-                const newKeys = keyManager.keys.map((key, id) => {
-                  if (id < index) {
-                    return key;
-                  }
-                  return keyManager.keys[id + 1];
-                });
-                keyManager.keys = newKeys.slice(0, -1);
-
-                // Trigger store change
-                onChange(newValue.filter((_, id) => id !== index));
-              }
+              // Trigger store change
+              onChange(newValue.filter((_, valueIndex) => !indexList.includes(valueIndex)));
             },
             move(from: number, to: number) {
               if (from === to) {
