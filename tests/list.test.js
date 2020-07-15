@@ -394,6 +394,7 @@ describe('Form.List', () => {
 
       expect(wrapper.find(Input)).toHaveLength(1);
       expect(form.getFieldError(['list', 0])).toEqual(["'list.1' must be at least 5 characters"]);
+      expect(wrapper.find('input').props().value).toEqual('test');
     });
   });
 
