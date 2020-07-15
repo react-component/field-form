@@ -13,7 +13,7 @@ interface ListField {
 
 interface ListOperations {
   add: (defaultValue?: StoreValue) => void;
-  remove: (index: number) => void;
+  remove: (index: number | number[]) => void;
   move: (from: number, to: number) => void;
 }
 
@@ -67,25 +67,17 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
               const newValue = getNewValue();
               onChange([...newValue, defaultValue]);
             },
-            remove: (index: number) => {
+            remove: (index: number | number[]) => {
               const newValue = getNewValue();
+              const indexSet = new Set(Array.isArray(index) ? index : [index]);
 
-              // Do not handle out of range
-              if (index < 0 || index >= newValue.length) {
+              if (indexSet.size <= 0) {
                 return;
               }
-
-              // Update key mapping
-              const newKeys = keyManager.keys.map((key, id) => {
-                if (id < index) {
-                  return key;
-                }
-                return keyManager.keys[id + 1];
-              });
-              keyManager.keys = newKeys.slice(0, -1);
+              keyManager.keys = keyManager.keys.filter((_, keysIndex) => !indexSet.has(keysIndex));
 
               // Trigger store change
-              onChange(newValue.filter((_, id) => id !== index));
+              onChange(newValue.filter((_, valueIndex) => !indexSet.has(valueIndex)));
             },
             move(from: number, to: number) {
               if (from === to) {
