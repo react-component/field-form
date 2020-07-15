@@ -224,25 +224,87 @@ describe('Form.List', () => {
 
     matchKey(0, '0');
     matchKey(1, '2');
+  });
 
-    // remove not exist in array
+  it('remove when the param is Array', () => {
+    let operation;
+    const [wrapper, getList] = generateForm((fields, opt) => {
+      operation = opt;
+      return (
+        <div>
+          {fields.map(field => (
+            <Field {...field}>
+              <Input />
+            </Field>
+          ))}
+        </div>
+      );
+    });
+
+    function matchKey(index, key) {
+      expect(
+        getList()
+          .find(Field)
+          .at(index)
+          .key(),
+      ).toEqual(key);
+    }
+
+    act(() => {
+      operation.add();
+    });
+
+    act(() => {
+      operation.add();
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(2);
+
+    act(() => {
+      operation.remove([]);
+    });
+
+    wrapper.update();
+
+    matchKey(0, '0');
+    matchKey(1, '1');
+
     act(() => {
       operation.remove([-1, 99]);
     });
     wrapper.update();
 
     matchKey(0, '0');
-    matchKey(1, '2');
+    matchKey(1, '1');
 
-    // remove element in array
+    act(() => {
+      operation.remove([0]);
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(1);
+    matchKey(0, '1');
+
+    act(() => {
+      operation.add();
+    });
+
+    act(() => {
+      operation.add();
+    });
+
+    wrapper.update();
+    matchKey(0, '1');
+    matchKey(1, '2');
+    matchKey(2, '3');
+
     act(() => {
       operation.remove([0, 1]);
     });
-    wrapper.update();
 
-    expect(form.getFieldsValue()).toEqual({
-      list: [],
-    });
+    wrapper.update();
+    matchKey(0, '3');
   });
 
   describe('validate', () => {
@@ -299,6 +361,41 @@ describe('Form.List', () => {
 
       expect(wrapper.find(Input)).toHaveLength(1);
       expect(form.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
+    });
+
+    it('when param of remove is array', async () => {
+      const [wrapper, getList] = generateForm(
+        (fields, { remove }) => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }]}>
+                <Input />
+              </Field>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                remove([0, 1]);
+              }}
+            />
+          </div>
+        ),
+        {
+          initialValues: { list: ['', '', ''] },
+        },
+      );
+
+      expect(wrapper.find(Input)).toHaveLength(3);
+      await changeValue(getField(getList(), 1), '');
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
+
+      wrapper.find('button').simulate('click');
+      wrapper.update();
+
+      expect(wrapper.find(Input)).toHaveLength(1);
+      await changeValue(getField(getList(), 0), '');
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
     });
   });
 
