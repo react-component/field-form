@@ -6,8 +6,16 @@ const { Field, useForm } = Form;
 
 const list = new Array(0).fill(() => undefined);
 
+interface FormValues {
+  username?: string;
+  password?: string;
+  path1?: {
+    path2?: string;
+  };
+}
+
 export default () => {
-  const [form] = useForm();
+  const [form] = useForm<FormValues>();
 
   return (
     <div>
