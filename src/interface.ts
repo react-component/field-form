@@ -177,9 +177,12 @@ export interface InternalHooks {
   setPreserve: (preserve?: boolean) => void;
 }
 
-type RecursivePartial<T> = {
-  [P in keyof T]?: RecursivePartial<T[P]>;
-};
+/** Only return partial when type is not any */
+type RecursivePartial<T> = T extends object
+  ? {
+      [P in keyof T]?: RecursivePartial<T[P]>;
+    }
+  : any;
 
 export interface FormInstance<Values = any> {
   // Origin Form API
