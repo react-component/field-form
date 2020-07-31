@@ -18,7 +18,7 @@ type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.Re
 
 export interface FormProps<Values = any> extends BaseFormProps {
   initialValues?: Store;
-  form?: FormInstance;
+  form?: FormInstance<Values>;
   children?: RenderProps | React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component?: false | string | React.FC<any> | React.ComponentClass<any>;
