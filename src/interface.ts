@@ -180,7 +180,11 @@ export interface InternalHooks {
 /** Only return partial when type is not any */
 type RecursivePartial<T> = T extends object
   ? {
-      [P in keyof T]?: RecursivePartial<T[P]>;
+      [P in keyof T]?: T[P] extends (infer U)[]
+        ? RecursivePartial<U>[]
+        : T[P] extends object
+        ? RecursivePartial<T[P]>
+        : T[P];
     }
   : any;
 
