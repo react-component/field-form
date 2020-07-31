@@ -16,7 +16,7 @@ type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
-export interface FormProps extends BaseFormProps {
+export interface FormProps<Values = any> extends BaseFormProps {
   initialValues?: Store;
   form?: FormInstance;
   children?: RenderProps | React.ReactNode;
@@ -25,10 +25,10 @@ export interface FormProps extends BaseFormProps {
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
-  onValuesChange?: Callbacks['onValuesChange'];
-  onFieldsChange?: Callbacks['onFieldsChange'];
-  onFinish?: Callbacks['onFinish'];
-  onFinishFailed?: Callbacks['onFinishFailed'];
+  onValuesChange?: Callbacks<Values>['onValuesChange'];
+  onFieldsChange?: Callbacks<Values>['onFieldsChange'];
+  onFinish?: Callbacks<Values>['onFinish'];
+  onFinishFailed?: Callbacks<Values>['onFinishFailed'];
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
 }
@@ -159,4 +159,8 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   );
 };
 
-export default Form;
+const GenericForm = Form as <Values>(
+  props: React.PropsWithChildren<Values> & { ref: React.Ref<FormInstance> },
+) => React.ReactElement;
+
+export default GenericForm;

@@ -76,8 +76,8 @@ export type RuleObject = BaseRule | ArrayRule;
 
 export type Rule = RuleObject | RuleRender;
 
-export interface ValidateErrorEntity {
-  values: Store;
+export interface ValidateErrorEntity<Values = any> {
+  values: Values;
   errorFields: { name: InternalNamePath; errors: string[] }[];
   outOfDate: boolean;
 }
@@ -159,11 +159,11 @@ export type ValuedNotifyInfo = NotifyInfo & {
   store: Store;
 };
 
-export interface Callbacks {
-  onValuesChange?: (changedValues: Store, values: Store) => void;
+export interface Callbacks<Values = any> {
+  onValuesChange?: (changedValues: any, values: Values) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
-  onFinish?: (values: Store) => void;
-  onFinishFailed?: (errorInfo: ValidateErrorEntity) => void;
+  onFinish?: (values: Values) => void;
+  onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
 export interface InternalHooks {
