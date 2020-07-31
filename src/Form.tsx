@@ -159,8 +159,4 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   );
 };
 
-const GenericForm = Form as <Values>(
-  props: React.PropsWithChildren<Values> & { ref: React.Ref<FormInstance> },
-) => React.ReactElement;
-
-export default GenericForm;
+export default Form;

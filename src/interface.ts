@@ -177,10 +177,17 @@ export interface InternalHooks {
   setPreserve: (preserve?: boolean) => void;
 }
 
-export interface FormInstance {
+type RecursivePartial<T> = {
+  [P in keyof T]?: RecursivePartial<T[P]>;
+};
+
+export interface FormInstance<Values = any> {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
-  getFieldsValue: (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => Store;
+  getFieldsValue: (
+    nameList?: NamePath[] | true,
+    filterFunc?: (meta: Meta) => boolean,
+  ) => Values | any;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
@@ -190,7 +197,7 @@ export interface FormInstance {
   isFieldsValidating: (nameList: NamePath[]) => boolean;
   resetFields: (fields?: NamePath[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldsValue: (value: Store) => void;
+  setFieldsValue: (value: RecursivePartial<Values>) => void;
   validateFields: ValidateFields;
 
   // New API
