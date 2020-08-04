@@ -1,6 +1,7 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
+import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List } from '../src';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
@@ -65,6 +66,26 @@ describe('Form.List', () => {
     expect(form.getFieldsValue()).toEqual({
       list: ['111', '222', '333'],
     });
+  });
+
+  it('not crash', () => {
+    // Empty only
+    mount(
+      <Form initialValues={{ list: null }}>
+        <Form.List name="list">{() => null}</Form.List>
+      </Form>,
+    );
+
+    // Not a array
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    resetWarned();
+    mount(
+      <Form initialValues={{ list: {} }}>
+        <Form.List name="list">{() => null}</Form.List>
+      </Form>,
+    );
+    expect(errorSpy).toHaveBeenCalledWith("Warning: Current value of 'list' is not an array type.");
+    errorSpy.mockRestore();
   });
 
   it('operation', async () => {
