@@ -97,8 +97,17 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
             },
           };
 
+          let listValue = value || [];
+          if (!Array.isArray(listValue)) {
+            listValue = [];
+
+            if (process.env.NODE_ENV !== 'production') {
+              warning(false, `Current value of '${prefixName.join(' > ')}' is not an array type.`);
+            }
+          }
+
           return children(
-            (value as StoreValue[]).map(
+            (listValue as StoreValue[]).map(
               (__, index): ListField => {
                 let key = keyManager.keys[index];
                 if (key === undefined) {
