@@ -383,6 +383,38 @@ describe('Form.Validate', () => {
       await timeout();
       expect(onFinish).toHaveBeenCalledWith({ switch: false });
     });
+
+    it('validateFields should not pass when validateFirst is set', async () => {
+      let form;
+
+      mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+          >
+            <InfoField name="user" validateFirst rules={[{ required: true }]}>
+              <Input />
+            </InfoField>
+          </Form>
+        </div>,
+      );
+
+      // Validate callback
+      await new Promise(resolve => {
+        let failed = false;
+        form
+          .validateFields()
+          .catch(() => {
+            failed = true;
+          })
+          .then(() => {
+            expect(failed).toBeTruthy();
+            resolve();
+          });
+      });
+    });
   });
 
   it('should error in console if user script failed', async () => {
