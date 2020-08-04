@@ -192,12 +192,12 @@ export function validateRules(
 
   if (validateFirst === true) {
     // >>>>> Validate by serialization
-    summaryPromise = new Promise(async resolve => {
+    summaryPromise = new Promise(async (resolve, reject) => {
       /* eslint-disable no-await-in-loop */
       for (let i = 0; i < filledRules.length; i += 1) {
         const errors = await validateRule(name, value, filledRules[i], options, messageVariables);
         if (errors.length) {
-          resolve(errors);
+          reject(errors);
           return;
         }
       }
