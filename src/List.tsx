@@ -12,7 +12,7 @@ interface ListField {
 }
 
 interface ListOperations {
-  add: (defaultValue?: StoreValue) => void;
+  add: (defaultValue?: StoreValue, index?: number) => void;
   remove: (index: number | number[]) => void;
   move: (from: number, to: number) => void;
 }
@@ -59,8 +59,10 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
            * Always get latest value in case user update fields by `form` api.
            */
           const operations: ListOperations = {
-            add: defaultValue => {
+            add: (defaultValue, index: number) => {
               // Mapping keys
+              // 支持把动态的 formItem 插入到指定到位置
+              console.log(index);
               keyManager.keys = [...keyManager.keys, keyManager.id];
               keyManager.id += 1;
 
