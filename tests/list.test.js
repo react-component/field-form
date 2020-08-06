@@ -321,6 +321,51 @@ describe('Form.List', () => {
     matchKey(0, '3');
   });
 
+  it('add when the second param is number', () => {
+    let operation;
+    const [wrapper, getList] = generateForm((fields, opt) => {
+      operation = opt;
+      return (
+        <div>
+          {fields.map(field => (
+            <Field {...field}>
+              <Input />
+            </Field>
+          ))}
+        </div>
+      );
+    });
+
+    act(() => {
+      operation.add();
+    });
+    act(() => {
+      operation.add('1', 2);
+    });
+    act(() => {
+      operation.add('2', -1);
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(3);
+    expect(form.getFieldsValue()).toEqual({
+      list: [undefined, '1', '2'],
+    });
+
+    act(() => {
+      operation.add('0', 0);
+    });
+    act(() => {
+      operation.add('4', 3);
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(5);
+    expect(form.getFieldsValue()).toEqual({
+      list: ['0', undefined, '1', '4', '2'],
+    });
+  });
+
   describe('validate', () => {
     it('basic', async () => {
       const [, getList] = generateForm(
@@ -416,6 +461,52 @@ describe('Form.List', () => {
       expect(wrapper.find(Input)).toHaveLength(1);
       expect(form.getFieldError(['list', 0])).toEqual(["'list.1' must be at least 5 characters"]);
       expect(wrapper.find('input').props().value).toEqual('test');
+    });
+
+    it('when add() second param is number', async () => {
+      const [wrapper, getList] = generateForm(
+        (fields, { add }) => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
+                <Input />
+              </Field>
+            ))}
+
+            <button
+              className="button"
+              type="button"
+              onClick={() => {
+                add('test4', 1);
+              }}
+            />
+
+            <button
+              className="button1"
+              type="button"
+              onClick={() => {
+                add('test5', 0);
+              }}
+            />
+          </div>
+        ),
+        {
+          initialValues: { list: ['test1', 'test2', 'test3'] },
+        },
+      );
+
+      expect(wrapper.find(Input)).toHaveLength(3);
+      await changeValue(getField(getList(), 0), '');
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+
+      wrapper.find('.button').simulate('click');
+      wrapper.find('.button1').simulate('click');
+
+      expect(wrapper.find(Input)).toHaveLength(5);
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.0' is required"]);
+
+      await changeValue(getField(getList(), 1), 'test');
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' must be at least 5 characters"]);
     });
   });
 

@@ -59,15 +59,22 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
            * Always get latest value in case user update fields by `form` api.
            */
           const operations: ListOperations = {
-            add: (defaultValue, index: number) => {
+            add: (defaultValue, index?: number) => {
               // Mapping keys
-              // 支持把动态的 formItem 插入到指定到位置
-              console.log(index);
-              keyManager.keys = [...keyManager.keys, keyManager.id];
-              keyManager.id += 1;
-
               const newValue = getNewValue();
-              onChange([...newValue, defaultValue]);
+
+              if (index >= 0 && index <= newValue.length) {
+                keyManager.keys = [
+                  ...keyManager.keys.slice(0, index),
+                  keyManager.id,
+                  ...keyManager.keys.slice(index),
+                ];
+                onChange([...newValue.slice(0, index), defaultValue, ...newValue.slice(index)]);
+              } else {
+                keyManager.keys = [...keyManager.keys, keyManager.id];
+                onChange([...newValue, defaultValue]);
+              }
+              keyManager.id += 1;
             },
             remove: (index: number | number[]) => {
               const newValue = getNewValue();
