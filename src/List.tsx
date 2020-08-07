@@ -71,6 +71,10 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                 ];
                 onChange([...newValue.slice(0, index), defaultValue, ...newValue.slice(index)]);
               } else {
+                warning(
+                  false,
+                  'The second parameter of the add function should be a valid positive number',
+                );
                 keyManager.keys = [...keyManager.keys, keyManager.id];
                 onChange([...newValue, defaultValue]);
               }
