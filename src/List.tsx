@@ -12,7 +12,7 @@ interface ListField {
 }
 
 interface ListOperations {
-  add: (defaultValue?: StoreValue) => void;
+  add: (defaultValue?: StoreValue, index?: number) => void;
   remove: (index: number | number[]) => void;
   move: (from: number, to: number) => void;
 }
@@ -59,13 +59,31 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
            * Always get latest value in case user update fields by `form` api.
            */
           const operations: ListOperations = {
-            add: defaultValue => {
+            add: (defaultValue, index?: number) => {
               // Mapping keys
-              keyManager.keys = [...keyManager.keys, keyManager.id];
-              keyManager.id += 1;
-
               const newValue = getNewValue();
-              onChange([...newValue, defaultValue]);
+
+              if (index >= 0 && index <= newValue.length) {
+                keyManager.keys = [
+                  ...keyManager.keys.slice(0, index),
+                  keyManager.id,
+                  ...keyManager.keys.slice(index),
+                ];
+                onChange([...newValue.slice(0, index), defaultValue, ...newValue.slice(index)]);
+              } else {
+                if (
+                  process.env.NODE_ENV !== 'production' &&
+                  (index < 0 || index > newValue.length)
+                ) {
+                  warning(
+                    false,
+                    'The second parameter of the add function should be a valid positive number.',
+                  );
+                }
+                keyManager.keys = [...keyManager.keys, keyManager.id];
+                onChange([...newValue, defaultValue]);
+              }
+              keyManager.id += 1;
             },
             remove: (index: number | number[]) => {
               const newValue = getNewValue();
