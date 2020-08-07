@@ -323,6 +323,7 @@ describe('Form.List', () => {
 
   it('add when the second param is number', () => {
     let operation;
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const [wrapper, getList] = generateForm((fields, opt) => {
       operation = opt;
       return (
@@ -342,9 +343,15 @@ describe('Form.List', () => {
     act(() => {
       operation.add('1', 2);
     });
+
     act(() => {
       operation.add('2', -1);
     });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: The second parameter of the add function should be a valid positive number.',
+    );
+    errorSpy.mockRestore();
 
     wrapper.update();
     expect(getList().find(Field).length).toEqual(3);
