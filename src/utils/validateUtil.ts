@@ -192,18 +192,24 @@ export function validateRules(
 
   if (validateFirst === true) {
     // >>>>> Validate by serialization
-    summaryPromise = new Promise(async (resolve, reject) => {
-      /* eslint-disable no-await-in-loop */
-      for (let i = 0; i < filledRules.length; i += 1) {
-        const errors = await validateRule(name, value, filledRules[i], options, messageVariables);
+    summaryPromise = new Promise((resolve, reject) => {
+      async function stepValidate(index: number) {
+        if (index >= filledRules.length) {
+          resolve();
+          return;
+        }
+
+        const rule = filledRules[index];
+        const errors = await validateRule(name, value, rule, options, messageVariables);
         if (errors.length) {
           reject(errors);
           return;
         }
-      }
-      /* eslint-enable */
 
-      resolve([]);
+        stepValidate(index + 1);
+      }
+
+      stepValidate(0);
     });
   } else {
     // >>>>> Validate by parallel
