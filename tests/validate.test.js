@@ -159,6 +159,28 @@ describe('Form.Validate', () => {
     matchError(wrapper, "Validation error on field 'username'");
   });
 
+  it('fail validate if reject without reason', async () => {
+    const wrapper = mount(
+      <Form>
+        <InfoField
+          name="username"
+          rules={[
+            {
+              message: "Validation error on field '${name}' 123",
+              validator() {
+                return Promise.reject();
+              },
+            },
+          ]}
+        />
+      </Form>,
+    );
+
+    // Wrong value
+    await changeValue(wrapper, 'light');
+    matchError(wrapper, 'Validation error on field username 123');
+  });
+
   describe('callback', () => {
     it('warning if not return promise', async () => {
       const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
