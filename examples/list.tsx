@@ -21,7 +21,10 @@ const Demo = () => {
           console.log('values:', values);
         }}
         style={{ border: '1px solid red', padding: 15 }}
+        preserve={false}
       >
+        <Form.Field shouldUpdate>{() => JSON.stringify(form.getFieldsValue(), null, 2)}</Form.Field>
+
         <List name="users">
           {(fields, { add, remove }) => {
             console.log('Demo Fields:', fields);

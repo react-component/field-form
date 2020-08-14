@@ -73,13 +73,13 @@ export interface InternalFieldProps {
   initialValue?: any;
   onReset?: () => void;
   preserve?: boolean;
+
+  /** @private Passed by Form.List props. Do not use since it will break by path check. */
+  isListField?: boolean;
 }
 
 export interface FieldProps extends Omit<InternalFieldProps, 'name'> {
   name?: NamePath;
-
-  /** @private Passed by Form.List props. */
-  isListField?: boolean;
 }
 
 export interface FieldState {
@@ -102,7 +102,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
     resetCount: 0,
   };
 
-  private cancelRegisterFunc: (preserve?: boolean) => void | null = null;
+  private cancelRegisterFunc: (isListField?: boolean, preserve?: boolean) => void | null = null;
 
   private destroy = false;
 
@@ -140,10 +140,10 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   }
 
   public cancelRegister = () => {
-    const { preserve } = this.props;
+    const { preserve, isListField } = this.props;
 
     if (this.cancelRegisterFunc) {
-      this.cancelRegisterFunc(preserve);
+      this.cancelRegisterFunc(isListField, preserve);
     }
     this.cancelRegisterFunc = null;
   };
@@ -498,11 +498,11 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   }
 }
 
-const WrapperField: React.FC<FieldProps> = ({ name, isListField, ...restProps }) => {
+const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => {
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
-  if (!isListField) {
+  if (!restProps.isListField) {
     key = `_${(namePath || []).join('_')}`;
   }
   return <Field key={key} name={namePath} {...restProps} />;
