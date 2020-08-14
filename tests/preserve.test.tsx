@@ -113,5 +113,29 @@ describe('Form.Preserve', () => {
 
     expect(form.getFieldsValue()).toEqual({ list: ['bamboo', 'little'] });
   });
+
+  it('warning when Form.List use preserve', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    mount(
+      <Form initialValues={{ list: ['bamboo'] }}>
+        <Form.List name="list">
+          {fields =>
+            fields.map(field => (
+              <Form.Field {...field} preserve={false}>
+                <input />
+              </Form.Field>
+            ))
+          }
+        </Form.List>
+      </Form>,
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: `preserve` should not apply on Form.List fields.',
+    );
+
+    errorSpy.mockRestore();
+  });
 });
 /* eslint-enable no-template-curly-in-string */

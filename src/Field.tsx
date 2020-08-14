@@ -505,6 +505,14 @@ const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => {
   if (!restProps.isListField) {
     key = `_${(namePath || []).join('_')}`;
   }
+
+  if (process.env.NODE_ENV !== 'production') {
+    warning(
+      restProps.preserve !== false || !restProps.isListField,
+      '`preserve` should not apply on Form.List fields.',
+    );
+  }
+
   return <Field key={key} name={namePath} {...restProps} />;
 };
 
