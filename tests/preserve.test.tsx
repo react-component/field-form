@@ -1,7 +1,7 @@
-/* eslint-disable no-template-curly-in-string */
+/* eslint-disable no-template-curly-in-string, arrow-body-style */
 import React from 'react';
 import { mount } from 'enzyme';
-import Form from '../src';
+import Form, { FormInstance } from '../src';
 import InfoField from './common/InfoField';
 import timeout from './common/timeout';
 
@@ -73,6 +73,69 @@ describe('Form.Preserve', () => {
 
     await matchTest(true, { keep: 233 });
     await matchTest(false, { keep: 233, remove: 666 });
+  });
+
+  it('form perishable should not crash Form.List', async () => {
+    let form: FormInstance;
+
+    const wrapper = mount(
+      <Form
+        initialValues={{ list: ['light', 'bamboo', 'little'] }}
+        preserve={false}
+        ref={instance => {
+          form = instance;
+        }}
+      >
+        <Form.List name="list">
+          {(fields, { remove }) => {
+            return (
+              <div>
+                {fields.map(field => (
+                  <Form.Field {...field}>
+                    <input />
+                  </Form.Field>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    remove(0);
+                  }}
+                />
+              </div>
+            );
+          }}
+        </Form.List>
+      </Form>,
+    );
+
+    wrapper.find('button').simulate('click');
+    wrapper.update();
+
+    expect(form.getFieldsValue()).toEqual({ list: ['bamboo', 'little'] });
+  });
+
+  it('warning when Form.List use preserve', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    mount(
+      <Form initialValues={{ list: ['bamboo'] }}>
+        <Form.List name="list">
+          {fields =>
+            fields.map(field => (
+              <Form.Field {...field} preserve={false}>
+                <input />
+              </Form.Field>
+            ))
+          }
+        </Form.List>
+      </Form>,
+    );
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: `preserve` should not apply on Form.List fields.',
+    );
+
+    errorSpy.mockRestore();
   });
 });
 /* eslint-enable no-template-curly-in-string */
