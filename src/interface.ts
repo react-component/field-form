@@ -162,8 +162,8 @@ export type ValuedNotifyInfo = NotifyInfo & {
 export interface Callbacks<Values = any> {
   onValuesChange?: (changedValues: any, values: Values) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
-  onFinish?: (values: Values) => void;
-  onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
+  onFinish?: (values: Values) => Promise<void> | void;
+  onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => Promise<void> | void;
 }
 
 export interface InternalHooks {
