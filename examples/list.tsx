@@ -21,7 +21,10 @@ const Demo = () => {
           console.log('values:', values);
         }}
         style={{ border: '1px solid red', padding: 15 }}
+        preserve={false}
       >
+        <Form.Field shouldUpdate>{() => JSON.stringify(form.getFieldsValue(), null, 2)}</Form.Field>
+
         <List name="users">
           {(fields, { add, remove }) => {
             console.log('Demo Fields:', fields);
@@ -33,9 +36,12 @@ const Demo = () => {
                     {control => (
                       <div style={{ position: 'relative' }}>
                         <Input {...control} />
-                        <a style={{ position: 'absolute', top: 12, right: -300 }} onClick={() => {
-                          remove(index);
-                        }}>
+                        <a
+                          style={{ position: 'absolute', top: 12, right: -300 }}
+                          onClick={() => {
+                            remove(index);
+                          }}
+                        >
                           Remove
                         </a>
                       </div>
@@ -68,6 +74,7 @@ const Demo = () => {
       <div style={{ border: '1px solid #000', padding: 15 }}>
         <h4>Out Of Form</h4>
         <button
+          type="button"
           onClick={() => {
             form.setFieldsValue({
               users: ['light', 'bamboo'],

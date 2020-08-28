@@ -8,17 +8,15 @@ const { Field } = Form;
 function Item({ children, ...restProps }) {
   return (
     <Field {...restProps}>
-      {(control, meta) => {
-        return (
-          <div>
-            <div>{React.cloneElement(children, { ...control })}</div>
+      {(control, meta) => (
+        <div>
+          <div>{React.cloneElement(children, { ...control })}</div>
 
-            {meta.touched && 'touched!'}
-            {meta.validating && 'validating!'}
-            {meta.errors}
-          </div>
-        );
-      }}
+          {meta.touched && 'touched!'}
+          {meta.validating && 'validating!'}
+          {meta.errors}
+        </div>
+      )}
     </Field>
   );
 }
@@ -58,7 +56,12 @@ const Demo = () => {
           type="button"
           onClick={() => {
             form.setFields([
-              { name: 'password', value: 'ERROR ME', touched: false, errors: ['Good for you!', 'Good for me!'] },
+              {
+                name: 'password',
+                value: 'ERROR ME',
+                touched: false,
+                errors: ['Good for you!', 'Good for me!'],
+              },
             ]);
           }}
         >

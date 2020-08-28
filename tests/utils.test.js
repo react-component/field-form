@@ -31,9 +31,17 @@ describe('utils', () => {
       expect(isSimilar(null, {})).toBeFalsy();
     });
 
-    it('setValues', () => {
-      expect(setValues({}, { a: 1 }, { b: 2 })).toEqual({ a: 1, b: 2 });
-      expect(setValues([], [123])).toEqual([123]);
+    describe('setValues', () => {
+      it('basic', () => {
+        expect(setValues({}, { a: 1 }, { b: 2 })).toEqual({ a: 1, b: 2 });
+        expect(setValues([], [123])).toEqual([123]);
+      });
+
+      it('Correct handle class instance', () => {
+        const out = setValues({}, { a: 1, b: { c: new Date() } });
+        expect(out.a).toEqual(1);
+        expect(out.b.c instanceof Date).toBeTruthy();
+      });
     });
   });
 

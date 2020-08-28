@@ -16,30 +16,34 @@ type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
-export interface FormProps extends BaseFormProps {
+export interface FormProps<Values = any> extends BaseFormProps {
   initialValues?: Store;
-  form?: FormInstance;
+  form?: FormInstance<Values>;
   children?: RenderProps | React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component?: false | string | React.FC<any> | React.ComponentClass<any>;
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
-  onValuesChange?: Callbacks['onValuesChange'];
-  onFieldsChange?: Callbacks['onFieldsChange'];
-  onFinish?: Callbacks['onFinish'];
-  onFinishFailed?: Callbacks['onFinishFailed'];
+  onValuesChange?: Callbacks<Values>['onValuesChange'];
+  onFieldsChange?: Callbacks<Values>['onFieldsChange'];
+  onFinish?: Callbacks<Values>['onFinish'];
+  onFinishFailed?: Callbacks<Values>['onFinishFailed'];
+  validateTrigger?: string | string[] | false;
+  preserve?: boolean;
 }
 
-const Form: React.FunctionComponent<FormProps> = (
+const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   {
     name,
     initialValues,
     fields,
     form,
+    preserve,
     children,
     component: Component = 'form',
     validateMessages,
+    validateTrigger = 'onChange',
     onValuesChange,
     onFieldsChange,
     onFinish,
@@ -58,6 +62,7 @@ const Form: React.FunctionComponent<FormProps> = (
     setInitialValues,
     setCallbacks,
     setValidateMessages,
+    setPreserve,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
@@ -94,6 +99,7 @@ const Form: React.FunctionComponent<FormProps> = (
     },
     onFinishFailed,
   });
+  setPreserve(preserve);
 
   // Set initial value, init store value when first mount
   const mountRef = React.useRef(null);
@@ -106,7 +112,7 @@ const Form: React.FunctionComponent<FormProps> = (
   let childrenNode = children;
   const childrenRenderProps = typeof children === 'function';
   if (childrenRenderProps) {
-    const values = formInstance.getFieldsValue();
+    const values = formInstance.getFieldsValue(true);
     childrenNode = (children as RenderProps)(values, formInstance);
   }
 
@@ -122,10 +128,16 @@ const Form: React.FunctionComponent<FormProps> = (
     prevFieldsRef.current = fields;
   }, [fields, formInstance]);
 
+  const formContextValue = React.useMemo(
+    () => ({
+      ...(formInstance as InternalFormInstance),
+      validateTrigger,
+    }),
+    [formInstance, validateTrigger],
+  );
+
   const wrapperNode = (
-    <FieldContext.Provider value={formInstance as InternalFormInstance}>
-      {childrenNode}
-    </FieldContext.Provider>
+    <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
   );
 
   if (Component === false) {

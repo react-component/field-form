@@ -2,7 +2,7 @@
 
 React Performance First Form Component.
 
-[![NPM version][npm-image]][npm-url] [![build status][circleci-image]][circleci-url] [![Test coverage][coveralls-image]][coveralls-url] [![node version][node-image]][node-url] [![npm download][download-image]][download-url]
+[![NPM version][npm-image]][npm-url] [![build status][circleci-image]][circleci-url] [![Test coverage][coveralls-image]][coveralls-url] [![npm download][download-image]][download-url]
 
 [npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
 [npm-url]: http://npmjs.org/package/rc-field-form
@@ -10,8 +10,6 @@ React Performance First Form Component.
 [circleci-url]: https://circleci.com/gh/react-component/field-form/tree/master
 [coveralls-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
 [coveralls-url]: https://codecov.io/gh/react-component/field-form
-[node-image]: https://img.shields.io/badge/node.js-%3E=_6.0-green.svg?style=flat-square
-[node-url]: http://nodejs.org/download/
 [download-image]: https://img.shields.io/npm/dm/rc-field-form.svg?style=flat-square
 [download-url]: https://npmjs.org/package/rc-field-form
 
@@ -61,39 +59,43 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ## Form
 
-| Prop             | Description                                        | Type                                       | Default          |
-| ---------------- | -------------------------------------------------- | ------------------------------------------ | ---------------- |
-| component        | Customize Form render component                    | string \| Component \| false               | form             |
-| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]                  | -                |
-| form             | Set form instance created by `useForm`             | [FormInstance](#useform)                   | `Form.useForm()` |
-| initialValues    | Initial value of Form                              | Object                                     | -                |
-| name             | Config name with [FormProvider](#formprovider)     | string                                     | -                |
-| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages)      | -                |
-| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields): void           | -                |
-| onFinish         | Trigger when form submit and success               | (values): void                             | -                |
-| onFinishFailed   | Trigger when form submit and failed                | ({ values, errorFields, outOfDate }): void | -                |
-| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values): void              | -                |
+| Prop             | Description                                        | Type                                         | Default          |
+| ---------------- | -------------------------------------------------- | -------------------------------------------- | ---------------- |
+| component        | Customize Form render component                    | string \| Component \| false                 | form             |
+| fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]                    | -                |
+| form             | Set form instance created by `useForm`             | [FormInstance](#useform)                     | `Form.useForm()` |
+| initialValues    | Initial value of Form                              | Object                                       | -                |
+| name             | Config name with [FormProvider](#formprovider)     | string                                       | -                |
+| preserve         | Preserve value when field removed                  | boolean                                      | false            |
+| validateMessages | Set validate message template                      | [ValidateMessages](#validatemessages)        | -                |
+| onFieldsChange   | Trigger when any value of Field changed            | (changedFields, allFields) => void           | -                |
+| onFinish         | Trigger when form submit and success               | (values) => void                             | -                |
+| onFinishFailed   | Trigger when form submit and failed                | ({ values, errorFields, outOfDate }) => void | -                |
+| onValuesChange   | Trigger when any value of Field changed            | (changedValues, values) => void              | -                |
 
 ## Field
 
-| Prop              | Description                             | Type                                      | Default  |
-| ----------------- | --------------------------------------- | ----------------------------------------- | -------- |
-| dependencies      | Will re-render if dependencies changed  | [NamePath](#namepath)[]                   | -        |
-| getValueFromEvent | Specify how to get value from event     | (..args: any[]) => any                    | -        |
-| name              | Field name path                         | [NamePath](#namepath)                     | -        |
-| normalize         | Normalize value before update           | (value, prevValue, prevValues) => any     | -        |
-| rules             | Validate rules                          | [Rule](#rule)[]                           | -        |
-| shouldUpdate      | Check if Field should update            | true \| (prevValues, nextValues): boolean | -        |
-| trigger           | Collect value update by event trigger   | string                                    | onChange |
-| validateTrigger   | Config trigger point with rule validate | string \| string[]                        | onChange |
-| valuePropName     | Config value mapping prop with element  | string                                    | value    |
+| Prop              | Description                                                                   | Type                                        | Default  |
+| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------- | -------- |
+| dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                     | -        |
+| getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                      | -        |
+| getValueProps     | Customize additional props with value. This prop will disable `valuePropName` | (value) => any                              | -        |
+| initialValue      | Field initial value                                                           | any                                         | -        |
+| name              | Field name path                                                               | [NamePath](#namepath)                       | -        |
+| normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any       | -        |
+| preserve          | Preserve value when field removed                                             | boolean                                     | false    |
+| rules             | Validate rules                                                                | [Rule](#rule)[]                             | -        |
+| shouldUpdate      | Check if Field should update                                                  | true \| (prevValues, nextValues) => boolean | -        |
+| trigger           | Collect value update by event trigger                                         | string                                      | onChange |
+| validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                          | onChange |
+| valuePropName     | Config value mapping prop with element                                        | string                                      | value    |
 
 ## List
 
-| Prop     | Description                     | Type                                                                                                  | Default |
-| -------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
-| name     | List field name path            | [NamePath](#namepath)[]                                                                               | -       |
-| children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)): ReactNode | -       |
+| Prop     | Description                     | Type                                                                                                    | Default |
+| -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- | ------- |
+| name     | List field name path            | [NamePath](#namepath)[]                                                                                 | -       |
+| children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)) => ReactNode | -       |
 
 ## useForm
 
@@ -123,7 +125,7 @@ class Demo extends React.Component {
 | Prop              | Description                                | Type                                                                       |
 | ----------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
 | getFieldValue     | Get field value by name path               | (name: [NamePath](#namepath)) => any                                       |
-| getFieldsValue    | Get list of field values by name path list | (nameList?: [NamePath](#namepath)[]) => any                                |
+| getFieldsValue    | Get list of field values by name path list | (nameList?: ([NamePath](#namepath)[]) => any) \| true                      |
 | getFieldError     | Get field errors by name path              | (name: [NamePath](#namepath)) => string[]                                  |
 | getFieldsError    | Get list of field errors by name path list | (nameList?: [NamePath](#namepath)[]) => FieldError[]                       |
 | isFieldsTouched   | Check if list of fields are touched        | (nameList?: [NamePath](#namepath)[], allTouched?: boolean) => boolean      |
@@ -184,10 +186,10 @@ To keep sync with `rc-form` legacy usage of `validator`, we still provides `call
 
 ### ListOperations
 
-| Prop   | Type                    |
-| ------ | ----------------------- |
-| add    | () => void              |
-| remove | (index: number) => void |
+| Prop   | Type                     |
+| ------ | ------------------------ |
+| add    | (initValue: any) => void |
+| remove | (index: number) => void  |
 
 ### ValidateMessages
 
@@ -267,9 +269,9 @@ async function() {
 
 **Notice: Now if your validator return an `Error(message)`, not need to get error by `e => e.message`. FieldForm will handle this.**
 
-## 🔥 `preserve` is no need anymore
+## 🔥 `preserve` is default to false
 
-In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed.
+In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed. But you can still use `preserve=false` to disable value keeping since `1.5.0`.
 
 ## 🔥 `setFields` not trigger `onFieldsChange` and `setFieldsValue` not trigger `onValuesChange`
 

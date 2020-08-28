@@ -6,19 +6,30 @@ const { Field, useForm } = Form;
 
 const list = new Array(0).fill(() => undefined);
 
+interface FormValues {
+  username?: string;
+  password?: string;
+  path1?: {
+    path2?: string;
+  };
+}
+
 export default () => {
-  const [form] = useForm();
+  const [form] = useForm<FormValues>();
 
   return (
     <div>
       <h3>useForm ({list.length} inputs)</h3>
 
-      <button type="button" onClick={() => {
-        form.setFieldsValue({
-          username: 'light',
-          password: 'bamboo',
-        });
-      }}>
+      <button
+        type="button"
+        onClick={() => {
+          form.setFieldsValue({
+            username: 'light',
+            password: 'bamboo',
+          });
+        }}
+      >
         Fill Values
       </button>
 
@@ -33,7 +44,7 @@ export default () => {
           <Field name="username">
             <Input placeholder="Shadow of Username" />
           </Field>
-          <Field name={[ 'path1', 'path2' ]}>
+          <Field name={['path1', 'path2']}>
             <Input placeholder="nest" />
           </Field>
 

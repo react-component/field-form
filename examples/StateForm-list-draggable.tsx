@@ -68,7 +68,11 @@ const Demo = () => {
                         <div style={{ position: 'relative' }}>
                           <Input {...DisableDraggable} {...control} />
                           <a
-                            style={{ position: 'absolute', top: 12, right: -300 }}
+                            style={{
+                              position: 'absolute',
+                              top: 12,
+                              right: -300,
+                            }}
                             onClick={() => {
                               remove(index);
                             }}

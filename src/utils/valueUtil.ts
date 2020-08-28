@@ -1,5 +1,5 @@
-import setIn from 'lodash/fp/set';
-import get from 'lodash/get';
+import get from 'rc-util/lib/utils/get';
+import set from 'rc-util/lib/utils/set';
 import { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
 
@@ -20,7 +20,7 @@ export function getValue(store: Store, namePath: InternalNamePath) {
 }
 
 export function setValue(store: Store, namePath: InternalNamePath, value: StoreValue): Store {
-  const newStore = setIn(namePath, value, store);
+  const newStore = set(store, namePath, value);
   return newStore;
 }
 
@@ -39,7 +39,7 @@ export function containsNamePath(namePathList: InternalNamePath[], namePath: Int
 }
 
 function isObject(obj: StoreValue) {
-  return typeof obj === 'object' && obj !== null;
+  return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
 /**
@@ -58,7 +58,7 @@ function internalSetValues<T>(store: T, values: T): T {
     const value = values[key];
 
     // If both are object (but target is not array), we use recursion to set deep value
-    const recursive = isObject(prevValue) && isObject(value) && !Array.isArray(value);
+    const recursive = isObject(prevValue) && isObject(value);
     newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : value;
   });
 

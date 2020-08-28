@@ -1,6 +1,7 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
+import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List } from '../src';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
@@ -67,6 +68,26 @@ describe('Form.List', () => {
     });
   });
 
+  it('not crash', () => {
+    // Empty only
+    mount(
+      <Form initialValues={{ list: null }}>
+        <Form.List name="list">{() => null}</Form.List>
+      </Form>,
+    );
+
+    // Not a array
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    resetWarned();
+    mount(
+      <Form initialValues={{ list: {} }}>
+        <Form.List name="list">{() => null}</Form.List>
+      </Form>,
+    );
+    expect(errorSpy).toHaveBeenCalledWith("Warning: Current value of 'list' is not an array type.");
+    errorSpy.mockRestore();
+  });
+
   it('operation', async () => {
     let operation;
     const [wrapper, getList] = generateForm((fields, opt) => {
@@ -95,15 +116,20 @@ describe('Form.List', () => {
     act(() => {
       operation.add();
     });
+    // Add default value
     act(() => {
-      operation.add();
+      operation.add('2');
     });
+
     act(() => {
       operation.add();
     });
 
     wrapper.update();
     expect(getList().find(Field).length).toEqual(3);
+    expect(form.getFieldsValue()).toEqual({
+      list: [undefined, '2', undefined],
+    });
 
     matchKey(0, '0');
     matchKey(1, '1');
@@ -111,7 +137,7 @@ describe('Form.List', () => {
 
     // Move
     act(() => {
-        operation.move(2, 0);
+      operation.move(2, 0);
     });
     wrapper.update();
     matchKey(0, '2');
@@ -212,25 +238,283 @@ describe('Form.List', () => {
     matchKey(1, '2');
   });
 
-  it('validate', async () => {
-    const [, getList] = generateForm(
-      fields => (
+  it('remove when the param is Array', () => {
+    let operation;
+    const [wrapper, getList] = generateForm((fields, opt) => {
+      operation = opt;
+      return (
         <div>
           {fields.map(field => (
-            <Field {...field} rules={[{ required: true }]}>
+            <Field {...field}>
               <Input />
             </Field>
           ))}
         </div>
-      ),
-      {
-        initialValues: { list: [''] },
-      },
+      );
+    });
+
+    function matchKey(index, key) {
+      expect(
+        getList()
+          .find(Field)
+          .at(index)
+          .key(),
+      ).toEqual(key);
+    }
+
+    act(() => {
+      operation.add();
+    });
+
+    act(() => {
+      operation.add();
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(2);
+
+    // remove empty array
+    act(() => {
+      operation.remove([]);
+    });
+
+    wrapper.update();
+
+    matchKey(0, '0');
+    matchKey(1, '1');
+
+    // remove not esist element in array
+    act(() => {
+      operation.remove([-1, 99]);
+    });
+    wrapper.update();
+
+    matchKey(0, '0');
+    matchKey(1, '1');
+
+    act(() => {
+      operation.remove([0]);
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(1);
+    matchKey(0, '1');
+
+    act(() => {
+      operation.add();
+    });
+
+    act(() => {
+      operation.add();
+    });
+
+    wrapper.update();
+    matchKey(0, '1');
+    matchKey(1, '2');
+    matchKey(2, '3');
+
+    act(() => {
+      operation.remove([0, 1]);
+    });
+
+    wrapper.update();
+    matchKey(0, '3');
+  });
+
+  it('add when the second param is number', () => {
+    let operation;
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const [wrapper, getList] = generateForm((fields, opt) => {
+      operation = opt;
+      return (
+        <div>
+          {fields.map(field => (
+            <Field {...field}>
+              <Input />
+            </Field>
+          ))}
+        </div>
+      );
+    });
+
+    act(() => {
+      operation.add();
+    });
+    act(() => {
+      operation.add('1', 2);
+    });
+
+    act(() => {
+      operation.add('2', -1);
+    });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: The second parameter of the add function should be a valid positive number.',
     );
+    errorSpy.mockRestore();
 
-    await changeValue(getField(getList()), '');
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(3);
+    expect(form.getFieldsValue()).toEqual({
+      list: [undefined, '1', '2'],
+    });
 
-    expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+    act(() => {
+      operation.add('0', 0);
+    });
+    act(() => {
+      operation.add('4', 3);
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(5);
+    expect(form.getFieldsValue()).toEqual({
+      list: ['0', undefined, '1', '4', '2'],
+    });
+  });
+
+  describe('validate', () => {
+    it('basic', async () => {
+      const [, getList] = generateForm(
+        fields => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }]}>
+                <Input />
+              </Field>
+            ))}
+          </div>
+        ),
+        {
+          initialValues: { list: [''] },
+        },
+      );
+
+      await changeValue(getField(getList()), '');
+
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+    });
+
+    it('remove should keep error', async () => {
+      const [wrapper, getList] = generateForm(
+        (fields, { remove }) => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }]}>
+                <Input />
+              </Field>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                remove(0);
+              }}
+            />
+          </div>
+        ),
+        {
+          initialValues: { list: ['', ''] },
+        },
+      );
+
+      expect(wrapper.find(Input)).toHaveLength(2);
+      await changeValue(getField(getList(), 1), '');
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
+
+      wrapper.find('button').simulate('click');
+      wrapper.update();
+
+      expect(wrapper.find(Input)).toHaveLength(1);
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
+    });
+
+    it('when param of remove is array', async () => {
+      const [wrapper, getList] = generateForm(
+        (fields, { remove }) => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
+                <Input />
+              </Field>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                remove([0, 2]);
+              }}
+            />
+          </div>
+        ),
+        {
+          initialValues: { list: ['', '', ''] },
+        },
+      );
+
+      expect(wrapper.find(Input)).toHaveLength(3);
+      await changeValue(getField(getList(), 0), '');
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+
+      await changeValue(getField(getList(), 1), 'test');
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' must be at least 5 characters"]);
+
+      await changeValue(getField(getList(), 2), '');
+      expect(form.getFieldError(['list', 2])).toEqual(["'list.2' is required"]);
+
+      wrapper.find('button').simulate('click');
+      wrapper.update();
+
+      expect(wrapper.find(Input)).toHaveLength(1);
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' must be at least 5 characters"]);
+      expect(wrapper.find('input').props().value).toEqual('test');
+    });
+
+    it('when add() second param is number', async () => {
+      const [wrapper, getList] = generateForm(
+        (fields, { add }) => (
+          <div>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
+                <Input />
+              </Field>
+            ))}
+
+            <button
+              className="button"
+              type="button"
+              onClick={() => {
+                add('test4', 1);
+              }}
+            />
+
+            <button
+              className="button1"
+              type="button"
+              onClick={() => {
+                add('test5', 0);
+              }}
+            />
+          </div>
+        ),
+        {
+          initialValues: { list: ['test1', 'test2', 'test3'] },
+        },
+      );
+
+      expect(wrapper.find(Input)).toHaveLength(3);
+      await changeValue(getField(getList(), 0), '');
+      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+
+      wrapper.find('.button').simulate('click');
+      wrapper.find('.button1').simulate('click');
+
+      expect(wrapper.find(Input)).toHaveLength(5);
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.0' is required"]);
+
+      await changeValue(getField(getList(), 1), 'test');
+      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' must be at least 5 characters"]);
+    });
   });
 
   it('warning if children is not function', () => {
@@ -241,5 +525,46 @@ describe('Form.List', () => {
     expect(errorSpy).toHaveBeenCalledWith('Warning: Form.List only accepts function as children.');
 
     errorSpy.mockRestore();
+  });
+
+  // https://github.com/ant-design/ant-design/issues/25584
+  it('preserve should not break list', async () => {
+    let operation;
+    const [wrapper] = generateForm(
+      (fields, opt) => {
+        operation = opt;
+        return (
+          <div>
+            {fields.map(field => (
+              <Field {...field}>
+                <Input />
+              </Field>
+            ))}
+          </div>
+        );
+      },
+      { preserve: false },
+    );
+
+    // Add
+    act(() => {
+      operation.add();
+    });
+    wrapper.update();
+    expect(wrapper.find(Input)).toHaveLength(1);
+
+    // Remove
+    act(() => {
+      operation.remove(0);
+    });
+    wrapper.update();
+    expect(wrapper.find(Input)).toHaveLength(0);
+
+    // Add
+    act(() => {
+      operation.add();
+    });
+    wrapper.update();
+    expect(wrapper.find(Input)).toHaveLength(1);
   });
 });

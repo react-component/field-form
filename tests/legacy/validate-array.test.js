@@ -50,7 +50,7 @@ describe('legacy.validate-array', () => {
     } catch ({ errorFields }) {
       matchArray(
         errorFields,
-        [{ name: ['url_array'], errors: ["'url_array.0' is not a validate url"] }],
+        [{ name: ['url_array'], errors: ["'url_array.0' is not a valid url"] }],
         'name',
       );
     }

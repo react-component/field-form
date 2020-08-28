@@ -1,5 +1,6 @@
 .storybook
 .doc
+*.log
 node_modules
 coverage/
 es/
@@ -7,3 +8,5 @@ lib/
 ~*
 yarn.lock
 package-lock.json
+.idea/
+examples/debug.tsx

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import warning from 'warning';
+import warning from 'rc-util/lib/warning';
 import { InternalNamePath, NamePath, StoreValue } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
@@ -8,11 +8,12 @@ import { move, getNamePath } from './utils/valueUtil';
 interface ListField {
   name: number;
   key: number;
+  isListField: boolean;
 }
 
 interface ListOperations {
-  add: () => void;
-  remove: (index: number) => void;
+  add: (defaultValue?: StoreValue, index?: number) => void;
+  remove: (index: number | number[]) => void;
   move: (from: number, to: number) => void;
 }
 
@@ -58,33 +59,43 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
            * Always get latest value in case user update fields by `form` api.
            */
           const operations: ListOperations = {
-            add: () => {
+            add: (defaultValue, index?: number) => {
               // Mapping keys
-              keyManager.keys = [...keyManager.keys, keyManager.id];
+              const newValue = getNewValue();
+
+              if (index >= 0 && index <= newValue.length) {
+                keyManager.keys = [
+                  ...keyManager.keys.slice(0, index),
+                  keyManager.id,
+                  ...keyManager.keys.slice(index),
+                ];
+                onChange([...newValue.slice(0, index), defaultValue, ...newValue.slice(index)]);
+              } else {
+                if (
+                  process.env.NODE_ENV !== 'production' &&
+                  (index < 0 || index > newValue.length)
+                ) {
+                  warning(
+                    false,
+                    'The second parameter of the add function should be a valid positive number.',
+                  );
+                }
+                keyManager.keys = [...keyManager.keys, keyManager.id];
+                onChange([...newValue, defaultValue]);
+              }
               keyManager.id += 1;
-
-              const newValue = getNewValue();
-              onChange([...newValue, undefined]);
             },
-            remove: (index: number) => {
+            remove: (index: number | number[]) => {
               const newValue = getNewValue();
+              const indexSet = new Set(Array.isArray(index) ? index : [index]);
 
-              // Do not handle out of range
-              if (index < 0 || index >= newValue.length) {
+              if (indexSet.size <= 0) {
                 return;
               }
-
-              // Update key mapping
-              const newKeys = keyManager.keys.map((key, id) => {
-                if (id < index) {
-                  return key;
-                }
-                return keyManager.keys[id + 1];
-              });
-              keyManager.keys = newKeys.slice(0, -1);
+              keyManager.keys = keyManager.keys.filter((_, keysIndex) => !indexSet.has(keysIndex));
 
               // Trigger store change
-              onChange(newValue.filter((_, id) => id !== index));
+              onChange(newValue.filter((_, valueIndex) => !indexSet.has(valueIndex)));
             },
             move(from: number, to: number) {
               if (from === to) {
@@ -104,8 +115,17 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
             },
           };
 
+          let listValue = value || [];
+          if (!Array.isArray(listValue)) {
+            listValue = [];
+
+            if (process.env.NODE_ENV !== 'production') {
+              warning(false, `Current value of '${prefixName.join(' > ')}' is not an array type.`);
+            }
+          }
+
           return children(
-            (value as StoreValue[]).map(
+            (listValue as StoreValue[]).map(
               (__, index): ListField => {
                 let key = keyManager.keys[index];
                 if (key === undefined) {
@@ -117,6 +137,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
                 return {
                   name: index,
                   key,
+                  isListField: true,
                 };
               },
             ),

@@ -1,16 +1,18 @@
-import AsyncValidator from 'async-validator';
+import RawAsyncValidator from 'async-validator';
 import * as React from 'react';
-import warning from 'warning';
+import warning from 'rc-util/lib/warning';
 import {
   InternalNamePath,
   ValidateOptions,
   ValidateMessages,
   RuleObject,
-  Rule,
   StoreValue,
 } from '../interface';
 import { setValues } from './valueUtil';
 import { defaultValidateMessages } from './messages';
+
+// Remove incorrect original ts define
+const AsyncValidator: any = RawAsyncValidator;
 
 /**
  * Replace with template.
@@ -31,6 +33,7 @@ function convertMessages(
   messages: ValidateMessages,
   name: string,
   rule: RuleObject,
+  messageVariables?: Record<string, string>,
 ): ValidateMessages {
   const kv = {
     ...(rule as Record<string, string | number>),
@@ -42,17 +45,11 @@ function convertMessages(
     replaceMessage(template, { ...kv, ...additionalKV });
 
   /* eslint-disable no-param-reassign */
-  type Template =
-    | {
-        [name: string]: string | (() => string) | { [name: string]: Template };
-      }
-    | string;
-
-  function fillTemplate(source: Template, target: Template = {}) {
+  function fillTemplate(source: ValidateMessages, target: ValidateMessages = {}) {
     Object.keys(source).forEach(ruleName => {
       const value = source[ruleName];
       if (typeof value === 'string') {
-        target[ruleName] = replaceFunc(value);
+        target[ruleName] = replaceFunc(value, messageVariables);
       } else if (value && typeof value === 'object') {
         target[ruleName] = {};
         fillTemplate(value, target[ruleName]);
@@ -73,6 +70,7 @@ async function validateRule(
   value: StoreValue,
   rule: RuleObject,
   options: ValidateOptions,
+  messageVariables?: Record<string, string>,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
   // We should special handle array validate
@@ -86,7 +84,12 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const messages: ValidateMessages = convertMessages(options.validateMessages, name, cloneRule);
+  const messages: ValidateMessages = convertMessages(
+    options.validateMessages,
+    name,
+    cloneRule,
+    messageVariables,
+  );
   validator.messages(messages);
 
   let result = [];
@@ -97,19 +100,20 @@ async function validateRule(
     if (errObj.errors) {
       result = errObj.errors.map(({ message }, index) =>
         // Wrap ReactNode with `key`
-        (React.isValidElement(message)
+        React.isValidElement(message)
           ? React.cloneElement(message, { key: `error_${index}` })
-          : message),
+          : message,
       );
     } else {
-      result = [(messages.default as (() => string))()];
+      console.error(errObj);
+      result = [(messages.default as () => string)()];
     }
   }
 
   if (!result.length && subRuleField) {
     const subResults: string[][] = await Promise.all(
       (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
-        validateRule(`${name}.${i}`, subValue, subRuleField, options),
+        validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
       ),
     );
 
@@ -128,6 +132,8 @@ export function validateRules(
   value: StoreValue,
   rules: RuleObject[],
   options: ValidateOptions,
+  validateFirst: boolean | 'parallel',
+  messageVariables?: Record<string, string>,
 ) {
   const name = namePath.join('.');
 
@@ -140,7 +146,7 @@ export function validateRules(
     }
     return {
       ...currentRule,
-      validator(rule: Rule, val: StoreValue, callback: (error?: string) => void) {
+      validator(rule: RuleObject, val: StoreValue, callback: (error?: string) => void) {
         let hasPromise = false;
 
         // Wrap callback only accept when promise not provided
@@ -182,20 +188,70 @@ export function validateRules(
     };
   });
 
-  const summaryPromise: Promise<string[]> = Promise.all(
-    filledRules.map(rule => validateRule(name, value, rule, options)),
-  ).then((errorsList: string[][]): string[] | Promise<string[]> => {
-    const errors: string[] = [].concat(...errorsList);
+  let summaryPromise: Promise<string[]>;
 
-    if (!errors.length) {
-      return [];
-    }
+  if (validateFirst === true) {
+    // >>>>> Validate by serialization
+    summaryPromise = new Promise(async (resolve, reject) => {
+      /* eslint-disable no-await-in-loop */
+      for (let i = 0; i < filledRules.length; i += 1) {
+        const errors = await validateRule(name, value, filledRules[i], options, messageVariables);
+        if (errors.length) {
+          reject(errors);
+          return;
+        }
+      }
+      /* eslint-enable */
 
-    return Promise.reject<string[]>(errors);
-  });
+      resolve([]);
+    });
+  } else {
+    // >>>>> Validate by parallel
+    const rulePromises = filledRules.map(rule =>
+      validateRule(name, value, rule, options, messageVariables),
+    );
+
+    summaryPromise = (validateFirst
+      ? finishOnFirstFailed(rulePromises)
+      : finishOnAllFailed(rulePromises)
+    ).then((errors: string[]): string[] | Promise<string[]> => {
+      if (!errors.length) {
+        return [];
+      }
+
+      return Promise.reject<string[]>(errors);
+    });
+  }
 
   // Internal catch error to avoid console error log.
   summaryPromise.catch(e => e);
 
   return summaryPromise;
+}
+
+async function finishOnAllFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+  return Promise.all(rulePromises).then((errorsList: string[][]): string[] | Promise<string[]> => {
+    const errors: string[] = [].concat(...errorsList);
+
+    return errors;
+  });
+}
+
+async function finishOnFirstFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+  let count = 0;
+
+  return new Promise(resolve => {
+    rulePromises.forEach(promise => {
+      promise.then(errors => {
+        if (errors.length) {
+          resolve(errors);
+        }
+
+        count += 1;
+        if (count === rulePromises.length) {
+          resolve([]);
+        }
+      });
+    });
+  });
 }
