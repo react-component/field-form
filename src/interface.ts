@@ -40,6 +40,7 @@ export type RuleType =
   | 'date'
   | 'url'
   | 'hex'
+  | 'array'
   | 'email';
 
 type Validator = (
