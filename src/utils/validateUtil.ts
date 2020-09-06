@@ -105,6 +105,7 @@ async function validateRule(
           : message,
       );
     } else {
+      // eslint-disable-next-line no-console
       console.error(errObj);
       result = [(messages.default as () => string)()];
     }
