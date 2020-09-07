@@ -765,6 +765,7 @@ export class FormStore {
             onFinish(values);
           } catch (err) {
             // Should print error if user `onFinish` callback failed
+            // eslint-disable-next-line no-console
             console.error(err);
           }
         }

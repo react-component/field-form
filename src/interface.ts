@@ -33,6 +33,7 @@ export type RuleType =
   | 'boolean'
   | 'method'
   | 'regexp'
+  | 'array'
   | 'integer'
   | 'float'
   | 'object'
