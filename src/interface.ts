@@ -200,7 +200,7 @@ export interface FormInstance<Values = any> {
   getFieldsValue: (
     nameList?: NamePath[] | true,
     filterFunc?: (meta: Meta) => boolean,
-  ) => Values | any;
+  ) => Values;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
