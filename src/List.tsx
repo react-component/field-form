@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import { InternalNamePath, NamePath, StoreValue, ValidatorRule } from './interface';
+import { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
@@ -20,10 +20,15 @@ interface ListOperations {
 interface ListProps {
   name: NamePath;
   rules?: ValidatorRule[];
-  children?: (fields: ListField[], operations: ListOperations) => JSX.Element | React.ReactNode;
+  validateTrigger?: string | string[] | false;
+  children?: (
+    fields: ListField[],
+    operations: ListOperations,
+    meta: Meta,
+  ) => JSX.Element | React.ReactNode;
 }
 
-const List: React.FunctionComponent<ListProps> = ({ name, children, rules }) => {
+const List: React.FunctionComponent<ListProps> = ({ name, children, rules, validateTrigger }) => {
   const context = React.useContext(FieldContext);
   const keyRef = React.useRef({
     keys: [],
@@ -49,10 +54,8 @@ const List: React.FunctionComponent<ListProps> = ({ name, children, rules }) => 
 
   return (
     <FieldContext.Provider value={{ ...context, prefixName }}>
-      <Field name={[]} shouldUpdate={shouldUpdate} rules={rules}>
-        {({ value = [], onChange, meta }) => {
-          console.log('>>>>>>', meta);
-
+      <Field name={[]} shouldUpdate={shouldUpdate} rules={rules} validateTrigger={validateTrigger}>
+        {({ value = [], onChange }, meta) => {
           const { getFieldValue } = context;
           const getNewValue = () => {
             const values = getFieldValue(prefixName || []) as StoreValue[];
@@ -145,6 +148,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children, rules }) => 
               },
             ),
             operations,
+            meta,
           );
         }}
       </Field>
