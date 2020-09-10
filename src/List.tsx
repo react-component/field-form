@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import { InternalNamePath, NamePath, StoreValue } from './interface';
+import { InternalNamePath, NamePath, StoreValue, ValidatorRule } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
@@ -19,10 +19,11 @@ interface ListOperations {
 
 interface ListProps {
   name: NamePath;
+  rules?: ValidatorRule[];
   children?: (fields: ListField[], operations: ListOperations) => JSX.Element | React.ReactNode;
 }
 
-const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
+const List: React.FunctionComponent<ListProps> = ({ name, children, rules }) => {
   const context = React.useContext(FieldContext);
   const keyRef = React.useRef({
     keys: [],
@@ -48,8 +49,10 @@ const List: React.FunctionComponent<ListProps> = ({ name, children }) => {
 
   return (
     <FieldContext.Provider value={{ ...context, prefixName }}>
-      <Field name={[]} shouldUpdate={shouldUpdate}>
-        {({ value = [], onChange }) => {
+      <Field name={[]} shouldUpdate={shouldUpdate} rules={rules}>
+        {({ value = [], onChange, meta }) => {
+          console.log('>>>>>>', meta);
+
           const { getFieldValue } = context;
           const getNewValue = () => {
             const values = getFieldValue(prefixName || []) as StoreValue[];
