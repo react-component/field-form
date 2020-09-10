@@ -50,6 +50,11 @@ type Validator = (
 
 export type RuleRender = (form: FormInstance) => RuleObject;
 
+export interface ValidatorRule {
+  message?: string | ReactElement;
+  validator: Validator;
+}
+
 interface BaseRule {
   enum?: StoreValue[];
   len?: number;
@@ -60,19 +65,20 @@ interface BaseRule {
   required?: boolean;
   transform?: (value: StoreValue) => StoreValue;
   type?: RuleType;
-  validator?: Validator;
   whitespace?: boolean;
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
 }
 
-interface ArrayRule extends Omit<BaseRule, 'type'> {
+type AggregationRule = BaseRule & Partial<ValidatorRule>;
+
+interface ArrayRule extends Omit<AggregationRule, 'type'> {
   type: 'array';
   defaultField?: RuleObject;
 }
 
-export type RuleObject = BaseRule | ArrayRule;
+export type RuleObject = AggregationRule | ArrayRule;
 
 export type Rule = RuleObject | RuleRender;
 

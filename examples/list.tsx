@@ -25,8 +25,20 @@ const Demo = () => {
       >
         <Form.Field shouldUpdate>{() => JSON.stringify(form.getFieldsValue(), null, 2)}</Form.Field>
 
-        <List name="users">
-          {(fields, { add, remove }) => {
+        <List
+          name="users"
+          rules={[
+            {
+              message: 'Must have at least 2 user!',
+              validator: async (_, value) => {
+                if (value.length < 2) {
+                  throw new Error();
+                }
+              },
+            },
+          ]}
+        >
+          {(fields, { add, remove }, { errors }) => {
             console.log('Demo Fields:', fields);
             return (
               <div>
@@ -48,6 +60,12 @@ const Demo = () => {
                     )}
                   </LabelField>
                 ))}
+
+                <ul>
+                  {errors.map(err => (
+                    <li key={err}>{err}</li>
+                  ))}
+                </ul>
 
                 <button
                   type="button"

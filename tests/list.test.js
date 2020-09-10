@@ -5,11 +5,12 @@ import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List } from '../src';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
+import timeout from './common/timeout';
 
 describe('Form.List', () => {
   let form;
 
-  function generateForm(renderList, formProps) {
+  function generateForm(renderList, formProps, listProps) {
     const wrapper = mount(
       <div>
         <Form
@@ -18,7 +19,9 @@ describe('Form.List', () => {
           }}
           {...formProps}
         >
-          <List name="list">{renderList}</List>
+          <List name="list" {...listProps}>
+            {renderList}
+          </List>
         </Form>
       </div>,
     );
@@ -566,5 +569,40 @@ describe('Form.List', () => {
     });
     wrapper.update();
     expect(wrapper.find(Input)).toHaveLength(1);
+  });
+
+  it('list support validator', async () => {
+    let operation;
+    let currentMeta;
+    let currentValue;
+
+    const [wrapper] = generateForm(
+      (_, opt, meta) => {
+        operation = opt;
+        currentMeta = meta;
+        return null;
+      },
+      null,
+      {
+        rules: [
+          {
+            validator(_, value) {
+              currentValue = value;
+              return Promise.reject();
+            },
+            message: 'Bamboo Light',
+          },
+        ],
+      },
+    );
+
+    await act(async () => {
+      operation.add();
+      await timeout();
+      wrapper.update();
+    });
+
+    expect(currentValue).toEqual([undefined]);
+    expect(currentMeta.errors).toEqual(['Bamboo Light']);
   });
 });
