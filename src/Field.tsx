@@ -49,10 +49,10 @@ interface ChildProps {
   [name: string]: any;
 }
 
-export interface InternalFieldProps {
+export interface InternalFieldProps<Values = any> {
   children?:
     | React.ReactElement
-    | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
+    | ((control: ChildProps, meta: Meta, form: FormInstance<Values>) => React.ReactNode);
   /**
    * Set up `dependencies` field.
    * When dependencies field update and current field is touched,
@@ -78,7 +78,7 @@ export interface InternalFieldProps {
   isListField?: boolean;
 }
 
-export interface FieldProps extends Omit<InternalFieldProps, 'name'> {
+export interface FieldProps<Values = any> extends Omit<InternalFieldProps<Values>, 'name'> {
   name?: NamePath;
 }
 
@@ -498,7 +498,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   }
 }
 
-const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => {
+function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
@@ -514,6 +514,6 @@ const WrapperField: React.FC<FieldProps> = ({ name, ...restProps }) => {
   }
 
   return <Field key={key} name={namePath} {...restProps} />;
-};
+}
 
 export default WrapperField;

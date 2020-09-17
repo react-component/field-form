@@ -52,7 +52,7 @@ export default class Demo extends React.Component {
           <button type="submit">Submit</button>
 
           <h4>Show additional field when `username` is `111`</h4>
-          <Field dependencies={['username']}>
+          <Field<FormValues> dependencies={['username']}>
             {(control, meta, context) => {
               const { username } = context.getFieldsValue(true);
               console.log('my render!', username);
