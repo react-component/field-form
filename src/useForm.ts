@@ -780,7 +780,7 @@ export class FormStore {
 
 function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
-  const [, forceUpdate] = React.useState();
+  const [, forceUpdate] = React.useState({});
 
   if (!formRef.current) {
     if (form) {
