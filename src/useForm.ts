@@ -566,7 +566,7 @@ export class FormStore {
 
     if (onValuesChange) {
       const changedValues = cloneByNamePathList(this.store, [namePath]);
-      onValuesChange(changedValues, this.store);
+      onValuesChange(changedValues, this.getFieldsValue());
     }
 
     this.triggerOnFieldsChange([namePath, ...childrenFields]);
@@ -780,7 +780,7 @@ export class FormStore {
 
 function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
-  const [, forceUpdate] = React.useState();
+  const [, forceUpdate] = React.useState({});
 
   if (!formRef.current) {
     if (form) {
