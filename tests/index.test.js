@@ -215,9 +215,9 @@ describe('Form.Basic', () => {
   it('onValuesChange should not return fully value', async () => {
     const onValuesChange = jest.fn();
 
-    const Demo = ({ hideField = false }) => (
+    const Demo = ({ showField = true }) => (
       <Form onValuesChange={onValuesChange} initialValues={{ light: 'little' }}>
-        {hideField && (
+        {showField && (
           <Field name="light">
             <Input />
           </Field>
@@ -236,7 +236,7 @@ describe('Form.Basic', () => {
     });
 
     onValuesChange.mockReset();
-    wrapper.setProps({ hideField: true });
+    wrapper.setProps({ showField: false });
     await changeValue(getField(wrapper, 'bamboo'), 'beauty');
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { bamboo: 'beauty' });
   });

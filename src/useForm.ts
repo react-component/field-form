@@ -566,7 +566,7 @@ export class FormStore {
 
     if (onValuesChange) {
       const changedValues = cloneByNamePathList(this.store, [namePath]);
-      onValuesChange(changedValues, this.store);
+      onValuesChange(changedValues, this.getFieldsValue());
     }
 
     this.triggerOnFieldsChange([namePath, ...childrenFields]);
