@@ -323,6 +323,9 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
     this.validatePromise = promise;
     this.errors = [];
 
+    // Force trigger re-render since we need sync renderProps with new meta
+    this.reRender();
+
     promise
       .catch(e => e)
       .then((errors: string[] = []) => {
