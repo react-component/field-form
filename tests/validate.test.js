@@ -1,7 +1,7 @@
 /* eslint-disable no-template-curly-in-string */
 import React from 'react';
 import { mount } from 'enzyme';
-import Form, { Field } from '../src';
+import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
@@ -577,6 +577,38 @@ describe('Form.Validate', () => {
     wrapper.find('button').simulate('click');
     wrapper.update();
     matchError(wrapper, false);
+  });
+
+  it('submit should trigger Field re-render', () => {
+    const renderProps = jest.fn().mockImplementation(() => null);
+
+    const Demo = () => {
+      const [form] = useForm();
+
+      return (
+        <Form form={form}>
+          <Field
+            name="test"
+            rules={[{ validator: async () => Promise.reject(new Error('Failed')) }]}
+          >
+            {renderProps}
+          </Field>
+          <button
+            type="button"
+            onClick={() => {
+              form.submit();
+            }}
+          />
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    renderProps.mockReset();
+
+    // Should trigger validating
+    wrapper.find('button').simulate('click');
+    expect(renderProps.mock.calls[0][1]).toEqual(expect.objectContaining({ validating: true }));
   });
 });
 /* eslint-enable no-template-curly-in-string */
