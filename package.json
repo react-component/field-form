@@ -53,7 +53,7 @@
     "enzyme-to-json": "^3.1.4",
     "father": "^2.13.6",
     "np": "^5.0.3",
-    "react": "^v16.9.0-alpha.0",
+    "react": "^v16.13.1",
     "react-dnd": "^8.0.3",
     "react-dnd-html5-backend": "^8.0.3",
     "react-dom": "^v16.9.0-alpha.0",
