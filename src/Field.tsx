@@ -136,12 +136,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public componentDidMount() {
     const { shouldUpdate } = this.props;
 
+    this.mounted = true;
+
     // One more render for component in case fields not ready
     if (shouldUpdate === true) {
       this.reRender();
     }
-
-    this.mounted = true;
   }
 
   public componentWillUnmount() {
