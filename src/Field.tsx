@@ -128,9 +128,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     super(props);
 
     // Register on init
-    const { getInternalHooks }: InternalFormInstance = props.fieldContext;
-    const { registerField } = getInternalHooks(HOOK_MARK);
-    this.cancelRegisterFunc = registerField(this);
+    if (props.fieldContext) {
+      const { getInternalHooks }: InternalFormInstance = props.fieldContext;
+      const { registerField } = getInternalHooks(HOOK_MARK);
+      this.cancelRegisterFunc = registerField(this);
+    }
   }
 
   public componentDidMount() {
