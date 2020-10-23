@@ -40,7 +40,7 @@
     "now-build": "npm run build"
   },
   "peerDependencies": {
-    "react": "*"
+    "react": ">=16.9.0"
   },
   "devDependencies": {
     "@types/enzyme": "^3.10.5",
