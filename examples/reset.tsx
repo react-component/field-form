@@ -36,6 +36,9 @@ const Demo = () => {
         <Item name={['path1', 'path2']} rules={[{ required: true }]}>
           <Input placeholder="nest" />
         </Item>
+        <Item name={['path1', 'path3']} initialValue="bamboo">
+          <Input placeholder="nest" />
+        </Item>
         <button
           type="button"
           onClick={() => {

@@ -76,9 +76,14 @@ export interface InternalFieldProps<Values = any> {
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
   isListField?: boolean;
+
+  /** @private Pass context as prop instead of context api
+   *  since class component can not get context in constructor */
+  fieldContext: InternalFormInstance;
 }
 
-export interface FieldProps<Values = any> extends Omit<InternalFieldProps<Values>, 'name'> {
+export interface FieldProps<Values = any>
+  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
   name?: NamePath;
 }
 
@@ -87,8 +92,7 @@ export interface FieldState {
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<InternalFieldProps, FieldState, InternalFormInstance>
-  implements FieldEntity {
+class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
 
   public static defaultProps = {
@@ -96,15 +100,13 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
     valuePropName: 'value',
   };
 
-  context: InternalFormInstance;
-
   public state = {
     resetCount: 0,
   };
 
   private cancelRegisterFunc: (isListField?: boolean, preserve?: boolean) => void | null = null;
 
-  private destroy = false;
+  private mounted = false;
 
   /**
    * Follow state should not management in State since it will async update by React.
@@ -122,11 +124,21 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   private errors: string[] = [];
 
   // ============================== Subscriptions ==============================
+  constructor(props: InternalFieldProps) {
+    super(props);
+
+    // Register on init
+    if (props.fieldContext) {
+      const { getInternalHooks }: InternalFormInstance = props.fieldContext;
+      const { registerField } = getInternalHooks(HOOK_MARK);
+      this.cancelRegisterFunc = registerField(this);
+    }
+  }
+
   public componentDidMount() {
     const { shouldUpdate } = this.props;
-    const { getInternalHooks }: InternalFormInstance = this.context;
-    const { registerField } = getInternalHooks(HOOK_MARK);
-    this.cancelRegisterFunc = registerField(this);
+
+    this.mounted = true;
 
     // One more render for component in case fields not ready
     if (shouldUpdate === true) {
@@ -136,7 +148,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 
   public componentWillUnmount() {
     this.cancelRegister();
-    this.destroy = true;
+    this.mounted = false;
   }
 
   public cancelRegister = () => {
@@ -150,19 +162,19 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 
   // ================================== Utils ==================================
   public getNamePath = (): InternalNamePath => {
-    const { name } = this.props;
-    const { prefixName = [] }: InternalFormInstance = this.context;
+    const { name, fieldContext } = this.props;
+    const { prefixName = [] }: InternalFormInstance = fieldContext;
 
     return name !== undefined ? [...prefixName, ...name] : [];
   };
 
   public getRules = (): RuleObject[] => {
-    const { rules = [] } = this.props;
+    const { rules = [], fieldContext } = this.props;
 
     return rules.map(
       (rule: Rule): RuleObject => {
         if (typeof rule === 'function') {
-          return rule(this.context);
+          return rule(fieldContext);
         }
         return rule;
       },
@@ -170,12 +182,12 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   };
 
   public reRender() {
-    if (this.destroy) return;
+    if (!this.mounted) return;
     this.forceUpdate();
   }
 
   public refresh = () => {
-    if (this.destroy) return;
+    if (!this.mounted) return;
 
     /**
      * Clean up current node.
@@ -373,7 +385,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
       const meta = this.getMeta();
 
       return {
-        ...this.getOnlyChild(children(this.getControlled(), meta, this.context)),
+        ...this.getOnlyChild(children(this.getControlled(), meta, this.props.fieldContext)),
         isFunction: true,
       };
     }
@@ -389,7 +401,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 
   // ============================== Field Control ==============================
   public getValue = (store?: Store) => {
-    const { getFieldsValue }: FormInstance = this.context;
+    const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
     return getValue(store || getFieldsValue(true), namePath);
   };
@@ -402,13 +414,14 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
       normalize,
       valuePropName,
       getValueProps,
+      fieldContext,
     } = this.props;
 
     const mergedValidateTrigger =
-      validateTrigger !== undefined ? validateTrigger : this.context.validateTrigger;
+      validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
 
     const namePath = this.getNamePath();
-    const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
+    const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
@@ -502,6 +515,8 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 }
 
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
+  const fieldContext = React.useContext(FieldContext);
+
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
@@ -516,7 +531,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     );
   }
 
-  return <Field key={key} name={namePath} {...restProps} />;
+  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
 }
 
 export default WrapperField;
