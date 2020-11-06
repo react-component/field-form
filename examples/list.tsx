@@ -22,6 +22,9 @@ const Demo = () => {
         }}
         style={{ border: '1px solid red', padding: 15 }}
         preserve={false}
+        initialValues={{
+          users: ['little'],
+        }}
       >
         <Form.Field shouldUpdate>{() => JSON.stringify(form.getFieldsValue(), null, 2)}</Form.Field>
 
@@ -100,6 +103,15 @@ const Demo = () => {
           }}
         >
           Set List Value
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            console.log('`users` touched:', form.isFieldTouched('users'));
+          }}
+        >
+          Is List touched
         </button>
       </div>
     </div>

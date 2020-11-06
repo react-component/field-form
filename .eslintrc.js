@@ -4,6 +4,7 @@ module.exports = {
   ...base,
   rules: {
     ...base.rules,
+    'arrow-parens': 0,
     'no-confusing-arrow': 0,
     'no-template-curly-in-string': 0,
     'prefer-promise-reject-errors': 0,
