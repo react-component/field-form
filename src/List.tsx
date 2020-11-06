@@ -54,7 +54,13 @@ const List: React.FunctionComponent<ListProps> = ({ name, children, rules, valid
 
   return (
     <FieldContext.Provider value={{ ...context, prefixName }}>
-      <Field name={[]} shouldUpdate={shouldUpdate} rules={rules} validateTrigger={validateTrigger}>
+      <Field
+        name={[]}
+        shouldUpdate={shouldUpdate}
+        rules={rules}
+        validateTrigger={validateTrigger}
+        isList
+      >
         {({ value = [], onChange }, meta) => {
           const { getFieldValue } = context;
           const getNewValue = () => {

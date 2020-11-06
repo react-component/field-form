@@ -288,10 +288,10 @@ export class FormStore {
     }
 
     const fieldEntities = this.getFieldEntities(true);
+    const isFieldTouched = (field: FieldEntity) => field.isFieldTouched();
 
-    // Will get fully compare when not config namePathList
+    // ===== Will get fully compare when not config namePathList =====
     if (!namePathList) {
-      const isFieldTouched = (field: FieldEntity) => field.isFieldTouched();
       return isAllFieldsTouched
         ? fieldEntities.every(isFieldTouched)
         : fieldEntities.some(isFieldTouched);
@@ -313,6 +313,14 @@ export class FormStore {
         }
       });
     });
+
+    // Check if NameMap value is touched
+    const isNamePathListTouched = (entities: FieldEntity[]) =>
+      isAllFieldsTouched ? entities.every(isFieldTouched) : entities.some(isFieldTouched);
+
+      const namePathListEntities = map.map(({ value }) => value);
+
+      return isAllFieldsTouched ? namePathListEntities.every(isNamePathListTouched) : namePathListEntities.some(isNamePathListTouched);
   };
 
   private isFieldTouched = (name: NamePath) => {
