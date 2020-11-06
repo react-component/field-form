@@ -318,9 +318,11 @@ export class FormStore {
     const isNamePathListTouched = (entities: FieldEntity[]) =>
       isAllFieldsTouched ? entities.every(isFieldTouched) : entities.some(isFieldTouched);
 
-      const namePathListEntities = map.map(({ value }) => value);
+    const namePathListEntities = map.map(({ value }) => value);
 
-      return isAllFieldsTouched ? namePathListEntities.every(isNamePathListTouched) : namePathListEntities.some(isNamePathListTouched);
+    return isAllFieldsTouched
+      ? namePathListEntities.every(isNamePathListTouched)
+      : namePathListEntities.some(isNamePathListTouched);
   };
 
   private isFieldTouched = (name: NamePath) => {

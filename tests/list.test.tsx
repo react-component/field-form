@@ -4,7 +4,7 @@ import { mount, ReactWrapper } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List, FormProps } from '../src';
 import { ListField, ListOperations, ListProps } from '../src/List';
-import { Meta } from '../src/interface';
+import { FormInstance, Meta } from '../src/interface';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
 import timeout from './common/timeout';
@@ -58,12 +58,7 @@ describe('Form.List', () => {
     );
 
     function matchKey(index, key) {
-      expect(
-        getList()
-          .find(Field)
-          .at(index)
-          .key(),
-      ).toEqual(key);
+      expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
     matchKey(0, '0');
@@ -117,12 +112,7 @@ describe('Form.List', () => {
     });
 
     function matchKey(index, key) {
-      expect(
-        getList()
-          .find(Field)
-          .at(index)
-          .key(),
-      ).toEqual(key);
+      expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
     // Add
@@ -267,12 +257,7 @@ describe('Form.List', () => {
     });
 
     function matchKey(index, key) {
-      expect(
-        getList()
-          .find(Field)
-          .at(index)
-          .key(),
-      ).toEqual(key);
+      expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
     act(() => {
@@ -533,7 +518,7 @@ describe('Form.List', () => {
   it('warning if children is not function', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    generateForm(<div /> as any);
+    generateForm((<div />) as any);
 
     expect(errorSpy).toHaveBeenCalledWith('Warning: Form.List only accepts function as children.');
 
@@ -645,5 +630,30 @@ describe('Form.List', () => {
 
     wrapper.find('button').simulate('click');
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
+  });
+
+  describe('isFieldTouched edge case', () => {
+    it('virtual object', () => {
+      const formRef = React.createRef<FormInstance>();
+      const wrapper = mount(
+        <Form ref={formRef}>
+          <Form.Field name={['user', 'name']}>
+            <input />
+          </Form.Field>
+          <Form.Field name={['user', 'age']}>
+            <input />
+          </Form.Field>
+        </Form>,
+      );
+
+      wrapper
+        .find('input')
+        .first()
+        .simulate('change', { target: { value: '' } });
+
+        expect(formRef.current.isFieldTouched('user')).toBeTruthy();
+        expect(formRef.current.isFieldsTouched(['user'], false)).toBeTruthy();
+        expect(formRef.current.isFieldsTouched(['user'], true)).toBeFalsy();
+    });
   });
 });
