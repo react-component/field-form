@@ -25,6 +25,6 @@ RefForm.Field = Field;
 RefForm.List = List;
 RefForm.useForm = useForm;
 
-export { FormInstance, Field, List, useForm, FormProvider };
+export { FormInstance, Field, List, useForm, FormProvider, FormProps };
 
 export default RefForm;

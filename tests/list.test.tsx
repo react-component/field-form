@@ -1,16 +1,27 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
-import { mount } from 'enzyme';
+import { mount, ReactWrapper } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
-import Form, { Field, List } from '../src';
+import Form, { Field, List, FormProps } from '../src';
+import { ListField, ListOperations, ListProps } from '../src/List';
+import { Meta } from '../src/interface';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
 import timeout from './common/timeout';
+import { wrap } from 'lodash';
 
 describe('Form.List', () => {
   let form;
 
-  function generateForm(renderList, formProps, listProps) {
+  function generateForm(
+    renderList?: (
+      fields: ListField[],
+      operations: ListOperations,
+      meta: Meta,
+    ) => JSX.Element | React.ReactNode,
+    formProps?: FormProps,
+    listProps?: Partial<ListProps>,
+  ): [ReactWrapper, () => ReactWrapper] {
     const wrapper = mount(
       <div>
         <Form
@@ -523,7 +534,7 @@ describe('Form.List', () => {
   it('warning if children is not function', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    generateForm(<div />);
+    generateForm(<div /> as any);
 
     expect(errorSpy).toHaveBeenCalledWith('Warning: Form.List only accepts function as children.');
 
@@ -604,5 +615,36 @@ describe('Form.List', () => {
 
     expect(currentValue).toEqual([undefined]);
     expect(currentMeta.errors).toEqual(['Bamboo Light']);
+  });
+
+  it('Nest list remove should trigger correct onValuesChange', () => {
+    const onValuesChange = jest.fn();
+
+    const [wrapper, getList] = generateForm(
+      (fields, operation) => (
+        <div>
+          {fields.map(field => (
+            <Field {...field} name={[field.name, 'first']}>
+              <Input />
+            </Field>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              operation.remove(1);
+            }}
+          />
+        </div>
+      ),
+      {
+        onValuesChange,
+        initialValues: {
+          list: [{ first: 'light' }, { first: 'bamboo' }],
+        },
+      },
+    );
+
+    wrapper.find('button').simulate('click');
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), [{ first: 'light' }]);
   });
 });
