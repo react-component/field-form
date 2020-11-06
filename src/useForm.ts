@@ -227,8 +227,6 @@ export class FormStore {
       }
     });
 
-    console.log('>>>', filteredNameList);
-
     return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
   };
 
