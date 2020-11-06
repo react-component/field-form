@@ -500,7 +500,7 @@ export class FormStore {
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
       if (mergedPreserve === false && !isListField) {
         const namePath = entity.getNamePath();
-        if (this.getFieldValue(namePath) !== undefined) {
+        if (namePath.length && this.getFieldValue(namePath) !== undefined) {
           this.store = setValue(this.store, namePath, undefined);
         }
       }

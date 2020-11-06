@@ -137,5 +137,35 @@ describe('Form.Preserve', () => {
 
     errorSpy.mockRestore();
   });
+
+  it('nest render props should not clean full store', () => {
+    let form: FormInstance;
+
+    const wrapper = mount(
+      <Form
+        preserve={false}
+        ref={instance => {
+          form = instance;
+        }}
+      >
+        <Form.Field name="light">
+          <input />
+        </Form.Field>
+        <Form.Field shouldUpdate>
+          {(_, __, { getFieldValue }) =>
+            getFieldValue('light') === 'bamboo' ? <Form.Field>{() => null}</Form.Field> : null
+          }
+        </Form.Field>
+      </Form>,
+    );
+
+    wrapper.find('input').simulate('change', { target: { value: 'bamboo' } });
+    expect(form.getFieldsValue()).toEqual({ light: 'bamboo' });
+
+    wrapper.find('input').simulate('change', { target: { value: 'little' } });
+    expect(form.getFieldsValue()).toEqual({ light: 'little' });
+
+    wrapper.unmount();
+  });
 });
 /* eslint-enable no-template-curly-in-string */
