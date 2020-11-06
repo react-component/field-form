@@ -8,7 +8,6 @@ import { Meta } from '../src/interface';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
 import timeout from './common/timeout';
-import { wrap } from 'lodash';
 
 describe('Form.List', () => {
   let form;
@@ -620,7 +619,7 @@ describe('Form.List', () => {
   it('Nest list remove should trigger correct onValuesChange', () => {
     const onValuesChange = jest.fn();
 
-    const [wrapper, getList] = generateForm(
+    const [wrapper] = generateForm(
       (fields, operation) => (
         <div>
           {fields.map(field => (
@@ -645,6 +644,6 @@ describe('Form.List', () => {
     );
 
     wrapper.find('button').simulate('click');
-    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), [{ first: 'light' }]);
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), {list: [{ first: 'light' }]});
   });
 });
