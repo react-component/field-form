@@ -211,6 +211,12 @@ export class FormStore {
       const namePath =
         'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
 
+        // Ignore when it's a list item and not specific the namePath,
+        // since parent field is already take in count
+        if (!nameList && (entity as FieldEntity).isListField?.()) {
+          return;
+        }
+
       if (!filterFunc) {
         filteredNameList.push(namePath);
       } else {

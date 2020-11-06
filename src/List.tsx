@@ -5,19 +5,19 @@ import FieldContext from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
 
-interface ListField {
+export interface ListField {
   name: number;
   key: number;
   isListField: boolean;
 }
 
-interface ListOperations {
+export interface ListOperations {
   add: (defaultValue?: StoreValue, index?: number) => void;
   remove: (index: number | number[]) => void;
   move: (from: number, to: number) => void;
 }
 
-interface ListProps {
+export interface ListProps {
   name: NamePath;
   rules?: ValidatorRule[];
   validateTrigger?: string | string[] | false;

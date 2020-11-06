@@ -97,6 +97,7 @@ export interface FieldEntity {
   isFieldTouched: () => boolean;
   isFieldDirty: () => boolean;
   isFieldValidating: () => boolean;
+  isListField: () => boolean;
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
