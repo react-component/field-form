@@ -2,14 +2,17 @@
 
 React Performance First Form Component.
 
-[![NPM version][npm-image]][npm-url] [![build status][circleci-image]][circleci-url] [![Test coverage][coveralls-image]][coveralls-url] [![npm download][download-image]][download-url]
+[![NPM version][npm-image]][npm-url]
+[![build status][github-actions-image]][github-actions-url]
+[![Codecov][codecov-image]][codecov-url]
+[![npm download][download-image]][download-url]
 
 [npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
 [npm-url]: http://npmjs.org/package/rc-field-form
-[circleci-image]: https://img.shields.io/circleci/build/github/react-component/field-form/master.svg?style=flat-square
-[circleci-url]: https://circleci.com/gh/react-component/field-form/tree/master
-[coveralls-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
-[coveralls-url]: https://codecov.io/gh/react-component/field-form
+[github-actions-image]: https://github.com/react-component/field-form/workflows/CI/badge.svg
+[github-actions-url]: https://github.com/react-component/field-form/actions
+[codecov-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
+[codecov-url]: https://codecov.io/gh/react-component/field-form/branch/master
 [download-image]: https://img.shields.io/npm/dm/rc-field-form.svg?style=flat-square
 [download-url]: https://npmjs.org/package/rc-field-form
 
