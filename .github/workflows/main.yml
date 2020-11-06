@@ -1,11 +1,10 @@
 name: CI
 
-
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   setup:
@@ -33,7 +32,6 @@ jobs:
             mkdir package-temp-dir
           fi
           cp package-lock.json package-temp-dir
-
       - name: cache node_modules
         id: node_modules_cache_id
         uses: actions/cache@v2
@@ -44,7 +42,7 @@ jobs:
       - name: install
         if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
         run: npm ci
-  
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -67,7 +65,7 @@ jobs:
         run: npm run lint
 
     needs: setup
-  
+
   compile:
     runs-on: ubuntu-latest
     steps:
@@ -90,7 +88,7 @@ jobs:
         run: npm run compile
 
     needs: setup
-  
+
   coverage:
     runs-on: ubuntu-latest
     steps:
