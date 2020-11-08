@@ -674,7 +674,7 @@ describe('Form.List', () => {
 
       expect(formRef.current.isFieldTouched('user')).toBeTruthy();
       expect(formRef.current.isFieldsTouched(['user'], false)).toBeTruthy();
-      expect(formRef.current.isFieldsTouched(['user'], true)).toBeFalsy();
+      expect(formRef.current.isFieldsTouched(['user'], true)).toBeTruthy();
     });
 
     it('List children change', () => {
@@ -706,7 +706,7 @@ describe('Form.List', () => {
 
       expect(form.isFieldTouched('list')).toBeTruthy();
       expect(form.isFieldsTouched(['list'], false)).toBeTruthy();
-      expect(form.isFieldsTouched(['list'], true)).toBeFalsy();
+      expect(form.isFieldsTouched(['list'], true)).toBeTruthy();
     });
 
     it('List self change', () => {
@@ -736,7 +736,7 @@ describe('Form.List', () => {
 
       expect(form.isFieldTouched('list')).toBeTruthy();
       expect(form.isFieldsTouched(['list'], false)).toBeTruthy();
-      expect(form.isFieldsTouched(['list'], true)).toBeFalsy();
+      expect(form.isFieldsTouched(['list'], true)).toBeTruthy();
     });
   });
 });

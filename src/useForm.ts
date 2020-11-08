@@ -315,8 +315,7 @@ export class FormStore {
     });
 
     // Check if NameMap value is touched
-    const isNamePathListTouched = (entities: FieldEntity[]) =>
-      isAllFieldsTouched ? entities.every(isFieldTouched) : entities.some(isFieldTouched);
+    const isNamePathListTouched = (entities: FieldEntity[]) => entities.some(isFieldTouched);
 
     const namePathListEntities = map.map(({ value }) => value);
 
