@@ -4,7 +4,7 @@ import { mount, ReactWrapper } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List, FormProps } from '../src';
 import { ListField, ListOperations, ListProps } from '../src/List';
-import { Meta } from '../src/interface';
+import { FormInstance, Meta } from '../src/interface';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
 import timeout from './common/timeout';
@@ -645,5 +645,98 @@ describe('Form.List', () => {
 
     wrapper.find('button').simulate('click');
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
+  });
+
+  describe('isFieldTouched edge case', () => {
+    it('virtual object', () => {
+      const formRef = React.createRef<FormInstance>();
+      const wrapper = mount(
+        <Form ref={formRef}>
+          <Form.Field name={['user', 'name']}>
+            <Input />
+          </Form.Field>
+          <Form.Field name={['user', 'age']}>
+            <Input />
+          </Form.Field>
+        </Form>,
+      );
+
+      // Not changed
+      expect(formRef.current.isFieldTouched('user')).toBeFalsy();
+      expect(formRef.current.isFieldsTouched(['user'], false)).toBeFalsy();
+      expect(formRef.current.isFieldsTouched(['user'], true)).toBeFalsy();
+
+      // Changed
+      wrapper
+        .find('input')
+        .first()
+        .simulate('change', { target: { value: '' } });
+
+      expect(formRef.current.isFieldTouched('user')).toBeTruthy();
+      expect(formRef.current.isFieldsTouched(['user'], false)).toBeTruthy();
+      expect(formRef.current.isFieldsTouched(['user'], true)).toBeTruthy();
+    });
+
+    it('List children change', () => {
+      const [wrapper] = generateForm(
+        fields => (
+          <div>
+            {fields.map(field => (
+              <Field {...field}>
+                <Input />
+              </Field>
+            ))}
+          </div>
+        ),
+        {
+          initialValues: { list: ['light', 'bamboo'] },
+        },
+      );
+
+      // Not changed yet
+      expect(form.isFieldTouched('list')).toBeFalsy();
+      expect(form.isFieldsTouched(['list'], false)).toBeFalsy();
+      expect(form.isFieldsTouched(['list'], true)).toBeFalsy();
+
+      // Change children value
+      wrapper
+        .find('input')
+        .first()
+        .simulate('change', { target: { value: 'little' } });
+
+      expect(form.isFieldTouched('list')).toBeTruthy();
+      expect(form.isFieldsTouched(['list'], false)).toBeTruthy();
+      expect(form.isFieldsTouched(['list'], true)).toBeTruthy();
+    });
+
+    it('List self change', () => {
+      const [wrapper] = generateForm((fields, opt) => (
+        <div>
+          {fields.map(field => (
+            <Field {...field}>
+              <Input />
+            </Field>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              opt.add();
+            }}
+          />
+        </div>
+      ));
+
+      // Not changed yet
+      expect(form.isFieldTouched('list')).toBeFalsy();
+      expect(form.isFieldsTouched(['list'], false)).toBeFalsy();
+      expect(form.isFieldsTouched(['list'], true)).toBeFalsy();
+
+      // Change children value
+      wrapper.find('button').simulate('click');
+
+      expect(form.isFieldTouched('list')).toBeTruthy();
+      expect(form.isFieldsTouched(['list'], false)).toBeTruthy();
+      expect(form.isFieldsTouched(['list'], true)).toBeTruthy();
+    });
   });
 });

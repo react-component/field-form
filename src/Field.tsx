@@ -77,6 +77,9 @@ export interface InternalFieldProps<Values = any> {
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
   isListField?: boolean;
 
+  /** @private Passed by Form.List props. Do not use since it will break by path check. */
+  isList?: boolean;
+
   /** @private Pass context as prop instead of context api
    *  since class component can not get context in constructor */
   fieldContext: InternalFormInstance;
@@ -360,6 +363,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public getErrors = () => this.errors;
 
   public isListField = () => this.props.isListField;
+
+  public isList = () => this.props.isList;
 
   // ============================= Child Component =============================
   public getMeta = (): Meta => {

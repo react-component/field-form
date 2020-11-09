@@ -211,11 +211,11 @@ export class FormStore {
       const namePath =
         'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
 
-        // Ignore when it's a list item and not specific the namePath,
-        // since parent field is already take in count
-        if (!nameList && (entity as FieldEntity).isListField?.()) {
-          return;
-        }
+      // Ignore when it's a list item and not specific the namePath,
+      // since parent field is already take in count
+      if (!nameList && (entity as FieldEntity).isListField?.()) {
+        return;
+      }
 
       if (!filterFunc) {
         filteredNameList.push(namePath);
@@ -287,22 +287,41 @@ export class FormStore {
       isAllFieldsTouched = arg1;
     }
 
-    const testTouched = (field: FieldEntity) => {
-      // Not provide `nameList` will check all the fields
-      if (!namePathList) {
-        return field.isFieldTouched();
-      }
+    const fieldEntities = this.getFieldEntities(true);
+    const isFieldTouched = (field: FieldEntity) => field.isFieldTouched();
 
+    // ===== Will get fully compare when not config namePathList =====
+    if (!namePathList) {
+      return isAllFieldsTouched
+        ? fieldEntities.every(isFieldTouched)
+        : fieldEntities.some(isFieldTouched);
+    }
+
+    // Generate a nest tree for validate
+    const map = new NameMap<FieldEntity[]>();
+    namePathList.forEach(shortNamePath => {
+      map.set(shortNamePath, []);
+    });
+
+    fieldEntities.forEach(field => {
       const fieldNamePath = field.getNamePath();
-      if (containsNamePath(namePathList, fieldNamePath)) {
-        return field.isFieldTouched();
-      }
-      return isAllFieldsTouched;
-    };
+
+      // Find matched entity and put into list
+      namePathList.forEach(shortNamePath => {
+        if (shortNamePath.every((nameUnit, i) => fieldNamePath[i] === nameUnit)) {
+          map.update(shortNamePath, list => [...list, field]);
+        }
+      });
+    });
+
+    // Check if NameMap value is touched
+    const isNamePathListTouched = (entities: FieldEntity[]) => entities.some(isFieldTouched);
+
+    const namePathListEntities = map.map(({ value }) => value);
 
     return isAllFieldsTouched
-      ? this.getFieldEntities(true).every(testTouched)
-      : this.getFieldEntities(true).some(testTouched);
+      ? namePathListEntities.every(isNamePathListTouched)
+      : namePathListEntities.some(isNamePathListTouched);
   };
 
   private isFieldTouched = (name: NamePath) => {

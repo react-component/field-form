@@ -98,6 +98,7 @@ export interface FieldEntity {
   isFieldDirty: () => boolean;
   isFieldValidating: () => boolean;
   isListField: () => boolean;
+  isList: () => boolean;
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
