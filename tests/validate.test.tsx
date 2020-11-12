@@ -498,7 +498,7 @@ describe('Form.Validate', () => {
 
     [
       { name: 'serialization', first: true, second: false, validateFirst: true },
-      { name: 'parallel', first: true, second: true, validateFirst: 'parallel' },
+      { name: 'parallel', first: true, second: true, validateFirst: 'parallel' as const },
     ].forEach(({ name, first, second, validateFirst }) => {
       it(name, async () => {
         let ruleFirst = false;
@@ -609,6 +609,71 @@ describe('Form.Validate', () => {
     // Should trigger validating
     wrapper.find('button').simulate('click');
     expect(renderProps.mock.calls[0][1]).toEqual(expect.objectContaining({ validating: true }));
+  });
+
+  it('renderProps should use latest rules', async () => {
+    let failedTriggerTimes = 0;
+    let passedTriggerTimes = 0;
+
+    interface FormStore {
+      username: string;
+      password: string;
+    }
+
+    const Demo = () => (
+      <Form>
+        <InfoField name="username" />
+        <Form.Field<FormStore> shouldUpdate={(prev, cur) => prev.username !== cur.username}>
+          {(_, __, { getFieldValue }) => {
+            const value = getFieldValue('username');
+
+            return (
+              <InfoField
+                dependencies={['username']}
+                name="password"
+                rules={
+                  value !== 'light'
+                    ? [
+                        {
+                          validator: async () => {
+                            failedTriggerTimes += 1;
+                            throw new Error('Failed');
+                          },
+                        },
+                      ]
+                    : [
+                        {
+                          validator: async () => {
+                            passedTriggerTimes += 1;
+                          },
+                        },
+                      ]
+                }
+              />
+            );
+          }}
+        </Form.Field>
+      </Form>
+    );
+
+    const wrapper = mount(<Demo />);
+
+    expect(failedTriggerTimes).toEqual(0);
+    expect(passedTriggerTimes).toEqual(0);
+
+    // Failed of second input
+    await changeValue(getField(wrapper, 1), '');
+    matchError(getField(wrapper, 2), true);
+
+    expect(failedTriggerTimes).toEqual(1);
+    expect(passedTriggerTimes).toEqual(0);
+
+    // Changed first to trigger update
+    await changeValue(getField(wrapper, 0), 'light');
+    matchError(getField(wrapper, 2), false);
+
+    expect(failedTriggerTimes).toEqual(1);
+    expect(passedTriggerTimes).toEqual(1);
   });
 });
 /* eslint-enable no-template-curly-in-string */

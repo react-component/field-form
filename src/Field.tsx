@@ -26,9 +26,9 @@ import {
   getValue,
 } from './utils/valueUtil';
 
-export type ShouldUpdate =
+export type ShouldUpdate<Values = any> =
   | boolean
-  | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
+  | ((prevValues: Values, nextValues: Values, info: { source?: string }) => boolean);
 
 function requireUpdate(
   shouldUpdate: ShouldUpdate,
@@ -63,7 +63,7 @@ export interface InternalFieldProps<Values = any> {
   name?: InternalNamePath;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
-  shouldUpdate?: ShouldUpdate;
+  shouldUpdate?: ShouldUpdate<Values>;
   trigger?: string;
   validateTrigger?: string | string[] | false;
   validateFirst?: boolean | 'parallel';
