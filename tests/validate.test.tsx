@@ -532,6 +532,7 @@ describe('Form.Validate', () => {
         await changeValue(wrapper, 'test');
         await timeout();
 
+        wrapper.update();
         matchError(wrapper, 'failed first');
 
         expect(ruleFirst).toEqual(first);

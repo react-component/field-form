@@ -13,17 +13,21 @@ export const Input = ({ value = '', ...props }) => <input {...props} value={valu
  */
 const InfoField: React.FC<InfoFieldProps> = ({ children, ...props }) => (
   <Field {...props}>
-    {(control, { errors, validating }) => (
-      <div>
-        {children ? React.cloneElement(children, control) : <Input {...control} />}
-        <ul className="errors">
-          {errors.map((error, index) => (
-            <li key={index}>{error}</li>
-          ))}
-        </ul>
-        {validating && <span className="validating" />}
-      </div>
-    )}
+    {(control, info) => {
+      const { errors, validating } = info;
+
+      return (
+        <div>
+          {children ? React.cloneElement(children, control) : <Input {...control} />}
+          <ul className="errors">
+            {errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+          {validating && <span className="validating" />}
+        </div>
+      );
+    }}
   </Field>
 );
 
