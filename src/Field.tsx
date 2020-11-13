@@ -309,9 +309,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }
   };
 
-  public validateRules = (options?: ValidateOptions): Promise<string[]> =>
+  public validateRules = (options?: ValidateOptions): Promise<string[]> => {
     // Force change to async to avoid rule OOD under renderProps field
-    Promise.resolve().then(() => {
+    const rootPromise = Promise.resolve().then(() => {
       if (!this.mounted) {
         return [];
       }
@@ -340,17 +340,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         validateFirst,
         messageVariables,
       );
-      this.dirty = true;
-      this.validatePromise = promise;
-      this.errors = [];
-
-      // Force trigger re-render since we need sync renderProps with new meta
-      this.reRender();
 
       promise
         .catch(e => e)
         .then((errors: string[] = []) => {
-          if (this.validatePromise === promise) {
+          if (this.validatePromise === rootPromise) {
             this.validatePromise = null;
             this.errors = errors;
             this.reRender();
@@ -359,6 +353,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       return promise;
     });
+
+    this.validatePromise = rootPromise;
+    this.dirty = true;
+    this.errors = [];
+
+    // Force trigger re-render since we need sync renderProps with new meta
+    this.reRender();
+
+    return rootPromise;
+  };
 
   public isFieldValidating = () => !!this.validatePromise;
 
