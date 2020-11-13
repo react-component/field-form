@@ -309,50 +309,56 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }
   };
 
-  public validateRules = (options?: ValidateOptions) => {
-    const { validateFirst = false, messageVariables } = this.props;
-    const { triggerName } = (options || {}) as ValidateOptions;
-    const namePath = this.getNamePath();
+  public validateRules = (options?: ValidateOptions): Promise<string[]> =>
+    // Force change to async to avoid rule OOD under renderProps field
+    Promise.resolve().then(() => {
+      if (!this.mounted) {
+        return [];
+      }
 
-    let filteredRules = this.getRules();
-    if (triggerName) {
-      filteredRules = filteredRules.filter((rule: RuleObject) => {
-        const { validateTrigger } = rule;
-        if (!validateTrigger) {
-          return true;
-        }
-        const triggerList = toArray(validateTrigger);
-        return triggerList.includes(triggerName);
-      });
-    }
+      const { validateFirst = false, messageVariables } = this.props;
+      const { triggerName } = (options || {}) as ValidateOptions;
+      const namePath = this.getNamePath();
 
-    const promise = validateRules(
-      namePath,
-      this.getValue(),
-      filteredRules,
-      options,
-      validateFirst,
-      messageVariables,
-    );
-    this.dirty = true;
-    this.validatePromise = promise;
-    this.errors = [];
+      let filteredRules = this.getRules();
+      if (triggerName) {
+        filteredRules = filteredRules.filter((rule: RuleObject) => {
+          const { validateTrigger } = rule;
+          if (!validateTrigger) {
+            return true;
+          }
+          const triggerList = toArray(validateTrigger);
+          return triggerList.includes(triggerName);
+        });
+      }
 
-    // Force trigger re-render since we need sync renderProps with new meta
-    this.reRender();
+      const promise = validateRules(
+        namePath,
+        this.getValue(),
+        filteredRules,
+        options,
+        validateFirst,
+        messageVariables,
+      );
+      this.dirty = true;
+      this.validatePromise = promise;
+      this.errors = [];
 
-    promise
-      .catch(e => e)
-      .then((errors: string[] = []) => {
-        if (this.validatePromise === promise) {
-          this.validatePromise = null;
-          this.errors = errors;
-          this.reRender();
-        }
-      });
+      // Force trigger re-render since we need sync renderProps with new meta
+      this.reRender();
 
-    return promise;
-  };
+      promise
+        .catch(e => e)
+        .then((errors: string[] = []) => {
+          if (this.validatePromise === promise) {
+            this.validatePromise = null;
+            this.errors = errors;
+            this.reRender();
+          }
+        });
+
+      return promise;
+    });
 
   public isFieldValidating = () => !!this.validatePromise;
 
