@@ -310,6 +310,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   public validateRules = (options?: ValidateOptions): Promise<string[]> => {
+    // We should fixed namePath & value to avoid developer change then by form function
+    const namePath = this.getNamePath();
+    const currentValue = this.getValue();
+
     // Force change to async to avoid rule OOD under renderProps field
     const rootPromise = Promise.resolve().then(() => {
       if (!this.mounted) {
@@ -318,7 +322,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       const { validateFirst = false, messageVariables } = this.props;
       const { triggerName } = (options || {}) as ValidateOptions;
-      const namePath = this.getNamePath();
 
       let filteredRules = this.getRules();
       if (triggerName) {
@@ -334,7 +337,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       const promise = validateRules(
         namePath,
-        this.getValue(),
+        currentValue,
         filteredRules,
         options,
         validateFirst,

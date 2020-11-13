@@ -580,14 +580,14 @@ export class FormStore {
     // Notify dependencies children with parent update
     // We need delay to trigger validate in case Field is under render props
     const childrenFields = this.getDependencyChildrenFields(namePath);
-    // Promise.resolve().then(() => {
-    this.validateFields(childrenFields);
+    if (childrenFields.length) {
+      this.validateFields(childrenFields);
+    }
 
     this.notifyObservers(prevStore, childrenFields, {
       type: 'dependenciesUpdate',
       relatedFields: [namePath, ...childrenFields],
     });
-    // });
 
     // trigger callback function
     const { onValuesChange } = this.callbacks;
