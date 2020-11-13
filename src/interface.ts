@@ -46,7 +46,7 @@ type Validator = (
   rule: RuleObject,
   value: StoreValue,
   callback: (error?: string) => void,
-) => Promise<void> | void;
+) => Promise<void | any> | void;
 
 export type RuleRender = (form: FormInstance) => RuleObject;
 

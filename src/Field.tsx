@@ -26,9 +26,9 @@ import {
   getValue,
 } from './utils/valueUtil';
 
-export type ShouldUpdate =
+export type ShouldUpdate<Values = any> =
   | boolean
-  | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
+  | ((prevValues: Values, nextValues: Values, info: { source?: string }) => boolean);
 
 function requireUpdate(
   shouldUpdate: ShouldUpdate,
@@ -63,7 +63,7 @@ export interface InternalFieldProps<Values = any> {
   name?: InternalNamePath;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
-  shouldUpdate?: ShouldUpdate;
+  shouldUpdate?: ShouldUpdate<Values>;
   trigger?: string;
   validateTrigger?: string | string[] | false;
   validateFirst?: boolean | 'parallel';
@@ -309,49 +309,62 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }
   };
 
-  public validateRules = (options?: ValidateOptions) => {
-    const { validateFirst = false, messageVariables } = this.props;
-    const { triggerName } = (options || {}) as ValidateOptions;
+  public validateRules = (options?: ValidateOptions): Promise<string[]> => {
+    // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
+    const currentValue = this.getValue();
 
-    let filteredRules = this.getRules();
-    if (triggerName) {
-      filteredRules = filteredRules.filter((rule: RuleObject) => {
-        const { validateTrigger } = rule;
-        if (!validateTrigger) {
-          return true;
-        }
-        const triggerList = toArray(validateTrigger);
-        return triggerList.includes(triggerName);
-      });
-    }
+    // Force change to async to avoid rule OOD under renderProps field
+    const rootPromise = Promise.resolve().then(() => {
+      if (!this.mounted) {
+        return [];
+      }
 
-    const promise = validateRules(
-      namePath,
-      this.getValue(),
-      filteredRules,
-      options,
-      validateFirst,
-      messageVariables,
-    );
+      const { validateFirst = false, messageVariables } = this.props;
+      const { triggerName } = (options || {}) as ValidateOptions;
+
+      let filteredRules = this.getRules();
+      if (triggerName) {
+        filteredRules = filteredRules.filter((rule: RuleObject) => {
+          const { validateTrigger } = rule;
+          if (!validateTrigger) {
+            return true;
+          }
+          const triggerList = toArray(validateTrigger);
+          return triggerList.includes(triggerName);
+        });
+      }
+
+      const promise = validateRules(
+        namePath,
+        currentValue,
+        filteredRules,
+        options,
+        validateFirst,
+        messageVariables,
+      );
+
+      promise
+        .catch(e => e)
+        .then((errors: string[] = []) => {
+          if (this.validatePromise === rootPromise) {
+            this.validatePromise = null;
+            this.errors = errors;
+            this.reRender();
+          }
+        });
+
+      return promise;
+    });
+
+    this.validatePromise = rootPromise;
     this.dirty = true;
-    this.validatePromise = promise;
     this.errors = [];
 
     // Force trigger re-render since we need sync renderProps with new meta
     this.reRender();
 
-    promise
-      .catch(e => e)
-      .then((errors: string[] = []) => {
-        if (this.validatePromise === promise) {
-          this.validatePromise = null;
-          this.errors = errors;
-          this.reRender();
-        }
-      });
-
-    return promise;
+    return rootPromise;
   };
 
   public isFieldValidating = () => !!this.validatePromise;
