@@ -627,6 +627,10 @@ describe('Form.Validate', () => {
           {(_, __, { getFieldValue }) => {
             const value = getFieldValue('username');
 
+            if (value === 'removed') {
+              return null;
+            }
+
             return (
               <InfoField
                 dependencies={['username']}
@@ -671,6 +675,12 @@ describe('Form.Validate', () => {
     // Changed first to trigger update
     await changeValue(getField(wrapper, 0), 'light');
     matchError(getField(wrapper, 2), false);
+
+    expect(failedTriggerTimes).toEqual(1);
+    expect(passedTriggerTimes).toEqual(1);
+
+    // Remove should not trigger validate
+    await changeValue(getField(wrapper, 0), 'removed');
 
     expect(failedTriggerTimes).toEqual(1);
     expect(passedTriggerTimes).toEqual(1);
