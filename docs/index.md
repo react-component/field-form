@@ -35,7 +35,7 @@ open http://localhost:9001/
 
 ## Usage
 
-```js
+```js | pure
 import Form, { Field } from 'rc-field-form';
 
 <Form
@@ -104,7 +104,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 Form component default create an form instance by `Form.useForm`. But you can create it and pass to Form also. This allow you to call some function on the form instance.
 
-```jsx
+```jsx | pure
 const Demo = () => {
   const [form] = Form.useForm();
   return <Form form={form} />;
@@ -113,7 +113,7 @@ const Demo = () => {
 
 For class component user, you can use `ref` to get form instance:
 
-```jsx
+```jsx | pure
 class Demo extends React.Component {
   setRef = form => {
     // Form instance here
@@ -233,7 +233,7 @@ Field Form will only trade `['user', 'name']` to be `{ user: { name: 'Bamboo' } 
 Since `findDomNode` is marked as warning in [StrictMode](https://reactjs.org/docs/strict-mode.html#warning-about-deprecated-finddomnode-usage). It seems over control of Form component.
 We decide to remove `validateFieldsAndScroll` method and you should handle it with you own logic:
 
-```jsx
+```jsx | pure
 <Form>
   <Field name="username">
     <input ref={this.inputRef} />
@@ -245,7 +245,7 @@ We decide to remove `validateFieldsAndScroll` method and you should handle it wi
 
 `rc-form` returns `null` when no error happen. This makes user have to do some additional code like:
 
-```js
+```js | pure
 (form.getFieldsError('fieldName') || []).forEach(() => {
   // Do something...
 });
@@ -257,7 +257,7 @@ Now `getFieldsError` will return `[]` if no errors.
 
 Since ES8 is support `async/await`, that's no reason not to use it. Now you can easily handle your validate logic:
 
-```js
+```js | pure
 async function() {
   try {
     const values = await form.validateFields();
