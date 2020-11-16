@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import Form, { Field, FormInstance } from '../src';
+import Form, { Field, FormInstance } from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
-import { ValidateMessages } from '../src/interface';
+import { ValidateMessages } from '@/interface';
 
 const myMessages: ValidateMessages = {
   default: '${name} 看起来怪怪的……',
@@ -30,7 +30,7 @@ export default class Demo extends React.Component {
     console.log('Finish:', values);
   };
 
-  public onFinishFailed = errorInfo => {
+  public onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
 
@@ -99,8 +99,13 @@ export default class Demo extends React.Component {
 
           <Field shouldUpdate>
             {(_, __, { getFieldsError, isFieldsTouched }) => {
-              const isAllTouched = isFieldsTouched(['password', 'password2'], true);
-              const hasErrors = !!getFieldsError().filter(({ errors }) => errors.length).length;
+              const isAllTouched = isFieldsTouched(
+                ['password', 'password2'],
+                true,
+              );
+              const hasErrors = !!getFieldsError().filter(
+                ({ errors }) => errors.length,
+              ).length;
 
               return (
                 <button type="submit" disabled={!isAllTouched || hasErrors}>

@@ -4,7 +4,7 @@ import React from 'react';
 /* eslint-enable react/prop-types */
 import HTML5Backend from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
-import Form, { List, useForm } from '../src';
+import Form, { List, useForm } from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 import useDraggable from './components/useDraggable';

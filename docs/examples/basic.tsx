@@ -1,5 +1,5 @@
 import React from 'react';
-import Form, { Field, FormInstance } from '../src';
+import Form, { Field, FormInstance } from 'rc-field-form';
 import Input from './components/Input';
 
 const list = new Array(1111).fill(() => null);
@@ -13,7 +13,7 @@ interface FormValues {
 }
 
 export default class Demo extends React.Component {
-  formRef = React.createRef<FormInstance<FormValues>>();
+  formRef: any = React.createRef<FormInstance<FormValues>>();
 
   onFinish = (values: FormValues) => {
     console.log('Submit:', values);
@@ -41,7 +41,7 @@ export default class Demo extends React.Component {
             <Input placeholder="nest" />
           </Field>
           <Field name={['renderProps']}>
-            {control => (
+            {(control) => (
               <div>
                 I am render props
                 <Input {...control} placeholder="render props" />
@@ -56,7 +56,11 @@ export default class Demo extends React.Component {
             {(control, meta, context) => {
               const { username } = context.getFieldsValue(true);
               console.log('my render!', username);
-              return username === '111' && <Input {...control} placeholder="I am secret!" />;
+              return (
+                username === '111' && (
+                  <Input {...control} placeholder="I am secret!" />
+                )
+              );
             }}
           </Field>
 

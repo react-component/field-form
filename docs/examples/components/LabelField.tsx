@@ -1,6 +1,6 @@
 import * as React from 'react';
-import Form from '../../src';
-import { FieldProps } from '../../src/Field';
+import Form from 'rc-field-form';
+import { FieldProps } from '@/Field';
 
 const { Field } = Form;
 
@@ -12,7 +12,13 @@ const Error = ({ children }) => (
   </ul>
 );
 
-const FieldState = ({ touched, validating }: { touched: boolean; validating: boolean }) => (
+const FieldState = ({
+  touched,
+  validating,
+}: {
+  touched: boolean;
+  validating: boolean;
+}) => (
   <div
     style={{
       color: 'green',

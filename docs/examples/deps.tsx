@@ -1,5 +1,5 @@
 import React from 'react';
-import Form, { Field } from '../src';
+import Form, { Field } from 'rc-field-form';
 import Input from './components/Input';
 
 let x = 0;

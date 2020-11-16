@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control, react/prop-types */
 
 import React from 'react';
-import Form from '../src';
+import Form from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 

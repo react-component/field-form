@@ -39,7 +39,7 @@ open http://localhost:9001/
 import Form, { Field } from 'rc-field-form';
 
 <Form
-  onFinish={values => {
+  onFinish={(values) => {
     console.log('Finish:', values);
   }}
 >
@@ -115,7 +115,7 @@ For class component user, you can use `ref` to get form instance:
 
 ```jsx
 class Demo extends React.Component {
-  setRef = form => {
+  setRef = (form) => {
     // Form instance here
   };
 
