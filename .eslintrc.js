@@ -13,9 +13,7 @@ module.exports = {
     'import/no-named-as-default-member': 0,
     'jsx-a11y/label-has-for': 0,
     'jsx-a11y/label-has-associated-control': 0,
-    'import/no-extraneous-dependencies': [
-      'error',
-      { devDependencies: true, optionalDependencies: true, peerDependencies: true },
-    ],
+    'import/no-extraneous-dependencies': 0,
+    'import/no-unresolved': 0,
   },
 };
