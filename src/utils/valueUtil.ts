@@ -1,12 +1,6 @@
 import get from 'rc-util/lib/utils/get';
 import set from 'rc-util/lib/utils/set';
-import {
-  InternalNamePath,
-  NamePath,
-  Store,
-  StoreValue,
-  EventArgs,
-} from '../interface';
+import { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
 
 /**
@@ -25,19 +19,12 @@ export function getValue(store: Store, namePath: InternalNamePath) {
   return value;
 }
 
-export function setValue(
-  store: Store,
-  namePath: InternalNamePath,
-  value: StoreValue,
-): Store {
+export function setValue(store: Store, namePath: InternalNamePath, value: StoreValue): Store {
   const newStore = set(store, namePath, value);
   return newStore;
 }
 
-export function cloneByNamePathList(
-  store: Store,
-  namePathList: InternalNamePath[],
-): Store {
+export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
   let newStore = {};
   namePathList.forEach(namePath => {
     const value = getValue(store, namePath);
@@ -47,21 +34,12 @@ export function cloneByNamePathList(
   return newStore;
 }
 
-export function containsNamePath(
-  namePathList: InternalNamePath[],
-  namePath: InternalNamePath,
-) {
-  return (
-    namePathList && namePathList.some(path => matchNamePath(path, namePath))
-  );
+export function containsNamePath(namePathList: InternalNamePath[], namePath: InternalNamePath) {
+  return namePathList && namePathList.some(path => matchNamePath(path, namePath));
 }
 
 function isObject(obj: StoreValue) {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    Object.getPrototypeOf(obj) === Object.prototype
-  );
+  return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
 /**
@@ -81,9 +59,7 @@ function internalSetValues<T>(store: T, values: T): T {
 
     // If both are object (but target is not array), we use recursion to set deep value
     const recursive = isObject(prevValue) && isObject(value);
-    newStore[key] = recursive
-      ? internalSetValues(prevValue, value || {})
-      : value;
+    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : value;
   });
 
   return newStore;
@@ -100,11 +76,7 @@ export function matchNamePath(
   namePath: InternalNamePath,
   changedNamePath: InternalNamePath | null,
 ) {
-  if (
-    !namePath ||
-    !changedNamePath ||
-    namePath.length !== changedNamePath.length
-  ) {
+  if (!namePath || !changedNamePath || namePath.length !== changedNamePath.length) {
     return false;
   }
   return namePath.every((nameUnit, i) => changedNamePath[i] === nameUnit);
@@ -121,12 +93,7 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
     return false;
   }
 
-  if (
-    !source ||
-    !target ||
-    typeof source !== 'object' ||
-    typeof target !== 'object'
-  ) {
+  if (!source || !target || typeof source !== 'object' || typeof target !== 'object') {
     return false;
   }
 
@@ -138,20 +105,14 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
     const sourceValue = source[key];
     const targetValue = target[key];
 
-    if (
-      typeof sourceValue === 'function' &&
-      typeof targetValue === 'function'
-    ) {
+    if (typeof sourceValue === 'function' && typeof targetValue === 'function') {
       return true;
     }
     return sourceValue === targetValue;
   });
 }
 
-export function defaultGetValueFromEvent(
-  valuePropName: string,
-  ...args: EventArgs
-) {
+export function defaultGetValueFromEvent(valuePropName: string, ...args: EventArgs) {
   const event = args[0];
   if (event && event.target && valuePropName in event.target) {
     return (event.target as HTMLInputElement)[valuePropName];
@@ -172,12 +133,7 @@ export function defaultGetValueFromEvent(
  */
 export function move<T>(array: T[], moveIndex: number, toIndex: number) {
   const { length } = array;
-  if (
-    moveIndex < 0 ||
-    moveIndex >= length ||
-    toIndex < 0 ||
-    toIndex >= length
-  ) {
+  if (moveIndex < 0 || moveIndex >= length || toIndex < 0 || toIndex >= length) {
     return array;
   }
   const item = array[moveIndex];
