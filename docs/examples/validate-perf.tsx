@@ -30,7 +30,7 @@ export default class Demo extends React.Component {
     console.log('Finish:', values);
   };
 
-  public onFinishFailed = (errorInfo) => {
+  public onFinishFailed = errorInfo => {
     console.log('Failed:', errorInfo);
   };
 
@@ -99,13 +99,8 @@ export default class Demo extends React.Component {
 
           <Field shouldUpdate>
             {(_, __, { getFieldsError, isFieldsTouched }) => {
-              const isAllTouched = isFieldsTouched(
-                ['password', 'password2'],
-                true,
-              );
-              const hasErrors = !!getFieldsError().filter(
-                ({ errors }) => errors.length,
-              ).length;
+              const isAllTouched = isFieldsTouched(['password', 'password2'], true);
+              const hasErrors = !!getFieldsError().filter(({ errors }) => errors.length).length;
 
               return (
                 <button type="submit" disabled={!isAllTouched || hasErrors}>

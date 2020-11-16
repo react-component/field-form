@@ -41,7 +41,7 @@ export default class Demo extends React.Component {
             <Input placeholder="nest" />
           </Field>
           <Field name={['renderProps']}>
-            {(control) => (
+            {control => (
               <div>
                 I am render props
                 <Input {...control} placeholder="render props" />
@@ -56,11 +56,7 @@ export default class Demo extends React.Component {
             {(control, meta, context) => {
               const { username } = context.getFieldsValue(true);
               console.log('my render!', username);
-              return (
-                username === '111' && (
-                  <Input {...control} placeholder="I am secret!" />
-                )
-              );
+              return username === '111' && <Input {...control} placeholder="I am secret!" />;
             }}
           </Field>
 

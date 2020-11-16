@@ -12,13 +12,7 @@ const Error = ({ children }) => (
   </ul>
 );
 
-const FieldState = ({
-  touched,
-  validating,
-}: {
-  touched: boolean;
-  validating: boolean;
-}) => (
+const FieldState = ({ touched, validating }: { touched: boolean; validating: boolean }) => (
   <div
     style={{
       color: 'green',

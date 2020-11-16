@@ -19,11 +19,7 @@ const Form1 = () => {
   const [form] = Form.useForm();
 
   return (
-    <Form
-      form={form}
-      style={{ ...formStyle, border: '1px solid #000' }}
-      name="first"
-    >
+    <Form form={form} style={{ ...formStyle, border: '1px solid #000' }} name="first">
       <h4>Form 1</h4>
       <p>Change me!</p>
       <LabelField name="username" rules={[{ required: true }]}>
@@ -42,11 +38,7 @@ const Form2 = () => {
   const [form] = Form.useForm();
 
   return (
-    <Form
-      form={form}
-      style={{ ...formStyle, border: '1px solid #F00' }}
-      name="second"
-    >
+    <Form form={form} style={{ ...formStyle, border: '1px solid #F00' }} name="second">
       <h4>Form 2</h4>
       <p>Will follow Form 1 but sync back only when submit</p>
       <LabelField name="username" rules={[{ required: true }]}>
@@ -65,10 +57,7 @@ const Demo = () => {
   return (
     <div>
       <h3>Form Context</h3>
-      <p>
-        Support global `validateMessages` config and communication between
-        forms.
-      </p>
+      <p>Support global `validateMessages` config and communication between forms.</p>
       <FormProvider
         validateMessages={myMessages}
         onFormChange={(name, { changedFields, forms }) => {
