@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import Form, { Field, FormInstance } from '../src';
+import Form, { Field, FormInstance } from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
-import { ValidateMessages } from '../src/interface';
+import { ValidateMessages } from '@/interface';
 
 const myMessages: ValidateMessages = {
   default: '${name} 看起来怪怪的……',

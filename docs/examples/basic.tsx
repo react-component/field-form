@@ -1,5 +1,5 @@
 import React from 'react';
-import Form, { Field, FormInstance } from '../src';
+import Form, { Field, FormInstance } from 'rc-field-form';
 import Input from './components/Input';
 
 const list = new Array(1111).fill(() => null);
@@ -13,7 +13,7 @@ interface FormValues {
 }
 
 export default class Demo extends React.Component {
-  formRef = React.createRef<FormInstance<FormValues>>();
+  formRef: any = React.createRef<FormInstance<FormValues>>();
 
   onFinish = (values: FormValues) => {
     console.log('Submit:', values);
