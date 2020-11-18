@@ -22,14 +22,15 @@ const Demo = () => {
         }}
         style={{ border: '1px solid red', padding: 15 }}
         preserve={false}
-        initialValues={{
-          users: ['little'],
-        }}
+        // initialValues={{
+        //   users: ['little'],
+        // }}
       >
         <Form.Field shouldUpdate>{() => JSON.stringify(form.getFieldsValue(), null, 2)}</Form.Field>
 
         <List
           name="users"
+          initialValue={['bamboo', 'light']}
           rules={[
             {
               message: 'Must have at least 2 user!',
