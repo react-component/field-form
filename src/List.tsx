@@ -21,6 +21,7 @@ export interface ListProps {
   name: NamePath;
   rules?: ValidatorRule[];
   validateTrigger?: string | string[] | false;
+  initialValue?: any[];
   children?: (
     fields: ListField[],
     operations: ListOperations,
@@ -28,7 +29,13 @@ export interface ListProps {
   ) => JSX.Element | React.ReactNode;
 }
 
-const List: React.FunctionComponent<ListProps> = ({ name, children, rules, validateTrigger }) => {
+const List: React.FunctionComponent<ListProps> = ({
+  name,
+  initialValue,
+  children,
+  rules,
+  validateTrigger,
+}) => {
   const context = React.useContext(FieldContext);
   const keyRef = React.useRef({
     keys: [],
@@ -59,6 +66,7 @@ const List: React.FunctionComponent<ListProps> = ({ name, children, rules, valid
         shouldUpdate={shouldUpdate}
         rules={rules}
         validateTrigger={validateTrigger}
+        initialValue={initialValue}
         isList
       >
         {({ value = [], onChange }, meta) => {
