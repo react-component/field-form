@@ -1,11 +1,8 @@
-## rc-field-form
+# rc-field-form
 
 React Performance First Form Component.
 
-[![NPM version][npm-image]][npm-url]
-[![build status][github-actions-image]][github-actions-url]
-[![Codecov][codecov-image]][codecov-url]
-[![npm download][download-image]][download-url]
+[![NPM version][npm-image]][npm-url] [![build status][github-actions-image]][github-actions-url] [![Codecov][codecov-image]][codecov-url] [![npm download][download-image]][download-url]
 
 [npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
 [npm-url]: http://npmjs.org/package/rc-field-form
@@ -21,7 +18,7 @@ React Performance First Form Component.
 ```bash
 npm install
 npm start
-open http://localhost:8000/
+open http://localhost:8000
 ```
 
 ## Feature
@@ -56,11 +53,11 @@ import Form, { Field } from 'rc-field-form';
 export default Demo;
 ```
 
-# API
+## 🔥 API
 
 We use typescript to create the Type definition. You can view directly in IDE. But you can still check the type definition [here](https://github.com/react-component/field-form/blob/master/src/interface.ts).
 
-## Form
+### Form
 
 | Prop             | Description                                        | Type                                         | Default          |
 | ---------------- | -------------------------------------------------- | -------------------------------------------- | ---------------- |
@@ -76,7 +73,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 | onFinishFailed   | Trigger when form submit and failed                | ({ values, errorFields, outOfDate }) => void | -                |
 | onValuesChange   | Trigger when any value of Field changed            | (changedValues, values) => void              | -                |
 
-## Field
+### Field
 
 | Prop              | Description                                                                   | Type                                        | Default  |
 | ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------- | -------- |
@@ -93,14 +90,14 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 | validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                          | onChange |
 | valuePropName     | Config value mapping prop with element                                        | string                                      | value    |
 
-## List
+### List
 
 | Prop     | Description                     | Type                                                                                                    | Default |
 | -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- | ------- |
 | name     | List field name path            | [NamePath](#namepath)[]                                                                                 | -       |
 | children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)) => ReactNode | -       |
 
-## useForm
+### useForm
 
 Form component default create an form instance by `Form.useForm`. But you can create it and pass to Form also. This allow you to call some function on the form instance.
 
@@ -140,7 +137,7 @@ class Demo extends React.Component {
 | submit            | Trigger form submit                        | () => void                                                                 |
 | validateFields    | Trigger fields to validate                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
 
-## FormProvider
+### FormProvider
 
 | Prop             | Description                               | Type                                     | Default |
 | ---------------- | ----------------------------------------- | ---------------------------------------- | ------- |
@@ -148,7 +145,7 @@ class Demo extends React.Component {
 | onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
 | onFormFinish     | Trigger by named form fields finish       | (name, { values, forms }) => void        | -       |
 
-## Interface
+## 📋 Interface
 
 ### NamePath
 
@@ -208,27 +205,27 @@ Validate Messages provides a list of error template. You can ref [here](https://
 | pattern | Rule `pattern` prop |
 | type    | Rule `type` prop    |
 
-# Different with `rc-form`
+## Different with `rc-form`
 
 `rc-field-form` is try to keep sync with `rc-form` in api level, but there still have something to change:
 
-## 🔥 Field will not keep snyc with `initialValues` when un-touched
+### 1. Field will not keep snyc with `initialValues` when un-touched
 
 In `rc-form`, field value will get from `initialValues` if user not operate on it.
 It's a bug but user use as a feature which makes fixing will be a breaking change and we have to keep it.
 In Field Form, this bug will not exist anymore. If you want to change a field value, use `setFieldsValue` instead.
 
-## 🔥 Remove Field will not clean up related value
+### 2. Remove Field will not clean up related value
 
 We do lots of logic to clean up the value when Field removed before. But with user feedback, remove exist value increase the additional work to keep value back with conditional field.
 
-## 🔥 Nest name use array instead of string
+### 3. Nest name use array instead of string
 
 In `rc-form`, we support like `user.name` to be a name and convert value to `{ user: { name: 'Bamboo' } }`. This makes '.' always be the route of variable, this makes developer have to do additional work if name is real contains a point like `app.config.start` to be `app_config_start` and parse back to point when submit.
 
 Field Form will only trade `['user', 'name']` to be `{ user: { name: 'Bamboo' } }`, and `user.name` to be `{ ['user.name']: 'Bamboo' }`.
 
-## 🔥 Remove `validateFieldsAndScroll`
+### 4. Remove `validateFieldsAndScroll`
 
 Since `findDomNode` is marked as warning in [StrictMode](https://reactjs.org/docs/strict-mode.html#warning-about-deprecated-finddomnode-usage). It seems over control of Form component.
 We decide to remove `validateFieldsAndScroll` method and you should handle it with you own logic:
@@ -241,7 +238,7 @@ We decide to remove `validateFieldsAndScroll` method and you should handle it wi
 </Form>
 ```
 
-## 🔥 `getFieldsError` always return array
+### 5. `getFieldsError` always return array
 
 `rc-form` returns `null` when no error happen. This makes user have to do some additional code like:
 
@@ -253,7 +250,7 @@ We decide to remove `validateFieldsAndScroll` method and you should handle it wi
 
 Now `getFieldsError` will return `[]` if no errors.
 
-## 🔥 Remove `callback` with `validateFields`
+### 6. Remove `callback` with `validateFields`
 
 Since ES8 is support `async/await`, that's no reason not to use it. Now you can easily handle your validate logic:
 
@@ -272,11 +269,11 @@ async function() {
 
 **Notice: Now if your validator return an `Error(message)`, not need to get error by `e => e.message`. FieldForm will handle this.**
 
-## 🔥 `preserve` is default to false
+### 7. `preserve` is default to false
 
 In `rc-form` you should use `preserve` to keep a value cause Form will auto remove a value from Field removed. Field Form will always keep the value in the Form whatever Field removed. But you can still use `preserve=false` to disable value keeping since `1.5.0`.
 
-## 🔥 `setFields` not trigger `onFieldsChange` and `setFieldsValue` not trigger `onValuesChange`
+### 8. `setFields` not trigger `onFieldsChange` and `setFieldsValue` not trigger `onValuesChange`
 
 In `rc-form`, we hope to help user auto trigger change event by setting to make redux dispatch easier, but it's not good design since it makes code logic couping.
 
