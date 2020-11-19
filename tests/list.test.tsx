@@ -739,4 +739,24 @@ describe('Form.List', () => {
       expect(form.isFieldsTouched(['list'], true)).toBeTruthy();
     });
   });
+
+  it('initialValue', () => {
+    generateForm(
+      fields => (
+        <div>
+          {fields.map(field => (
+            <Field {...field}>
+              <Input />
+            </Field>
+          ))}
+        </div>
+      ),
+      null,
+      { initialValue: ['light', 'bamboo'] },
+    );
+
+    expect(form.getFieldsValue()).toEqual({
+      list: ['light', 'bamboo'],
+    });
+  });
 });
