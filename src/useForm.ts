@@ -695,6 +695,9 @@ export class FormStore {
   ) => {
     this.warningUnhooked();
 
+    /**
+     * 有没有设置 nameList
+     */
     const provideNameList = !!nameList;
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
@@ -712,13 +715,28 @@ export class FormStore {
         namePathList.push(field.getNamePath());
       }
 
+      /**
+       * 如果是递归模式，匹配一下
+       * ['name'] -> match -> ['name','list']
+       * @TODO 性能不好，豆酱说会改
+       */
+      if (options?.recursive && provideNameList) {
+        const namePath = field.getNamePath();
+        if (
+          // nameList[i] === undefined 说明是以 nameList 开头的
+          // ['name'] -> ['name','list']
+          namePath.every((nameUnit, i) => nameList[i] === nameUnit || nameList[i] === undefined)
+        ) {
+          namePathList.push(namePath);
+        }
+      }
+
       // Skip if without rule
       if (!field.props.rules || !field.props.rules.length) {
         return;
       }
 
       const fieldNamePath = field.getNamePath();
-
       // Add field validate rule in to promise list
       if (!provideNameList || containsNamePath(namePathList, fieldNamePath)) {
         const promise = field.validateRules({

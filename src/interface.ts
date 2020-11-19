@@ -119,6 +119,11 @@ export interface FieldError {
 export interface ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
+  /**
+   * @name 递归模式，会遍历 namePath 下 的
+   * @description ['a'] 会校验 ['a','ab'] ['a','abc']
+   */
+  recursive?: boolean;
 }
 
 export type InternalValidateFields = (
