@@ -716,9 +716,8 @@ export class FormStore {
       }
 
       /**
-       * 如果是递归模式，匹配一下
-       * ['name'] -> match -> ['name','list']
-       * @TODO 性能不好，豆酱说会改
+       * Recursive validate if configured.
+       * TODO: perf improvement @zombieJ 
        */
       if (options?.recursive && provideNameList) {
         const namePath = field.getNamePath();
