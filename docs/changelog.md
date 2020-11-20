@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.17.2
+
+`2020.11.20`
+
+- fix: onFieldsChange in strict mode. [#228](https://github.com/react-component/field-form/pull/228)
+
 ## 1.17.1
 
 `2020.11.20`
