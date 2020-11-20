@@ -133,15 +133,22 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // Register on init
     if (props.fieldContext) {
       const { getInternalHooks }: InternalFormInstance = props.fieldContext;
-      const { registerField } = getInternalHooks(HOOK_MARK);
-      this.cancelRegisterFunc = registerField(this);
+      const { initEntityValue } = getInternalHooks(HOOK_MARK);
+      initEntityValue(this);
     }
   }
 
   public componentDidMount() {
-    const { shouldUpdate } = this.props;
+    const { shouldUpdate, fieldContext } = this.props;
 
     this.mounted = true;
+
+    // Register on init
+    if (fieldContext) {
+      const { getInternalHooks }: InternalFormInstance = fieldContext;
+      const { registerField } = getInternalHooks(HOOK_MARK);
+      this.cancelRegisterFunc = registerField(this);
+    }
 
     // One more render for component in case fields not ready
     if (shouldUpdate === true) {

@@ -100,6 +100,7 @@ export class FormStore {
 
       return {
         dispatch: this.dispatch,
+        initEntityValue: this.initEntityValue,
         registerField: this.registerField,
         useSubscribe: this.useSubscribe,
         setInitialValues: this.setInitialValues,
@@ -504,6 +505,22 @@ export class FormStore {
   };
 
   // =========================== Observer ===========================
+  /**
+   * This only trigger when a field is on constructor to avoid we get initialValue too late
+   */
+  private initEntityValue = (entity: FieldEntity) => {
+    const { initialValue } = entity.props;
+
+    if (initialValue !== undefined) {
+      const namePath = entity.getNamePath();
+      const prevValue = getValue(this.store, namePath);
+
+      if (prevValue === undefined) {
+        this.store = setValue(this.store, namePath, initialValue);
+      }
+    }
+  };
+
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
 
