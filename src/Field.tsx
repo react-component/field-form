@@ -127,21 +127,17 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   private errors: string[] = [];
 
   // ============================== Subscriptions ==============================
-  constructor(props: InternalFieldProps) {
-    super(props);
+  public componentDidMount() {
+    const { shouldUpdate, fieldContext } = this.props;
+
+    this.mounted = true;
 
     // Register on init
-    if (props.fieldContext) {
-      const { getInternalHooks }: InternalFormInstance = props.fieldContext;
+    if (fieldContext) {
+      const { getInternalHooks }: InternalFormInstance = fieldContext;
       const { registerField } = getInternalHooks(HOOK_MARK);
       this.cancelRegisterFunc = registerField(this);
     }
-  }
-
-  public componentDidMount() {
-    const { shouldUpdate } = this.props;
-
-    this.mounted = true;
 
     // One more render for component in case fields not ready
     if (shouldUpdate === true) {
