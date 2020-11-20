@@ -82,7 +82,7 @@ export interface InternalFieldProps<Values = any> {
 
   /** @private Pass context as prop instead of context api
    *  since class component can not get context in constructor */
-  fieldContext: InternalFormInstance;
+  fieldContext?: InternalFormInstance;
 }
 
 export interface FieldProps<Values = any>
