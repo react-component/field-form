@@ -714,7 +714,7 @@ export class FormStore {
 
       /**
        * Recursive validate if configured.
-       * TODO: perf improvement @zombieJ 
+       * TODO: perf improvement @zombieJ
        */
       if (options?.recursive && provideNameList) {
         const namePath = field.getNamePath();
