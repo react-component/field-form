@@ -1,6 +1,7 @@
 /* eslint-disable no-template-curly-in-string */
 import React from 'react';
 import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
@@ -685,6 +686,41 @@ describe('Form.Validate', () => {
 
     expect(failedTriggerTimes).toEqual(1);
     expect(passedTriggerTimes).toEqual(1);
+  });
+
+  it('validate support recursive', async () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField name={['username', 'do']} rules={[{ required: true }]} />
+          <InfoField name={['username', 'list']} rules={[{ required: true }]} />
+        </Form>
+      </div>,
+    );
+
+    wrapper
+      .find('input')
+      .at(0)
+      .simulate('change', { target: { value: '' } });
+    await act(async () => {
+      await timeout();
+    });
+    wrapper.update();
+
+    try {
+      const values = await form.validateFields(['username'], { recursive: true });
+      expect(values.username.do).toBe('');
+    } catch (error) {
+      expect(error.errorFields.length).toBe(2);
+    }
+
+    const values = await form.validateFields(['username']);
+    expect(values.username.do).toBe('');
   });
 });
 /* eslint-enable no-template-curly-in-string */
