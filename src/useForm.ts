@@ -100,6 +100,7 @@ export class FormStore {
 
       return {
         dispatch: this.dispatch,
+        initEntityValue: this.initEntityValue,
         registerField: this.registerField,
         useSubscribe: this.useSubscribe,
         setInitialValues: this.setInitialValues,
@@ -504,18 +505,30 @@ export class FormStore {
   };
 
   // =========================== Observer ===========================
+  /**
+   * This only trigger when a field is on constructor to avoid we get initialValue too late
+   */
+  private initEntityValue = (entity: FieldEntity) => {
+    const { initialValue } = entity.props;
+
+    if (initialValue !== undefined) {
+      const prevStore = this.store;
+      const namePath = entity.getNamePath();
+
+      const prevValue = getValue(prevStore, namePath);
+
+      if (prevValue === undefined) {
+        this.store = setValue(this.store, namePath, initialValue);
+        this.notifyObservers(prevStore, [namePath], {
+          type: 'valueUpdate',
+          source: 'internal',
+        });
+      }
+    }
+  };
+
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
-
-    // Set initial values
-    if (entity.props.initialValue !== undefined) {
-      const prevStore = this.store;
-      this.resetWithFieldInitialValue({ entities: [entity], skipExist: true });
-      this.notifyObservers(prevStore, [entity.getNamePath()], {
-        type: 'valueUpdate',
-        source: 'internal',
-      });
-    }
 
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean) => {
