@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.17.1
+
+`2020.11.20`
+
+- fix: Declare property fieldContext as optional. [#225](https://github.com/react-component/field-form/pull/225)
+
 ## 1.17.0
 
 `2020.11.20`
