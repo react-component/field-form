@@ -181,7 +181,7 @@ export interface Callbacks<Values = any> {
 
 export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
-  initEntityValue: (entity: FieldEntity) => () => void;
+  initEntityValue: (entity: FieldEntity) => void;
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
   setInitialValues: (values: Store, init: boolean) => void;

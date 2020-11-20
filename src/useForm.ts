@@ -512,23 +512,27 @@ export class FormStore {
     const { initialValue } = entity.props;
 
     if (initialValue !== undefined) {
-      const prevStore = this.store;
       const namePath = entity.getNamePath();
-
-      const prevValue = getValue(prevStore, namePath);
+      const prevValue = getValue(this.store, namePath);
 
       if (prevValue === undefined) {
         this.store = setValue(this.store, namePath, initialValue);
-        this.notifyObservers(prevStore, [namePath], {
-          type: 'valueUpdate',
-          source: 'internal',
-        });
       }
     }
   };
 
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
+
+    // Set initial values
+    if (entity.props.initialValue !== undefined) {
+      const prevStore = this.store;
+      this.resetWithFieldInitialValue({ entities: [entity], skipExist: true });
+      this.notifyObservers(prevStore, [entity.getNamePath()], {
+        type: 'valueUpdate',
+        source: 'internal',
+      });
+    }
 
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean) => {
