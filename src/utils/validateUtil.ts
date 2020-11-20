@@ -192,6 +192,7 @@ export function validateRules(
 
   if (validateFirst === true) {
     // >>>>> Validate by serialization
+    // eslint-disable-next-line no-async-promise-executor
     summaryPromise = new Promise(async (resolve, reject) => {
       /* eslint-disable no-await-in-loop */
       for (let i = 0; i < filledRules.length; i += 1) {
