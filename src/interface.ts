@@ -120,8 +120,7 @@ export interface ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
   /**
-   * @name 递归模式，会遍历 namePath 下 的
-   * @description ['a'] 会校验 ['a','ab'] ['a','abc']
+   * Recursive validate. It will validate all the name path that contains the provided one. e.g. ['a'] will validate ['a'] , ['a', 'b'] and ['a', 1].
    */
   recursive?: boolean;
 }
