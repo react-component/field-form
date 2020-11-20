@@ -695,9 +695,6 @@ export class FormStore {
   ) => {
     this.warningUnhooked();
 
-    /**
-     * 有没有设置 nameList
-     */
     const provideNameList = !!nameList;
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
