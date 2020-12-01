@@ -455,18 +455,15 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const originChangeFunc: any = childProps.onChange;
 
     const control = {
       ...childProps,
       ...mergedGetValueProps(value),
     };
 
-    // Add trigger
-    control[trigger] = (...args: EventArgs) => {
-      // Mark as touched
-      this.touched = true;
-      this.dirty = true;
-
+    const getNewValue = (...args: EventArgs) => {
       let newValue: StoreValue;
       if (getValueFromEvent) {
         newValue = getValueFromEvent(...args);
@@ -477,6 +474,34 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       if (normalize) {
         newValue = normalize(newValue, value, getFieldsValue(true));
       }
+
+      return newValue
+    }
+    // only update values
+    control.onChange = (...args: EventArgs) => {
+      if (trigger === 'onChange') return
+
+      const newValue = getNewValue(...args);
+
+      dispatch({
+        type: 'updateValue',
+        namePath,
+        value: newValue,
+        collect: false,
+      });
+
+      if (originChangeFunc) {
+        originChangeFunc(...args);
+      }
+    }
+
+    // Add trigger
+    control[trigger] = (...args: EventArgs) => {
+      // Mark as touched
+      this.touched = true;
+      this.dirty = true;
+
+      const newValue = getNewValue(...args);
 
       dispatch({
         type: 'updateValue',

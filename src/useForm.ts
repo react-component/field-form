@@ -40,6 +40,7 @@ interface UpdateAction {
   type: 'updateValue';
   namePath: InternalNamePath;
   value: StoreValue;
+  collect?: boolean;
 }
 
 interface ValidateAction {
@@ -552,8 +553,8 @@ export class FormStore {
   private dispatch = (action: ReducerAction) => {
     switch (action.type) {
       case 'updateValue': {
-        const { namePath, value } = action;
-        this.updateValue(namePath, value);
+        const { namePath, value, collect } = action;
+        this.updateValue(namePath, value, collect);
         break;
       }
       case 'validateField': {
@@ -584,7 +585,7 @@ export class FormStore {
     }
   };
 
-  private updateValue = (name: NamePath, value: StoreValue) => {
+  private updateValue = (name: NamePath, value: StoreValue, collect: boolean = true) => {
     const namePath = getNamePath(name);
     const prevStore = this.store;
     this.store = setValue(this.store, namePath, value);
@@ -593,6 +594,8 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
+
+    if (!collect) return
 
     // Notify dependencies children with parent update
     // We need delay to trigger validate in case Field is under render props
