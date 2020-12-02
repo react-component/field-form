@@ -475,12 +475,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         newValue = normalize(newValue, value, getFieldsValue(true));
       }
 
-      return newValue
-    }
+      return newValue;
+    };
     // only update values
     control.onChange = (...args: EventArgs) => {
-      if (trigger === 'onChange') return
-
       const newValue = getNewValue(...args);
 
       dispatch({
@@ -493,7 +491,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       if (originChangeFunc) {
         originChangeFunc(...args);
       }
-    }
+    };
 
     // Add trigger
     control[trigger] = (...args: EventArgs) => {
