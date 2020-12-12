@@ -4,7 +4,7 @@ import { mount, ReactWrapper } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List, FormProps } from '../src';
 import { ListField, ListOperations, ListProps } from '../src/List';
-import { FormInstance, Meta } from '../src/interface';
+import { FormInstance, Meta, NamePath } from '../src/interface';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
 import timeout from './common/timeout';
@@ -20,6 +20,7 @@ describe('Form.List', () => {
     ) => JSX.Element | React.ReactNode,
     formProps?: FormProps,
     listProps?: Partial<ListProps>,
+    name: NamePath = 'list',
   ): [ReactWrapper, () => ReactWrapper] {
     const wrapper = mount(
       <div>
@@ -29,7 +30,7 @@ describe('Form.List', () => {
           }}
           {...formProps}
         >
-          <List name="list" {...listProps}>
+          <List name={name} {...listProps}>
             {renderList}
           </List>
         </Form>
@@ -758,5 +759,78 @@ describe('Form.List', () => {
     expect(form.getFieldsValue()).toEqual({
       list: ['light', 'bamboo'],
     });
+  });
+
+  // https://github.com/ant-design/ant-design/issues/28185
+  it('onValuesChange should be called with correct params when remove all fields', () => {
+    const onValuesChange = jest.fn();
+    let operation;
+    let nicknameOperation;
+    const [wrapper, getList] = generateForm(
+      (fields, opt) => {
+        operation = opt;
+        return (
+          <div>
+            {fields.map(field => (
+              <>
+                <Field {...field}>
+                  <Input />
+                </Field>
+                <List name={[field.name, 'nicknames']}>
+                  {(nicknames, nicknameOpt) => {
+                    nicknameOperation = nicknameOpt;
+                    return (
+                      <div>
+                        {nicknames.map(nickname => (
+                          <Field {...nickname}>
+                            <Input />
+                          </Field>
+                        ))}
+                      </div>
+                    );
+                  }}
+                </List>
+              </>
+            ))}
+          </div>
+        );
+      },
+      {
+        onValuesChange,
+        initialValues: [],
+      },
+    );
+
+    act(() => {
+      operation.add();
+    });
+
+    wrapper.update();
+    expect(getList().find(Field).length).toEqual(2);
+    let expectedFormValue = {
+      list: [undefined],
+    };
+    expect(form.getFieldsValue()).toEqual(expectedFormValue);
+    expect(onValuesChange).toBeCalledWith(expectedFormValue, expectedFormValue);
+
+    act(() => {
+      nicknameOperation.add();
+    });
+    wrapper.update();
+    expectedFormValue = {
+      list: [{ nicknames: [undefined] }],
+    };
+    expect(form.getFieldsValue()).toEqual(expectedFormValue);
+    expect(onValuesChange).toBeCalledWith(expectedFormValue, expectedFormValue);
+
+    act(() => {
+      operation.remove(0);
+    });
+    wrapper.update();
+    expectedFormValue = {
+      list: [],
+    };
+    expect(form.getFieldsValue()).toEqual(expectedFormValue);
+    expect(onValuesChange).toBeCalledWith(expectedFormValue, expectedFormValue);
   });
 });

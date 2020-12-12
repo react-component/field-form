@@ -218,6 +218,17 @@ export class FormStore {
         return;
       }
 
+      // Ignore empty field list in another field list
+      if (namePath.length > 2
+        && (entity as FieldEntity).isList?.()
+        && !getValue(this.store, namePath)) {
+        const parentNamePath = [namePath.slice(0, namePath.length - 1)]
+        const parentEntites = this.getFieldEntitiesForNamePathList(parentNamePath)
+        if (parentEntites.length && (parentEntites[0] as FieldEntity)?.isListField()) {
+          return
+        }
+      }
+
       if (!filterFunc) {
         filteredNameList.push(namePath);
       } else {
