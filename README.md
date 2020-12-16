@@ -85,7 +85,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 | normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any       | -        |
 | preserve          | Preserve value when field removed                                             | boolean                                     | false    |
 | rules             | Validate rules                                                                | [Rule](#rule)[]                             | -        |
-| shouldUpdate      | Check if Field should update                                                  | true \| (prevValues, nextValues) => boolean | -        |
+| shouldUpdate      | Check if Field should update                                                  | boolean \| (prevValues, nextValues) => boolean | -        |
 | trigger           | Collect value update by event trigger                                         | string                                      | onChange |
 | validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                          | onChange |
 | valuePropName     | Config value mapping prop with element                                        | string                                      | value    |
