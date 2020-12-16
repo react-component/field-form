@@ -2,8 +2,6 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
-import { changeValue, getField } from '../common';
-import timeout from '../common/timeout';
 
 describe('legacy.dynamic-binding', () => {
   const getInput = (wrapper, id) => wrapper.find(id).last();

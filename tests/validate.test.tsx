@@ -1,7 +1,8 @@
 /* eslint-disable no-template-curly-in-string */
 import React from 'react';
 import { mount } from 'enzyme';
-import Form, { Field } from '../src';
+import { act } from 'react-dom/test-utils';
+import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
@@ -383,6 +384,38 @@ describe('Form.Validate', () => {
       await timeout();
       expect(onFinish).toHaveBeenCalledWith({ switch: false });
     });
+
+    it('validateFields should not pass when validateFirst is set', async () => {
+      let form;
+
+      mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+          >
+            <InfoField name="user" validateFirst rules={[{ required: true }]}>
+              <Input />
+            </InfoField>
+          </Form>
+        </div>,
+      );
+
+      // Validate callback
+      await new Promise(resolve => {
+        let failed = false;
+        form
+          .validateFields()
+          .catch(() => {
+            failed = true;
+          })
+          .then(() => {
+            expect(failed).toBeTruthy();
+            resolve();
+          });
+      });
+    });
   });
 
   it('should error in console if user script failed', async () => {
@@ -408,59 +441,105 @@ describe('Form.Validate', () => {
     errorSpy.mockRestore();
   });
 
-  it('validateFirst', async () => {
-    let form;
-    let canEnd = false;
-    const onFinish = jest.fn();
+  describe('validateFirst', () => {
+    it('work', async () => {
+      let form;
+      let canEnd = false;
+      const onFinish = jest.fn();
 
-    const wrapper = mount(
-      <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-          onFinish={onFinish}
-        >
-          <InfoField
-            name="username"
-            validateFirst
-            rules={[
-              // Follow promise will never end
-              { required: true },
-              {
-                validator: () =>
-                  new Promise(resolve => {
-                    if (canEnd) {
-                      resolve();
-                    }
-                  }),
-              },
-            ]}
-          />
-        </Form>
-      </div>,
-    );
+      const wrapper = mount(
+        <div>
+          <Form
+            ref={instance => {
+              form = instance;
+            }}
+            onFinish={onFinish}
+          >
+            <InfoField
+              name="username"
+              validateFirst
+              rules={[
+                // Follow promise will never end
+                { required: true },
+                {
+                  validator: () =>
+                    new Promise(resolve => {
+                      if (canEnd) {
+                        resolve();
+                      }
+                    }),
+                },
+              ]}
+            />
+          </Form>
+        </div>,
+      );
 
-    // Not pass
-    await changeValue(wrapper, '');
-    matchError(wrapper, true);
-    expect(form.getFieldError('username')).toEqual(["'username' is required"]);
-    expect(form.getFieldsError()).toEqual([
-      {
-        name: ['username'],
-        errors: ["'username' is required"],
-      },
-    ]);
-    expect(onFinish).not.toHaveBeenCalled();
+      // Not pass
+      await changeValue(wrapper, '');
+      matchError(wrapper, true);
+      expect(form.getFieldError('username')).toEqual(["'username' is required"]);
+      expect(form.getFieldsError()).toEqual([
+        {
+          name: ['username'],
+          errors: ["'username' is required"],
+        },
+      ]);
+      expect(onFinish).not.toHaveBeenCalled();
 
-    // Should pass
-    canEnd = true;
-    await changeValue(wrapper, 'test');
-    wrapper.find('form').simulate('submit');
-    await timeout();
+      // Should pass
+      canEnd = true;
+      await changeValue(wrapper, 'test');
+      wrapper.find('form').simulate('submit');
+      await timeout();
 
-    matchError(wrapper, false);
-    expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
+      matchError(wrapper, false);
+      expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
+    });
+
+    [
+      { name: 'serialization', first: true, second: false, validateFirst: true },
+      { name: 'parallel', first: true, second: true, validateFirst: 'parallel' as const },
+    ].forEach(({ name, first, second, validateFirst }) => {
+      it(name, async () => {
+        let ruleFirst = false;
+        let ruleSecond = false;
+
+        const wrapper = mount(
+          <Form>
+            <InfoField
+              name="username"
+              validateFirst={validateFirst}
+              rules={[
+                {
+                  validator: async () => {
+                    ruleFirst = true;
+                    await timeout();
+                    throw new Error('failed first');
+                  },
+                },
+                {
+                  validator: async () => {
+                    ruleSecond = true;
+                    await timeout();
+                    throw new Error('failed second');
+                  },
+                },
+              ]}
+            />
+          </Form>,
+        );
+
+        await changeValue(wrapper, 'test');
+        await timeout();
+
+        wrapper.update();
+        matchError(wrapper, 'failed first');
+
+        expect(ruleFirst).toEqual(first);
+        expect(ruleSecond).toEqual(second);
+      });
+    });
   });
 
   it('switch to remove errors', async () => {
@@ -500,6 +579,148 @@ describe('Form.Validate', () => {
     wrapper.find('button').simulate('click');
     wrapper.update();
     matchError(wrapper, false);
+  });
+
+  it('submit should trigger Field re-render', () => {
+    const renderProps = jest.fn().mockImplementation(() => null);
+
+    const Demo = () => {
+      const [form] = useForm();
+
+      return (
+        <Form form={form}>
+          <Field
+            name="test"
+            rules={[{ validator: async () => Promise.reject(new Error('Failed')) }]}
+          >
+            {renderProps}
+          </Field>
+          <button
+            type="button"
+            onClick={() => {
+              form.submit();
+            }}
+          />
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    renderProps.mockReset();
+
+    // Should trigger validating
+    wrapper.find('button').simulate('click');
+    expect(renderProps.mock.calls[0][1]).toEqual(expect.objectContaining({ validating: true }));
+  });
+
+  it('renderProps should use latest rules', async () => {
+    let failedTriggerTimes = 0;
+    let passedTriggerTimes = 0;
+
+    interface FormStore {
+      username: string;
+      password: string;
+    }
+
+    const Demo = () => (
+      <Form>
+        <InfoField name="username" />
+        <Form.Field<FormStore> shouldUpdate={(prev, cur) => prev.username !== cur.username}>
+          {(_, __, { getFieldValue }) => {
+            const value = getFieldValue('username');
+
+            if (value === 'removed') {
+              return null;
+            }
+
+            return (
+              <InfoField
+                dependencies={['username']}
+                name="password"
+                rules={
+                  value !== 'light'
+                    ? [
+                        {
+                          validator: async () => {
+                            failedTriggerTimes += 1;
+                            throw new Error('Failed');
+                          },
+                        },
+                      ]
+                    : [
+                        {
+                          validator: async () => {
+                            passedTriggerTimes += 1;
+                          },
+                        },
+                      ]
+                }
+              />
+            );
+          }}
+        </Form.Field>
+      </Form>
+    );
+
+    const wrapper = mount(<Demo />);
+
+    expect(failedTriggerTimes).toEqual(0);
+    expect(passedTriggerTimes).toEqual(0);
+
+    // Failed of second input
+    await changeValue(getField(wrapper, 1), '');
+    matchError(getField(wrapper, 2), true);
+
+    expect(failedTriggerTimes).toEqual(1);
+    expect(passedTriggerTimes).toEqual(0);
+
+    // Changed first to trigger update
+    await changeValue(getField(wrapper, 0), 'light');
+    matchError(getField(wrapper, 2), false);
+
+    expect(failedTriggerTimes).toEqual(1);
+    expect(passedTriggerTimes).toEqual(1);
+
+    // Remove should not trigger validate
+    await changeValue(getField(wrapper, 0), 'removed');
+
+    expect(failedTriggerTimes).toEqual(1);
+    expect(passedTriggerTimes).toEqual(1);
+  });
+
+  it('validate support recursive', async () => {
+    let form;
+    const wrapper = mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <InfoField name={['username', 'do']} rules={[{ required: true }]} />
+          <InfoField name={['username', 'list']} rules={[{ required: true }]} />
+        </Form>
+      </div>,
+    );
+
+    wrapper
+      .find('input')
+      .at(0)
+      .simulate('change', { target: { value: '' } });
+    await act(async () => {
+      await timeout();
+    });
+    wrapper.update();
+
+    try {
+      const values = await form.validateFields(['username'], { recursive: true });
+      expect(values.username.do).toBe('');
+    } catch (error) {
+      expect(error.errorFields.length).toBe(2);
+    }
+
+    const values = await form.validateFields(['username']);
+    expect(values.username.do).toBe('');
   });
 });
 /* eslint-enable no-template-curly-in-string */

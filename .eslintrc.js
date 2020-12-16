@@ -4,6 +4,7 @@ module.exports = {
   ...base,
   rules: {
     ...base.rules,
+    'arrow-parens': 0,
     'no-confusing-arrow': 0,
     'no-template-curly-in-string': 0,
     'prefer-promise-reject-errors': 0,
@@ -12,9 +13,7 @@ module.exports = {
     'import/no-named-as-default-member': 0,
     'jsx-a11y/label-has-for': 0,
     'jsx-a11y/label-has-associated-control': 0,
-    'import/no-extraneous-dependencies': [
-      'error',
-      { devDependencies: true, optionalDependencies: true, peerDependencies: true },
-    ],
+    'import/no-extraneous-dependencies': 0,
+    'import/no-unresolved': 0,
   },
 };

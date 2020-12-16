@@ -46,9 +46,14 @@ type Validator = (
   rule: RuleObject,
   value: StoreValue,
   callback: (error?: string) => void,
-) => Promise<void> | void;
+) => Promise<void | any> | void;
 
 export type RuleRender = (form: FormInstance) => RuleObject;
+
+export interface ValidatorRule {
+  message?: string | ReactElement;
+  validator: Validator;
+}
 
 interface BaseRule {
   enum?: StoreValue[];
@@ -60,24 +65,25 @@ interface BaseRule {
   required?: boolean;
   transform?: (value: StoreValue) => StoreValue;
   type?: RuleType;
-  validator?: Validator;
   whitespace?: boolean;
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
 }
 
-interface ArrayRule extends Omit<BaseRule, 'type'> {
+type AggregationRule = BaseRule & Partial<ValidatorRule>;
+
+interface ArrayRule extends Omit<AggregationRule, 'type'> {
   type: 'array';
   defaultField?: RuleObject;
 }
 
-export type RuleObject = BaseRule | ArrayRule;
+export type RuleObject = AggregationRule | ArrayRule;
 
 export type Rule = RuleObject | RuleRender;
 
-export interface ValidateErrorEntity {
-  values: Store;
+export interface ValidateErrorEntity<Values = any> {
+  values: Values;
   errorFields: { name: InternalNamePath; errors: string[] }[];
   outOfDate: boolean;
 }
@@ -91,6 +97,8 @@ export interface FieldEntity {
   isFieldTouched: () => boolean;
   isFieldDirty: () => boolean;
   isFieldValidating: () => boolean;
+  isListField: () => boolean;
+  isList: () => boolean;
   validateRules: (options?: ValidateOptions) => Promise<string[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
@@ -111,6 +119,11 @@ export interface FieldError {
 export interface ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
+  /**
+   * Recursive validate. It will validate all the name path that contains the provided one.
+   * e.g. ['a'] will validate ['a'] , ['a', 'b'] and ['a', 1].
+   */
+  recursive?: boolean;
 }
 
 export type InternalValidateFields = (
@@ -159,15 +172,16 @@ export type ValuedNotifyInfo = NotifyInfo & {
   store: Store;
 };
 
-export interface Callbacks {
-  onValuesChange?: (changedValues: Store, values: Store) => void;
+export interface Callbacks<Values = any> {
+  onValuesChange?: (changedValues: any, values: Values) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
-  onFinish?: (values: Store) => void;
-  onFinishFailed?: (errorInfo: ValidateErrorEntity) => void;
+  onFinish?: (values: Values) => void;
+  onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
 export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
+  initEntityValue: (entity: FieldEntity) => void;
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
   setInitialValues: (values: Store, init: boolean) => void;
@@ -177,10 +191,22 @@ export interface InternalHooks {
   setPreserve: (preserve?: boolean) => void;
 }
 
-export interface FormInstance {
+/** Only return partial when type is not any */
+type RecursivePartial<T> = T extends object
+  ? {
+      [P in keyof T]?: T[P] extends (infer U)[]
+        ? RecursivePartial<U>[]
+        : T[P] extends object
+        ? RecursivePartial<T[P]>
+        : T[P];
+    }
+  : any;
+
+export interface FormInstance<Values = any> {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
-  getFieldsValue: (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => Store;
+  getFieldsValue(): Values;
+  getFieldsValue(nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean): any;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
@@ -190,7 +216,7 @@ export interface FormInstance {
   isFieldsValidating: (nameList: NamePath[]) => boolean;
   resetFields: (fields?: NamePath[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldsValue: (value: Store) => void;
+  setFieldsValue: (value: RecursivePartial<Values>) => void;
   validateFields: ValidateFields;
 
   // New API

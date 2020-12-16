@@ -29,6 +29,7 @@ const Context = React.createContext<InternalFormInstance>({
 
     return {
       dispatch: warningFunc,
+      initEntityValue: warningFunc,
       registerField: warningFunc,
       useSubscribe: warningFunc,
       setInitialValues: warningFunc,

@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
-import Form from '../src';
+import Form from 'rc-field-form';
 import Input from './components/Input';
 
 const { Field } = Form;
@@ -34,6 +34,9 @@ const Demo = () => {
           <Input placeholder="Password" />
         </Item>
         <Item name={['path1', 'path2']} rules={[{ required: true }]}>
+          <Input placeholder="nest" />
+        </Item>
+        <Item name={['path1', 'path3']} initialValue="bamboo">
           <Input placeholder="nest" />
         </Item>
         <button

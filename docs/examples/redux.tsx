@@ -3,7 +3,7 @@
 import React from 'react';
 import { connect, Provider } from 'react-redux';
 import { createStore } from 'redux';
-import Form from '../src';
+import Form from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 

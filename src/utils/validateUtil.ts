@@ -132,7 +132,7 @@ export function validateRules(
   value: StoreValue,
   rules: RuleObject[],
   options: ValidateOptions,
-  validateFirst: boolean,
+  validateFirst: boolean | 'parallel',
   messageVariables?: Record<string, string>,
 ) {
   const name = namePath.join('.');
@@ -181,27 +181,47 @@ export function validateRules(
               callback();
             })
             .catch(err => {
-              callback(err);
+              callback(err || ' ');
             });
         }
       },
     };
   });
 
-  const rulePromises = filledRules.map(rule =>
-    validateRule(name, value, rule, options, messageVariables),
-  );
+  let summaryPromise: Promise<string[]>;
 
-  const summaryPromise: Promise<string[]> = (validateFirst
-    ? finishOnFirstFailed(rulePromises)
-    : finishOnAllFailed(rulePromises)
-  ).then((errors: string[]): string[] | Promise<string[]> => {
-    if (!errors.length) {
-      return [];
-    }
+  if (validateFirst === true) {
+    // >>>>> Validate by serialization
+    summaryPromise = new Promise(async (resolve, reject) => {
+      /* eslint-disable no-await-in-loop */
+      for (let i = 0; i < filledRules.length; i += 1) {
+        const errors = await validateRule(name, value, filledRules[i], options, messageVariables);
+        if (errors.length) {
+          reject(errors);
+          return;
+        }
+      }
+      /* eslint-enable */
 
-    return Promise.reject<string[]>(errors);
-  });
+      resolve([]);
+    });
+  } else {
+    // >>>>> Validate by parallel
+    const rulePromises = filledRules.map(rule =>
+      validateRule(name, value, rule, options, messageVariables),
+    );
+
+    summaryPromise = (validateFirst
+      ? finishOnFirstFailed(rulePromises)
+      : finishOnAllFailed(rulePromises)
+    ).then((errors: string[]): string[] | Promise<string[]> => {
+      if (!errors.length) {
+        return [];
+      }
+
+      return Promise.reject<string[]>(errors);
+    });
+  }
 
   // Internal catch error to avoid console error log.
   summaryPromise.catch(e => e);

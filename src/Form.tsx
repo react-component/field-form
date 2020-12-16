@@ -16,19 +16,19 @@ type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
-export interface FormProps extends BaseFormProps {
+export interface FormProps<Values = any> extends BaseFormProps {
   initialValues?: Store;
-  form?: FormInstance;
+  form?: FormInstance<Values>;
   children?: RenderProps | React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component?: false | string | React.FC<any> | React.ComponentClass<any>;
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
-  onValuesChange?: Callbacks['onValuesChange'];
-  onFieldsChange?: Callbacks['onFieldsChange'];
-  onFinish?: Callbacks['onFinish'];
-  onFinishFailed?: Callbacks['onFinishFailed'];
+  onValuesChange?: Callbacks<Values>['onValuesChange'];
+  onFieldsChange?: Callbacks<Values>['onFieldsChange'];
+  onFinish?: Callbacks<Values>['onFinish'];
+  onFinishFailed?: Callbacks<Values>['onFinishFailed'];
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
 }
