@@ -306,5 +306,35 @@ describe('Form.InitialValues', () => {
       wrapper.find('button').simulate('click');
       expect(wrapper.find('input').props().value).toEqual('bamboo');
     });
+
+    it('not initialValue when not mount', () => {
+      let formInstance;
+
+      const Test = () => {
+        const [form] = Form.useForm();
+        formInstance = form;
+
+        const fieldNode = <Field name="bamboo" initialValue="light" />;
+
+        expect(fieldNode).toBeTruthy();
+
+        return (
+          <Form form={form}>
+            <Field name="light" initialValue="bamboo">
+              {control => {
+                expect(control.value).toEqual('bamboo');
+                return null;
+              }}
+            </Field>
+          </Form>
+        );
+      };
+
+      const wrapper = mount(<Test />);
+
+      expect(formInstance.getFieldsValue()).toEqual({ light: 'bamboo' });
+
+      wrapper.unmount();
+    });
   });
 });

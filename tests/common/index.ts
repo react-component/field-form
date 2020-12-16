@@ -25,7 +25,7 @@ export function matchError(wrapper, error) {
   }
 }
 
-export function getField(wrapper, index = 0) {
+export function getField(wrapper, index: string | number = 0) {
   if (typeof index === 'number') {
     return wrapper.find(Field).at(index);
   }

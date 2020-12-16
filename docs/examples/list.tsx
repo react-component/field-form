@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import Form from '../src';
+import Form from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 
@@ -21,9 +21,28 @@ const Demo = () => {
           console.log('values:', values);
         }}
         style={{ border: '1px solid red', padding: 15 }}
+        preserve={false}
+        // initialValues={{
+        //   users: ['little'],
+        // }}
       >
-        <List name="users">
-          {(fields, { add, remove }) => {
+        <Form.Field shouldUpdate>{() => JSON.stringify(form.getFieldsValue(), null, 2)}</Form.Field>
+
+        <List
+          name="users"
+          initialValue={['bamboo', 'light']}
+          rules={[
+            {
+              message: 'Must have at least 2 user!',
+              validator: async (_, value) => {
+                if (value.length < 2) {
+                  throw new Error();
+                }
+              },
+            },
+          ]}
+        >
+          {(fields, { add, remove }, { errors }) => {
             console.log('Demo Fields:', fields);
             return (
               <div>
@@ -45,6 +64,12 @@ const Demo = () => {
                     )}
                   </LabelField>
                 ))}
+
+                <ul>
+                  {errors.map(err => (
+                    <li key={err}>{err}</li>
+                  ))}
+                </ul>
 
                 <button
                   type="button"
@@ -79,6 +104,15 @@ const Demo = () => {
           }}
         >
           Set List Value
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            console.log('`users` touched:', form.isFieldTouched('users'));
+          }}
+        >
+          Is List touched
         </button>
       </div>
     </div>

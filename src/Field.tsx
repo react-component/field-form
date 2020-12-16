@@ -26,9 +26,9 @@ import {
   getValue,
 } from './utils/valueUtil';
 
-export type ShouldUpdate =
+export type ShouldUpdate<Values = any> =
   | boolean
-  | ((prevValues: Store, nextValues: Store, info: { source?: string }) => boolean);
+  | ((prevValues: Values, nextValues: Values, info: { source?: string }) => boolean);
 
 function requireUpdate(
   shouldUpdate: ShouldUpdate,
@@ -49,10 +49,10 @@ interface ChildProps {
   [name: string]: any;
 }
 
-export interface InternalFieldProps {
+export interface InternalFieldProps<Values = any> {
   children?:
     | React.ReactElement
-    | ((control: ChildProps, meta: Meta, form: FormInstance) => React.ReactNode);
+    | ((control: ChildProps, meta: Meta, form: FormInstance<Values>) => React.ReactNode);
   /**
    * Set up `dependencies` field.
    * When dependencies field update and current field is touched,
@@ -63,23 +63,31 @@ export interface InternalFieldProps {
   name?: InternalNamePath;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
-  shouldUpdate?: ShouldUpdate;
+  shouldUpdate?: ShouldUpdate<Values>;
   trigger?: string;
   validateTrigger?: string | string[] | false;
-  validateFirst?: boolean;
+  validateFirst?: boolean | 'parallel';
   valuePropName?: string;
   getValueProps?: (value: StoreValue) => object;
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
   preserve?: boolean;
+
+  /** @private Passed by Form.List props. Do not use since it will break by path check. */
+  isListField?: boolean;
+
+  /** @private Passed by Form.List props. Do not use since it will break by path check. */
+  isList?: boolean;
+
+  /** @private Pass context as prop instead of context api
+   *  since class component can not get context in constructor */
+  fieldContext?: InternalFormInstance;
 }
 
-export interface FieldProps extends Omit<InternalFieldProps, 'name'> {
+export interface FieldProps<Values = any>
+  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
   name?: NamePath;
-
-  /** @private Passed by Form.List props. */
-  isListField?: boolean;
 }
 
 export interface FieldState {
@@ -87,8 +95,7 @@ export interface FieldState {
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<InternalFieldProps, FieldState, InternalFormInstance>
-  implements FieldEntity {
+class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
 
   public static defaultProps = {
@@ -96,15 +103,13 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
     valuePropName: 'value',
   };
 
-  context: InternalFormInstance;
-
   public state = {
     resetCount: 0,
   };
 
-  private cancelRegisterFunc: (preserve?: boolean) => void | null = null;
+  private cancelRegisterFunc: (isListField?: boolean, preserve?: boolean) => void | null = null;
 
-  private destroy = false;
+  private mounted = false;
 
   /**
    * Follow state should not management in State since it will async update by React.
@@ -122,11 +127,28 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   private errors: string[] = [];
 
   // ============================== Subscriptions ==============================
+  constructor(props: InternalFieldProps) {
+    super(props);
+
+    // Register on init
+    if (props.fieldContext) {
+      const { getInternalHooks }: InternalFormInstance = props.fieldContext;
+      const { initEntityValue } = getInternalHooks(HOOK_MARK);
+      initEntityValue(this);
+    }
+  }
+
   public componentDidMount() {
-    const { shouldUpdate } = this.props;
-    const { getInternalHooks }: InternalFormInstance = this.context;
-    const { registerField } = getInternalHooks(HOOK_MARK);
-    this.cancelRegisterFunc = registerField(this);
+    const { shouldUpdate, fieldContext } = this.props;
+
+    this.mounted = true;
+
+    // Register on init
+    if (fieldContext) {
+      const { getInternalHooks }: InternalFormInstance = fieldContext;
+      const { registerField } = getInternalHooks(HOOK_MARK);
+      this.cancelRegisterFunc = registerField(this);
+    }
 
     // One more render for component in case fields not ready
     if (shouldUpdate === true) {
@@ -136,33 +158,33 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 
   public componentWillUnmount() {
     this.cancelRegister();
-    this.destroy = true;
+    this.mounted = false;
   }
 
   public cancelRegister = () => {
-    const { preserve } = this.props;
+    const { preserve, isListField } = this.props;
 
     if (this.cancelRegisterFunc) {
-      this.cancelRegisterFunc(preserve);
+      this.cancelRegisterFunc(isListField, preserve);
     }
     this.cancelRegisterFunc = null;
   };
 
   // ================================== Utils ==================================
   public getNamePath = (): InternalNamePath => {
-    const { name } = this.props;
-    const { prefixName = [] }: InternalFormInstance = this.context;
+    const { name, fieldContext } = this.props;
+    const { prefixName = [] }: InternalFormInstance = fieldContext;
 
     return name !== undefined ? [...prefixName, ...name] : [];
   };
 
   public getRules = (): RuleObject[] => {
-    const { rules = [] } = this.props;
+    const { rules = [], fieldContext } = this.props;
 
     return rules.map(
       (rule: Rule): RuleObject => {
         if (typeof rule === 'function') {
-          return rule(this.context);
+          return rule(fieldContext);
         }
         return rule;
       },
@@ -170,12 +192,12 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   };
 
   public reRender() {
-    if (this.destroy) return;
+    if (!this.mounted) return;
     this.forceUpdate();
   }
 
   public refresh = () => {
-    if (this.destroy) return;
+    if (!this.mounted) return;
 
     /**
      * Clean up current node.
@@ -257,10 +279,10 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
          * Trigger when marked `dependencies` updated. Related fields will all update
          */
         const dependencyList = dependencies.map(getNamePath);
-        if (
-          namePathMatch ||
-          dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))
-        ) {
+        // No need for `namePathMath` check and `shouldUpdate` check, since `valueUpdate` will be
+        // emitted earlier and they will work there
+        // If set it may cause unnecessary twice rerendering
+        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))) {
           this.reRender();
           return;
         }
@@ -268,18 +290,20 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
       }
 
       default:
-        /**
-         * - If `namePath` exists in `namePathList`, means it's related value and should update.
-         * - If `dependencies` exists in `namePathList`, means upstream trigger update.
-         * - If `shouldUpdate` provided, use customize logic to update the field
-         *   - else to check if value changed
-         */
+        // 1. If `namePath` exists in `namePathList`, means it's related value and should update
+        //      For example <List name="list"><Field name={['list', 0]}></List>
+        //      If `namePathList` is [['list']] (List value update), Field should be updated
+        //      If `namePathList` is [['list', 0]] (Field value update), List shouldn't be updated
+        // 2.
+        //   2.1 If `dependencies` is set, `name` is not set and `shouldUpdate` is not set,
+        //       don't use `shouldUpdate`. `dependencies` is view as a shortcut if `shouldUpdate`
+        //       is not provided
+        //   2.2 If `shouldUpdate` provided, use customize logic to update the field
+        //       else to check if value changed
         if (
           namePathMatch ||
-          dependencies.some(dependency =>
-            containsNamePath(namePathList, getNamePath(dependency)),
-          ) ||
-          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+          ((!dependencies.length || namePath.length || shouldUpdate) &&
+            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
         ) {
           this.reRender();
           return;
@@ -292,46 +316,62 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
     }
   };
 
-  public validateRules = (options?: ValidateOptions) => {
-    const { validateFirst = false, messageVariables } = this.props;
-    const { triggerName } = (options || {}) as ValidateOptions;
+  public validateRules = (options?: ValidateOptions): Promise<string[]> => {
+    // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
+    const currentValue = this.getValue();
 
-    let filteredRules = this.getRules();
-    if (triggerName) {
-      filteredRules = filteredRules.filter((rule: RuleObject) => {
-        const { validateTrigger } = rule;
-        if (!validateTrigger) {
-          return true;
-        }
-        const triggerList = toArray(validateTrigger);
-        return triggerList.includes(triggerName);
-      });
-    }
+    // Force change to async to avoid rule OOD under renderProps field
+    const rootPromise = Promise.resolve().then(() => {
+      if (!this.mounted) {
+        return [];
+      }
 
-    const promise = validateRules(
-      namePath,
-      this.getValue(),
-      filteredRules,
-      options,
-      validateFirst,
-      messageVariables,
-    );
+      const { validateFirst = false, messageVariables } = this.props;
+      const { triggerName } = (options || {}) as ValidateOptions;
+
+      let filteredRules = this.getRules();
+      if (triggerName) {
+        filteredRules = filteredRules.filter((rule: RuleObject) => {
+          const { validateTrigger } = rule;
+          if (!validateTrigger) {
+            return true;
+          }
+          const triggerList = toArray(validateTrigger);
+          return triggerList.includes(triggerName);
+        });
+      }
+
+      const promise = validateRules(
+        namePath,
+        currentValue,
+        filteredRules,
+        options,
+        validateFirst,
+        messageVariables,
+      );
+
+      promise
+        .catch(e => e)
+        .then((errors: string[] = []) => {
+          if (this.validatePromise === rootPromise) {
+            this.validatePromise = null;
+            this.errors = errors;
+            this.reRender();
+          }
+        });
+
+      return promise;
+    });
+
+    this.validatePromise = rootPromise;
     this.dirty = true;
-    this.validatePromise = promise;
     this.errors = [];
 
-    promise
-      .catch(e => e)
-      .then((errors: string[] = []) => {
-        if (this.validatePromise === promise) {
-          this.validatePromise = null;
-          this.errors = errors;
-          this.reRender();
-        }
-      });
+    // Force trigger re-render since we need sync renderProps with new meta
+    this.reRender();
 
-    return promise;
+    return rootPromise;
   };
 
   public isFieldValidating = () => !!this.validatePromise;
@@ -341,6 +381,10 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   public isFieldDirty = () => this.dirty;
 
   public getErrors = () => this.errors;
+
+  public isListField = () => this.props.isListField;
+
+  public isList = () => this.props.isList;
 
   // ============================= Child Component =============================
   public getMeta = (): Meta => {
@@ -368,7 +412,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
       const meta = this.getMeta();
 
       return {
-        ...this.getOnlyChild(children(this.getControlled(), meta, this.context)),
+        ...this.getOnlyChild(children(this.getControlled(), meta, this.props.fieldContext)),
         isFunction: true,
       };
     }
@@ -384,7 +428,7 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
 
   // ============================== Field Control ==============================
   public getValue = (store?: Store) => {
-    const { getFieldsValue }: FormInstance = this.context;
+    const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
     return getValue(store || getFieldsValue(true), namePath);
   };
@@ -397,13 +441,14 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
       normalize,
       valuePropName,
       getValueProps,
+      fieldContext,
     } = this.props;
 
     const mergedValidateTrigger =
-      validateTrigger !== undefined ? validateTrigger : this.context.validateTrigger;
+      validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
 
     const namePath = this.getNamePath();
-    const { getInternalHooks, getFieldsValue }: InternalFormInstance = this.context;
+    const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
@@ -496,14 +541,24 @@ class Field extends React.Component<InternalFieldProps, FieldState, InternalForm
   }
 }
 
-const WrapperField: React.FC<FieldProps> = ({ name, isListField, ...restProps }) => {
+function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
+  const fieldContext = React.useContext(FieldContext);
+
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
-  if (!isListField) {
+  if (!restProps.isListField) {
     key = `_${(namePath || []).join('_')}`;
   }
-  return <Field key={key} name={namePath} {...restProps} />;
-};
+
+  if (process.env.NODE_ENV !== 'production') {
+    warning(
+      restProps.preserve !== false || !restProps.isListField,
+      '`preserve` should not apply on Form.List fields.',
+    );
+  }
+
+  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
+}
 
 export default WrapperField;

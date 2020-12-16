@@ -6,7 +6,9 @@ import useForm from './useForm';
 import FieldForm, { FormProps } from './Form';
 import { FormProvider } from './FormContext';
 
-const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm);
+const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm) as <Values = any>(
+  props: React.PropsWithChildren<FormProps<Values>> & { ref?: React.Ref<FormInstance<Values>> },
+) => React.ReactElement;
 
 type InternalForm = typeof InternalForm;
 interface RefForm extends InternalForm {
@@ -23,6 +25,6 @@ RefForm.Field = Field;
 RefForm.List = List;
 RefForm.useForm = useForm;
 
-export { FormInstance, Field, List, useForm, FormProvider };
+export { FormInstance, Field, List, useForm, FormProvider, FormProps };
 
 export default RefForm;

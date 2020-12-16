@@ -1,12 +1,25 @@
-.storybook
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/npm-debug.log*
+/yarn-error.log
+/yarn.lock
+/package-lock.json
+
+# production
+/dist
+/docs-dist
+/es
+/lib
 .doc
-*.log
-node_modules
-coverage/
-es/
-lib/
-~*
-yarn.lock
-package-lock.json
-.idea/
-examples/debug.tsx
+
+# misc
+.DS_Store
+.vscode
+
+# umi
+.umi
+.umi-production
+.umi-test
+.env.local

@@ -212,6 +212,35 @@ describe('Form.Basic', () => {
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ target: { value: 'Bamboo' } }));
   });
 
+  it('onValuesChange should not return fully value', async () => {
+    const onValuesChange = jest.fn();
+
+    const Demo = ({ showField = true }) => (
+      <Form onValuesChange={onValuesChange} initialValues={{ light: 'little' }}>
+        {showField && (
+          <Field name="light">
+            <Input />
+          </Field>
+        )}
+        <Field name="bamboo">
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    const wrapper = mount(<Demo />);
+    await changeValue(getField(wrapper, 'bamboo'), 'cute');
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), {
+      light: 'little',
+      bamboo: 'cute',
+    });
+
+    onValuesChange.mockReset();
+    wrapper.setProps({ showField: false });
+    await changeValue(getField(wrapper, 'bamboo'), 'beauty');
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { bamboo: 'beauty' });
+  });
+
   it('submit', async () => {
     const onFinish = jest.fn();
     const onFinishFailed = jest.fn();
