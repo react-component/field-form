@@ -126,11 +126,11 @@ export interface ValidateOptions {
   recursive?: boolean;
 }
 
-export type InternalValidateFields = (
+export type InternalValidateFields<Values = any> = (
   nameList?: NamePath[],
   options?: ValidateOptions,
-) => Promise<Store>;
-export type ValidateFields = (nameList?: NamePath[]) => Promise<Store>;
+) => Promise<Values>;
+export type ValidateFields<Values = any> = (nameList?: NamePath[]) => Promise<Values>;
 
 // >>>>>> Info
 interface ValueUpdateInfo {
@@ -217,7 +217,7 @@ export interface FormInstance<Values = any> {
   resetFields: (fields?: NamePath[]) => void;
   setFields: (fields: FieldData[]) => void;
   setFieldsValue: (value: RecursivePartial<Values>) => void;
-  validateFields: ValidateFields;
+  validateFields: ValidateFields<Values>;
 
   // New API
   submit: () => void;
