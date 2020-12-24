@@ -51,8 +51,8 @@ interface ChildProps {
 
 export interface InternalFieldProps<Values = any> {
   children?:
-  | React.ReactElement
-  | ((control: ChildProps, meta: Meta, form: FormInstance<Values>) => React.ReactNode);
+    | React.ReactElement
+    | ((control: ChildProps, meta: Meta, form: FormInstance<Values>) => React.ReactNode);
   /**
    * Set up `dependencies` field.
    * When dependencies field update and current field is touched,
@@ -413,8 +413,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       const meta = this.getMeta();
 
       return {
-        ...this.getOnlyChild(children(this.getControlled(this.props.originChildProps),
-          meta, this.props.fieldContext)),
+        ...this.getOnlyChild(
+          children(this.getControlled(this.props.originChildProps), meta, this.props.fieldContext),
+        ),
         isFunction: true,
       };
     }
