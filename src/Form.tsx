@@ -3,35 +3,14 @@ import {
   Store,
   FormInstance,
   FieldData,
-  ValidateMessages,
-  Callbacks,
   InternalFormInstance,
+  FormProps,
+  RenderProps,
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import FormContext, { FormContextProps } from './FormContext';
 import { isSimilar } from './utils/valueUtil';
-
-type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
-
-type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
-
-export interface FormProps<Values = any> extends BaseFormProps {
-  initialValues?: Store;
-  form?: FormInstance<Values>;
-  children?: RenderProps | React.ReactNode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component?: false | string | React.FC<any> | React.ComponentClass<any>;
-  fields?: FieldData[];
-  name?: string;
-  validateMessages?: ValidateMessages;
-  onValuesChange?: Callbacks<Values>['onValuesChange'];
-  onFieldsChange?: Callbacks<Values>['onFieldsChange'];
-  onFinish?: Callbacks<Values>['onFinish'];
-  onFinishFailed?: Callbacks<Values>['onFinishFailed'];
-  validateTrigger?: string | string[] | false;
-  preserve?: boolean;
-}
 
 const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   {
