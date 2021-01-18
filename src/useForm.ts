@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import {
+import type {
   Callbacks,
   FieldData,
   FieldEntity,
