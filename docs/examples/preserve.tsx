@@ -18,13 +18,16 @@ export default () => {
       }}
     >
       <Field shouldUpdate>
-        {() => {
-          return (
+        {() => (
+          <>
             <Field name="test" preserve={false}>
               <Input />
             </Field>
-          );
-        }}
+            {/* <Field name="test">
+                <Input />
+              </Field> */}
+          </>
+        )}
       </Field>
       <button type="submit">Submit</button>
       <button

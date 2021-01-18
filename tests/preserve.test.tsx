@@ -37,7 +37,7 @@ describe('Form.Preserve', () => {
 
     await matchTest(false, { keep: 233, remove: 666 });
     await matchTest(true, { keep: 233 });
-    await matchTest(false, { keep: 233 });
+    await matchTest(false, { keep: 233, remove: 666 });
   });
 
   it('form', async () => {
@@ -54,7 +54,48 @@ describe('Form.Preserve', () => {
 
     await matchTest(false, { keep: 233, remove: 666 });
     await matchTest(true, { keep: 233 });
-    await matchTest(false, { keep: 233 });
+    await matchTest(false, { keep: 233, remove: 666 });
+  });
+
+  it('keep preserve when other field exist the name', async () => {
+    const formRef = React.createRef<FormInstance>();
+
+    const KeepDemo = ({ onFinish, keep }: { onFinish: (values: any) => void; keep: boolean }) => {
+      return (
+        <Form ref={formRef} initialValues={{ test: 'bamboo' }} onFinish={onFinish}>
+          <Form.Field shouldUpdate>
+            {() => {
+              return (
+                <>
+                  {keep && <InfoField name="test" preserve={false} />}
+                  <InfoField name="test" />
+                </>
+              );
+            }}
+          </Form.Field>
+        </Form>
+      );
+    };
+
+    const onFinish = jest.fn();
+    const wrapper = mount(<KeepDemo onFinish={onFinish} keep />);
+
+    // Change value
+    wrapper
+      .find('input')
+      .first()
+      .simulate('change', { target: { value: 'light' } });
+
+    formRef.current.submit();
+    await timeout();
+    expect(onFinish).toHaveBeenCalledWith({ test: 'light' });
+
+    // Remove preserve should not change the value
+    wrapper.setProps({ keep: false });
+    await timeout();
+    formRef.current.submit();
+    await timeout();
+    expect(onFinish).toHaveBeenCalledWith({ test: 'light' });
   });
 
   it('form perishable but field !perishable', async () => {
