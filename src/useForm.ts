@@ -30,6 +30,7 @@ import {
   containsNamePath,
   getNamePath,
   getValue,
+  matchNamePath,
   setValue,
   setValues,
 } from './utils/valueUtil';
@@ -542,8 +543,18 @@ export class FormStore {
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
       if (mergedPreserve === false && !isListField) {
         const namePath = entity.getNamePath();
-        if (namePath.length && this.getFieldValue(namePath) !== undefined) {
-          this.store = setValue(this.store, namePath, undefined);
+        const defaultValue = getValue(this.initialValues, namePath);
+
+        if (
+          namePath.length &&
+          this.getFieldValue(namePath) !== defaultValue &&
+          this.fieldEntities.every(
+            field =>
+              // Only reset when no namePath exist
+              !matchNamePath(field.getNamePath(), namePath),
+          )
+        ) {
+          this.store = setValue(this.store, namePath, defaultValue);
         }
       }
     };

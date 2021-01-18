@@ -386,6 +386,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public isList = () => this.props.isList;
 
+  public isPreserve = () => this.props.preserve;
+
   // ============================= Child Component =============================
   public getMeta = (): Meta => {
     // Make error & validating in cache to save perf
