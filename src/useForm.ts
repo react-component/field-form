@@ -550,10 +550,8 @@ export class FormStore {
           this.getFieldValue(namePath) !== defaultValue &&
           this.fieldEntities.every(
             field =>
-              // Ignore not match namePath field
-              !matchNamePath(field.getNamePath(), namePath) ||
-              // Matched field is also not preserved
-              (field.isPreserve ?? this.preserve) === false,
+              // Only reset when no namePath exist
+              !matchNamePath(field.getNamePath(), namePath),
           )
         ) {
           this.store = setValue(this.store, namePath, defaultValue);

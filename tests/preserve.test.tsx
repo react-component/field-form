@@ -89,6 +89,7 @@ describe('Form.Preserve', () => {
     formRef.current.submit();
     await timeout();
     expect(onFinish).toHaveBeenCalledWith({ test: 'light' });
+    onFinish.mockReset();
 
     // Remove preserve should not change the value
     wrapper.setProps({ keep: false });

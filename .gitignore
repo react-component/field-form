@@ -13,6 +13,7 @@
 /es
 /lib
 .doc
+/coverage
 
 # misc
 .DS_Store
