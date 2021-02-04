@@ -544,7 +544,8 @@ export class FormStore {
 
       if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
         const namePath = entity.getNamePath();
-        const defaultValue = getValue(this.initialValues, namePath);
+
+        const defaultValue = isListField ? undefined : getValue(this.initialValues, namePath);
 
         if (
           namePath.length &&
@@ -555,7 +556,7 @@ export class FormStore {
               !matchNamePath(field.getNamePath(), namePath),
           )
         ) {
-          this.store = setValue(this.store, namePath, defaultValue);
+          this.store = setValue(this.store, namePath, defaultValue, true);
         }
       }
     };

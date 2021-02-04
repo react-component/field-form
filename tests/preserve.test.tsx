@@ -2,7 +2,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import Form, { FormInstance } from '../src';
-import InfoField from './common/InfoField';
+import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
 describe('Form.Preserve', () => {
@@ -159,17 +159,32 @@ describe('Form.Preserve', () => {
 
     it('warning when Form.List use preserve', () => {
       const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      let form: FormInstance;
 
-      mount(
-        <Form initialValues={{ list: ['bamboo'] }}>
+      const wrapper = mount(
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+          initialValues={{ list: ['bamboo'] }}
+        >
           <Form.List name="list">
-            {fields =>
-              fields.map(field => (
-                <Form.Field {...field} preserve={false}>
-                  <input />
-                </Form.Field>
-              ))
-            }
+            {(fields, { remove }) => (
+              <>
+                {fields.map(field => (
+                  <Form.Field {...field} preserve={false}>
+                    <input />
+                  </Form.Field>
+                ))}
+                <button
+                  onClick={() => {
+                    remove(0);
+                  }}
+                >
+                  Remove
+                </button>
+              </>
+            )}
           </Form.List>
         </Form>,
       );
@@ -179,6 +194,10 @@ describe('Form.Preserve', () => {
       );
 
       errorSpy.mockRestore();
+
+      // Remove should not work
+      wrapper.find('button').simulate('click');
+      expect(form.getFieldsValue()).toEqual({ list: [] });
     });
 
     it('multiple level field can use preserve', async () => {
@@ -193,43 +212,54 @@ describe('Form.Preserve', () => {
           }}
         >
           <Form.List name="list">
-            {fields => {
-              return fields.map(field => (
-                <div key={field.key}>
-                  <Form.Field {...field} name={[field.name, 'type']}>
-                    <input />
-                  </Form.Field>
-                  <Form.Field shouldUpdate>
-                    {(_, __, { getFieldValue }) =>
-                      getFieldValue(['list', field.name, 'type']) === 'light' ? (
-                        <Form.Field
-                          {...field}
-                          key="light"
-                          preserve={false}
-                          name={[field.name, 'light']}
-                        >
-                          <input />
-                        </Form.Field>
-                      ) : (
-                        <Form.Field
-                          {...field}
-                          key="bamboo"
-                          preserve={false}
-                          name={[field.name, 'bamboo']}
-                        >
-                          <input />
-                        </Form.Field>
-                      )
-                    }
-                  </Form.Field>
-                </div>
-              ));
+            {(fields, { remove }) => {
+              return (
+                <>
+                  {fields.map(field => (
+                    <div key={field.key}>
+                      <Form.Field {...field} name={[field.name, 'type']}>
+                        <Input />
+                      </Form.Field>
+                      <Form.Field shouldUpdate>
+                        {(_, __, { getFieldValue }) =>
+                          getFieldValue(['list', field.name, 'type']) === 'light' ? (
+                            <Form.Field
+                              {...field}
+                              key="light"
+                              preserve={false}
+                              name={[field.name, 'light']}
+                            >
+                              <Input />
+                            </Form.Field>
+                          ) : (
+                            <Form.Field
+                              {...field}
+                              key="bamboo"
+                              preserve={false}
+                              name={[field.name, 'bamboo']}
+                            >
+                              <Input />
+                            </Form.Field>
+                          )
+                        }
+                      </Form.Field>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => {
+                      remove(0);
+                    }}
+                  >
+                    Remove
+                  </button>
+                </>
+              );
             }}
           </Form.List>
         </Form>,
       );
 
-      // Change value
+      // Change light value
       wrapper
         .find('input')
         .last()
@@ -241,12 +271,18 @@ describe('Form.Preserve', () => {
         .first()
         .simulate('change', { target: { value: 'bamboo' } });
 
+      // Change bamboo value
       wrapper
         .find('input')
         .last()
         .simulate('change', { target: { value: '903' } });
 
       expect(form.getFieldsValue()).toEqual({ list: [{ type: 'bamboo', bamboo: '903' }] });
+
+      // ============== Remove Test ==============
+      // Remove field
+      wrapper.find('button').simulate('click');
+      expect(form.getFieldsValue()).toEqual({ list: [] });
     });
   });
 
