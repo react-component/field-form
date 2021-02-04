@@ -539,7 +539,7 @@ export class FormStore {
     return (isListField?: boolean, preserve?: boolean) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
 
-      // Clean up store value if preserve
+      // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
       if (mergedPreserve === false && !isListField) {
         const namePath = entity.getNamePath();
