@@ -107,7 +107,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     resetCount: 0,
   };
 
-  private cancelRegisterFunc: (isListField?: boolean, preserve?: boolean) => void | null = null;
+  private cancelRegisterFunc: (
+    isListField?: boolean,
+    preserve?: boolean,
+    namePath?: InternalNamePath,
+  ) => void | null = null;
 
   private mounted = false;
 
@@ -162,10 +166,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 
   public cancelRegister = () => {
-    const { preserve, isListField } = this.props;
+    const { preserve, isListField, name } = this.props;
 
     if (this.cancelRegisterFunc) {
-      this.cancelRegisterFunc(isListField, preserve);
+      this.cancelRegisterFunc(isListField, preserve, getNamePath(name));
     }
     this.cancelRegisterFunc = null;
   };

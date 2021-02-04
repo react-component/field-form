@@ -186,7 +186,7 @@ describe('Form.Preserve', () => {
 
       const wrapper = mount(
         <Form
-          initialValues={{ list: [{ type: 'light', light: '1128' }] }}
+          initialValues={{ list: [{ type: 'light' }] }}
           preserve={false}
           ref={instance => {
             form = instance;
@@ -202,11 +202,21 @@ describe('Form.Preserve', () => {
                   <Form.Field shouldUpdate>
                     {(_, __, { getFieldValue }) =>
                       getFieldValue(['list', field.name, 'type']) === 'light' ? (
-                        <Form.Field {...field} name={[field.name, 'light']}>
+                        <Form.Field
+                          {...field}
+                          key="light"
+                          preserve={false}
+                          name={[field.name, 'light']}
+                        >
                           <input />
                         </Form.Field>
                       ) : (
-                        <Form.Field {...field} name={[field.name, 'bamboo']}>
+                        <Form.Field
+                          {...field}
+                          key="bamboo"
+                          preserve={false}
+                          name={[field.name, 'bamboo']}
+                        >
                           <input />
                         </Form.Field>
                       )
@@ -219,6 +229,12 @@ describe('Form.Preserve', () => {
         </Form>,
       );
 
+      // Change value
+      wrapper
+        .find('input')
+        .last()
+        .simulate('change', { target: { value: '1128' } });
+
       // Change type
       wrapper
         .find('input')
@@ -230,7 +246,7 @@ describe('Form.Preserve', () => {
         .last()
         .simulate('change', { target: { value: '903' } });
 
-      expect(form.getFieldsValue()).toEqual(233);
+      expect(form.getFieldsValue()).toEqual({ list: [{ type: 'bamboo', bamboo: '903' }] });
     });
   });
 
