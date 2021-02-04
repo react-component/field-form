@@ -541,8 +541,9 @@ export class FormStore {
 
       // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
+      const namePath = entity.getNamePath();
+
       if (mergedPreserve === false && !isListField) {
-        const namePath = entity.getNamePath();
         const defaultValue = getValue(this.initialValues, namePath);
 
         if (

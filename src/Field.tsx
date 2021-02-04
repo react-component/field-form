@@ -553,11 +553,15 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     key = `_${(namePath || []).join('_')}`;
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    warning(
-      restProps.preserve !== false || !restProps.isListField,
-      '`preserve` should not apply on Form.List fields.',
-    );
+  // Warning if it's a directly list field.
+  // We can still support multiple level field preserve.
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    restProps.preserve === false &&
+    restProps.isListField &&
+    namePath.length <= 1
+  ) {
+    warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
   return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
