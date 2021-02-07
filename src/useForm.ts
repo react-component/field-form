@@ -536,14 +536,16 @@ export class FormStore {
     }
 
     // un-register field callback
-    return (isListField?: boolean, preserve?: boolean) => {
+    return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
 
-      // Clean up store value if preserve
+      // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
-      if (mergedPreserve === false && !isListField) {
+
+      if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
         const namePath = entity.getNamePath();
-        const defaultValue = getValue(this.initialValues, namePath);
+
+        const defaultValue = isListField ? undefined : getValue(this.initialValues, namePath);
 
         if (
           namePath.length &&
@@ -554,7 +556,7 @@ export class FormStore {
               !matchNamePath(field.getNamePath(), namePath),
           )
         ) {
-          this.store = setValue(this.store, namePath, defaultValue);
+          this.store = setValue(this.store, namePath, defaultValue, true);
         }
       }
     };

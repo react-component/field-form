@@ -107,7 +107,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     resetCount: 0,
   };
 
-  private cancelRegisterFunc: (isListField?: boolean, preserve?: boolean) => void | null = null;
+  private cancelRegisterFunc: (
+    isListField?: boolean,
+    preserve?: boolean,
+    namePath?: InternalNamePath,
+  ) => void | null = null;
 
   private mounted = false;
 
@@ -162,10 +166,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 
   public cancelRegister = () => {
-    const { preserve, isListField } = this.props;
+    const { preserve, isListField, name } = this.props;
 
     if (this.cancelRegisterFunc) {
-      this.cancelRegisterFunc(isListField, preserve);
+      this.cancelRegisterFunc(isListField, preserve, getNamePath(name));
     }
     this.cancelRegisterFunc = null;
   };
@@ -553,11 +557,15 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     key = `_${(namePath || []).join('_')}`;
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    warning(
-      restProps.preserve !== false || !restProps.isListField,
-      '`preserve` should not apply on Form.List fields.',
-    );
+  // Warning if it's a directly list field.
+  // We can still support multiple level field preserve.
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    restProps.preserve === false &&
+    restProps.isListField &&
+    namePath.length <= 1
+  ) {
+    warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
   return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;

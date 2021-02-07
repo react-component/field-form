@@ -2,7 +2,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import Form, { FormInstance } from '../src';
-import InfoField from './common/InfoField';
+import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
 describe('Form.Preserve', () => {
@@ -99,7 +99,7 @@ describe('Form.Preserve', () => {
     expect(onFinish).toHaveBeenCalledWith({ test: 'light' });
   });
 
-  it('form perishable but field !perishable', async () => {
+  it('form preserve but field !preserve', async () => {
     const onFinish = jest.fn();
     const wrapper = mount(
       <Demo removeField={false} onFinish={onFinish} formPreserve={false} fieldPreserve />,
@@ -117,67 +117,173 @@ describe('Form.Preserve', () => {
     await matchTest(false, { keep: 233, remove: 666 });
   });
 
-  it('form perishable should not crash Form.List', async () => {
-    let form: FormInstance;
+  describe('Form.List', () => {
+    it('form preserve should not crash', async () => {
+      let form: FormInstance;
 
-    const wrapper = mount(
-      <Form
-        initialValues={{ list: ['light', 'bamboo', 'little'] }}
-        preserve={false}
-        ref={instance => {
-          form = instance;
-        }}
-      >
-        <Form.List name="list">
-          {(fields, { remove }) => {
-            return (
-              <div>
+      const wrapper = mount(
+        <Form
+          initialValues={{ list: ['light', 'bamboo', 'little'] }}
+          preserve={false}
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <Form.List name="list">
+            {(fields, { remove }) => {
+              return (
+                <div>
+                  {fields.map(field => (
+                    <Form.Field {...field}>
+                      <input />
+                    </Form.Field>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      remove(0);
+                    }}
+                  />
+                </div>
+              );
+            }}
+          </Form.List>
+        </Form>,
+      );
+
+      wrapper.find('button').simulate('click');
+      wrapper.update();
+
+      expect(form.getFieldsValue()).toEqual({ list: ['bamboo', 'little'] });
+    });
+
+    it('warning when Form.List use preserve', () => {
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      let form: FormInstance;
+
+      const wrapper = mount(
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+          initialValues={{ list: ['bamboo'] }}
+        >
+          <Form.List name="list">
+            {(fields, { remove }) => (
+              <>
                 {fields.map(field => (
-                  <Form.Field {...field}>
+                  <Form.Field {...field} preserve={false}>
                     <input />
                   </Form.Field>
                 ))}
                 <button
-                  type="button"
                   onClick={() => {
                     remove(0);
                   }}
-                />
-              </div>
-            );
+                >
+                  Remove
+                </button>
+              </>
+            )}
+          </Form.List>
+        </Form>,
+      );
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Warning: `preserve` should not apply on Form.List fields.',
+      );
+
+      errorSpy.mockRestore();
+
+      // Remove should not work
+      wrapper.find('button').simulate('click');
+      expect(form.getFieldsValue()).toEqual({ list: [] });
+    });
+
+    it('multiple level field can use preserve', async () => {
+      let form: FormInstance;
+
+      const wrapper = mount(
+        <Form
+          initialValues={{ list: [{ type: 'light' }] }}
+          preserve={false}
+          ref={instance => {
+            form = instance;
           }}
-        </Form.List>
-      </Form>,
-    );
+        >
+          <Form.List name="list">
+            {(fields, { remove }) => {
+              return (
+                <>
+                  {fields.map(field => (
+                    <div key={field.key}>
+                      <Form.Field {...field} name={[field.name, 'type']}>
+                        <Input />
+                      </Form.Field>
+                      <Form.Field shouldUpdate>
+                        {(_, __, { getFieldValue }) =>
+                          getFieldValue(['list', field.name, 'type']) === 'light' ? (
+                            <Form.Field
+                              {...field}
+                              key="light"
+                              preserve={false}
+                              name={[field.name, 'light']}
+                            >
+                              <Input />
+                            </Form.Field>
+                          ) : (
+                            <Form.Field
+                              {...field}
+                              key="bamboo"
+                              preserve={false}
+                              name={[field.name, 'bamboo']}
+                            >
+                              <Input />
+                            </Form.Field>
+                          )
+                        }
+                      </Form.Field>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => {
+                      remove(0);
+                    }}
+                  >
+                    Remove
+                  </button>
+                </>
+              );
+            }}
+          </Form.List>
+        </Form>,
+      );
 
-    wrapper.find('button').simulate('click');
-    wrapper.update();
+      // Change light value
+      wrapper
+        .find('input')
+        .last()
+        .simulate('change', { target: { value: '1128' } });
 
-    expect(form.getFieldsValue()).toEqual({ list: ['bamboo', 'little'] });
-  });
+      // Change type
+      wrapper
+        .find('input')
+        .first()
+        .simulate('change', { target: { value: 'bamboo' } });
 
-  it('warning when Form.List use preserve', () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      // Change bamboo value
+      wrapper
+        .find('input')
+        .last()
+        .simulate('change', { target: { value: '903' } });
 
-    mount(
-      <Form initialValues={{ list: ['bamboo'] }}>
-        <Form.List name="list">
-          {fields =>
-            fields.map(field => (
-              <Form.Field {...field} preserve={false}>
-                <input />
-              </Form.Field>
-            ))
-          }
-        </Form.List>
-      </Form>,
-    );
+      expect(form.getFieldsValue()).toEqual({ list: [{ type: 'bamboo', bamboo: '903' }] });
 
-    expect(errorSpy).toHaveBeenCalledWith(
-      'Warning: `preserve` should not apply on Form.List fields.',
-    );
-
-    errorSpy.mockRestore();
+      // ============== Remove Test ==============
+      // Remove field
+      wrapper.find('button').simulate('click');
+      expect(form.getFieldsValue()).toEqual({ list: [] });
+    });
   });
 
   it('nest render props should not clean full store', () => {

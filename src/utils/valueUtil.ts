@@ -19,8 +19,13 @@ export function getValue(store: Store, namePath: InternalNamePath) {
   return value;
 }
 
-export function setValue(store: Store, namePath: InternalNamePath, value: StoreValue): Store {
-  const newStore = set(store, namePath, value);
+export function setValue(
+  store: Store,
+  namePath: InternalNamePath,
+  value: StoreValue,
+  removeIfUndefined = false,
+): Store {
+  const newStore = set(store, namePath, value, removeIfUndefined);
   return newStore;
 }
 
