@@ -240,7 +240,21 @@ describe('Form.Basic', () => {
     await changeValue(getField(wrapper, 'bamboo'), 'beauty');
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { bamboo: 'beauty' });
   });
-
+  it('reset', async () => {
+    const wrapper = mount(
+      <Form>
+        <InfoField name={'user'}>
+          <Input />
+        </InfoField>
+        <button type="reset">reset</button>
+      </Form>,
+    );
+    await changeValue(getField(wrapper), 'Bamboo');
+    wrapper.find('button').simulate('reset');
+    await timeout();
+    const { value } = wrapper.find('input').props();
+    expect(value).toEqual('');
+  });
   it('submit', async () => {
     const onFinish = jest.fn();
     const onFinishFailed = jest.fn();
