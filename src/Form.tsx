@@ -147,6 +147,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
 
   return (
     <Component
+      {...restProps}
       onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
@@ -159,7 +160,6 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
         formInstance.resetFields();
         restProps.onReset?.(event);
       }}
-      {...restProps}
     >
       {wrapperNode}
     </Component>
