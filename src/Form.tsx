@@ -155,9 +155,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
       }}
       onReset={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        event.stopPropagation();
 
         formInstance.resetFields();
+        restProps.onReset?.(event);
       }}
       {...restProps}
     >
