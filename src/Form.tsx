@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {
+import type {
   Store,
   FormInstance,
   FieldData,
@@ -9,7 +9,8 @@ import {
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
-import FormContext, { FormContextProps } from './FormContext';
+import type { FormContextProps } from './FormContext';
+import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
@@ -152,6 +153,12 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
         event.stopPropagation();
 
         formInstance.submit();
+      }}
+      onReset={(event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        formInstance.resetFields();
+        restProps.onReset?.(event);
       }}
     >
       {wrapperNode}
