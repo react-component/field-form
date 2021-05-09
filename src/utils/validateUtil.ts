@@ -1,7 +1,7 @@
 import RawAsyncValidator from 'async-validator';
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import {
+import type {
   InternalNamePath,
   ValidateOptions,
   ValidateMessages,
@@ -110,7 +110,7 @@ async function validateRule(
     }
   }
 
-  if (!result.length && subRuleField) {
+  if (!result.length && subRuleField && Array.isArray(value)) {
     const subResults: string[][] = await Promise.all(
       (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
         validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
