@@ -145,11 +145,11 @@ export class FormStore {
   };
 
   // ========================== Dev Warning =========================
-  private timeoutId: number = null;
+  private timeoutId: any = null;
 
   private warningUnhooked = () => {
     if (process.env.NODE_ENV !== 'production' && !this.timeoutId && typeof window !== 'undefined') {
-      this.timeoutId = window.setTimeout(() => {
+      this.timeoutId = setTimeout(() => {
         this.timeoutId = null;
 
         if (!this.formHooked) {

@@ -1,7 +1,7 @@
 import RawAsyncValidator from 'async-validator';
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import {
+import type {
   InternalNamePath,
   ValidateOptions,
   ValidateMessages,
