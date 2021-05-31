@@ -101,6 +101,7 @@ describe('Form.Basic', () => {
       it(name, async () => {
         let form;
         const onReset = jest.fn();
+        const onError = jest.fn();
 
         const wrapper = mount(
           <div>
@@ -109,7 +110,12 @@ describe('Form.Basic', () => {
                 form = instance;
               }}
             >
-              <Field name="username" rules={[{ required: true }]} onReset={onReset}>
+              <Field
+                name="username"
+                rules={[{ required: true }]}
+                onReset={onReset}
+                onError={onError}
+              >
                 <Input />
               </Field>
             </Form>
@@ -120,12 +126,14 @@ describe('Form.Basic', () => {
         expect(form.getFieldValue('username')).toEqual('Bamboo');
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeTruthy();
-
+        expect(onError).not.toHaveBeenCalled();
         expect(onReset).not.toHaveBeenCalled();
+
         form.resetFields(...args);
         expect(form.getFieldValue('username')).toEqual(undefined);
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeFalsy();
+        expect(onError).not.toHaveBeenCalled();
         expect(onReset).toHaveBeenCalled();
         onReset.mockRestore();
 
@@ -133,12 +141,14 @@ describe('Form.Basic', () => {
         expect(form.getFieldValue('username')).toEqual('');
         expect(form.getFieldError('username')).toEqual(["'username' is required"]);
         expect(form.isFieldTouched('username')).toBeTruthy();
-
+        expect(onError).toHaveBeenCalledWith(["'username' is required"]);
         expect(onReset).not.toHaveBeenCalled();
+
         form.resetFields(...args);
         expect(form.getFieldValue('username')).toEqual(undefined);
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeFalsy();
+        expect(onError).toHaveBeenCalledWith([]);
         expect(onReset).toHaveBeenCalled();
       });
     }
