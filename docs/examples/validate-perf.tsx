@@ -34,6 +34,10 @@ export default class Demo extends React.Component {
     console.log('Failed:', errorInfo);
   };
 
+  public onPasswordError = (errors: string[]) => {
+    console.log('🐞 Password Error:', errors);
+  };
+
   public render() {
     return (
       <div>
@@ -50,6 +54,7 @@ export default class Demo extends React.Component {
             name="password"
             messageVariables={{ displayName: '密码' }}
             rules={[{ required: true }]}
+            onError={this.onPasswordError}
           >
             <Input placeholder="password" />
           </LabelField>
@@ -118,6 +123,7 @@ export default class Demo extends React.Component {
           >
             Reset
           </button>
+          <button type="reset">Reset Native</button>
         </Form>
       </div>
     );

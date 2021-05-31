@@ -214,6 +214,15 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }));
   };
 
+  /** Update `this.error`. If `onError` provided, trigger it */
+  public updateError(prevErrors: string[], nextErrors: string[]) {
+    const { onError } = this.props;
+    if (onError && !isSimilar(prevErrors, nextErrors)) {
+      onError(nextErrors);
+    }
+    this.errors = nextErrors;
+  }
+
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
   public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathList, info) => {
@@ -225,12 +234,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
+    const prevErrors = this.errors;
+
     // `setFieldsValue` is a quick access to update related status
     if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
       this.touched = true;
       this.dirty = true;
       this.validatePromise = null;
-      this.errors = EMPTY_ERRORS;
+      this.updateError(prevErrors, EMPTY_ERRORS);
     }
 
     switch (info.type) {
@@ -240,11 +251,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           this.touched = false;
           this.dirty = false;
           this.validatePromise = null;
-          this.errors = EMPTY_ERRORS;
+          this.updateError(prevErrors, EMPTY_ERRORS);
 
-          if (onReset) {
-            onReset();
-          }
+          onReset?.();
 
           this.refresh();
           return;
@@ -261,7 +270,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
             this.validatePromise = data.validating ? Promise.resolve([]) : null;
           }
           if ('errors' in data) {
-            this.errors = data.errors || [];
+            this.updateError(prevErrors, data.errors || EMPTY_ERRORS);
           }
           this.dirty = true;
 
@@ -336,7 +345,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         return [];
       }
 
-      const { validateFirst = false, messageVariables, onError } = this.props;
+      const { validateFirst = false, messageVariables } = this.props;
       const { triggerName } = (options || {}) as ValidateOptions;
 
       let filteredRules = this.getRules();
@@ -365,12 +374,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         .then((errors: string[] = EMPTY_ERRORS) => {
           if (this.validatePromise === rootPromise) {
             this.validatePromise = null;
-            this.errors = errors;
-
-            // Trigger error if changed
-            if (!isSimilar(prevErrors, errors)) {
-              onError?.(errors);
-            }
+            this.updateError(prevErrors, errors);
 
             this.reRender();
           }
