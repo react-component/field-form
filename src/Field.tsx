@@ -1,7 +1,7 @@
 import toChildrenArray from 'rc-util/lib/Children/toArray';
 import warning from 'rc-util/lib/warning';
 import * as React from 'react';
-import {
+import type {
   FieldEntity,
   FormInstance,
   InternalNamePath,
@@ -24,7 +24,10 @@ import {
   defaultGetValueFromEvent,
   getNamePath,
   getValue,
+  isSimilar,
 } from './utils/valueUtil';
+
+const EMPTY_ERRORS: string[] = [];
 
 export type ShouldUpdate<Values = any> =
   | boolean
@@ -44,6 +47,7 @@ function requireUpdate(
   return prevValue !== nextValue;
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 interface ChildProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [name: string]: any;
@@ -72,6 +76,7 @@ export interface InternalFieldProps<Values = any> {
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
+  onError?: (errors: string[]) => void;
   preserve?: boolean;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
@@ -128,7 +133,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   private prevValidating: boolean;
 
-  private errors: string[] = [];
+  private errors: string[] = EMPTY_ERRORS;
 
   // ============================== Subscriptions ==============================
   constructor(props: InternalFieldProps) {
@@ -185,14 +190,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public getRules = (): RuleObject[] => {
     const { rules = [], fieldContext } = this.props;
 
-    return rules.map(
-      (rule: Rule): RuleObject => {
-        if (typeof rule === 'function') {
-          return rule(fieldContext);
-        }
-        return rule;
-      },
-    );
+    return rules.map((rule: Rule): RuleObject => {
+      if (typeof rule === 'function') {
+        return rule(fieldContext);
+      }
+      return rule;
+    });
   };
 
   public reRender() {
@@ -227,7 +230,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       this.touched = true;
       this.dirty = true;
       this.validatePromise = null;
-      this.errors = [];
+      this.errors = EMPTY_ERRORS;
     }
 
     switch (info.type) {
@@ -237,7 +240,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           this.touched = false;
           this.dirty = false;
           this.validatePromise = null;
-          this.errors = [];
+          this.errors = EMPTY_ERRORS;
 
           if (onReset) {
             onReset();
@@ -321,6 +324,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   public validateRules = (options?: ValidateOptions): Promise<string[]> => {
+    const prevErrors = this.errors;
+
     // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
     const currentValue = this.getValue();
@@ -331,7 +336,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         return [];
       }
 
-      const { validateFirst = false, messageVariables } = this.props;
+      const { validateFirst = false, messageVariables, onError } = this.props;
       const { triggerName } = (options || {}) as ValidateOptions;
 
       let filteredRules = this.getRules();
@@ -357,10 +362,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       promise
         .catch(e => e)
-        .then((errors: string[] = []) => {
+        .then((errors: string[] = EMPTY_ERRORS) => {
           if (this.validatePromise === rootPromise) {
             this.validatePromise = null;
             this.errors = errors;
+
+            // Trigger error if changed
+            if (!isSimilar(prevErrors, errors)) {
+              onError?.(errors);
+            }
+
             this.reRender();
           }
         });
@@ -370,7 +381,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     this.validatePromise = rootPromise;
     this.dirty = true;
-    this.errors = [];
+    this.errors = EMPTY_ERRORS;
 
     // Force trigger re-render since we need sync renderProps with new meta
     this.reRender();
