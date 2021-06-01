@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 import { act } from 'react-dom/test-utils';
+import type { ReactWrapper } from 'enzyme';
 import timeout from './timeout';
 import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
@@ -13,7 +14,12 @@ export async function changeValue(wrapper, value) {
   wrapper.update();
 }
 
-export function matchError(wrapper, error) {
+export function matchError(
+  wrapper: ReactWrapper,
+  error?: boolean | string,
+  warning?: boolean | string,
+) {
+  // Error
   if (error) {
     expect(wrapper.find('.errors li').length).toBeTruthy();
   } else {
@@ -22,6 +28,17 @@ export function matchError(wrapper, error) {
 
   if (error && typeof error !== 'boolean') {
     expect(wrapper.find('.errors li').text()).toBe(error);
+  }
+
+  // Warning
+  if (warning) {
+    expect(wrapper.find('.warnings li').length).toBeTruthy();
+  } else {
+    expect(wrapper.find('.warnings li').length).toBeFalsy();
+  }
+
+  if (warning && typeof warning !== 'boolean') {
+    expect(wrapper.find('.warnings li').text()).toBe(warning);
   }
 }
 

@@ -108,56 +108,77 @@ export function validateRules(
   const name = namePath.join('.');
 
   // Fill rule with context
-  const filledRules: RuleObject[] = rules.map(currentRule => {
-    const originValidatorFunc = currentRule.validator;
+  const filledRules: RuleObject[] = rules
+    .map((currentRule, ruleIndex) => {
+      const originValidatorFunc = currentRule.validator;
+      const cloneRule = {
+        ...currentRule,
+        ruleIndex,
+      };
 
-    if (!originValidatorFunc) {
-      return currentRule;
-    }
-    return {
-      ...currentRule,
-      validator(rule: RuleObject, val: StoreValue, callback: (error?: string) => void) {
-        let hasPromise = false;
+      // Replace validator if needed
+      if (originValidatorFunc) {
+        cloneRule.validator = (
+          rule: RuleObject,
+          val: StoreValue,
+          callback: (error?: string) => void,
+        ) => {
+          let hasPromise = false;
 
-        // Wrap callback only accept when promise not provided
-        const wrappedCallback = (...args: string[]) => {
-          // Wait a tick to make sure return type is a promise
-          Promise.resolve().then(() => {
-            warning(
-              !hasPromise,
-              'Your validator function has already return a promise. `callback` will be ignored.',
-            );
+          // Wrap callback only accept when promise not provided
+          const wrappedCallback = (...args: string[]) => {
+            // Wait a tick to make sure return type is a promise
+            Promise.resolve().then(() => {
+              warning(
+                !hasPromise,
+                'Your validator function has already return a promise. `callback` will be ignored.',
+              );
 
-            if (!hasPromise) {
-              callback(...args);
-            }
-          });
-        };
-
-        // Get promise
-        const promise = originValidatorFunc(rule, val, wrappedCallback);
-        hasPromise =
-          promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
-
-        /**
-         * 1. Use promise as the first priority.
-         * 2. If promise not exist, use callback with warning instead
-         */
-        warning(hasPromise, '`callback` is deprecated. Please return a promise instead.');
-
-        if (hasPromise) {
-          (promise as Promise<void>)
-            .then(() => {
-              callback();
-            })
-            .catch(err => {
-              callback(err || ' ');
+              if (!hasPromise) {
+                callback(...args);
+              }
             });
-        }
-      },
-    };
-  });
+          };
 
+          // Get promise
+          const promise = originValidatorFunc(rule, val, wrappedCallback);
+          hasPromise =
+            promise && typeof promise.then === 'function' && typeof promise.catch === 'function';
+
+          /**
+           * 1. Use promise as the first priority.
+           * 2. If promise not exist, use callback with warning instead
+           */
+          warning(hasPromise, '`callback` is deprecated. Please return a promise instead.');
+
+          if (hasPromise) {
+            (promise as Promise<void>)
+              .then(() => {
+                callback();
+              })
+              .catch(err => {
+                callback(err || ' ');
+              });
+          }
+        };
+      }
+
+      return cloneRule;
+    })
+    .sort(({ warningOnly: w1, ruleIndex: i1 }, { warningOnly: w2, ruleIndex: i2 }) => {
+      if (!!w1 === !!w2) {
+        // Let keep origin order
+        return i1 - i2;
+      }
+
+      if (w1) {
+        return 1;
+      }
+
+      return -1;
+    });
+
+  // Do validate rules
   let summaryPromise: Promise<RuleError[]>;
 
   if (validateFirst === true) {
