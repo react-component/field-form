@@ -2,6 +2,8 @@ import RawAsyncValidator from 'async-validator';
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
 import type { InternalNamePath, ValidateOptions, RuleObject, StoreValue } from '../interface';
+import { defaultValidateMessages } from './messages';
+import { setValues } from './valueUtil';
 
 // Remove incorrect original ts define
 const AsyncValidator: any = RawAsyncValidator;
@@ -36,8 +38,8 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const { validateMessages } = options;
-  validator.messages(validateMessages);
+  const messages = setValues({}, defaultValidateMessages, options.validateMessages);
+  validator.messages(messages);
 
   let result = [];
 
@@ -53,7 +55,7 @@ async function validateRule(
       );
     } else {
       console.error(errObj);
-      result = [(validateMessages.default as () => string)()];
+      result = [messages.default];
     }
   }
 
