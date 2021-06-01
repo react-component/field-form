@@ -4,6 +4,7 @@ import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError } from './common';
+import type { Rule } from '@/interface';
 
 describe('Form.WarningValidate', () => {
   it('required', async () => {
@@ -28,23 +29,36 @@ describe('Form.WarningValidate', () => {
   });
 
   describe('validateFirst should not block error', () => {
-    function testValidateFirst(name: string, validateFirst: boolean | 'parallel') {
+    function testValidateFirst(
+      name: string,
+      validateFirst: boolean | 'parallel',
+      additionalRule?: Rule,
+      errorMessage?: string,
+    ) {
       it(name, async () => {
+        const rules = [
+          additionalRule,
+          {
+            type: 'string',
+            len: 10,
+            warningOnly: true,
+          },
+          {
+            type: 'url',
+          },
+          {
+            type: 'string',
+            len: 20,
+            warningOnly: true,
+          },
+        ];
+
         const wrapper = mount(
           <Form>
             <InfoField
               name="name"
               validateFirst={validateFirst}
-              rules={[
-                {
-                  type: 'string',
-                  len: 10,
-                  warningOnly: true,
-                },
-                {
-                  type: 'url',
-                },
-              ]}
+              rules={rules.filter(r => r) as any}
             >
               <Input />
             </InfoField>
@@ -52,11 +66,20 @@ describe('Form.WarningValidate', () => {
         );
 
         await changeValue(wrapper, 'bamboo');
-        matchError(wrapper, "'name' is not a valid url", false);
+        matchError(wrapper, errorMessage || "'name' is not a valid url", false);
       });
     }
 
     testValidateFirst('default', true);
+    testValidateFirst(
+      'default',
+      true,
+      {
+        type: 'string',
+        len: 3,
+      },
+      "'name' must be exactly 3 characters",
+    );
     testValidateFirst('parallel', 'parallel');
   });
 });

@@ -206,10 +206,7 @@ export function validateRules(
     summaryPromise = (
       validateFirst ? finishOnFirstFailed(rulePromises) : finishOnAllFailed(rulePromises)
     ).then((errors: RuleError[]): RuleError[] | Promise<RuleError[]> => {
-      if (!errors.length) {
-        return [];
-      }
-
+      // Always change to rejection for Field to catch
       return Promise.reject<RuleError[]>(errors);
     });
   }
