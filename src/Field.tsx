@@ -429,6 +429,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public getErrors = () => this.errors;
 
+  public getWarnings = () => this.warnings;
+
   public isListField = () => this.props.isListField;
 
   public isList = () => this.props.isList;

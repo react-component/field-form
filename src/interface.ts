@@ -105,6 +105,7 @@ export interface FieldEntity {
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
   getErrors: () => string[];
+  getWarnings: () => string[];
   props: {
     name?: NamePath;
     rules?: Rule[];
@@ -116,6 +117,7 @@ export interface FieldEntity {
 export interface FieldError {
   name: InternalNamePath;
   errors: string[];
+  warnings: string[];
 }
 
 export interface RuleError {
@@ -216,6 +218,7 @@ export interface FormInstance<Values = any> {
   getFieldsValue(nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean): any;
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
+  getFieldWarning: (name: NamePath) => string[];
   isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
   isFieldsTouched(allFieldsTouched?: boolean): boolean;
   isFieldTouched: (name: NamePath) => boolean;

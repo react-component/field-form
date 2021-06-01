@@ -80,6 +80,7 @@ export class FormStore {
     getFieldValue: this.getFieldValue,
     getFieldsValue: this.getFieldsValue,
     getFieldError: this.getFieldError,
+    getFieldWarning: this.getFieldWarning,
     getFieldsError: this.getFieldsError,
     isFieldsTouched: this.isFieldsTouched,
     isFieldTouched: this.isFieldTouched,
@@ -249,12 +250,14 @@ export class FormStore {
         return {
           name: entity.getNamePath(),
           errors: entity.getErrors(),
+          warnings: entity.getWarnings(),
         };
       }
 
       return {
         name: getNamePath(nameList[index]),
         errors: [],
+        warnings: [],
       };
     });
   };
@@ -265,6 +268,14 @@ export class FormStore {
     const namePath = getNamePath(name);
     const fieldError = this.getFieldsError([namePath])[0];
     return fieldError.errors;
+  };
+
+  private getFieldWarning = (name: NamePath): string[] => {
+    this.warningUnhooked();
+
+    const namePath = getNamePath(name);
+    const fieldError = this.getFieldsError([namePath])[0];
+    return fieldError.warnings;
   };
 
   private isFieldsTouched = (...args) => {
@@ -484,23 +495,21 @@ export class FormStore {
   private getFields = (): InternalFieldData[] => {
     const entities = this.getFieldEntities(true);
 
-    const fields = entities.map(
-      (field: FieldEntity): InternalFieldData => {
-        const namePath = field.getNamePath();
-        const meta = field.getMeta();
-        const fieldData = {
-          ...meta,
-          name: namePath,
-          value: this.getFieldValue(namePath),
-        };
+    const fields = entities.map((field: FieldEntity): InternalFieldData => {
+      const namePath = field.getNamePath();
+      const meta = field.getMeta();
+      const fieldData = {
+        ...meta,
+        name: namePath,
+        value: this.getFieldValue(namePath),
+      };
 
-        Object.defineProperty(fieldData, 'originRCField', {
-          value: true,
-        });
+      Object.defineProperty(fieldData, 'originRCField', {
+        value: true,
+      });
 
-        return fieldData;
-      },
-    );
+      return fieldData;
+    });
 
     return fields;
   };
@@ -802,14 +811,12 @@ export class FormStore {
       });
 
     const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
-      .then(
-        (): Promise<Store | string[]> => {
-          if (this.lastValidatePromise === summaryPromise) {
-            return Promise.resolve(this.getFieldsValue(namePathList));
-          }
-          return Promise.reject<string[]>([]);
-        },
-      )
+      .then((): Promise<Store | string[]> => {
+        if (this.lastValidatePromise === summaryPromise) {
+          return Promise.resolve(this.getFieldsValue(namePathList));
+        }
+        return Promise.reject<string[]>([]);
+      })
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
         const errorList = results.filter(result => result && result.errors.length);
         return Promise.reject({
