@@ -4,12 +4,18 @@ import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError } from './common';
-import type { Rule } from '@/interface';
+import type { FormInstance, Rule } from '../src/interface';
 
 describe('Form.WarningValidate', () => {
   it('required', async () => {
+    let form: FormInstance<any>;
+
     const wrapper = mount(
-      <Form>
+      <Form
+        ref={f => {
+          form = f;
+        }}
+      >
         <InfoField
           name="name"
           rules={[
@@ -26,6 +32,7 @@ describe('Form.WarningValidate', () => {
 
     await changeValue(wrapper, '');
     matchError(wrapper, false, "'name' is required");
+    expect(form.getFieldWarning('name')).toEqual(["'name' is required"]);
   });
 
   describe('validateFirst should not block error', () => {
