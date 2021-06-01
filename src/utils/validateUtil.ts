@@ -1,7 +1,13 @@
 import RawAsyncValidator from 'async-validator';
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import type { InternalNamePath, ValidateOptions, RuleObject, StoreValue } from '../interface';
+import type {
+  InternalNamePath,
+  ValidateOptions,
+  RuleObject,
+  StoreValue,
+  RuleError,
+} from '../interface';
 import { defaultValidateMessages } from './messages';
 import { setValues } from './valueUtil';
 
@@ -152,16 +158,17 @@ export function validateRules(
     };
   });
 
-  let summaryPromise: Promise<string[]>;
+  let summaryPromise: Promise<RuleError[]>;
 
   if (validateFirst === true) {
     // >>>>> Validate by serialization
     summaryPromise = new Promise(async (resolve, reject) => {
       /* eslint-disable no-await-in-loop */
       for (let i = 0; i < filledRules.length; i += 1) {
-        const errors = await validateRule(name, value, filledRules[i], options, messageVariables);
+        const rule = filledRules[i];
+        const errors = await validateRule(name, value, rule, options, messageVariables);
         if (errors.length) {
-          reject(errors);
+          reject([{ errors, rule }]);
           return;
         }
       }
@@ -171,18 +178,18 @@ export function validateRules(
     });
   } else {
     // >>>>> Validate by parallel
-    const rulePromises = filledRules.map(rule =>
-      validateRule(name, value, rule, options, messageVariables),
+    const rulePromises: Promise<RuleError>[] = filledRules.map(rule =>
+      validateRule(name, value, rule, options, messageVariables).then(errors => ({ errors, rule })),
     );
 
     summaryPromise = (
       validateFirst ? finishOnFirstFailed(rulePromises) : finishOnAllFailed(rulePromises)
-    ).then((errors: string[]): string[] | Promise<string[]> => {
+    ).then((errors: RuleError[]): RuleError[] | Promise<RuleError[]> => {
       if (!errors.length) {
         return [];
       }
 
-      return Promise.reject<string[]>(errors);
+      return Promise.reject<RuleError[]>(errors);
     });
   }
 
@@ -192,22 +199,24 @@ export function validateRules(
   return summaryPromise;
 }
 
-async function finishOnAllFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
-  return Promise.all(rulePromises).then((errorsList: string[][]): string[] | Promise<string[]> => {
-    const errors: string[] = [].concat(...errorsList);
+async function finishOnAllFailed(rulePromises: Promise<RuleError>[]): Promise<RuleError[]> {
+  return Promise.all(rulePromises).then((errorsList: RuleError[]):
+    | RuleError[]
+    | Promise<RuleError[]> => {
+    const errors: RuleError[] = [].concat(...errorsList);
 
     return errors;
   });
 }
 
-async function finishOnFirstFailed(rulePromises: Promise<string[]>[]): Promise<string[]> {
+async function finishOnFirstFailed(rulePromises: Promise<RuleError>[]): Promise<RuleError[]> {
   let count = 0;
 
   return new Promise(resolve => {
     rulePromises.forEach(promise => {
-      promise.then(errors => {
-        if (errors.length) {
-          resolve(errors);
+      promise.then(ruleError => {
+        if (ruleError.errors.length) {
+          resolve([ruleError]);
         }
 
         count += 1;

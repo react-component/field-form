@@ -1,18 +1,17 @@
-import { ReactElement } from 'react';
-import { ReducerAction } from './useForm';
+import type { ReactElement } from 'react';
+import type { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
 
 export type StoreValue = any;
-export interface Store {
-  [name: string]: StoreValue;
-}
+export type Store = Record<string, StoreValue>;
 
 export interface Meta {
   touched: boolean;
   validating: boolean;
   errors: string[];
+  warnings: string[];
   name: InternalNamePath;
 }
 
@@ -51,11 +50,13 @@ type Validator = (
 export type RuleRender = (form: FormInstance) => RuleObject;
 
 export interface ValidatorRule {
+  warningOnly?: boolean;
   message?: string | ReactElement;
   validator: Validator;
 }
 
 interface BaseRule {
+  warningOnly?: boolean;
   enum?: StoreValue[];
   len?: number;
   max?: number;
@@ -115,6 +116,11 @@ export interface FieldEntity {
 export interface FieldError {
   name: InternalNamePath;
   errors: string[];
+}
+
+export interface RuleError {
+  errors: string[];
+  rule: RuleObject;
 }
 
 export interface ValidateOptions {

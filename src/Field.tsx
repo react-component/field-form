@@ -15,6 +15,7 @@ import type {
   RuleObject,
   StoreValue,
   EventArgs,
+  RuleError,
 } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import { toArray } from './utils/typeUtil';
@@ -27,7 +28,7 @@ import {
   isSimilar,
 } from './utils/valueUtil';
 
-const EMPTY_ERRORS: string[] = [];
+const EMPTY_ERRORS: any[] = [];
 
 export type ShouldUpdate<Values = any> =
   | boolean
@@ -76,7 +77,7 @@ export interface InternalFieldProps<Values = any> {
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
-  onError?: (errors: string[]) => void;
+  onError?: (errors: string[], warnings: string[]) => void;
   preserve?: boolean;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
@@ -134,6 +135,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   private prevValidating: boolean;
 
   private errors: string[] = EMPTY_ERRORS;
+  private warnings: string[] = EMPTY_ERRORS;
 
   // ============================== Subscriptions ==============================
   constructor(props: InternalFieldProps) {
@@ -215,12 +217,18 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   /** Update `this.error`. If `onError` provided, trigger it */
-  public updateError(prevErrors: string[], nextErrors: string[]) {
+  public updateError(
+    prevErrors: string[],
+    nextErrors: string[],
+    prevWarnings: string[],
+    nextWarnings: string[],
+  ) {
     const { onError } = this.props;
-    if (onError && !isSimilar(prevErrors, nextErrors)) {
-      onError(nextErrors);
+    if (onError && (!isSimilar(prevErrors, nextErrors) || !isSimilar(prevWarnings, nextWarnings))) {
+      onError(nextErrors, nextWarnings);
     }
     this.errors = nextErrors;
+    this.warnings = nextWarnings;
   }
 
   // ========================= Field Entity Interfaces =========================
@@ -235,13 +243,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
     const prevErrors = this.errors;
+    const prevWarnings = this.warnings;
 
     // `setFieldsValue` is a quick access to update related status
     if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
       this.touched = true;
       this.dirty = true;
       this.validatePromise = null;
-      this.updateError(prevErrors, EMPTY_ERRORS);
+      this.updateError(prevErrors, EMPTY_ERRORS, prevWarnings, EMPTY_ERRORS);
     }
 
     switch (info.type) {
@@ -251,7 +260,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           this.touched = false;
           this.dirty = false;
           this.validatePromise = null;
-          this.updateError(prevErrors, EMPTY_ERRORS);
+          this.updateError(prevErrors, EMPTY_ERRORS, prevWarnings, EMPTY_ERRORS);
 
           onReset?.();
 
@@ -269,8 +278,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           if ('validating' in data && !('originRCField' in data)) {
             this.validatePromise = data.validating ? Promise.resolve([]) : null;
           }
-          if ('errors' in data) {
-            this.updateError(prevErrors, data.errors || EMPTY_ERRORS);
+
+          const hasError = 'errors' in data;
+          const hasWarning = 'warnings' in data;
+          if (hasError || hasWarning) {
+            const nextErrors = hasError ? data.errors || EMPTY_ERRORS : prevErrors;
+            const nextWarnings = hasWarning ? data.warnings || EMPTY_ERRORS : prevWarnings;
+            this.updateError(prevErrors, nextErrors, prevWarnings, nextWarnings);
           }
           this.dirty = true;
 
@@ -334,6 +348,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public validateRules = (options?: ValidateOptions): Promise<string[]> => {
     const prevErrors = this.errors;
+    const prevWarnings = this.warnings;
 
     // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
@@ -371,10 +386,22 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       promise
         .catch(e => e)
-        .then((errors: string[] = EMPTY_ERRORS) => {
+        .then((ruleErrors: RuleError[] = EMPTY_ERRORS) => {
           if (this.validatePromise === rootPromise) {
             this.validatePromise = null;
-            this.updateError(prevErrors, errors);
+
+            // Get errors & warnings
+            const nextErrors: string[] = [];
+            const nextWarnings: string[] = [];
+            ruleErrors.forEach(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
+              if (warningOnly) {
+                nextWarnings.push(...errors);
+              } else {
+                nextErrors.push(...errors);
+              }
+            });
+
+            this.updateError(prevErrors, nextErrors, prevWarnings, nextWarnings);
 
             this.reRender();
           }
@@ -386,6 +413,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     this.validatePromise = rootPromise;
     this.dirty = true;
     this.errors = EMPTY_ERRORS;
+    this.warnings = EMPTY_ERRORS;
 
     // Force trigger re-render since we need sync renderProps with new meta
     this.reRender();
@@ -416,6 +444,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       touched: this.isFieldTouched(),
       validating: this.prevValidating,
       errors: this.errors,
+      warnings: this.warnings,
       name: this.getNamePath(),
     };
 
