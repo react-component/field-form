@@ -346,7 +346,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }
   };
 
-  public validateRules = (options?: ValidateOptions): Promise<string[]> => {
+  public validateRules = (options?: ValidateOptions): Promise<RuleError[]> => {
     const prevErrors = this.errors;
     const prevWarnings = this.warnings;
 

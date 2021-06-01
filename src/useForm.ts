@@ -20,6 +20,7 @@ import type {
   Meta,
   InternalFieldData,
   ValuedNotifyInfo,
+  RuleError,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -740,10 +741,7 @@ export class FormStore {
       : [];
 
     // Collect result in promise list
-    const promiseList: Promise<{
-      name: InternalNamePath;
-      errors: string[];
-    }>[] = [];
+    const promiseList: Promise<FieldError>[] = [];
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
@@ -785,13 +783,33 @@ export class FormStore {
         // Wrap promise with field
         promiseList.push(
           promise
-            .then(() => ({ name: fieldNamePath, errors: [] }))
-            .catch(errors =>
-              Promise.reject({
+            .then<any, RuleError>(() => ({ name: fieldNamePath, errors: [], warnings: [] }))
+            .catch((ruleErrors: RuleError[]) => {
+              const mergedErrors: string[] = [];
+              const mergedWarnings: string[] = [];
+
+              ruleErrors.forEach(({ rule: { warningOnly }, errors }) => {
+                if (warningOnly) {
+                  mergedWarnings.push(...errors);
+                } else {
+                  mergedErrors.push(...errors);
+                }
+              });
+
+              if (mergedErrors.length) {
+                return Promise.reject({
+                  name: fieldNamePath,
+                  errors: mergedErrors,
+                  warnings: mergedWarnings,
+                });
+              }
+
+              return {
                 name: fieldNamePath,
-                errors,
-              }),
-            ),
+                errors: mergedErrors,
+                warnings: mergedWarnings,
+              };
+            }),
         );
       }
     });

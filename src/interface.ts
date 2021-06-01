@@ -101,7 +101,7 @@ export interface FieldEntity {
   isListField: () => boolean;
   isList: () => boolean;
   isPreserve: () => boolean;
-  validateRules: (options?: ValidateOptions) => Promise<string[]>;
+  validateRules: (options?: ValidateOptions) => Promise<RuleError[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
   getErrors: () => string[];

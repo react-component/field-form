@@ -135,20 +135,23 @@ describe('Form.Basic', () => {
         expect(form.isFieldTouched('username')).toBeFalsy();
         expect(onError).not.toHaveBeenCalled();
         expect(onReset).toHaveBeenCalled();
+        onError.mockRestore();
         onReset.mockRestore();
 
         await changeValue(getField(wrapper, 'username'), '');
         expect(form.getFieldValue('username')).toEqual('');
         expect(form.getFieldError('username')).toEqual(["'username' is required"]);
         expect(form.isFieldTouched('username')).toBeTruthy();
-        expect(onError).toHaveBeenCalledWith(["'username' is required"]);
+        expect(onError).toHaveBeenCalledWith(["'username' is required"], []);
         expect(onReset).not.toHaveBeenCalled();
+        onError.mockRestore();
+        onReset.mockRestore();
 
         form.resetFields(...args);
         expect(form.getFieldValue('username')).toEqual(undefined);
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeFalsy();
-        expect(onError).toHaveBeenCalledWith([]);
+        expect(onError).toHaveBeenCalledWith([], []);
         expect(onReset).toHaveBeenCalled();
       });
     }
@@ -287,7 +290,7 @@ describe('Form.Basic', () => {
     matchError(wrapper, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
     expect(onFinishFailed).toHaveBeenCalledWith({
-      errorFields: [{ name: ['user'], errors: ["'user' is required"] }],
+      errorFields: [{ name: ['user'], errors: ["'user' is required"], warnings: [] }],
       outOfDate: false,
       values: {},
     });
@@ -643,7 +646,7 @@ describe('Form.Basic', () => {
 
     expect(
       form.getFieldsValue(null, meta => {
-        expect(Object.keys(meta)).toEqual(['touched', 'validating', 'errors', 'name']);
+        expect(Object.keys(meta)).toEqual(['touched', 'validating', 'errors', 'warnings', 'name']);
         return false;
       }),
     ).toEqual({});
