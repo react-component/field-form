@@ -101,7 +101,7 @@ describe('Form.Basic', () => {
       it(name, async () => {
         let form;
         const onReset = jest.fn();
-        const onError = jest.fn();
+        const onMeta = jest.fn();
 
         const wrapper = mount(
           <div>
@@ -114,7 +114,7 @@ describe('Form.Basic', () => {
                 name="username"
                 rules={[{ required: true }]}
                 onReset={onReset}
-                onError={onError}
+                onMetaChange={onMeta}
               >
                 <Input />
               </Field>
@@ -126,32 +126,58 @@ describe('Form.Basic', () => {
         expect(form.getFieldValue('username')).toEqual('Bamboo');
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeTruthy();
-        expect(onError).not.toHaveBeenCalled();
+        expect(onMeta).toHaveBeenCalledWith(
+          expect.objectContaining({
+            touched: true,
+            errors: [],
+            warnings: [],
+          }),
+        );
         expect(onReset).not.toHaveBeenCalled();
+        onMeta.mockRestore();
+        onReset.mockRestore();
 
         form.resetFields(...args);
         expect(form.getFieldValue('username')).toEqual(undefined);
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeFalsy();
-        expect(onError).not.toHaveBeenCalled();
+        expect(onMeta).toHaveBeenCalledWith(
+          expect.objectContaining({
+            touched: false,
+            errors: [],
+            warnings: [],
+          }),
+        );
         expect(onReset).toHaveBeenCalled();
-        onError.mockRestore();
+        onMeta.mockRestore();
         onReset.mockRestore();
 
         await changeValue(getField(wrapper, 'username'), '');
         expect(form.getFieldValue('username')).toEqual('');
         expect(form.getFieldError('username')).toEqual(["'username' is required"]);
         expect(form.isFieldTouched('username')).toBeTruthy();
-        expect(onError).toHaveBeenCalledWith(["'username' is required"], []);
+        expect(onMeta).toHaveBeenCalledWith(
+          expect.objectContaining({
+            touched: true,
+            errors: ["'username' is required"],
+            warnings: [],
+          }),
+        );
         expect(onReset).not.toHaveBeenCalled();
-        onError.mockRestore();
+        onMeta.mockRestore();
         onReset.mockRestore();
 
         form.resetFields(...args);
         expect(form.getFieldValue('username')).toEqual(undefined);
         expect(form.getFieldError('username')).toEqual([]);
         expect(form.isFieldTouched('username')).toBeFalsy();
-        expect(onError).toHaveBeenCalledWith([], []);
+        expect(onMeta).toHaveBeenCalledWith(
+          expect.objectContaining({
+            touched: false,
+            errors: [],
+            warnings: [],
+          }),
+        );
         expect(onReset).toHaveBeenCalled();
       });
     }
