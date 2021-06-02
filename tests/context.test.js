@@ -35,7 +35,14 @@ describe('Form.Context', () => {
       'form1',
       expect.objectContaining({
         changedFields: [
-          { errors: [], name: ['username'], touched: true, validating: false, value: 'Light' },
+          {
+            errors: [],
+            warnings: [],
+            name: ['username'],
+            touched: true,
+            validating: false,
+            value: 'Light',
+          },
         ],
         forms: {
           form1: expect.objectContaining({}),

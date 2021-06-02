@@ -1,11 +1,16 @@
 import * as React from 'react';
 import Form from 'rc-field-form';
-import { FieldProps } from '@/Field';
+import type { FieldProps } from '@/Field';
 
 const { Field } = Form;
 
-const Error = ({ children }) => (
-  <ul style={{ color: 'red' }}>
+interface ErrorProps {
+  warning?: boolean;
+  children?: React.ReactNode[];
+}
+
+const Error = ({ children, warning }: ErrorProps) => (
+  <ul style={{ color: warning ? 'orange' : 'red' }}>
     {children.map((error: React.ReactNode, index: number) => (
       <li key={index}>{error}</li>
     ))}
@@ -55,6 +60,7 @@ const LabelField: React.FunctionComponent<LabelFieldProps> = ({
 
           <FieldState {...meta} />
           <Error>{meta.errors}</Error>
+          <Error warning>{meta.warnings}</Error>
         </div>
       );
     }}
