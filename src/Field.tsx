@@ -76,7 +76,7 @@ export interface InternalFieldProps<Values = any> {
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
-  onMetaChange?: (meta: Meta) => void;
+  onMetaChange?: (meta: Meta & { destroy?: boolean }) => void;
   preserve?: boolean;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
@@ -168,6 +168,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public componentWillUnmount() {
     this.cancelRegister();
+    this.triggerMetaEvent(true);
     this.mounted = false;
   }
 
@@ -215,10 +216,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }));
   };
 
-  public triggerMetaEvent = () => {
+  public triggerMetaEvent = (destroy?: boolean) => {
     const { onMetaChange } = this.props;
 
-    onMetaChange?.(this.getMeta());
+    onMetaChange?.({ ...this.getMeta(), destroy });
   };
 
   // ========================= Field Entity Interfaces =========================

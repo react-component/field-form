@@ -217,6 +217,20 @@ describe('Form.Basic', () => {
       expect(form.getFieldError('password')).toEqual(["'password' is required"]);
       expect(form.isFieldTouched('password')).toBeTruthy();
     });
+
+    it('remove Field should trigger onMetaChange', () => {
+      const onMetaChange = jest.fn();
+      const wrapper = mount(
+        <Form>
+          <Field name="username" onMetaChange={onMetaChange}>
+            <Input />
+          </Field>
+        </Form>,
+      );
+
+      wrapper.unmount();
+      expect(onMetaChange).toHaveBeenCalledWith(expect.objectContaining({ destroy: true }));
+    });
   });
 
   it('should throw if no Form in use', () => {
