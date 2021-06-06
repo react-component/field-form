@@ -41,10 +41,10 @@ import Form, { Field } from 'rc-field-form';
   }}
 >
   <Field name="username">
-    <Input placeholder="Username" />
+    <input placeholder="Username" />
   </Field>
   <Field name="password">
-    <Input placeholder="Password" />
+    <input placeholder="Password" />
   </Field>
 
   <button>Submit</button>
