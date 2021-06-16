@@ -126,7 +126,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
    */
   private touched: boolean = false;
 
-  /** Mark when touched & validated. Currently only used for `dependencies` */
+  /**
+   * Mark when touched & validated. Currently only used for `dependencies`.
+   * Note that we do not think field with `initialValue` is dirty
+   * but this will be by `isFieldDirty` func.
+   */
   private dirty: boolean = false;
 
   private validatePromise: Promise<string[]> | null = null;
@@ -418,7 +422,21 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public isFieldTouched = () => this.touched;
 
-  public isFieldDirty = () => this.dirty;
+  public isFieldDirty = () => {
+    // Touched or validate or has initialValue
+    if (this.dirty || this.props.initialValue !== undefined) {
+      return true;
+    }
+
+    // Form set initialValue
+    const { fieldContext } = this.props;
+    const { getInitialValue } = fieldContext.getInternalHooks(HOOK_MARK);
+    if (getInitialValue(this.getNamePath()) !== undefined) {
+      return true;
+    }
+
+    return false;
+  };
 
   public getErrors = () => this.errors;
 
