@@ -198,6 +198,7 @@ export interface InternalHooks {
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
+  getInitialValue: (namePath: InternalNamePath) => StoreValue;
 }
 
 /** Only return partial when type is not any */

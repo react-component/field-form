@@ -32,6 +32,41 @@ describe('Form.Dependencies', () => {
     matchError(getField(wrapper, 1), true);
   });
 
+  describe('initialValue', () => {
+    function test(name, formProps, fieldProps) {
+      it(name, async () => {
+        let validated = false;
+
+        const wrapper = mount(
+          <div>
+            <Form {...formProps}>
+              <InfoField name="field_1" />
+              <InfoField
+                name="field_2"
+                rules={[
+                  {
+                    validator: async () => {
+                      validated = true;
+                    },
+                  },
+                ]}
+                dependencies={['field_1']}
+                {...fieldProps}
+              />
+            </Form>
+          </div>,
+        );
+
+        // Not trigger if not touched
+        await changeValue(getField(wrapper, 0), '');
+        expect(validated).toBeTruthy();
+      });
+    }
+
+    test('form level', { initialValues: { field_2: 'bamboo' } });
+    test('field level', null, { initialValue: 'little' });
+  });
+
   it('nest dependencies', async () => {
     let form = null;
     let rendered = false;
