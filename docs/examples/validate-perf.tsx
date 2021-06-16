@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types, @typescript-eslint/consistent-type-imports */
 
 import React from 'react';
 import Form, { Field, FormInstance } from 'rc-field-form';
@@ -34,7 +34,7 @@ export default class Demo extends React.Component {
     console.log('Failed:', errorInfo);
   };
 
-  public onPasswordError = (errors: string[]) => {
+  public onPasswordError = ({ errors }: { errors: string[] }) => {
     console.log('🐞 Password Error:', errors);
   };
 
@@ -64,12 +64,13 @@ export default class Demo extends React.Component {
                 },
               },
             ]}
-            onError={this.onPasswordError}
+            onMetaChange={this.onPasswordError}
           >
             <Input placeholder="password" />
           </LabelField>
 
           <LabelField
+            initialValue="123"
             name="password2"
             dependencies={['password']}
             messageVariables={{ displayName: '密码2' }}

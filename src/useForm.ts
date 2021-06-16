@@ -111,6 +111,7 @@ export class FormStore {
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
+        getInitialValue: this.getInitialValue,
       };
     }
 
