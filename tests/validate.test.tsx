@@ -726,5 +726,17 @@ describe('Form.Validate', () => {
     const values = await form.validateFields(['username']);
     expect(values.username.do).toBe('');
   });
+
+  it('not trigger validator', async () => {
+    const wrapper = mount(
+      <div>
+        <Form>
+          <InfoField name="user" rules={[{ required: true }]} />
+        </Form>
+      </div>,
+    );
+    await changeValue(getField(wrapper, 0), ['light']);
+    matchError(wrapper, false);
+  });
 });
 /* eslint-enable no-template-curly-in-string */

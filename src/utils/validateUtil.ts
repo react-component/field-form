@@ -33,6 +33,12 @@ async function validateRule(
   messageVariables?: Record<string, string>,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
+
+  // Bug of `async-validator`
+  // https://github.com/react-component/field-form/issues/316
+  // https://github.com/react-component/field-form/issues/313
+  delete (cloneRule as any).ruleIndex;
+
   // We should special handle array validate
   let subRuleField: RuleObject = null;
   if (cloneRule && cloneRule.type === 'array' && cloneRule.defaultField) {
@@ -218,13 +224,13 @@ export function validateRules(
 }
 
 async function finishOnAllFailed(rulePromises: Promise<RuleError>[]): Promise<RuleError[]> {
-  return Promise.all(rulePromises).then((errorsList: RuleError[]):
-    | RuleError[]
-    | Promise<RuleError[]> => {
-    const errors: RuleError[] = [].concat(...errorsList);
+  return Promise.all(rulePromises).then(
+    (errorsList: RuleError[]): RuleError[] | Promise<RuleError[]> => {
+      const errors: RuleError[] = [].concat(...errorsList);
 
-    return errors;
-  });
+      return errors;
+    },
+  );
 }
 
 async function finishOnFirstFailed(rulePromises: Promise<RuleError>[]): Promise<RuleError[]> {
