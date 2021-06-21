@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { FormInstance } from './interface';
+import { FormInstance, FormProps } from './interface';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';
-import FieldForm, { FormProps } from './Form';
+import FieldForm from './Form';
 import { FormProvider } from './FormContext';
 
 const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm) as <Values = any>(
