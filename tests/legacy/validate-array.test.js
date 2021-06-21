@@ -1,9 +1,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
-import { Input } from '../common/InfoField';
-import { changeValue, getField, matchArray } from '../common';
-import timeout from '../common/timeout';
+import { matchArray } from '../common';
 
 describe('legacy.validate-array', () => {
   const MyInput = ({ value = [''], onChange, ...props }) => (
@@ -54,5 +52,35 @@ describe('legacy.validate-array', () => {
         'name',
       );
     }
+  });
+
+  it('validates an unrequired type array which is undefined', async () => {
+    let form;
+
+    mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <Field
+            name="unrequired_array"
+            rules={[
+              {
+                message: 'The tags must be strings',
+                type: 'array',
+                defaultField: { type: 'string' },
+              },
+            ]}
+          >
+            <MyInput />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    const values = await form.validateFields();
+    expect(values.unrequired_array).toBe(undefined);
   });
 });
