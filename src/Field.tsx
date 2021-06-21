@@ -78,6 +78,7 @@ export interface InternalFieldProps<Values = any> {
   onReset?: () => void;
   onMetaChange?: (meta: Meta & { destroy?: boolean }) => void;
   preserve?: boolean;
+  originChildProps?: ChildProps;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
   isListField?: boolean;
@@ -475,7 +476,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       const meta = this.getMeta();
 
       return {
-        ...this.getOnlyChild(children(this.getControlled(), meta, this.props.fieldContext)),
+        ...this.getOnlyChild(
+          children(this.getControlled(this.props.originChildProps), meta, this.props.fieldContext),
+        ),
         isFunction: true,
       };
     }
