@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
+import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
@@ -145,22 +145,20 @@ const List: React.FunctionComponent<ListProps> = ({
           }
 
           return children(
-            (listValue as StoreValue[]).map(
-              (__, index): ListField => {
-                let key = keyManager.keys[index];
-                if (key === undefined) {
-                  keyManager.keys[index] = keyManager.id;
-                  key = keyManager.keys[index];
-                  keyManager.id += 1;
-                }
+            (listValue as StoreValue[]).map((__, index): ListField => {
+              let key = keyManager.keys[index];
+              if (key === undefined) {
+                keyManager.keys[index] = keyManager.id;
+                key = keyManager.keys[index];
+                keyManager.id += 1;
+              }
 
-                return {
-                  name: index,
-                  key,
-                  isListField: true,
-                };
-              },
-            ),
+              return {
+                name: index,
+                key,
+                isListField: true,
+              };
+            }),
             operations,
             meta,
           );

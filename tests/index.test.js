@@ -640,7 +640,7 @@ describe('Form.Basic', () => {
       </div>,
     );
     expect(errorSpy).toHaveBeenCalledWith(
-      'Warning: `children` of Field is not validate ReactElement.',
+      'Warning: `children` of Field is not a valid ReactElement.',
     );
     errorSpy.mockRestore();
   });

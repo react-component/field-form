@@ -598,7 +598,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         this.getControlled((child as React.ReactElement).props),
       );
     } else {
-      warning(!child, '`children` of Field is not validate ReactElement.');
+      warning(!child, '`children` of Field is not a valid ReactElement.');
       returnChildNode = child;
     }
 
