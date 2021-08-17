@@ -233,4 +233,46 @@ describe('Form.Dependencies', () => {
     // sync end
     expect(spy).toHaveBeenCalledTimes(3);
   });
+
+  it('should update when field removed', async () => {
+    const spy = jest.fn();
+    const wrapper = mount(
+      <Form>
+        <Field name="field_1">
+          <Input />
+        </Field>
+        <Field dependencies={['field_1']}>
+          {(_, __, { getFieldValue }) => {
+            return (
+              getFieldValue('field_1') && (
+                <Field name="field_2" preserve={false}>
+                  <Input />
+                </Field>
+              )
+            );
+          }}
+        </Field>
+        <Field dependencies={['field_2']}>
+          {(_, __, { getFieldValue }) => {
+            spy();
+            return (
+              getFieldValue('field_2') && (
+                <Field name="field_3" preserve={false}>
+                  <Input />
+                </Field>
+              )
+            );
+          }}
+        </Field>
+      </Form>,
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
+    await changeValue(getField(wrapper, 0), 'value');
+    await changeValue(getField(wrapper, 1), 'value');
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(getField(wrapper, 'field_3')).not.toBeNull();
+    await changeValue(getField(wrapper, 0), undefined);
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect(getField(wrapper, 'field_3')).toBeNull();
+  });
 });

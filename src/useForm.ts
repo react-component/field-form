@@ -567,7 +567,13 @@ export class FormStore {
               !matchNamePath(field.getNamePath(), namePath),
           )
         ) {
+          const prevStore = this.store;
           this.store = setValue(this.store, namePath, defaultValue, true);
+          const childrenFields = this.getDependencyChildrenFields(namePath);
+          this.notifyObservers(prevStore, childrenFields, {
+            type: 'dependenciesUpdate',
+            relatedFields: [namePath, ...childrenFields],
+          });
         }
       }
     };
