@@ -200,7 +200,10 @@ export class FormStore {
     });
   };
 
-  private getFieldsValue = (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => {
+  private getFieldsValue = (
+    nameList?: NamePath[] | true,
+    filterFunc?: (meta: Meta) => boolean,
+  ): any => {
     this.warningUnhooked();
 
     if (nameList === true && !filterFunc) {

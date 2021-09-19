@@ -202,21 +202,136 @@ export interface InternalHooks {
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> = T extends object
+type RecursivePartial<T> = T extends Record<string, any>
   ? {
       [P in keyof T]?: T[P] extends (infer U)[]
         ? RecursivePartial<U>[]
-        : T[P] extends object
+        : T[P] extends Record<string, any>
         ? RecursivePartial<T[P]>
         : T[P];
     }
+  : T extends string | number | boolean | undefined | null
+  ? T
   : any;
+
+type IfElseType<TrueType, FalseType, MatchingType, ExaminedType> = MatchingType extends ExaminedType
+  ? TrueType
+  : FalseType;
+
+type RcFilterFunc = ((meta: any) => boolean) | undefined;
+
+type FormFieldNamePath<K extends string = string> =
+  | [K | number, ...(K | number)[]]
+  | (K | number)[]
+  | K
+  | number;
+
+type GetLeafValueByNamePath<
+  O extends Record<string, any>,
+  P extends FormFieldNamePath,
+> = P extends [infer F, ...infer Rest]
+  ? F extends keyof O
+    ? O[F] extends Record<string, any>
+      ? Rest extends (string | number)[]
+        ? GetLeafValueByNamePath<O[F], Rest>
+        : any
+      : O[F]
+    : any
+  : P extends keyof O
+  ? O[P]
+  : O;
+
+type GetObjectWithNamePath<O extends Record<string, any>, P extends FormFieldNamePath> = P extends [
+  infer F,
+  ...infer Rest
+]
+  ? F extends keyof O
+    ? O[F] extends Record<string, any>
+      ? Rest extends (string | number)[]
+        ? Record<F, GetObjectWithNamePath<O[F], Rest>>
+        : any
+      : Record<F, O[F]>
+    : any
+  : P extends keyof O
+  ? Record<P, O[P]>
+  : O;
+
+type GetObjectWithNamePathList<
+  O extends Record<string, any>,
+  P extends FormFieldNamePath[],
+> = P extends [infer F, ...infer Rest]
+  ? F extends FormFieldNamePath
+    ? Rest extends FormFieldNamePath[]
+      ? GetObjectWithNamePath<O, F> & GetObjectWithNamePathList<O, Rest>
+      : unknown
+    : unknown
+  : unknown;
+
+type IsNeverSubset<T> = T extends never ? true : false;
+type IsAny<T> = IsNeverSubset<T> extends false ? false : true;
+
+type FlattenedKeys<O extends Record<string, any>> = IsAny<O> extends true
+  ? string
+  : O extends (infer E)[]
+  ? E extends Record<string, any>
+    ? Exclude<keyof E, number | symbol> | FlattenedKeys<E[keyof E]>
+    : never
+  : O extends (...args: any[]) => any
+  ? never
+  : O extends Record<string, any>
+  ? Exclude<keyof O, number | symbol> | FlattenedKeys<O[keyof O]>
+  : never;
+
+type FormFlattenedFieldsPath<T = any> = FormFieldNamePath<FlattenedKeys<T>>;
+
+type GetFieldValue1stArgu<T = any> = FormFlattenedFieldsPath<T>;
+
+export type GetFieldsValue1stArgu<T = any> =
+  | undefined
+  | true
+  | [FormFlattenedFieldsPath<T>, ...FormFlattenedFieldsPath<T>[]]
+  | FormFlattenedFieldsPath<T>[];
+
+export type GetFieldsValue2ndArgu = RcFilterFunc;
+
+export type GetFieldsValueReturnType<
+  Values = any,
+  T extends GetFieldsValue1stArgu<Values> = undefined,
+  F extends GetFieldsValue2ndArgu = undefined,
+  U = IfElseType<unknown, T, T, undefined>,
+> = IfElseType<
+  Partial<
+    IfElseType<
+      Values,
+      IfElseType<GetObjectWithNamePathList<Values, Exclude<T, boolean>>, Partial<Values>, U, any[]>,
+      U,
+      true
+    >
+  >,
+  IfElseType<
+    Values,
+    IfElseType<GetObjectWithNamePathList<Values, Exclude<T, boolean>>, Partial<Values>, U, any[]>,
+    U,
+    true
+  >,
+  IfElseType<unknown, F, F, undefined>,
+  (...args: any[]) => any
+>;
 
 export interface FormInstance<Values = any> {
   // Origin Form API
-  getFieldValue: (name: NamePath) => StoreValue;
-  getFieldsValue(): Values;
-  getFieldsValue(nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean): any;
+  getFieldValue: <T extends GetFieldValue1stArgu<Values>>(
+    name: T,
+  ) => GetLeafValueByNamePath<Values, T>;
+  getFieldsValue: <
+    T extends GetFieldsValue1stArgu<Values> = undefined,
+    F extends GetFieldsValue2ndArgu = undefined,
+    U = IfElseType<unknown, T, T, undefined>,
+  >(
+    name?: T,
+    filterFunc?: F,
+  ) => GetFieldsValueReturnType<Values, T, F, U>;
+
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   getFieldWarning: (name: NamePath) => string[];
