@@ -76,6 +76,7 @@ export interface InternalFieldProps<Values = any> {
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
+  onError?: (errors: string[]) => void;
   onMetaChange?: (meta: Meta & { destroy?: boolean }) => void;
   preserve?: boolean;
 
