@@ -58,13 +58,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   // We customize handle event since Context will makes all the consumer re-render:
   // https://reactjs.org/docs/context.html#contextprovider
   const [formInstance] = useForm(form);
-  const {
-    useSubscribe,
-    setInitialValues,
-    setCallbacks,
-    setValidateMessages,
-    setPreserve,
-  } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
+  const { useSubscribe, setInitialValues, setCallbacks, setValidateMessages, setPreserve } = (
+    formInstance as InternalFormInstance
+  ).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
   React.useImperativeHandle(ref, () => formInstance);
