@@ -1,6 +1,6 @@
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
+import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
@@ -43,14 +43,18 @@ const List: React.FunctionComponent<ListProps> = ({
   });
   const keyManager = keyRef.current;
 
+  const prefixName: InternalNamePath = React.useMemo(() => {
+    const parentPrefixName = getNamePath(context.prefixName) || [];
+    return [...parentPrefixName, ...getNamePath(name)];
+  }, [context.prefixName, name]);
+
+  const fieldContext = React.useMemo(() => ({ ...context, prefixName }), [context, prefixName]);
+
   // User should not pass `children` as other type.
   if (typeof children !== 'function') {
     warning(false, 'Form.List only accepts function as children.');
     return null;
   }
-
-  const parentPrefixName = getNamePath(context.prefixName) || [];
-  const prefixName: InternalNamePath = [...parentPrefixName, ...getNamePath(name)];
 
   const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }) => {
     if (source === 'internal') {
@@ -60,7 +64,7 @@ const List: React.FunctionComponent<ListProps> = ({
   };
 
   return (
-    <FieldContext.Provider value={{ ...context, prefixName }}>
+    <FieldContext.Provider value={fieldContext}>
       <Field
         name={[]}
         shouldUpdate={shouldUpdate}
@@ -145,22 +149,20 @@ const List: React.FunctionComponent<ListProps> = ({
           }
 
           return children(
-            (listValue as StoreValue[]).map(
-              (__, index): ListField => {
-                let key = keyManager.keys[index];
-                if (key === undefined) {
-                  keyManager.keys[index] = keyManager.id;
-                  key = keyManager.keys[index];
-                  keyManager.id += 1;
-                }
+            (listValue as StoreValue[]).map((__, index): ListField => {
+              let key = keyManager.keys[index];
+              if (key === undefined) {
+                keyManager.keys[index] = keyManager.id;
+                key = keyManager.keys[index];
+                keyManager.id += 1;
+              }
 
-                return {
-                  name: index,
-                  key,
-                  isListField: true,
-                };
-              },
-            ),
+              return {
+                name: index,
+                key,
+                isListField: true,
+              };
+            }),
             operations,
             meta,
           );
