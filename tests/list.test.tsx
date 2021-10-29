@@ -1,10 +1,13 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
-import { mount, ReactWrapper } from 'enzyme';
+import { mount } from 'enzyme';
+import type { ReactWrapper } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
-import Form, { Field, List, FormProps } from '../src';
-import { ListField, ListOperations, ListProps } from '../src/List';
-import { FormInstance, Meta } from '../src/interface';
+import Form, { Field, List } from '../src';
+import type { FormProps } from '../src';
+import type { ListField, ListOperations, ListProps } from '../src/List';
+import type { FormInstance, Meta } from '../src/interface';
+import ListContext from '../src/ListContext';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
 import timeout from './common/timeout';
@@ -58,12 +61,7 @@ describe('Form.List', () => {
     );
 
     function matchKey(index, key) {
-      expect(
-        getList()
-          .find(Field)
-          .at(index)
-          .key(),
-      ).toEqual(key);
+      expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
     matchKey(0, '0');
@@ -117,12 +115,7 @@ describe('Form.List', () => {
     });
 
     function matchKey(index, key) {
-      expect(
-        getList()
-          .find(Field)
-          .at(index)
-          .key(),
-      ).toEqual(key);
+      expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
     // Add
@@ -267,12 +260,7 @@ describe('Form.List', () => {
     });
 
     function matchKey(index, key) {
-      expect(
-        getList()
-          .find(Field)
-          .at(index)
-          .key(),
-      ).toEqual(key);
+      expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
     act(() => {
@@ -533,7 +521,7 @@ describe('Form.List', () => {
   it('warning if children is not function', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    generateForm(<div /> as any);
+    generateForm((<div />) as any);
 
     expect(errorSpy).toHaveBeenCalledWith('Warning: Form.List only accepts function as children.');
 
@@ -758,5 +746,37 @@ describe('Form.List', () => {
     expect(form.getFieldsValue()).toEqual({
       list: ['light', 'bamboo'],
     });
+  });
+
+  it('ListContext', () => {
+    const Hooker = ({ field }: any) => {
+      const { getKey } = React.useContext(ListContext);
+
+      return (
+        <>
+          <span className="internal-name">{getKey(['list', field.name])}</span>
+          <Field {...field}>
+            <Input />
+          </Field>
+        </>
+      );
+    };
+
+    const [wrapper] = generateForm(
+      fields => (
+        <div>
+          {fields.map(field => {
+            return <Hooker field={field} key={field.key} />;
+          })}
+        </div>
+      ),
+      {
+        initialValues: {
+          list: [''],
+        },
+      },
+    );
+
+    expect(wrapper.find('.internal-name').text()).toEqual('0');
   });
 });
