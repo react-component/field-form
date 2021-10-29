@@ -5,6 +5,8 @@ import List from './List';
 import useForm from './useForm';
 import FieldForm, { FormProps } from './Form';
 import { FormProvider } from './FormContext';
+import FieldContext from './FieldContext';
+import ListContext from './ListContext';
 
 const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm) as <Values = any>(
   props: React.PropsWithChildren<FormProps<Values>> & { ref?: React.Ref<FormInstance<Values>> },
@@ -25,6 +27,6 @@ RefForm.Field = Field;
 RefForm.List = List;
 RefForm.useForm = useForm;
 
-export { FormInstance, Field, List, useForm, FormProvider, FormProps };
+export { FormInstance, Field, List, useForm, FormProvider, FormProps, FieldContext, ListContext };
 
 export default RefForm;
