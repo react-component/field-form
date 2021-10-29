@@ -58,7 +58,7 @@ const List: React.FunctionComponent<ListProps> = ({
       getKey: (namePath: InternalNamePath) => {
         const len = prefixName.length;
         const pathName = namePath[len];
-        return keyManager.keys[pathName];
+        return [keyManager.keys[pathName], namePath.slice(len + 1)];
       },
     }),
     [prefixName],

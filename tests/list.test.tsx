@@ -751,11 +751,14 @@ describe('Form.List', () => {
   it('ListContext', () => {
     const Hooker = ({ field }: any) => {
       const { getKey } = React.useContext(ListContext);
+      const [key, restPath] = getKey(['list', field.name, 'user']);
 
       return (
         <>
-          <span className="internal-name">{getKey(['list', field.name])}</span>
-          <Field {...field}>
+          <span className="internal-key">{key}</span>
+          <span className="internal-rest">{restPath.join('_')}</span>
+
+          <Field {...field} name={[field.name, 'user']}>
             <Input />
           </Field>
         </>
@@ -772,11 +775,13 @@ describe('Form.List', () => {
       ),
       {
         initialValues: {
-          list: [''],
+          list: [{ user: 'bamboo' }],
         },
       },
     );
 
-    expect(wrapper.find('.internal-name').text()).toEqual('0');
+    expect(wrapper.find('.internal-key').text()).toEqual('0');
+    expect(wrapper.find('.internal-rest').text()).toEqual('user');
+    expect(wrapper.find('input').prop('value')).toEqual('bamboo');
   });
 });
