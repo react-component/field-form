@@ -567,7 +567,11 @@ export class FormStore {
               !matchNamePath(field.getNamePath(), namePath),
           )
         ) {
-          this.store = setValue(this.store, namePath, defaultValue, true);
+          const prevStore = this.store;
+          this.store = setValue(prevStore, namePath, defaultValue, true);
+
+          // Notify that field is unmount
+          this.notifyObservers(prevStore, [namePath], { type: 'remove' });
         }
       }
     };

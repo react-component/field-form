@@ -265,6 +265,20 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         }
         break;
 
+        /**
+         * In case field with `preserve = false` nest deps like:
+         * - A = 1 => show B
+         * - B = 1 => show C
+         * - Reset A, need clean B, C
+         */
+      case 'remove': {
+        if (shouldUpdate) {
+          this.reRender();
+          return;
+        }
+        break;
+      }
+
       case 'setField': {
         if (namePathMatch) {
           const { data } = info;
