@@ -315,5 +315,128 @@ describe('Form.Preserve', () => {
 
     wrapper.unmount();
   });
+
+  // https://github.com/ant-design/ant-design/issues/31297
+  describe('A -> B -> C should keep trigger refresh', () => {
+    it('shouldUpdate', () => {
+      const DepDemo = () => {
+        const [form] = Form.useForm();
+
+        return (
+          <Form form={form} preserve={false}>
+            <Form.Field name="name">
+              <Input id="name" placeholder="Username" />
+            </Form.Field>
+
+            <Form.Field shouldUpdate>
+              {() => {
+                return form.getFieldValue('name') === '1' ? (
+                  <Form.Field name="password">
+                    <Input id="password" placeholder="Password" />
+                  </Form.Field>
+                ) : null;
+              }}
+            </Form.Field>
+
+            <Form.Field shouldUpdate>
+              {() => {
+                const password = form.getFieldValue('password');
+                return password ? (
+                  <Form.Field name="password2">
+                    <Input id="password2" placeholder="Password 2" />
+                  </Form.Field>
+                ) : null;
+              }}
+            </Form.Field>
+          </Form>
+        );
+      };
+
+      const wrapper = mount(<DepDemo />);
+
+      // Input name to show password
+      wrapper
+        .find('#name')
+        .last()
+        .simulate('change', { target: { value: '1' } });
+      expect(wrapper.exists('#password')).toBeTruthy();
+      expect(wrapper.exists('#password2')).toBeFalsy();
+
+      // Input password to show password2
+      wrapper
+        .find('#password')
+        .last()
+        .simulate('change', { target: { value: '1' } });
+      expect(wrapper.exists('#password2')).toBeTruthy();
+
+      // Change name to hide password
+      wrapper
+        .find('#name')
+        .last()
+        .simulate('change', { target: { value: '2' } });
+      expect(wrapper.exists('#password')).toBeFalsy();
+      expect(wrapper.exists('#password2')).toBeFalsy();
+    });
+
+    it('dependencies', () => {
+      const DepDemo = () => {
+        const [form] = Form.useForm();
+
+        return (
+          <Form form={form} preserve={false}>
+            <Form.Field name="name">
+              <Input id="name" placeholder="Username" />
+            </Form.Field>
+
+            <Form.Field dependencies={['name']}>
+              {() => {
+                return form.getFieldValue('name') === '1' ? (
+                  <Form.Field name="password">
+                    <Input id="password" placeholder="Password" />
+                  </Form.Field>
+                ) : null;
+              }}
+            </Form.Field>
+
+            <Form.Field dependencies={['password']}>
+              {() => {
+                const password = form.getFieldValue('password');
+                return password ? (
+                  <Form.Field name="password2">
+                    <Input id="password2" placeholder="Password 2" />
+                  </Form.Field>
+                ) : null;
+              }}
+            </Form.Field>
+          </Form>
+        );
+      };
+
+      const wrapper = mount(<DepDemo />);
+
+      // Input name to show password
+      wrapper
+        .find('#name')
+        .last()
+        .simulate('change', { target: { value: '1' } });
+      expect(wrapper.exists('#password')).toBeTruthy();
+      expect(wrapper.exists('#password2')).toBeFalsy();
+
+      // Input password to show password2
+      wrapper
+        .find('#password')
+        .last()
+        .simulate('change', { target: { value: '1' } });
+      expect(wrapper.exists('#password2')).toBeTruthy();
+
+      // Change name to hide password
+      wrapper
+        .find('#name')
+        .last()
+        .simulate('change', { target: { value: '2' } });
+      expect(wrapper.exists('#password')).toBeFalsy();
+      expect(wrapper.exists('#password2')).toBeFalsy();
+    });
+  });
 });
 /* eslint-enable no-template-curly-in-string */

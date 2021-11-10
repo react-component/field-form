@@ -155,6 +155,10 @@ interface ResetInfo {
   type: 'reset';
 }
 
+interface RemoveInfo {
+  type: 'remove';
+}
+
 interface SetFieldInfo {
   type: 'setField';
   data: FieldData;
@@ -174,6 +178,7 @@ export type NotifyInfo =
   | ValueUpdateInfo
   | ValidateFinishInfo
   | ResetInfo
+  | RemoveInfo
   | SetFieldInfo
   | DependenciesUpdateInfo;
 
