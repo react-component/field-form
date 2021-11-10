@@ -318,20 +318,20 @@ describe('Form.Preserve', () => {
 
   // https://github.com/ant-design/ant-design/issues/31297
   it('A -> B -> C should keep trigger shouldUpdate', () => {
-    const Demo = () => {
+    const DepDemo = () => {
       const [form] = Form.useForm();
 
       return (
         <Form form={form} preserve={false}>
           <Form.Field name="name">
-            <Input placeholder="Username" />
+            <Input id="name" placeholder="Username" />
           </Form.Field>
 
           <Form.Field shouldUpdate>
             {() => {
               return form.getFieldValue('name') === '1' ? (
                 <Form.Field name="password">
-                  <Input placeholder="Password" />
+                  <Input id="password" placeholder="Password" />
                 </Form.Field>
               ) : null;
             }}
@@ -342,7 +342,7 @@ describe('Form.Preserve', () => {
               const password = form.getFieldValue('password');
               return password ? (
                 <Form.Field name="password2">
-                  <Input placeholder="Password 2" />
+                  <Input id="password2" placeholder="Password 2" />
                 </Form.Field>
               ) : null;
             }}
@@ -350,6 +350,22 @@ describe('Form.Preserve', () => {
         </Form>
       );
     };
+
+    const wrapper = mount(<DepDemo />);
+
+    // Input name to show password
+    wrapper.find('#name').simulate('change', { target: { value: '1' } });
+    expect(wrapper.exists('#password')).toBeTruthy();
+    expect(wrapper.exists('#password2')).toBeFalsy();
+
+    // Input password to show password2
+    wrapper.find('#password').simulate('change', { target: { value: '1' } });
+    expect(wrapper.exists('#password2')).toBeTruthy();
+
+    // Change name to hide password
+    wrapper.find('#name').simulate('change', { target: { value: '2' } });
+    expect(wrapper.exists('#password')).toBeFalsy();
+    expect(wrapper.exists('#password2')).toBeFalsy();
   });
 });
 /* eslint-enable no-template-curly-in-string */
