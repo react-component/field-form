@@ -572,6 +572,9 @@ export class FormStore {
 
           // Notify that field is unmount
           this.notifyObservers(prevStore, [namePath], { type: 'remove' });
+
+          // Dependencies update
+          this.triggerDependenciesUpdate(prevStore, namePath);
         }
       }
     };
@@ -612,6 +615,24 @@ export class FormStore {
     }
   };
 
+  /**
+   * Notify dependencies children with parent update
+   * We need delay to trigger validate in case Field is under render props
+   */
+  private triggerDependenciesUpdate = (prevStore: Store, namePath: InternalNamePath) => {
+    const childrenFields = this.getDependencyChildrenFields(namePath);
+    if (childrenFields.length) {
+      this.validateFields(childrenFields);
+    }
+
+    this.notifyObservers(prevStore, childrenFields, {
+      type: 'dependenciesUpdate',
+      relatedFields: [namePath, ...childrenFields],
+    });
+
+    return childrenFields;
+  };
+
   private updateValue = (name: NamePath, value: StoreValue) => {
     const namePath = getNamePath(name);
     const prevStore = this.store;
@@ -622,17 +643,8 @@ export class FormStore {
       source: 'internal',
     });
 
-    // Notify dependencies children with parent update
-    // We need delay to trigger validate in case Field is under render props
-    const childrenFields = this.getDependencyChildrenFields(namePath);
-    if (childrenFields.length) {
-      this.validateFields(childrenFields);
-    }
-
-    this.notifyObservers(prevStore, childrenFields, {
-      type: 'dependenciesUpdate',
-      relatedFields: [namePath, ...childrenFields],
-    });
+    // Dependencies update
+    const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
 
     // trigger callback function
     const { onValuesChange } = this.callbacks;
