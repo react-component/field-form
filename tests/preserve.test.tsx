@@ -354,16 +354,16 @@ describe('Form.Preserve', () => {
     const wrapper = mount(<DepDemo />);
 
     // Input name to show password
-    wrapper.find('#name').simulate('change', { target: { value: '1' } });
+    wrapper.find('#name').last().simulate('change', { target: { value: '1' } });
     expect(wrapper.exists('#password')).toBeTruthy();
     expect(wrapper.exists('#password2')).toBeFalsy();
 
     // Input password to show password2
-    wrapper.find('#password').simulate('change', { target: { value: '1' } });
+    wrapper.find('#password').last().simulate('change', { target: { value: '1' } });
     expect(wrapper.exists('#password2')).toBeTruthy();
 
     // Change name to hide password
-    wrapper.find('#name').simulate('change', { target: { value: '2' } });
+    wrapper.find('#name').last().simulate('change', { target: { value: '2' } });
     expect(wrapper.exists('#password')).toBeFalsy();
     expect(wrapper.exists('#password2')).toBeFalsy();
   });
