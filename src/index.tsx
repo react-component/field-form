@@ -12,15 +12,15 @@ const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm) as <Va
   props: React.PropsWithChildren<FormProps<Values>> & { ref?: React.Ref<FormInstance<Values>> },
 ) => React.ReactElement;
 
-type InternalForm = typeof InternalForm;
-interface RefForm extends InternalForm {
+type InternalFormType = typeof InternalForm;
+interface RefFormType extends InternalFormType {
   FormProvider: typeof FormProvider;
   Field: typeof Field;
   List: typeof List;
   useForm: typeof useForm;
 }
 
-const RefForm: RefForm = InternalForm as RefForm;
+const RefForm: RefFormType = InternalForm as RefFormType;
 
 RefForm.FormProvider = FormProvider;
 RefForm.Field = Field;
