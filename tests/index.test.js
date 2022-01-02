@@ -704,4 +704,26 @@ describe('Form.Basic', () => {
     });
     expect(form.getFieldsValue(['password'], meta => meta.touched)).toEqual({});
   });
+
+  it('should not crash when return value contains target field', async () => {
+    const CustomInput = ({ value, onChange }) => {
+      const onInputChange = e => {
+        onChange({
+          value: e.target.value,
+          target: 'string',
+        });
+      };
+      return <Input value={value} onChange={onInputChange} />;
+    };
+    const wrapper = mount(
+      <Form>
+        <Field name="user">
+          <CustomInput />
+        </Field>
+      </Form>,
+    );
+    expect(() => {
+      wrapper.find('Input').simulate('change', { event: { target: { value: 'Light' } } });
+    }).not.toThrowError();
+  });
 });

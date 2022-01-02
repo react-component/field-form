@@ -119,7 +119,7 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
 
 export function defaultGetValueFromEvent(valuePropName: string, ...args: EventArgs) {
   const event = args[0];
-  if (event && event.target && valuePropName in event.target) {
+  if (event && event.target && typeof event.target === 'object' && valuePropName in event.target) {
     return (event.target as HTMLInputElement)[valuePropName];
   }
 
