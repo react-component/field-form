@@ -72,7 +72,7 @@ export interface InternalFieldProps<Values = any> {
   validateTrigger?: string | string[] | false;
   validateFirst?: boolean | 'parallel';
   valuePropName?: string;
-  getValueProps?: (value: StoreValue) => object;
+  getValueProps?: (value: StoreValue) => Record<string, unknown>;
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
@@ -265,12 +265,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         }
         break;
 
-        /**
-         * In case field with `preserve = false` nest deps like:
-         * - A = 1 => show B
-         * - B = 1 => show C
-         * - Reset A, need clean B, C
-         */
+      /**
+       * In case field with `preserve = false` nest deps like:
+       * - A = 1 => show B
+       * - B = 1 => show C
+       * - Reset A, need clean B, C
+       */
       case 'remove': {
         if (shouldUpdate) {
           this.reRender();

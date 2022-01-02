@@ -220,13 +220,13 @@ type RecursivePartial<T> = T extends object
 export interface FormInstance<Values = any> {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
-  getFieldsValue(): Values;
-  getFieldsValue(nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean): any;
+  getFieldsValue: (() => Values) &
+    ((nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => any);
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   getFieldWarning: (name: NamePath) => string[];
-  isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
-  isFieldsTouched(allFieldsTouched?: boolean): boolean;
+  isFieldsTouched: ((nameList?: NamePath[], allFieldsTouched?: boolean) => boolean) &
+    ((allFieldsTouched?: boolean) => boolean);
   isFieldTouched: (name: NamePath) => boolean;
   isFieldValidating: (name: NamePath) => boolean;
   isFieldsValidating: (nameList: NamePath[]) => boolean;
