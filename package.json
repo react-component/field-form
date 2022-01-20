@@ -73,7 +73,7 @@
     "prettier": "^2.1.2",
     "react": "^16.14.0",
     "react-dnd": "^8.0.3",
-    "react-dnd-html5-backend": "^8.0.3",
+    "react-dnd-html5-backend": "^14.1.0",
     "react-dom": "^16.14.0",
     "react-redux": "^4.4.10",
     "react-router": "^3.0.0",
