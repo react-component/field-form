@@ -57,7 +57,7 @@
     "@types/enzyme": "^3.10.5",
     "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.135",
-    "@types/react": "^16.8.19",
+    "@types/react": "^17.0.38",
     "@types/react-dom": "^16.8.4",
     "@umijs/fabric": "^2.5.2",
     "@umijs/test": "^3.2.27",
