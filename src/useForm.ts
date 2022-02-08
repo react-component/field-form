@@ -716,7 +716,7 @@ export class FormStore {
 
   private triggerOnFieldsChange = (
     namePathList: InternalNamePath[],
-    filedErrors?: FieldError[],
+    fieldErrors?: FieldError[],
   ) => {
     const { onFieldsChange } = this.callbacks;
 
@@ -726,9 +726,9 @@ export class FormStore {
       /**
        * Fill errors since `fields` may be replaced by controlled fields
        */
-      if (filedErrors) {
+      if (fieldErrors) {
         const cache = new NameMap<string[]>();
-        filedErrors.forEach(({ name, errors }) => {
+        fieldErrors.forEach(({ name, errors }) => {
           cache.set(name, errors);
         });
 
