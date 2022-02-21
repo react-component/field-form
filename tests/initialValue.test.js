@@ -47,16 +47,8 @@ describe('Form.InitialValues', () => {
         path2: 'Bamboo',
       },
     });
-    expect(
-      getField(wrapper, 'username')
-        .find('input')
-        .props().value,
-    ).toEqual('Light');
-    expect(
-      getField(wrapper, ['path1', 'path2'])
-        .find('input')
-        .props().value,
-    ).toEqual('Bamboo');
+    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Light');
+    expect(getField(wrapper, ['path1', 'path2']).find('input').props().value).toEqual('Bamboo');
   });
 
   it('update and reset should use new initialValues', () => {
@@ -91,11 +83,7 @@ describe('Form.InitialValues', () => {
     expect(form.getFieldsValue()).toEqual({
       username: 'Bamboo',
     });
-    expect(
-      getField(wrapper, 'username')
-        .find('input')
-        .props().value,
-    ).toEqual('Bamboo');
+    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Bamboo');
 
     // Should not change it
     wrapper.setProps({ initialValues: { username: 'Light' } });
@@ -103,11 +91,7 @@ describe('Form.InitialValues', () => {
     expect(form.getFieldsValue()).toEqual({
       username: 'Bamboo',
     });
-    expect(
-      getField(wrapper, 'username')
-        .find('input')
-        .props().value,
-    ).toEqual('Bamboo');
+    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Bamboo');
 
     // Should change it
     form.resetFields();
@@ -116,11 +100,64 @@ describe('Form.InitialValues', () => {
     expect(form.getFieldsValue()).toEqual({
       username: 'Light',
     });
-    expect(
-      getField(wrapper, 'username')
-        .find('input')
-        .props().value,
-    ).toEqual('Light');
+    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Light');
+  });
+
+  it(`initialValues shouldn't be modified if preserve is false`, () => {
+    const formValue = {
+      test: 'test',
+      users: [{ first: 'aaa', last: 'bbb' }],
+    };
+
+    const Demo = () => {
+      const [form] = Form.useForm();
+      return (
+        <Form
+          form={form}
+          initialValues={formValue}
+          preserve={false}
+          onFinish={values => {
+            console.log('Submit:', values);
+          }}
+        >
+          <Field shouldUpdate>
+            {() => (
+              <Field name="test" preserve={false}>
+                <Input />
+              </Field>
+            )}
+          </Field>
+          <Form.List name="users">
+            {fields => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <>
+                    <Field
+                      {...restField}
+                      name={[name, 'first']}
+                      rules={[{ required: true, message: 'Missing first name' }]}
+                    >
+                      <Input placeholder="First Name" />
+                    </Field>
+                    <Field
+                      {...restField}
+                      name={[name, 'last']}
+                      rules={[{ required: true, message: 'Missing last name' }]}
+                    >
+                      <Input placeholder="Last Name" />
+                    </Field>
+                  </>
+                ))}
+              </>
+            )}
+          </Form.List>
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    wrapper.unmount();
+    expect(formValue.users[0].last).toEqual('bbb');
   });
 
   describe('Field with initialValue', () => {
@@ -237,21 +274,12 @@ describe('Form.InitialValues', () => {
       expect(wrapper.find('input').props().value).toEqual('story');
 
       // First reset will get nothing
-      wrapper
-        .find('button')
-        .first()
-        .simulate('click');
+      wrapper.find('button').first().simulate('click');
       expect(wrapper.find('input').props().value).toEqual('');
 
       // Change field initialValue and reset
-      wrapper
-        .find('button')
-        .last()
-        .simulate('click');
-      wrapper
-        .find('button')
-        .first()
-        .simulate('click');
+      wrapper.find('button').last().simulate('click');
+      wrapper.find('button').first().simulate('click');
       expect(wrapper.find('input').props().value).toEqual('light');
     });
 
