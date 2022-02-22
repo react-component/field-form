@@ -134,9 +134,8 @@ export class FormStore {
     }
   };
 
-  private getInitialValue = (namePath: InternalNamePath, deep: boolean = true) => {
-    const initialValue = getValue(this.initialValues, namePath);
-    return deep ? cloneDeep(initialValue) : initialValue;
+  private getInitialValue = (namePath: InternalNamePath) => {
+    return cloneDeep(getValue(this.initialValues, namePath));
   };
 
   private setCallbacks = (callbacks: Callbacks) => {
