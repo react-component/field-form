@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { mount } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
-import Form, { Field, useForm } from '../src';
+import Form, { Field, useForm, List } from '../src';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
 
@@ -111,53 +111,57 @@ describe('Form.InitialValues', () => {
 
     const Demo = () => {
       const [form] = Form.useForm();
+      const [show, setShow] = useState(false);
+
       return (
-        <Form
-          form={form}
-          initialValues={formValue}
-          preserve={false}
-          onFinish={values => {
-            console.log('Submit:', values);
-          }}
-        >
-          <Field shouldUpdate>
-            {() => (
-              <Field name="test" preserve={false}>
-                <Input />
+        <>
+          <button onClick={() => setShow(prev => !prev)}>switch show</button>
+          {show && (
+            <Form form={form} initialValues={formValue} preserve={false}>
+              <Field shouldUpdate>
+                {() => (
+                  <Field name="test" preserve={false}>
+                    <Input />
+                  </Field>
+                )}
               </Field>
-            )}
-          </Field>
-          <Form.List name="users">
-            {fields => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
+              <List name="users">
+                {fields => (
                   <>
-                    <Field
-                      {...restField}
-                      name={[name, 'first']}
-                      rules={[{ required: true, message: 'Missing first name' }]}
-                    >
-                      <Input placeholder="First Name" />
-                    </Field>
-                    <Field
-                      {...restField}
-                      name={[name, 'last']}
-                      rules={[{ required: true, message: 'Missing last name' }]}
-                    >
-                      <Input placeholder="Last Name" />
-                    </Field>
+                    {fields.map(({ key, name, ...restField }) => (
+                      <>
+                        <Field
+                          {...restField}
+                          name={[name, 'first']}
+                          rules={[{ required: true, message: 'Missing first name' }]}
+                        >
+                          <Input className="first-name-input" placeholder="First Name" />
+                        </Field>
+                        <Field
+                          {...restField}
+                          name={[name, 'last']}
+                          rules={[{ required: true, message: 'Missing last name' }]}
+                        >
+                          <Input placeholder="Last Name" />
+                        </Field>
+                      </>
+                    ))}
                   </>
-                ))}
-              </>
-            )}
-          </Form.List>
-        </Form>
+                )}
+              </List>
+            </Form>
+          )}
+        </>
       );
     };
 
     const wrapper = mount(<Demo />);
-    wrapper.unmount();
+    wrapper.find('button').simulate('click');
     expect(formValue.users[0].last).toEqual('bbb');
+    wrapper.find('button').simulate('click');
+    expect(formValue.users[0].last).toEqual('bbb');
+    wrapper.find('button').simulate('click');
+    expect(wrapper.find('.first-name-input').first().find('input').instance().value).toEqual('aaa');
   });
 
   describe('Field with initialValue', () => {
