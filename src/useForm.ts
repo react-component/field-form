@@ -35,7 +35,6 @@ import {
   setValue,
   setValues,
 } from './utils/valueUtil';
-import cloneDeep from './utils/cloneDeep';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -134,9 +133,7 @@ export class FormStore {
     }
   };
 
-  private getInitialValue = (namePath: InternalNamePath) => {
-    return cloneDeep(getValue(this.initialValues, namePath));
-  };
+  private getInitialValue = (namePath: InternalNamePath) => getValue(this.initialValues, namePath);
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
@@ -552,13 +549,14 @@ export class FormStore {
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
+
       // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
 
       if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
         const namePath = entity.getNamePath();
 
-        const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
+        const defaultValue = isListField ? undefined : getValue(this.initialValues, namePath);
 
         if (
           namePath.length &&

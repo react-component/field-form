@@ -44,11 +44,7 @@ export function containsNamePath(namePathList: InternalNamePath[], namePath: Int
 }
 
 function isObject(obj: StoreValue) {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    (Object.getPrototypeOf(obj) === Object.prototype || Array.isArray(obj))
-  );
+  return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
 /**
@@ -66,11 +62,9 @@ function internalSetValues<T>(store: T, values: T): T {
     const prevValue = newStore[key];
     const value = values[key];
 
-    const recursive = isObject(value);
-    const isArrayValue = Array.isArray(value);
-    newStore[key] = recursive
-      ? internalSetValues(prevValue || (isArrayValue ? [] : {}), value || {})
-      : value;
+    // If both are object (but target is not array), we use recursion to set deep value
+    const recursive = isObject(prevValue) && isObject(value);
+    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : value;
   });
 
   return newStore;

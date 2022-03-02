@@ -1,6 +1,5 @@
 import { move, isSimilar, setValues } from '../src/utils/valueUtil';
 import NameMap from '../src/utils/NameMap';
-import cloneDeep from '../src/utils/cloneDeep';
 
 describe('utils', () => {
   describe('arrayMove', () => {
@@ -70,14 +69,6 @@ describe('utils', () => {
       expect(map.toJSON()).toEqual({
         'user.name': 'Light',
       });
-    });
-  });
-
-  describe('clone deep', () => {
-    it('should not deep clone Class', () => {
-      const data = { a: new Date() };
-      const clonedData = cloneDeep(data);
-      expect(data.a === clonedData.a).toBeTruthy();
     });
   });
 });
