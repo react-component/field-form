@@ -14,22 +14,47 @@ interface FormValues {
   };
 }
 
-const Select = ({ value, defaultValue }: {value?: string[], defaultValue?: string[]}) => {
-  return <div>{(value || defaultValue || []).toString()}</div>
-};
-
 export default () => {
-  const [formInstance] = Form.useForm();
-
-  React.useEffect(() => {
-    formInstance.setFieldsValue({ selector: ["K1", "K2"] });
-  }, [formInstance]);
+  const [form] = useForm<FormValues>();
 
   return (
-    <Form form={formInstance}>
-      <Field initialValue="K1" name="selector">
-        <Select />
-      </Field>
-    </Form>
+    <div>
+      <h3>useForm ({list.length} inputs)</h3>
+
+      <button
+        type="button"
+        onClick={() => {
+          form.setFieldsValue({
+            username: 'light',
+            password: 'bamboo',
+          });
+        }}
+      >
+        Fill Values
+      </button>
+
+      <Form form={form}>
+        <React.Fragment>
+          <Field name="username">
+            <Input placeholder="Username" />
+          </Field>
+          <Field name="password">
+            <Input placeholder="Password" />
+          </Field>
+          <Field name="username">
+            <Input placeholder="Shadow of Username" />
+          </Field>
+          <Field name={['path1', 'path2']}>
+            <Input placeholder="nest" />
+          </Field>
+
+          {list.map((_, index) => (
+            <Field key={index} name={`field_${index}`}>
+              <Input placeholder={`field_${index}`} />
+            </Field>
+          ))}
+        </React.Fragment>
+      </Form>
+    </div>
   );
 };
