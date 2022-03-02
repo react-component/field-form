@@ -732,7 +732,6 @@ describe('Form.Basic', () => {
       const [form] = useForm();
 
       const handelReset = () => {
-        // setFieldsValue 对 Form.List 不生效
         form.setFieldsValue({
           users: [],
         });
