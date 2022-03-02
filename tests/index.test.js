@@ -726,4 +726,81 @@ describe('Form.Basic', () => {
       wrapper.find('Input').simulate('change', { event: { target: { value: 'Light' } } });
     }).not.toThrowError();
   });
+
+  it('setFieldsValue for List should work', () => {
+    const Demo = () => {
+      const [form] = useForm();
+
+      const handelReset = () => {
+        // setFieldsValue 对 Form.List 不生效
+        form.setFieldsValue({
+          users: [],
+        });
+      };
+
+      const initialValues = {
+        users: [{ name: '11' }, { name: '22' }],
+      };
+
+      return (
+        <Form
+          form={form}
+          initialValues={initialValues}
+          name="dynamic_form_nest_item"
+          autoComplete="off"
+        >
+          <Form.List name="users">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Field
+                    {...restField}
+                    name={[name, 'name']}
+                    rules={[{ required: true, message: 'Missing name' }]}
+                  >
+                    <Input placeholder="Name" />
+                  </Field>
+                ))}
+              </>
+            )}
+          </Form.List>
+          <Field>
+            <button className="reset-btn" onClick={handelReset}>
+              reset
+            </button>
+          </Field>
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    expect(wrapper.find('input').first().getDOMNode().value).toBe('11');
+    wrapper.find('.reset-btn').first().simulate('click');
+    expect(wrapper.find('input').length).toBe(0);
+  });
+
+  it('setFieldsValue should work for multiple Select', () => {
+    const Select = ({ value, defaultValue }) => {
+      return <div className="select-div">{(value || defaultValue || []).toString()}</div>;
+    };
+
+    const Demo = () => {
+      const [formInstance] = Form.useForm();
+
+      React.useEffect(() => {
+        formInstance.setFieldsValue({ selector: ['K1', 'K2'] });
+      }, [formInstance]);
+
+      return (
+        <Form form={formInstance}>
+          <Field initialValue="K1" name="selector">
+            <Select />
+          </Field>
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    expect(wrapper.find('.select-div').text()).toBe('K1,K2');
+  });
 });
