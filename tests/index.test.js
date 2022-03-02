@@ -753,6 +753,7 @@ describe('Form.Basic', () => {
               <>
                 {fields.map(({ key, name, ...restField }) => (
                   <Field
+                    key={key}
                     {...restField}
                     name={[name, 'name']}
                     rules={[{ required: true, message: 'Missing name' }]}
