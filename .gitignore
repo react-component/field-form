@@ -18,7 +18,7 @@
 # misc
 .DS_Store
 .vscode
-.idea
+.idea/
 
 # umi
 .umi
