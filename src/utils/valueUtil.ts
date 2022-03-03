@@ -2,6 +2,7 @@ import get from 'rc-util/lib/utils/get';
 import set from 'rc-util/lib/utils/set';
 import type { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
+import cloneDeep from '../utils/cloneDeep';
 
 /**
  * Convert name to internal supported format.
@@ -64,7 +65,8 @@ function internalSetValues<T>(store: T, values: T): T {
 
     // If both are object (but target is not array), we use recursion to set deep value
     const recursive = isObject(prevValue) && isObject(value);
-    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : value;
+
+    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : cloneDeep(value); // Clone deep for arrays
   });
 
   return newStore;
