@@ -130,7 +130,8 @@ export class FormStore {
   private setInitialValues = (initialValues: Store, init: boolean) => {
     this.initialValues = initialValues || {};
     if (init) {
-      this.store = setValues({}, this.store, initialValues);
+      // MUST set this.store for controlled component
+      this.store = setValues({}, initialValues, this.store);
     }
   };
 
@@ -558,7 +559,9 @@ export class FormStore {
       if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
         const namePath = entity.getNamePath();
 
-        const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
+        const storedDefaultValue = this.getInitialValue(namePath);
+        const defaultValue =
+          isListField && storedDefaultValue === undefined ? undefined : storedDefaultValue;
 
         if (
           namePath.length &&

@@ -803,4 +803,38 @@ describe('Form.Basic', () => {
     const wrapper = mount(<Demo />);
     expect(wrapper.find('.select-div').text()).toBe('K1,K2');
   });
+
+  it('should not set initialValues when unmount and mount', () => {
+    const MyForm = () => {
+      const [loading, setLoading] = React.useState(false);
+      const [form] = Form.useForm();
+      const initialValues = { value: '10' };
+
+      React.useEffect(() => {
+        form.setFieldsValue({ value: '20' });
+      }, []);
+
+      const myForm = (
+        <Form initialValues={initialValues} form={form}>
+          <Field name="value" rules={[{ required: true }]}>
+            <input />
+          </Field>
+          <Field name="submit">
+            <button onClick={() => setLoading(true)}>Submit</button>
+          </Field>
+        </Form>
+      );
+
+      if (loading) {
+        return <div>{myForm}</div>;
+      }
+
+      return myForm;
+    };
+
+    const wrapper = mount(<MyForm />);
+    expect(wrapper.find('input').first().getDOMNode().value).toBe('20');
+    wrapper.find('button').first().simulate('click');
+    expect(wrapper.find('input').first().getDOMNode().value).toBe('20');
+  });
 });

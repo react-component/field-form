@@ -1,7 +1,8 @@
 /* eslint-disable no-template-curly-in-string, arrow-body-style */
 import React from 'react';
 import { mount } from 'enzyme';
-import Form, { FormInstance } from '../src';
+import type { FormInstance } from '../src';
+import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
@@ -282,7 +283,7 @@ describe('Form.Preserve', () => {
       // ============== Remove Test ==============
       // Remove field
       wrapper.find('button').simulate('click');
-      expect(form.getFieldsValue()).toEqual({ list: [] });
+      expect(form.getFieldsValue()).toEqual({ list: [{ type: 'light' }] });
     });
   });
 
