@@ -108,6 +108,7 @@ export class FormStore {
         registerField: this.registerField,
         useSubscribe: this.useSubscribe,
         setInitialValues: this.setInitialValues,
+        destroyForm: this.destroyForm,
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
@@ -125,17 +126,46 @@ export class FormStore {
   };
 
   /**
+   * Record prev Form unmount fieldEntities which config preserve false.
+   * This need to be refill with initialValues instead of store value.
+   */
+  private prevWithoutPreserves: NameMap<boolean> | null = null;
+
+  /**
    * First time `setInitialValues` should update store with initial value
    */
   private setInitialValues = (initialValues: Store, init: boolean) => {
     this.initialValues = initialValues || {};
     if (init) {
-      this.store = setValues({}, this.store, initialValues);
+      let nextStore = setValues({}, initialValues, this.store);
+
+      // We will take consider prev form unmount fields.
+      // When the field is not `preserve`, we need fill this with initialValues instead of store.
+      this.prevWithoutPreserves?.map(({ key: namePath }) => {
+        nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
+      });
+      this.prevWithoutPreserves = null;
+
+      this.updateStore(nextStore);
     }
   };
 
+  private destroyForm = () => {
+    const prevWithoutPreserves = new NameMap<boolean>();
+    this.getFieldEntities(true).forEach(entity => {
+      if (!entity.isPreserve()) {
+        prevWithoutPreserves.set(entity.getNamePath(), true);
+      }
+    });
+
+    this.prevWithoutPreserves = prevWithoutPreserves;
+  };
+
   private getInitialValue = (namePath: InternalNamePath) => {
-    return cloneDeep(getValue(this.initialValues, namePath));
+    const initValue = getValue(this.initialValues, namePath);
+
+    // Not cloneDeep when without `namePath`
+    return namePath.length ? cloneDeep(initValue) : initValue;
   };
 
   private setCallbacks = (callbacks: Callbacks) => {
@@ -166,6 +196,11 @@ export class FormStore {
         }
       });
     }
+  };
+
+  // ============================ Store =============================
+  private updateStore = (nextStore: Store) => {
+    this.store = nextStore;
   };
 
   // ============================ Fields ============================
@@ -428,7 +463,7 @@ export class FormStore {
               const originValue = this.getFieldValue(namePath);
               // Set `initialValue`
               if (!info.skipExist || originValue === undefined) {
-                this.store = setValue(this.store, namePath, [...records][0].value);
+                this.updateStore(setValue(this.store, namePath, [...records][0].value));
               }
             }
           }
@@ -460,7 +495,7 @@ export class FormStore {
 
     const prevStore = this.store;
     if (!nameList) {
-      this.store = setValues({}, this.initialValues);
+      this.updateStore(setValues({}, this.initialValues));
       this.resetWithFieldInitialValue();
       this.notifyObservers(prevStore, null, { type: 'reset' });
       return;
@@ -470,7 +505,7 @@ export class FormStore {
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
     namePathList.forEach(namePath => {
       const initialValue = this.getInitialValue(namePath);
-      this.store = setValue(this.store, namePath, initialValue);
+      this.updateStore(setValue(this.store, namePath, initialValue));
     });
     this.resetWithFieldInitialValue({ namePathList });
     this.notifyObservers(prevStore, namePathList, { type: 'reset' });
@@ -487,7 +522,7 @@ export class FormStore {
 
       // Value
       if ('value' in data) {
-        this.store = setValue(this.store, namePath, data.value);
+        this.updateStore(setValue(this.store, namePath, data.value));
       }
 
       this.notifyObservers(prevStore, [namePath], {
@@ -531,7 +566,7 @@ export class FormStore {
       const prevValue = getValue(this.store, namePath);
 
       if (prevValue === undefined) {
-        this.store = setValue(this.store, namePath, initialValue);
+        this.updateStore(setValue(this.store, namePath, initialValue));
       }
     }
   };
@@ -570,7 +605,7 @@ export class FormStore {
           )
         ) {
           const prevStore = this.store;
-          this.store = setValue(prevStore, namePath, defaultValue, true);
+          this.updateStore(setValue(prevStore, namePath, defaultValue, true));
 
           // Notify that field is unmount
           this.notifyObservers(prevStore, [namePath], { type: 'remove' });
@@ -638,7 +673,7 @@ export class FormStore {
   private updateValue = (name: NamePath, value: StoreValue) => {
     const namePath = getNamePath(name);
     const prevStore = this.store;
-    this.store = setValue(this.store, namePath, value);
+    this.updateStore(setValue(this.store, namePath, value));
 
     this.notifyObservers(prevStore, [namePath], {
       type: 'valueUpdate',
@@ -666,7 +701,7 @@ export class FormStore {
     const prevStore = this.store;
 
     if (store) {
-      this.store = setValues(this.store, store);
+      this.updateStore(setValues(this.store, store));
     }
 
     this.notifyObservers(prevStore, null, {
