@@ -805,7 +805,7 @@ describe('Form.Basic', () => {
   });
 
   // https://github.com/ant-design/ant-design/issues/34768
-  it('remount should not clear current value', () => {
+  it.only('remount should not clear current value', () => {
     const formRef = React.createRef();
 
     const Demo = ({ remount }) => {
@@ -825,7 +825,7 @@ describe('Form.Basic', () => {
     };
 
     const wrapper = mount(<Demo />);
-    formRef.setFieldsValue({ name: 'bamboo' });
+    formRef.current.setFieldsValue({ name: 'bamboo' });
 
     expect(wrapper.find('input').prop('value')).toEqual('bamboo');
 
