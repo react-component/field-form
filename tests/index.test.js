@@ -803,4 +803,35 @@ describe('Form.Basic', () => {
     const wrapper = mount(<Demo />);
     expect(wrapper.find('.select-div').text()).toBe('K1,K2');
   });
+
+  // https://github.com/ant-design/ant-design/issues/34768
+  it('remount should not clear current value', () => {
+    const formRef = React.createRef();
+
+    const Demo = ({ remount }) => {
+      let node = (
+        <Form ref={formRef} initialValues={{ name: 'little' }}>
+          <Field name="name">
+            <Input />
+          </Field>
+        </Form>
+      );
+
+      if (remount) {
+        node = <div>{node}</div>;
+      }
+
+      return node;
+    };
+
+    const wrapper = mount(<Demo />);
+    formRef.setFieldsValue({ name: 'bamboo' });
+
+    expect(wrapper.find('input').prop('value')).toEqual('bamboo');
+
+    wrapper.setProps({ remount: true });
+    wrapper.update();
+
+    expect(wrapper.find('input').prop('value')).toEqual('bamboo');
+  });
 });
