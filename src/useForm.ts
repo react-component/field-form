@@ -130,7 +130,7 @@ export class FormStore {
   private setInitialValues = (initialValues: Store, init: boolean) => {
     this.initialValues = initialValues || {};
     if (init) {
-      this.store = setValues({}, this.store, initialValues);
+      this.store = setValues({}, initialValues, this.store);
     }
   };
 
