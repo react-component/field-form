@@ -806,11 +806,14 @@ describe('Form.Basic', () => {
 
   // https://github.com/ant-design/ant-design/issues/34768
   it('remount should not clear current value', () => {
-    const formRef = React.createRef();
+    let refForm;
 
     const Demo = ({ remount }) => {
+      const [form] = Form.useForm();
+      refForm = form;
+
       let node = (
-        <Form ref={formRef} initialValues={{ name: 'little' }}>
+        <Form form={form} initialValues={{ name: 'little' }}>
           <Field name="name">
             <Input />
           </Field>
@@ -825,7 +828,7 @@ describe('Form.Basic', () => {
     };
 
     const wrapper = mount(<Demo />);
-    formRef.current.setFieldsValue({ name: 'bamboo' });
+    refForm.setFieldsValue({ name: 'bamboo' });
     wrapper.update();
 
     expect(wrapper.find('input').prop('value')).toEqual('bamboo');
