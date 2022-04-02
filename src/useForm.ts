@@ -108,6 +108,7 @@ export class FormStore {
         registerField: this.registerField,
         useSubscribe: this.useSubscribe,
         setInitialValues: this.setInitialValues,
+        destroyForm: this.destroyForm,
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
@@ -125,17 +126,46 @@ export class FormStore {
   };
 
   /**
+   * Record prev Form unmount fieldEntities which config preserve false.
+   * This need to be refill with initialValues instead of store value.
+   */
+  private prevWithoutPreserves: NameMap<boolean> | null = null;
+
+  /**
    * First time `setInitialValues` should update store with initial value
    */
   private setInitialValues = (initialValues: Store, init: boolean) => {
     this.initialValues = initialValues || {};
     if (init) {
-      this.updateStore(setValues({}, initialValues, this.store));
+      let nextStore = setValues({}, initialValues, this.store);
+
+      // We will take consider prev form unmount fields.
+      // When the field is not `preserve`, we need fill this with initialValues instead of store.
+      this.prevWithoutPreserves?.map(({ key: namePath }) => {
+        nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
+      });
+      this.prevWithoutPreserves = null;
+
+      this.updateStore(nextStore);
     }
   };
 
+  private destroyForm = () => {
+    const prevWithoutPreserves = new NameMap<boolean>();
+    this.getFieldEntities(true).forEach(entity => {
+      if (!entity.isPreserve()) {
+        prevWithoutPreserves.set(entity.getNamePath(), true);
+      }
+    });
+
+    this.prevWithoutPreserves = prevWithoutPreserves;
+  };
+
   private getInitialValue = (namePath: InternalNamePath) => {
-    return cloneDeep(getValue(this.initialValues, namePath));
+    const initValue = getValue(this.initialValues, namePath);
+
+    // Not cloneDeep when without `namePath`
+    return namePath.length ? cloneDeep(initValue) : initValue;
   };
 
   private setCallbacks = (callbacks: Callbacks) => {

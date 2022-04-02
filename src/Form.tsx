@@ -64,6 +64,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setCallbacks,
     setValidateMessages,
     setPreserve,
+    destroyForm,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
@@ -108,6 +109,12 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   if (!mountRef.current) {
     mountRef.current = true;
   }
+
+  React.useEffect(
+    () => destroyForm,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   // Prepare children by `children` type
   let childrenNode = children;

@@ -103,15 +103,19 @@ describe('Form.InitialValues', () => {
     expect(getField(wrapper, 'username').find('input').props().value).toEqual('Light');
   });
 
-  it(`initialValues shouldn't be modified if preserve is false`, () => {
+  it("initialValues shouldn't be modified if preserve is false", () => {
     const formValue = {
       test: 'test',
       users: [{ first: 'aaa', last: 'bbb' }],
     };
 
+    let refForm;
+
     const Demo = () => {
       const [form] = Form.useForm();
       const [show, setShow] = useState(false);
+
+      refForm = form;
 
       return (
         <>
@@ -129,7 +133,7 @@ describe('Form.InitialValues', () => {
                 {fields => (
                   <>
                     {fields.map(({ key, name, ...restField }) => (
-                      <>
+                      <React.Fragment key={key}>
                         <Field
                           {...restField}
                           name={[name, 'first']}
@@ -144,7 +148,7 @@ describe('Form.InitialValues', () => {
                         >
                           <Input placeholder="Last Name" />
                         </Field>
-                      </>
+                      </React.Fragment>
                     ))}
                   </>
                 )}
@@ -158,10 +162,15 @@ describe('Form.InitialValues', () => {
     const wrapper = mount(<Demo />);
     wrapper.find('button').simulate('click');
     expect(formValue.users[0].last).toEqual('bbb');
+
     wrapper.find('button').simulate('click');
     expect(formValue.users[0].last).toEqual('bbb');
+    console.log('Form Value:', refForm.getFieldsValue(true));
+
     wrapper.find('button').simulate('click');
-    expect(wrapper.find('.first-name-input').first().find('input').instance().value).toEqual('aaa');
+    wrapper.update();
+
+    expect(wrapper.find('.first-name-input').first().find('input').prop('value')).toEqual('aaa');
   });
 
   describe('Field with initialValue', () => {
