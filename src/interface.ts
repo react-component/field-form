@@ -126,6 +126,8 @@ export interface RuleError {
 }
 
 export interface ValidateOptions {
+  suppressWarning?: boolean;
+
   triggerName?: string;
   validateMessages?: ValidateMessages;
   /**
