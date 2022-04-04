@@ -18,15 +18,15 @@ const AsyncValidator: any = RawAsyncValidator;
  * Replace with template.
  *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
  */
-function replaceMessage(template: string, kv: Record<string, string>): string {
+function replaceMessage(template: string, kv: Record<string, unknown>): string {
   return template.replace(/\${(\w+)}/g, (_, $1: string) => {
-    return kv[$1];
+    return String(kv[$1]);
   });
 }
 
-function replaceError(error: string, kv: Record<string, string>) {
+function replaceError<E extends unknown>(error: E, kv: Record<string, unknown>): E {
   if (typeof error === 'string') {
-    return replaceMessage(error, kv);
+    return replaceMessage(error, kv) as E;
   }
   return error;
 }
@@ -77,14 +77,6 @@ async function validateRule(
     }
   }
 
-  // Replace message with variables
-  const kv = {
-    ...(rule as Record<string, string | number>),
-    name,
-    enum: (rule.enum || []).join(', '),
-    ...messageVariables,
-  };
-
   if (!result.length && subRuleField) {
     const subResults: string[][] = await Promise.all(
       (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
@@ -92,8 +84,16 @@ async function validateRule(
       ),
     );
 
-    return subResults.flatMap(errors => errors.map(error => replaceError(error, kv)));
+    return subResults.flat();
   }
+
+  // Replace message with variables
+  const kv = {
+    ...rule,
+    name,
+    enum: (rule.enum || []).join(', '),
+    ...messageVariables,
+  };
 
   return result.map(error => replaceError(error, kv));
 }
