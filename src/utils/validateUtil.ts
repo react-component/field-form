@@ -19,10 +19,16 @@ const AsyncValidator: any = RawAsyncValidator;
  *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
  */
 function replaceMessage(template: string, kv: Record<string, string>): string {
-  return template.replace(/\$\{\w+\}/g, (str: string) => {
-    const key = str.slice(2, -1);
-    return kv[key];
+  return template.replace(/\${(\w+)}/g, (_, $1: string) => {
+    return kv[$1];
   });
+}
+
+function replaceError(error: string, kv: Record<string, string>) {
+  if (typeof error === 'string') {
+    return replaceMessage(error, kv);
+  }
+  return error;
 }
 
 async function validateRule(
@@ -71,16 +77,6 @@ async function validateRule(
     }
   }
 
-  if (!result.length && subRuleField) {
-    const subResults: string[][] = await Promise.all(
-      (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
-        validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
-      ),
-    );
-
-    return subResults.reduce((prev, errors) => [...prev, ...errors], []);
-  }
-
   // Replace message with variables
   const kv = {
     ...(rule as Record<string, string | number>),
@@ -89,14 +85,17 @@ async function validateRule(
     ...messageVariables,
   };
 
-  const fillVariableResult = result.map(error => {
-    if (typeof error === 'string') {
-      return replaceMessage(error, kv);
-    }
-    return error;
-  });
+  if (!result.length && subRuleField) {
+    const subResults: string[][] = await Promise.all(
+      (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
+        validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
+      ),
+    );
 
-  return fillVariableResult;
+    return subResults.flatMap(errors => errors.map(error => replaceError(error, kv)));
+  }
+
+  return result.map(error => replaceError(error, kv));
 }
 
 /**
