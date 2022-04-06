@@ -141,6 +141,7 @@ export class FormStore {
 
       // We will take consider prev form unmount fields.
       // When the field is not `preserve`, we need fill this with initialValues instead of store.
+      // eslint-disable-next-line array-callback-return
       this.prevWithoutPreserves?.map(({ key: namePath }) => {
         nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
       });
