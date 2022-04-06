@@ -68,6 +68,8 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
+  private watchCallbacks: Record<number, Callbacks> = {};
+
   private validateMessages: ValidateMessages = null;
 
   private preserve?: boolean = null;
@@ -110,6 +112,7 @@ export class FormStore {
         setInitialValues: this.setInitialValues,
         destroyForm: this.destroyForm,
         setCallbacks: this.setCallbacks,
+        setWatchCallbacks: this.setWatchCallbacks,
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
@@ -171,6 +174,10 @@ export class FormStore {
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
+  };
+
+  private setWatchCallbacks = (watchId: number, callbacks: Callbacks) => {
+    this.watchCallbacks[watchId] = callbacks;
   };
 
   private setValidateMessages = (validateMessages: ValidateMessages) => {
@@ -641,6 +648,13 @@ export class FormStore {
     info: NotifyInfo,
   ) => {
     if (this.subscribable) {
+      Object.keys(this.watchCallbacks).forEach(key => {
+        const { onValuesChange } = this.watchCallbacks[key];
+        if (onValuesChange) {
+          onValuesChange(this.getFieldsValue(true), this.getFieldsValue(true));
+        }
+      });
+
       const mergedInfo: ValuedNotifyInfo = {
         ...info,
         store: this.getFieldsValue(true),
