@@ -21,6 +21,7 @@ import type {
   InternalFieldData,
   ValuedNotifyInfo,
   RuleError,
+  WatchCallbacks,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -178,6 +179,15 @@ export class FormStore {
 
   private setWatchCallbacks = (watchId: number, callbacks: Callbacks) => {
     this.watchCallbacks[watchId] = callbacks;
+  };
+
+  private watchChange = (namePathList: InternalNamePath[] | null) => {
+    Object.keys(this.watchCallbacks).forEach(key => {
+      const { onValuesChange } = this.watchCallbacks[key] as WatchCallbacks;
+      if (onValuesChange) {
+        onValuesChange(namePathList);
+      }
+    });
   };
 
   private setValidateMessages = (validateMessages: ValidateMessages) => {
@@ -524,9 +534,12 @@ export class FormStore {
 
     const prevStore = this.store;
 
+    const namePathList = [];
+
     fields.forEach((fieldData: FieldData) => {
       const { name, errors, ...data } = fieldData;
       const namePath = getNamePath(name);
+      namePathList.push(namePath);
 
       // Value
       if ('value' in data) {
@@ -538,6 +551,8 @@ export class FormStore {
         data: fieldData,
       });
     });
+
+    this.watchChange(namePathList);
   };
 
   private getFields = (): InternalFieldData[] => {
@@ -648,13 +663,6 @@ export class FormStore {
     info: NotifyInfo,
   ) => {
     if (this.subscribable) {
-      Object.keys(this.watchCallbacks).forEach(key => {
-        const { onValuesChange } = this.watchCallbacks[key];
-        if (onValuesChange) {
-          onValuesChange(this.getFieldsValue(true), this.getFieldsValue(true));
-        }
-      });
-
       const mergedInfo: ValuedNotifyInfo = {
         ...info,
         store: this.getFieldsValue(true),
@@ -694,6 +702,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
+    this.watchChange([namePath]);
 
     // Dependencies update
     const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);

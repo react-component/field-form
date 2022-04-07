@@ -1,29 +1,42 @@
 import type { FormInstance } from '.';
 import { HOOK_MARK } from './FieldContext';
-import type { InternalFormInstance } from './interface';
-import { useState, useEffect } from 'react';
+import type { InternalFormInstance, NamePath } from './interface';
+import { useState, useEffect, useRef } from 'react';
+import { getNamePath, containsNamePath } from './utils/valueUtil';
 
 interface UseWatchProps {
   form?: FormInstance<any>;
+  dependencies?: NamePath[];
 }
 let watchId = 0;
 
 const useWatch = (props: UseWatchProps) => {
-  const { form } = props;
-  const values = form.getFieldsValue(true);
+  const { form, dependencies } = props;
   const [, forceUpdate] = useState({});
   const { setWatchCallbacks } = (form as InternalFormInstance).getInternalHooks(HOOK_MARK);
+  const watchIdRef = useRef((watchId += 1));
+  const isDrop = useRef(false);
 
   useEffect(() => {
-    watchId += 1;
-    setWatchCallbacks(watchId, {
-      onValuesChange: () => {
-        forceUpdate({});
+    setWatchCallbacks(watchIdRef.current, {
+      onValuesChange: namePath => {
+        if (isDrop) return;
+        if (dependencies) {
+          const dependencyList = dependencies?.map(getNamePath);
+          if (dependencyList.some(dependency => containsNamePath(namePath, dependency))) {
+            forceUpdate({});
+          }
+        } else {
+          forceUpdate({});
+        }
       },
     });
-  }, [setWatchCallbacks]);
+    return () => {
+      isDrop.current = true;
+    };
+  }, [dependencies, setWatchCallbacks]);
 
-  return values;
+  return form.getFieldsValue(true);
 };
 
 export default useWatch;

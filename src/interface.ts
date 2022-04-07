@@ -193,6 +193,10 @@ export interface Callbacks<Values = any> {
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
+export interface WatchCallbacks {
+  onValuesChange?: (namPath: InternalNamePath[] | null) => void;
+}
+
 export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
   initEntityValue: (entity: FieldEntity) => void;
@@ -201,7 +205,7 @@ export interface InternalHooks {
   setInitialValues: (values: Store, init: boolean) => void;
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
-  setWatchCallbacks: (watchId: number, callbacks: Callbacks) => void;
+  setWatchCallbacks: (watchId: number, callbacks: WatchCallbacks) => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;

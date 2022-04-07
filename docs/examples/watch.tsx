@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-shadow */
-import React from 'react';
+import React, { useState } from 'react';
 import Form, { Field } from 'rc-field-form';
 import Input from './components/Input';
 
@@ -8,7 +8,7 @@ let x = 0;
 
 const Demo = React.memo((props: any) => {
   const { form } = props;
-  const values = Form.useWatch({ form });
+  const values = Form.useWatch({ form, dependencies: ['demo'] });
 
   console.log('demo watch', values);
 
@@ -20,7 +20,7 @@ const Demo = React.memo((props: any) => {
 });
 const Demo2 = React.memo((props: any) => {
   const { form } = props;
-  const values = Form.useWatch({ form });
+  const values = Form.useWatch({ form, dependencies: ['demo2'] });
 
   console.log('demo2 watch', values);
 
@@ -33,29 +33,35 @@ const Demo2 = React.memo((props: any) => {
 
 export default () => {
   const [form] = Form.useForm(null);
+  const [visible, setVisible] = useState(true);
+  const [visible2, setVisible2] = useState(true);
 
-  // console.log('watch', form.watch('name'));
-  const values = Form.useWatch({ form });
-  // console.log('v', values);
-  console.log('main', values);
+  const values = Form.useWatch({ form, dependencies: ['name'] });
+  console.log('main watch', values);
 
   return (
     <Form form={form}>
-      <Field name="name">
+      <Field name="main">
         <Input />
       </Field>
+      {visible && (
+        <Field name="name">
+          <Input />
+        </Field>
+      )}
       <Field dependencies={['field_1']}>
         {() => {
           x += 1;
           return `gogogo${x}`;
         }}
       </Field>
+      <p>demo1</p>
       <Demo form={form} />
-      <Demo2 form={form} />
-
+      <p>demo2</p>
+      {visible2 && <Demo2 form={form} />}
       <button
         onClick={() => {
-          form.getFieldsValue();
+          console.log('vvv', form.getFieldsValue());
         }}
       >
         submit
@@ -63,10 +69,35 @@ export default () => {
       <button
         onClick={() => {
           const values = form.getFieldsValue(true);
-          form.setFields([{ name: 'name', value: `${values.name || ''}1` }]);
+          form.setFields([
+            { name: 'name', value: `${values.name || ''}1` },
+            { name: 'main', value: `main` },
+          ]);
         }}
       >
         setFields
+      </button>
+      <button
+        onClick={() => {
+          const values = form.getFieldsValue(true);
+          form.setFieldsValue({ name: `${values.name || ''}1` });
+        }}
+      >
+        setFieldsValue
+      </button>
+      <button
+        onClick={() => {
+          setVisible(c => !c);
+        }}
+      >
+        isShow name
+      </button>
+      <button
+        onClick={() => {
+          setVisible2(c => !c);
+        }}
+      >
+        isShow demo2
       </button>
     </Form>
   );
