@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-shadow */
 import React, { useState } from 'react';
 import Form, { Field } from 'rc-field-form';
 import Input from './components/Input';
@@ -40,7 +38,7 @@ export default () => {
   console.log('main watch', values);
 
   return (
-    <Form form={form}>
+    <Form form={form} initialValues={{ name: 'default' }}>
       no render
       <Field name="main">
         <Input />
@@ -65,10 +63,11 @@ export default () => {
       {visible2 && <Demo2 form={form} />}
       <button
         onClick={() => {
-          console.log('vvv', form.getFieldsValue());
+          console.log('values', form.getFieldsValue());
+          console.log('values all', form.getFieldsValue(true));
         }}
       >
-        submit
+        getFieldsValue
       </button>
       <button
         onClick={() => {

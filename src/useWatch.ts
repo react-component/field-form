@@ -4,13 +4,13 @@ import type { InternalFormInstance, NamePath } from './interface';
 import { useState, useEffect, useRef } from 'react';
 import { getNamePath, containsNamePath } from './utils/valueUtil';
 
-interface UseWatchProps {
-  form?: FormInstance<any>;
+interface UseWatchProps<Values = any> {
+  form?: FormInstance<Values>;
   dependencies?: NamePath[];
 }
 let watchId = 0;
 
-const useWatch = (props: UseWatchProps) => {
+const useWatch = <Values>(props: UseWatchProps<Values>) => {
   const { form, dependencies } = props;
   const [, forceUpdate] = useState({});
   const { setWatchCallbacks } = (form as InternalFormInstance).getInternalHooks(HOOK_MARK);
