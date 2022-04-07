@@ -95,7 +95,7 @@ export default () => {
           form.setFieldsValue({ name: `${values.name || ''}1` });
         }}
       >
-        不支持 setFieldsValue
+        setFieldsValue
       </button>
       <button
         onClick={() => {

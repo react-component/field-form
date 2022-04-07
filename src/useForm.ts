@@ -749,6 +749,7 @@ export class FormStore {
   // Let all child Field get update.
   private setFieldsValue = (store: Store) => {
     this.warningUnhooked();
+    this.watchChange({ values: store });
 
     const prevStore = this.store;
 
