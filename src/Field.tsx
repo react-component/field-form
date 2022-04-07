@@ -163,8 +163,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       const { registerField, dispatch } = getInternalHooks(HOOK_MARK);
       this.cancelRegisterFunc = registerField(this);
 
-      const namePath = this.getNamePath();
-      dispatch({ type: 'mountField', namePath, value: fieldContext.getFieldValue(namePath) });
+      dispatch({ type: 'mountField', namePath: this.getNamePath() });
     }
 
     // One more render for component in case fields not ready
@@ -181,14 +180,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const { fieldContext } = this.props;
     const { getInternalHooks }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
-    const namePath = this.getNamePath();
-    dispatch({ type: 'unMountField', namePath, value: undefined });
-
-    // const { fieldContext } = this.props;
-    // const { getInternalHooks }: InternalFormInstance = fieldContext;
-    // const { dispatch } = getInternalHooks(HOOK_MARK);
-    // const namePath = this.getNamePath();
-    // dispatch({ type: 'updateValue', namePath, value: undefined });
+    dispatch({ type: 'unMountField', namePath: this.getNamePath() });
   }
 
   public cancelRegister = () => {

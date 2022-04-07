@@ -49,13 +49,11 @@ interface UpdateAction {
 interface MountFieldAction {
   type: 'mountField';
   namePath: InternalNamePath;
-  value: StoreValue;
 }
 
 interface UnMountFieldAction {
   type: 'unMountField';
   namePath: InternalNamePath;
-  value: StoreValue;
 }
 
 interface ValidateAction {
