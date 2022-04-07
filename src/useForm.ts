@@ -521,7 +521,7 @@ export class FormStore {
 
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
-    this.watchChange({ namePathList: nameList, values: nameList ? undefined : this.initialValues });
+    this.watchChange({ namePathList: nameList, values: this.initialValues });
 
     const prevStore = this.store;
     if (!nameList) {

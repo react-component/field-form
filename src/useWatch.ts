@@ -9,7 +9,6 @@ import get from 'rc-util/lib/utils/get';
 interface UseWatchProps<Values = any> {
   form?: FormInstance<Values>;
   dependencies?: NamePath[];
-  // initialValues?: Record<string, any>;
 }
 let watchId = 0;
 
