@@ -18,9 +18,15 @@ const useWatch = (props: UseWatchProps) => {
   const isDrop = useRef(false);
 
   useEffect(() => {
+    return () => {
+      isDrop.current = true;
+    };
+  }, []);
+
+  useEffect(() => {
     setWatchCallbacks(watchIdRef.current, {
       onValuesChange: namePath => {
-        if (isDrop) return;
+        if (isDrop.current) return;
         if (dependencies) {
           const dependencyList = dependencies?.map(getNamePath);
           if (dependencyList.some(dependency => containsNamePath(namePath, dependency))) {
@@ -31,9 +37,6 @@ const useWatch = (props: UseWatchProps) => {
         }
       },
     });
-    return () => {
-      isDrop.current = true;
-    };
   }, [dependencies, setWatchCallbacks]);
 
   return form.getFieldsValue(true);
