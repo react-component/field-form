@@ -127,8 +127,8 @@ describe('useWatch', () => {
     });
   });
   it('unmount useWatch', async () => {
-    const DemoWatch = ({ form }: { form: FormInstance }) => {
-      Form.useWatch({ form, dependencies: ['name'] });
+    const DemoWatch = () => {
+      Form.useWatch({ dependencies: ['name'] });
 
       return (
         <Field name="name">
@@ -144,7 +144,7 @@ describe('useWatch', () => {
       return (
         <div>
           <Form form={form} initialValues={{ name: 'bamboo' }}>
-            {visible && <DemoWatch form={form} />}
+            {visible && <DemoWatch />}
           </Form>
           <div className="values">{JSON.stringify(values)}</div>
         </div>

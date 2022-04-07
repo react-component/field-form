@@ -1,7 +1,8 @@
 import type { FormInstance } from '.';
+import { FieldContext } from '.';
 import { HOOK_MARK } from './FieldContext';
 import type { InternalFormInstance, NamePath } from './interface';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { getNamePath, containsNamePath } from './utils/valueUtil';
 import set from 'rc-util/lib/utils/set';
 import get from 'rc-util/lib/utils/get';
@@ -13,7 +14,8 @@ interface UseWatchProps<Values = any> {
 let watchId = 0;
 
 const useWatch = <Values>(props: UseWatchProps<Values>) => {
-  const { form, dependencies } = props;
+  const fieldContext = useContext(FieldContext);
+  const { form = fieldContext, dependencies } = props;
   const [, forceUpdate] = useState({});
   const valuesRef = useRef<Values>();
   const { setWatchCallbacks, getFieldEntities } = (form as InternalFormInstance).getInternalHooks(
