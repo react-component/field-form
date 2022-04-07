@@ -63,7 +63,6 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
     });
   }, [dependencies, form, getFieldEntities, setWatchCallbacks]);
 
-  // return form.getFieldsValue(true);
   return valuesRef.current;
 };
 
