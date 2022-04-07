@@ -181,7 +181,7 @@ export class FormStore {
     this.watchCallbacks[watchId] = callbacks;
   };
 
-  private watchChange = (namePathList: InternalNamePath[] | null) => {
+  private watchChange = (namePathList?: NamePath[]) => {
     Object.keys(this.watchCallbacks).forEach(key => {
       const { onValuesChange } = this.watchCallbacks[key] as WatchCallbacks;
       if (onValuesChange) {
@@ -510,6 +510,7 @@ export class FormStore {
 
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
+    this.watchChange(nameList);
 
     const prevStore = this.store;
     if (!nameList) {

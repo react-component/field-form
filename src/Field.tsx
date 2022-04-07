@@ -175,11 +175,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     this.triggerMetaEvent(true);
     this.mounted = false;
 
-    const { fieldContext } = this.props;
-    const { getInternalHooks }: InternalFormInstance = fieldContext;
-    const { dispatch } = getInternalHooks(HOOK_MARK);
-    const namePath = this.getNamePath();
-    dispatch({ type: 'updateValue', namePath, value: undefined });
+    // const { fieldContext } = this.props;
+    // const { getInternalHooks }: InternalFormInstance = fieldContext;
+    // const { dispatch } = getInternalHooks(HOOK_MARK);
+    // const namePath = this.getNamePath();
+    // dispatch({ type: 'updateValue', namePath, value: undefined });
   }
 
   public cancelRegister = () => {

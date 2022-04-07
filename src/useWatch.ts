@@ -27,9 +27,10 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
     setWatchCallbacks(watchIdRef.current, {
       onValuesChange: namePath => {
         if (isDrop.current) return;
-        if (dependencies) {
+        if (dependencies && namePath) {
           const dependencyList = dependencies?.map(getNamePath);
-          if (dependencyList.some(dependency => containsNamePath(namePath, dependency))) {
+          const nameList = namePath?.map(getNamePath);
+          if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             forceUpdate({});
           }
         } else {

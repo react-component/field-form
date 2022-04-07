@@ -38,29 +38,31 @@ export default () => {
   console.log('main watch', values);
 
   return (
-    <Form form={form} initialValues={{ name: 'default' }}>
-      no render
-      <Field name="main">
-        <Input />
-      </Field>
-      name
-      {visible && (
-        <Field name="name">
+    <>
+      <Form form={form} initialValues={{ name: 'default' }}>
+        no render
+        <Field name="main">
           <Input />
         </Field>
-      )}
-      name 改变，组件 render 这里也 render
-      <Field dependencies={['field_1']}>
-        {() => {
-          x += 1;
-          return ` count ${x}`;
-        }}
-      </Field>
-      <br />
-      demo1
-      <Demo form={form} />
-      demo2
-      {visible2 && <Demo2 form={form} />}
+        name
+        {visible && (
+          <Field name="name">
+            <Input />
+          </Field>
+        )}
+        name 改变，组件 render 这里也 render
+        <Field dependencies={['field_1']}>
+          {() => {
+            x += 1;
+            return ` count ${x}`;
+          }}
+        </Field>
+        <br />
+        demo1
+        <Demo form={form} />
+        demo2
+        {visible2 && <Demo2 form={form} />}
+      </Form>
       <button
         onClick={() => {
           console.log('values', form.getFieldsValue());
@@ -79,6 +81,13 @@ export default () => {
         }}
       >
         setFields
+      </button>
+      <button
+        onClick={() => {
+          form.resetFields();
+        }}
+      >
+        resetFields
       </button>
       <button
         onClick={() => {
@@ -102,6 +111,6 @@ export default () => {
       >
         isShow demo2
       </button>
-    </Form>
+    </>
   );
 };
