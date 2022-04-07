@@ -41,23 +41,27 @@ export default () => {
 
   return (
     <Form form={form}>
+      no render
       <Field name="main">
         <Input />
       </Field>
+      name
       {visible && (
         <Field name="name">
           <Input />
         </Field>
       )}
+      name 改变，组件 render 这里也 render
       <Field dependencies={['field_1']}>
         {() => {
           x += 1;
-          return `gogogo${x}`;
+          return ` count ${x}`;
         }}
       </Field>
-      <p>demo1</p>
+      <br />
+      demo1
       <Demo form={form} />
-      <p>demo2</p>
+      demo2
       {visible2 && <Demo2 form={form} />}
       <button
         onClick={() => {
@@ -83,7 +87,7 @@ export default () => {
           form.setFieldsValue({ name: `${values.name || ''}1` });
         }}
       >
-        setFieldsValue
+        不支持 setFieldsValue
       </button>
       <button
         onClick={() => {
