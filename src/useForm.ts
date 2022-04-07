@@ -130,6 +130,7 @@ export class FormStore {
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
+        getFieldEntities: this.getFieldEntities,
       };
     }
 
@@ -193,11 +194,11 @@ export class FormStore {
     this.watchCallbacks[watchId] = callbacks;
   };
 
-  private watchChange = (namePathList?: NamePath[], type?: string) => {
+  private watchChange: WatchCallbacks['onValuesChange'] = config => {
     Object.keys(this.watchCallbacks).forEach(key => {
       const { onValuesChange } = this.watchCallbacks[key] as WatchCallbacks;
       if (onValuesChange) {
-        onValuesChange(namePathList, type);
+        onValuesChange(config);
       }
     });
   };
@@ -522,7 +523,7 @@ export class FormStore {
 
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
-    this.watchChange(nameList);
+    this.watchChange({ namePathList: nameList, values: nameList ? undefined : this.initialValues });
 
     const prevStore = this.store;
     if (!nameList) {
@@ -565,7 +566,7 @@ export class FormStore {
       });
     });
 
-    this.watchChange(namePathList);
+    this.watchChange({ namePathList });
   };
 
   private getFields = (): InternalFieldData[] => {
@@ -669,13 +670,14 @@ export class FormStore {
         const { namePath } = action;
         this.timeoutId = setTimeout(() => {
           this.timeoutId = null;
-          this.watchChange([namePath], 'mountField');
+          this.watchChange({ namePathList: [namePath], type: 'mountField' });
         });
         break;
       }
       case 'unMountField': {
         const { namePath } = action;
-        this.watchChange([namePath], 'unMountField');
+        this.watchChange({ namePathList: [namePath], type: 'unMountField' });
+
         break;
       }
       default:
@@ -728,7 +730,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
-    this.watchChange([namePath]);
+    this.watchChange({ namePathList: [namePath] });
 
     // Dependencies update
     const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);

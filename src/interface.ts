@@ -194,7 +194,11 @@ export interface Callbacks<Values = any> {
 }
 
 export interface WatchCallbacks {
-  onValuesChange?: (namPath?: NamePath[], type?: string) => void;
+  onValuesChange?: (config: {
+    namePathList?: NamePath[];
+    type?: string;
+    values?: Record<string, any>;
+  }) => void;
 }
 
 export interface InternalHooks {
@@ -210,6 +214,7 @@ export interface InternalHooks {
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
+  getFieldEntities: (pure?: boolean) => FieldEntity[];
 }
 
 /** Only return partial when type is not any */

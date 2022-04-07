@@ -4,6 +4,7 @@ import type { InternalFormInstance, NamePath } from './interface';
 import { useState, useEffect, useRef } from 'react';
 import { getNamePath, containsNamePath } from './utils/valueUtil';
 import set from 'rc-util/lib/utils/set';
+import get from 'rc-util/lib/utils/get';
 
 interface UseWatchProps<Values = any> {
   form?: FormInstance<Values>;
@@ -16,7 +17,9 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
   const { form, dependencies } = props;
   const [, forceUpdate] = useState({});
   const valuesRef = useRef<Values>();
-  const { setWatchCallbacks } = (form as InternalFormInstance).getInternalHooks(HOOK_MARK);
+  const { setWatchCallbacks, getFieldEntities } = (form as InternalFormInstance).getInternalHooks(
+    HOOK_MARK,
+  );
   const watchIdRef = useRef((watchId += 1));
   const isDrop = useRef(false);
 
@@ -28,13 +31,13 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
 
   useEffect(() => {
     setWatchCallbacks(watchIdRef.current, {
-      onValuesChange: (namePath, type) => {
+      onValuesChange: ({ namePathList, type, values }) => {
         if (isDrop.current) return;
-        if (dependencies && namePath) {
+        if (dependencies && namePathList) {
           const dependencyList = dependencies?.map(getNamePath);
-          const nameList = namePath?.map(getNamePath);
+          const nameList = namePathList?.map(getNamePath);
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
-            nameList.forEach(name => {
+            dependencyList.forEach(name => {
               valuesRef.current = set(
                 valuesRef.current,
                 name,
@@ -45,14 +48,21 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
           }
         } else {
           const dependencyList = dependencies?.map(getNamePath);
+
           dependencyList.forEach(name => {
-            valuesRef.current = set(valuesRef.current, name, form.getFieldValue(name));
+            if (getFieldEntities(true).find(item => item.getNamePath().join() === name.join())) {
+              valuesRef.current = set(
+                valuesRef.current,
+                name,
+                values ? get(values, name) : form.getFieldValue(name),
+              );
+            }
           });
           forceUpdate({});
         }
       },
     });
-  }, [dependencies, form, setWatchCallbacks]);
+  }, [dependencies, form, getFieldEntities, setWatchCallbacks]);
 
   // return form.getFieldsValue(true);
   return valuesRef.current;
