@@ -46,13 +46,25 @@ interface UpdateAction {
   value: StoreValue;
 }
 
+interface MountFieldAction {
+  type: 'mountField';
+  namePath: InternalNamePath;
+  value: StoreValue;
+}
+
+interface UnMountFieldAction {
+  type: 'unMountField';
+  namePath: InternalNamePath;
+  value: StoreValue;
+}
+
 interface ValidateAction {
   type: 'validateField';
   namePath: InternalNamePath;
   triggerName: string;
 }
 
-export type ReducerAction = UpdateAction | ValidateAction;
+export type ReducerAction = UpdateAction | ValidateAction | MountFieldAction | UnMountFieldAction;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -181,11 +193,11 @@ export class FormStore {
     this.watchCallbacks[watchId] = callbacks;
   };
 
-  private watchChange = (namePathList?: NamePath[]) => {
+  private watchChange = (namePathList?: NamePath[], type?: string) => {
     Object.keys(this.watchCallbacks).forEach(key => {
       const { onValuesChange } = this.watchCallbacks[key] as WatchCallbacks;
       if (onValuesChange) {
-        onValuesChange(namePathList);
+        onValuesChange(namePathList, type);
       }
     });
   };
@@ -651,6 +663,19 @@ export class FormStore {
       case 'validateField': {
         const { namePath, triggerName } = action;
         this.validateFields([namePath], { triggerName });
+        break;
+      }
+      case 'mountField': {
+        const { namePath } = action;
+        this.timeoutId = setTimeout(() => {
+          this.timeoutId = null;
+          this.watchChange([namePath], 'mountField');
+        });
+        break;
+      }
+      case 'unMountField': {
+        const { namePath } = action;
+        this.watchChange([namePath], 'unMountField');
         break;
       }
       default:

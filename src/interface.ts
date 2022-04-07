@@ -194,7 +194,7 @@ export interface Callbacks<Values = any> {
 }
 
 export interface WatchCallbacks {
-  onValuesChange?: (namPath?: NamePath[]) => void;
+  onValuesChange?: (namPath?: NamePath[], type?: string) => void;
 }
 
 export interface InternalHooks {
