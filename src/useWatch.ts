@@ -32,18 +32,22 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
 
   useEffect(() => {
     setWatchCallbacks(watchIdRef.current, {
-      onValuesChange: ({ namePathList, type, values }) => {
+      onValuesChange: ({ namePathList, type, values, isListField }) => {
         if (isDrop.current) return;
         const dependencyList = dependencies?.map(getNamePath);
         if (dependencies && namePathList) {
           const nameList = namePathList?.map(getNamePath);
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             dependencyList.forEach(name => {
-              valuesRef.current = set(
-                valuesRef.current,
-                name,
-                type === 'unMountField' ? undefined : form.getFieldValue(name),
-              );
+              if (isListField) {
+                valuesRef.current = set(valuesRef.current, name, form.getFieldValue(name));
+              } else {
+                valuesRef.current = set(
+                  valuesRef.current,
+                  name,
+                  type === 'unMountField' ? undefined : form.getFieldValue(name),
+                );
+              }
             });
             forceUpdate({});
           }

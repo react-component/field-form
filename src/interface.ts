@@ -198,6 +198,7 @@ export interface WatchCallbacks {
     namePathList?: NamePath[];
     type?: string;
     values?: Record<string, any>;
+    isListField?: boolean;
   }) => void;
 }
 

@@ -49,11 +49,13 @@ interface UpdateAction {
 interface MountFieldAction {
   type: 'mountField';
   namePath: InternalNamePath;
+  isListField: boolean;
 }
 
 interface UnMountFieldAction {
   type: 'unMountField';
   namePath: InternalNamePath;
+  isListField: boolean;
 }
 
 interface ValidateAction {
@@ -665,16 +667,16 @@ export class FormStore {
         break;
       }
       case 'mountField': {
-        const { namePath } = action;
+        const { namePath, isListField } = action;
         this.timeoutId = setTimeout(() => {
           this.timeoutId = null;
-          this.watchChange({ namePathList: [namePath], type: 'mountField' });
+          this.watchChange({ namePathList: [namePath], type: 'mountField', isListField });
         });
         break;
       }
       case 'unMountField': {
-        const { namePath } = action;
-        this.watchChange({ namePathList: [namePath], type: 'unMountField' });
+        const { namePath, isListField } = action;
+        this.watchChange({ namePathList: [namePath], type: 'unMountField', isListField });
         break;
       }
       default:
