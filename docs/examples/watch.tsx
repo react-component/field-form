@@ -5,7 +5,7 @@ import Input from './components/Input';
 let x = 0;
 
 const Demo = React.memo(() => {
-  const values = Form.useWatch({ dependencies: ['demo'] });
+  const values = Form.useWatch(['demo']);
   console.log('demo watch', values);
   return (
     <Field name="demo">
@@ -14,7 +14,7 @@ const Demo = React.memo(() => {
   );
 });
 const Demo2 = React.memo(() => {
-  const values = Form.useWatch({ dependencies: ['demo2'] });
+  const values = Form.useWatch(['demo2']);
   console.log('demo2 watch', values);
   return (
     <Field name="demo2">
@@ -27,7 +27,7 @@ export default () => {
   const [form] = Form.useForm(null);
   const [visible, setVisible] = useState(true);
   const [visible2, setVisible2] = useState(true);
-  const values = Form.useWatch({ form, dependencies: ['name'] });
+  const values = Form.useWatch(['name'], form);
   console.log('main watch', values);
   return (
     <>

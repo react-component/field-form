@@ -7,22 +7,18 @@ import { getNamePath, containsNamePath } from './utils/valueUtil';
 import set from 'rc-util/lib/utils/set';
 import get from 'rc-util/lib/utils/get';
 
-interface UseWatchProps<Values = any> {
-  form?: FormInstance<Values>;
-  dependencies?: NamePath[];
-}
 let watchId = 0;
 
-const useWatch = <Values>(props: UseWatchProps<Values>) => {
-  const fieldContext = useContext(FieldContext);
-  const { form = fieldContext, dependencies } = props;
+const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
   const [, forceUpdate] = useState({});
   const valuesRef = useRef<Values>();
-  const { setWatchCallbacks, getFieldEntities } = (form as InternalFormInstance).getInternalHooks(
-    HOOK_MARK,
-  );
   const watchIdRef = useRef((watchId += 1));
   const isDrop = useRef(false);
+
+  const fieldContext = useContext(FieldContext);
+  const internalForm = (form || fieldContext) as InternalFormInstance;
+  const { getFieldValue, getInternalHooks } = internalForm;
+  const { setWatchCallbacks, getFieldEntities } = getInternalHooks(HOOK_MARK);
 
   useEffect(() => {
     return () => {
@@ -40,12 +36,12 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             dependencyList.forEach(name => {
               if (isListField) {
-                valuesRef.current = set(valuesRef.current, name, form.getFieldValue(name));
+                valuesRef.current = set(valuesRef.current, name, getFieldValue(name));
               } else {
                 valuesRef.current = set(
                   valuesRef.current,
                   name,
-                  type === 'unMountField' ? undefined : form.getFieldValue(name),
+                  type === 'unMountField' ? undefined : getFieldValue(name),
                 );
               }
             });
@@ -57,7 +53,7 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
               valuesRef.current = set(
                 valuesRef.current,
                 name,
-                values ? get(values, name) : form.getFieldValue(name),
+                values ? get(values, name) : getFieldValue(name),
               );
             }
           });
@@ -65,7 +61,7 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
         }
       },
     });
-  }, [dependencies, form, getFieldEntities, setWatchCallbacks]);
+  }, [dependencies, getFieldEntities, getFieldValue, setWatchCallbacks]);
 
   return valuesRef.current;
 };

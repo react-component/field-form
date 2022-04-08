@@ -12,7 +12,7 @@ describe('useWatch', () => {
   it('field initialValue', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const values = Form.useWatch({ form, dependencies: ['name'] });
+      const values = Form.useWatch(['name'], form);
 
       return (
         <div>
@@ -36,7 +36,7 @@ describe('useWatch', () => {
   it('form initialValue', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const values = Form.useWatch({ form, dependencies: ['name'] });
+      const values = Form.useWatch(['name'], form);
 
       return (
         <div>
@@ -60,7 +60,7 @@ describe('useWatch', () => {
   it('change name', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const values = Form.useWatch({ form, dependencies: ['name'] });
+      const values = Form.useWatch(['name'], form);
 
       return (
         <div>
@@ -98,7 +98,7 @@ describe('useWatch', () => {
   it('unmount', async () => {
     const Demo = ({ visible }: { visible: boolean }) => {
       const [form] = Form.useForm();
-      const values = Form.useWatch({ form, dependencies: ['name'] });
+      const values = Form.useWatch(['name'], form);
 
       return (
         <div>
@@ -129,7 +129,7 @@ describe('useWatch', () => {
   });
   it('unmount useWatch', async () => {
     const DemoWatch = () => {
-      Form.useWatch({ dependencies: ['name'] });
+      Form.useWatch(['name']);
 
       return (
         <Field name="name">
@@ -140,7 +140,7 @@ describe('useWatch', () => {
 
     const Demo = ({ visible }: { visible: boolean }) => {
       const [form] = Form.useForm();
-      const values = Form.useWatch({ form, dependencies: ['name'] });
+      const values = Form.useWatch(['name'], form);
 
       return (
         <div>
@@ -168,11 +168,11 @@ describe('useWatch', () => {
   it('list', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const list = Form.useWatch({ form, dependencies: ['users'] });
-      const values = Form.useWatch({
+      const list = Form.useWatch(['users'], form);
+      const values = Form.useWatch(
+        list?.users?.map((_, index) => ['users', index]) || ['users'],
         form,
-        dependencies: list?.users?.map((_, index) => ['users', index]) || ['users'],
-      });
+      );
 
       return (
         <Form form={form} style={{ border: '1px solid red', padding: 15 }}>

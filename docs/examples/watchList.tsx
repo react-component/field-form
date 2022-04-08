@@ -6,11 +6,8 @@ const { List, useForm } = Form;
 
 const Demo = () => {
   const [form] = useForm();
-  const list = Form.useWatch({ form, dependencies: ['users'] });
-  const values = Form.useWatch({
-    form,
-    dependencies: list?.users?.map((_, index) => ['users', index]) || ['users'],
-  });
+  const list = Form.useWatch(['users'], form);
+  const values = Form.useWatch(list?.users?.map((_, index) => ['users', index]) || ['users'], form);
 
   console.log('values', values);
 
