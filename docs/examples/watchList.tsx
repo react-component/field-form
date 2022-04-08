@@ -1,7 +1,6 @@
 import React from 'react';
-import Form from 'rc-field-form';
+import Form, { Field } from 'rc-field-form';
 import Input from './components/Input';
-import LabelField from './components/LabelField';
 
 const { List, useForm } = Form;
 
@@ -22,38 +21,22 @@ const Demo = () => {
         <br />
         values: {JSON.stringify(values, null, 2)}
         <List name="users" initialValue={['bamboo', 'light']}>
-          {(fields, { add, remove }, { errors }) => {
+          {(fields, { add, remove }) => {
             return (
               <div>
                 {fields.map((field, index) => (
-                  <LabelField {...field} rules={[{ required: true }]}>
+                  <Field {...field} rules={[{ required: true }]}>
                     {control => (
-                      <div style={{ position: 'relative' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {index + 1}
                         <Input {...control} />
-                        <a
-                          style={{ position: 'absolute', top: 12, right: -300 }}
-                          onClick={() => {
-                            remove(index);
-                          }}
-                        >
-                          Remove
-                        </a>
+                        <a onClick={() => remove(index)}>Remove</a>
                       </div>
                     )}
-                  </LabelField>
+                  </Field>
                 ))}
-
-                <ul>
-                  {errors.map(err => (
-                    <li key={err}>{err}</li>
-                  ))}
-                </ul>
-
                 <button type="button" onClick={() => add()}>
                   + New User
-                </button>
-                <button type="button" onClick={() => remove(1)}>
-                  Remove index: 1
                 </button>
               </div>
             );
