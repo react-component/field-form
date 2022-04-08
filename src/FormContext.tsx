@@ -17,6 +17,7 @@ export interface FormProviderProps {
   validateMessages?: ValidateMessages;
   onFormChange?: (name: string, info: FormChangeInfo) => void;
   onFormFinish?: (name: string, info: FormFinishInfo) => void;
+  children?: React.ReactNode;
 }
 
 export interface FormContextProps extends FormProviderProps {
