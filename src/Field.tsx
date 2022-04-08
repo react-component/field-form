@@ -153,17 +153,15 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 
   public componentDidMount() {
-    const { shouldUpdate, fieldContext, isListField } = this.props;
+    const { shouldUpdate, fieldContext } = this.props;
 
     this.mounted = true;
 
     // Register on init
     if (fieldContext) {
       const { getInternalHooks }: InternalFormInstance = fieldContext;
-      const { registerField, dispatch } = getInternalHooks(HOOK_MARK);
+      const { registerField } = getInternalHooks(HOOK_MARK);
       this.cancelRegisterFunc = registerField(this);
-
-      dispatch({ type: 'mountField', namePath: this.getNamePath(), isListField });
     }
 
     // One more render for component in case fields not ready
@@ -176,11 +174,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     this.cancelRegister();
     this.triggerMetaEvent(true);
     this.mounted = false;
-
-    const { fieldContext, isListField } = this.props;
-    const { getInternalHooks }: InternalFormInstance = fieldContext;
-    const { dispatch } = getInternalHooks(HOOK_MARK);
-    dispatch({ type: 'unMountField', namePath: this.getNamePath(), isListField });
   }
 
   public cancelRegister = () => {

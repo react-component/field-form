@@ -46,25 +46,13 @@ interface UpdateAction {
   value: StoreValue;
 }
 
-interface MountFieldAction {
-  type: 'mountField';
-  namePath: InternalNamePath;
-  isListField: boolean;
-}
-
-interface UnMountFieldAction {
-  type: 'unMountField';
-  namePath: InternalNamePath;
-  isListField: boolean;
-}
-
 interface ValidateAction {
   type: 'validateField';
   namePath: InternalNamePath;
   triggerName: string;
 }
 
-export type ReducerAction = UpdateAction | ValidateAction | MountFieldAction | UnMountFieldAction;
+export type ReducerAction = UpdateAction | ValidateAction;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -611,6 +599,11 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
 
+    this.timeoutId = setTimeout(() => {
+      this.timeoutId = null;
+      this.watchChange({ namePathList: [entity.getNamePath()], isListField: entity.isListField() });
+    });
+
     // Set initial values
     if (entity.props.initialValue !== undefined) {
       const prevStore = this.store;
@@ -623,6 +616,7 @@ export class FormStore {
 
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
+      this.watchChange({ namePathList: [entity.getNamePath()], type: 'unMountField', isListField });
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
       // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
@@ -664,19 +658,6 @@ export class FormStore {
       case 'validateField': {
         const { namePath, triggerName } = action;
         this.validateFields([namePath], { triggerName });
-        break;
-      }
-      case 'mountField': {
-        const { namePath, isListField } = action;
-        this.timeoutId = setTimeout(() => {
-          this.timeoutId = null;
-          this.watchChange({ namePathList: [namePath], type: 'mountField', isListField });
-        });
-        break;
-      }
-      case 'unMountField': {
-        const { namePath, isListField } = action;
-        this.watchChange({ namePathList: [namePath], type: 'unMountField', isListField });
         break;
       }
       default:
