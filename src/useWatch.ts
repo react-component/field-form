@@ -34,8 +34,8 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
     setWatchCallbacks(watchIdRef.current, {
       onValuesChange: ({ namePathList, type, values }) => {
         if (isDrop.current) return;
+        const dependencyList = dependencies?.map(getNamePath);
         if (dependencies && namePathList) {
-          const dependencyList = dependencies?.map(getNamePath);
           const nameList = namePathList?.map(getNamePath);
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             dependencyList.forEach(name => {
@@ -48,8 +48,6 @@ const useWatch = <Values>(props: UseWatchProps<Values>) => {
             forceUpdate({});
           }
         } else {
-          const dependencyList = dependencies?.map(getNamePath);
-
           dependencyList.forEach(name => {
             if (getFieldEntities(true).find(item => item.getNamePath().join() === name.join())) {
               valuesRef.current = set(
