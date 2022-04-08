@@ -9,7 +9,7 @@ import FieldContext from './FieldContext';
 import ListContext from './ListContext';
 
 const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm) as <Values = any>(
-  props: React.PropsWithChildren<FormProps<Values>> & { ref?: React.Ref<FormInstance<Values>> },
+  props: FormProps<Values> & { ref?: React.Ref<FormInstance<Values>> },
 ) => React.ReactElement;
 
 type InternalFormType = typeof InternalForm;
