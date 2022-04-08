@@ -13,7 +13,7 @@ import type { FormContextProps } from './FormContext';
 import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
 
-type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
+type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
@@ -117,11 +117,13 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   );
 
   // Prepare children by `children` type
-  let childrenNode = children;
+  let childrenNode: React.ReactNode;
   const childrenRenderProps = typeof children === 'function';
   if (childrenRenderProps) {
     const values = formInstance.getFieldsValue(true);
     childrenNode = (children as RenderProps)(values, formInstance);
+  } else {
+    childrenNode = children;
   }
 
   // Not use subscribe when using render props
