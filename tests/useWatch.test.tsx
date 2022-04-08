@@ -1,6 +1,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import type { FormInstance } from '../src';
+import { List } from '../src';
 import Form, { Field } from '../src';
 import timeout from './common/timeout';
 import { act } from 'react-dom/test-utils';
@@ -161,6 +162,54 @@ describe('useWatch', () => {
       await timeout();
       expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
         JSON.stringify({ name: 'bamboo' }),
+      );
+    });
+  });
+  it('list', async () => {
+    const Demo = () => {
+      const [form] = Form.useForm();
+      const list = Form.useWatch({ form, dependencies: ['users'] });
+      const values = Form.useWatch({
+        form,
+        dependencies: list?.users?.map((_, index) => ['users', index]) || ['users'],
+      });
+
+      return (
+        <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
+          <div className="values">{JSON.stringify(values)}</div>
+          <List name="users" initialValue={['bamboo', 'light']}>
+            {(fields, { remove }) => {
+              return (
+                <div>
+                  {fields.map((field, index) => (
+                    <Field {...field} rules={[{ required: true }]}>
+                      {control => (
+                        <div>
+                          <Input {...control} />
+                          <a className="remove" onClick={() => remove(index)}>
+                            Remove
+                          </a>
+                        </div>
+                      )}
+                    </Field>
+                  ))}
+                </div>
+              );
+            }}
+          </List>
+        </Form>
+      );
+    };
+    await act(async () => {
+      const wrapper = mount(<Demo />);
+      await timeout();
+      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
+        JSON.stringify({ users: ['bamboo', 'light'] }),
+      );
+      wrapper.find('.remove').at(0).simulate('click');
+      await timeout();
+      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
+        JSON.stringify({ users: ['light', undefined] }),
       );
     });
   });
