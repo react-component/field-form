@@ -7,12 +7,10 @@ import { getNamePath, containsNamePath } from './utils/valueUtil';
 import set from 'rc-util/lib/utils/set';
 import get from 'rc-util/lib/utils/get';
 
-let watchId = 0;
-
 const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
   const [, forceUpdate] = useState({});
   const valuesRef = useRef<Values>();
-  const watchIdRef = useRef<number>();
+  const watchIdRef = useRef<Record<string, any>>({});
   const isDrop = useRef(false);
 
   const fieldContext = useContext(FieldContext);
@@ -20,8 +18,7 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
   const { setWatchCallbacks, getFieldEntities } = getInternalHooks(HOOK_MARK);
 
   useEffect(() => {
-    watchId += 1;
-    watchIdRef.current = watchId;
+    isDrop.current = false;
     return () => {
       isDrop.current = true;
     };

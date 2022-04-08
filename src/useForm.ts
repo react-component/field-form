@@ -69,7 +69,7 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
-  private watchCallbacks: Record<number, Callbacks> = {};
+  private watchCallbacks: Map<Record<string, any>, Callbacks> = new Map();
 
   private validateMessages: ValidateMessages = null;
 
@@ -178,13 +178,14 @@ export class FormStore {
     this.callbacks = callbacks;
   };
 
-  private setWatchCallbacks = (watchId: number, callbacks: Callbacks) => {
-    this.watchCallbacks[watchId] = callbacks;
+  private setWatchCallbacks = (watchId: Record<string, any>, callbacks: Callbacks) => {
+    // this.watchCallbacks[watchId] = callbacks;
+    this.watchCallbacks.set(watchId, callbacks);
   };
 
   private watchChange: WatchCallbacks['onValuesChange'] = config => {
-    Object.keys(this.watchCallbacks).forEach(key => {
-      const { onValuesChange } = this.watchCallbacks[key] as WatchCallbacks;
+    this.watchCallbacks.forEach((item: WatchCallbacks) => {
+      const { onValuesChange } = item;
       if (onValuesChange) {
         onValuesChange(config);
       }
