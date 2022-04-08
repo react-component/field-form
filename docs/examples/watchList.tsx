@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-
 import React from 'react';
 import Form from 'rc-field-form';
 import Input from './components/Input';
@@ -9,18 +7,17 @@ const { List, useForm } = Form;
 
 const Demo = () => {
   const [form] = useForm();
+  const list = Form.useWatch({ form, dependencies: ['users'] });
   const values = Form.useWatch({
     form,
-    dependencies: [
-      ['users', 0],
-      ['users', 1],
-    ],
+    dependencies: list?.users?.map((_, index) => ['users', index]) || ['users'],
   });
+
   console.log('values', values);
 
   return (
     <div>
-      <Form form={form} style={{ border: '1px solid red', padding: 15 }} preserve={false}>
+      <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
         {JSON.stringify(values, null, 2)}
 
         <List name="users" initialValue={['bamboo', 'light']}>
