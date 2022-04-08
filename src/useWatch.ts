@@ -42,7 +42,7 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
                 valuesRef.current = set(
                   valuesRef.current,
                   name,
-                  type === 'unMountField' ? undefined : getFieldValue(name),
+                  type === 'cancelRegister' ? undefined : getFieldValue(name),
                 );
               }
             });
