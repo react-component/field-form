@@ -16,8 +16,7 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
   const isDrop = useRef(false);
 
   const fieldContext = useContext(FieldContext);
-  const internalForm = (form || fieldContext) as InternalFormInstance;
-  const { getFieldValue, getInternalHooks } = internalForm;
+  const { getFieldValue, getInternalHooks } = (form || fieldContext) as InternalFormInstance;
   const { setWatchCallbacks, getFieldEntities } = getInternalHooks(HOOK_MARK);
 
   useEffect(() => {
