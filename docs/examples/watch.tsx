@@ -6,9 +6,7 @@ let x = 0;
 
 const Demo = React.memo(() => {
   const values = Form.useWatch({ dependencies: ['demo'] });
-
   console.log('demo watch', values);
-
   return (
     <Field name="demo">
       <Input />
@@ -17,9 +15,7 @@ const Demo = React.memo(() => {
 });
 const Demo2 = React.memo(() => {
   const values = Form.useWatch({ dependencies: ['demo2'] });
-
   console.log('demo2 watch', values);
-
   return (
     <Field name="demo2">
       <Input />
@@ -31,10 +27,8 @@ export default () => {
   const [form] = Form.useForm(null);
   const [visible, setVisible] = useState(true);
   const [visible2, setVisible2] = useState(true);
-
   const values = Form.useWatch({ form, dependencies: ['name'] });
   console.log('main watch', values);
-
   return (
     <>
       <Form form={form} initialValues={{ name: 'default' }}>
@@ -80,35 +74,12 @@ export default () => {
       >
         setFields
       </button>
-      <button
-        onClick={() => {
-          form.resetFields();
-        }}
-      >
-        resetFields
-      </button>
-      <button
-        onClick={() => {
-          const values = form.getFieldsValue(true);
-          form.setFieldsValue({ name: `${values.name || ''}1` });
-        }}
-      >
+      <button onClick={() => form.resetFields()}>resetFields</button>
+      <button onClick={() => form.setFieldsValue({ name: `${form.getFieldValue('name') || ''}1` })}>
         setFieldsValue
       </button>
-      <button
-        onClick={() => {
-          setVisible(c => !c);
-        }}
-      >
-        isShow name
-      </button>
-      <button
-        onClick={() => {
-          setVisible2(c => !c);
-        }}
-      >
-        isShow demo2
-      </button>
+      <button onClick={() => setVisible(c => !c)}>isShow name</button>
+      <button onClick={() => setVisible2(c => !c)}>isShow demo2</button>
     </>
   );
 };
