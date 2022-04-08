@@ -675,7 +675,6 @@ export class FormStore {
       case 'unMountField': {
         const { namePath } = action;
         this.watchChange({ namePathList: [namePath], type: 'unMountField' });
-
         break;
       }
       default:
