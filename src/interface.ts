@@ -210,7 +210,7 @@ export interface InternalHooks {
   setInitialValues: (values: Store, init: boolean) => void;
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
-  setWatchCallbacks: (watchId: Record<string, any>, callbacks: WatchCallbacks) => void;
+  setWatchCallbacks: (watchId: symbol, callbacks: WatchCallbacks) => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;

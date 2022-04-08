@@ -9,8 +9,8 @@ import get from 'rc-util/lib/utils/get';
 
 const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
   const [, forceUpdate] = useState({});
-  const valuesRef = useRef<Values>();
-  const watchIdRef = useRef<Record<string, any>>({});
+  const valuesRef = useRef<Values>({} as Values);
+  const watchIdRef = useRef<symbol>(Symbol('watchId'));
   const isDrop = useRef(false);
 
   const fieldContext = useContext(FieldContext);
