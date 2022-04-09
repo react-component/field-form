@@ -23,7 +23,7 @@ const useWatch = <Values = any>(dependencies: NamePath[], form?: FormInstance<Va
 
   useEffect(() => {
     setWatchCallbacks(watchIdRef.current, {
-      onValuesChange: ({ namePathList, registerValues }) => {
+      onFieldsChange: ({ namePathList, registerValues }) => {
         if (isUnmount.current) return;
         const dependencyList = dependencies?.map(getNamePath);
         if (dependencies && namePathList) {

@@ -194,7 +194,7 @@ export interface Callbacks<Values = any> {
 }
 
 export interface WatchCallbacks<Values = any> {
-  onValuesChange?: (config: { namePathList?: NamePath[]; registerValues?: Values }) => void;
+  onFieldsChange?: (config: { namePathList?: NamePath[]; registerValues?: Values }) => void;
 }
 
 export interface InternalHooks {
