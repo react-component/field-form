@@ -237,8 +237,8 @@ export class FormStore {
   private getRegisterFieldsValue = (store: Store) => {
     let nextStore: Store = {};
     this.getFieldEntities(true).forEach(field => {
-      const name = field.getNamePath();
-      nextStore = setValue(nextStore, name, getValue(store, name));
+      const namePath = field.getNamePath();
+      nextStore = setValue(nextStore, namePath, getValue(store, namePath));
     });
     return nextStore;
   };
