@@ -14,9 +14,12 @@ const Demo = () => {
   return (
     <div>
       <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
-        list length:{list?.users.length}
+        list length:{list?.users?.length}
         <br />
         values: {JSON.stringify(values, null, 2)}
+        <Field name="main">
+          <Input />
+        </Field>
         <List name="users" initialValue={['bamboo', 'light']}>
           {(fields, { add, remove }) => {
             return (

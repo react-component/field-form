@@ -616,18 +616,13 @@ export class FormStore {
 
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
-      this.watchChange({
-        namePathList: [entity.getNamePath()],
-        type: 'cancelRegister',
-        isListField,
-      });
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
       // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
+      const namePath = entity.getNamePath();
+      this.watchChange({ namePathList: [namePath], type: 'cancelRegister', isListField });
 
       if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
-        const namePath = entity.getNamePath();
-
         const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
 
         if (

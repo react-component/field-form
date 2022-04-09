@@ -14,7 +14,8 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
   const isDrop = useRef(false);
 
   const fieldContext = useContext(FieldContext);
-  const { getFieldValue, getInternalHooks } = (form || fieldContext) as InternalFormInstance;
+  const { getFieldValue, getFieldsValue, getInternalHooks } = (form ||
+    fieldContext) as InternalFormInstance;
   const { setWatchCallbacks, getFieldEntities } = getInternalHooks(HOOK_MARK);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
     setWatchCallbacks(watchIdRef.current, {
       onValuesChange: ({ namePathList, type, values, isListField }) => {
         if (isDrop.current) return;
+        valuesRef.current = getFieldsValue();
         const dependencyList = dependencies?.map(getNamePath);
         if (dependencies && namePathList) {
           const nameList = namePathList?.map(getNamePath);
@@ -46,20 +48,16 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
             forceUpdate({});
           }
         } else {
-          dependencyList.forEach(name => {
+          dependencyList?.forEach(name => {
             if (getFieldEntities(true).find(item => item.getNamePath().join() === name.join())) {
-              valuesRef.current = set(
-                valuesRef.current,
-                name,
-                values ? get(values, name) : getFieldValue(name),
-              );
+              valuesRef.current = set(valuesRef.current, name, get(values, name));
             }
           });
           forceUpdate({});
         }
       },
     });
-  }, [dependencies, getFieldEntities, getFieldValue, setWatchCallbacks]);
+  }, [dependencies, getFieldEntities, getFieldValue, getFieldsValue, setWatchCallbacks]);
 
   return valuesRef.current;
 };
