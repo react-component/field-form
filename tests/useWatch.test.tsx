@@ -53,7 +53,7 @@ describe('useWatch', () => {
       const wrapper = mount(<Demo />);
       await timeout();
       expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: 'bamboo' }),
+        JSON.stringify({ name: 'bamboo', other: 'other' }),
       );
     });
   });
@@ -209,7 +209,7 @@ describe('useWatch', () => {
       wrapper.find('.remove').at(0).simulate('click');
       await timeout();
       expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ users: ['light', undefined] }),
+        JSON.stringify({ users: ['light'] }),
       );
     });
   });
