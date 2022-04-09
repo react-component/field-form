@@ -29,19 +29,22 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
     setWatchCallbacks(watchIdRef.current, {
       onValuesChange: ({ namePathList, type, values, isListField }) => {
         if (isDrop.current) return;
-        valuesRef.current = getFieldsValue();
+        valuesRef.current = getFieldsValue(true);
         const dependencyList = dependencies?.map(getNamePath);
         if (dependencies && namePathList) {
           const nameList = namePathList?.map(getNamePath);
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             dependencyList.forEach(name => {
+              const value = getFieldValue(name);
               if (isListField) {
-                valuesRef.current = set(valuesRef.current, name, getFieldValue(name));
+                if (value !== undefined) {
+                  valuesRef.current = set(valuesRef.current, name, value);
+                }
               } else {
                 valuesRef.current = set(
                   valuesRef.current,
                   name,
-                  type === 'cancelRegister' ? undefined : getFieldValue(name),
+                  type === 'cancelRegister' ? undefined : value,
                 );
               }
             });

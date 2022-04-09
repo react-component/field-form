@@ -31,7 +31,7 @@ export default () => {
   console.log('main watch', values);
   return (
     <>
-      <Form form={form} initialValues={{ name: 'default' }}>
+      <Form form={form} initialValues={{ id: 1, name: 'default' }}>
         no render
         <Field name="main">
           <Input />
