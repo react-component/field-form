@@ -118,7 +118,6 @@ export class FormStore {
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
-        getFieldEntities: this.getFieldEntities,
       };
     }
 
@@ -233,6 +232,15 @@ export class FormStore {
     }
 
     return this.fieldEntities.filter(field => field.getNamePath().length);
+  };
+
+  private getRegisterFieldsValue = (store: Store) => {
+    let nextStore: Store = {};
+    this.getFieldEntities(true).forEach(field => {
+      const name = field.getNamePath();
+      nextStore = setValue(nextStore, name, getValue(store, name));
+    });
+    return nextStore;
   };
 
   private getFieldsMap = (pure: boolean = false) => {
@@ -511,7 +519,10 @@ export class FormStore {
 
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
-    this.watchChange({ namePathList: nameList, values: this.initialValues });
+    this.watchChange({
+      namePathList: nameList,
+      registerValues: this.getRegisterFieldsValue(this.initialValues),
+    });
 
     const prevStore = this.store;
     if (!nameList) {
@@ -734,7 +745,7 @@ export class FormStore {
     if (store) {
       const nextStore = setValues(this.store, store);
       this.updateStore(nextStore);
-      this.watchChange({ values: nextStore });
+      this.watchChange({ registerValues: this.getRegisterFieldsValue(nextStore) });
     }
 
     this.notifyObservers(prevStore, null, {
