@@ -611,10 +611,7 @@ export class FormStore {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
 
-    this.timeoutId = setTimeout(() => {
-      this.timeoutId = null;
-      this.watchChange({ namePathList: [namePath] });
-    });
+    this.watchChange({ namePathList: [namePath] });
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {

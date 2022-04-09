@@ -27,11 +27,11 @@ export default () => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(true);
   const [visible2, setVisible2] = useState(true);
-  const values = Form.useWatch(['name'], form);
+  const values = Form.useWatch(['name', 'age'], form);
   console.log('main watch', values);
   return (
     <>
-      <Form form={form} initialValues={{ id: 1, name: 'default' }}>
+      <Form form={form} initialValues={{ id: 1, age: '10', name: 'default' }}>
         no render
         <Field name="main">
           <Input />
@@ -42,7 +42,11 @@ export default () => {
             <Input />
           </Field>
         )}
-        name 改变，组件 render 这里也 render
+        age
+        <Field name="age">
+          <Input />
+        </Field>
+        name、age 改变，这里也 render
         <Field dependencies={['field_1']}>
           {() => {
             x += 1;

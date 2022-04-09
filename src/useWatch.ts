@@ -2,7 +2,7 @@ import type { FormInstance } from '.';
 import { FieldContext } from '.';
 import { HOOK_MARK } from './FieldContext';
 import type { InternalFormInstance, NamePath } from './interface';
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useRef, useContext, useMemo, useEffect } from 'react';
 import { getNamePath, containsNamePath } from './utils/valueUtil';
 
 const useWatch = <Values = any>(dependencies: NamePath[], form?: FormInstance<Values>) => {
@@ -21,7 +21,7 @@ const useWatch = <Values = any>(dependencies: NamePath[], form?: FormInstance<Va
     };
   }, []);
 
-  useEffect(() => {
+  useMemo(() => {
     setWatchCallbacks(watchIdRef.current, {
       onFieldsChange: ({ namePathList, registerValues }) => {
         if (isUnmount.current) return;
