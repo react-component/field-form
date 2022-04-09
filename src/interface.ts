@@ -194,12 +194,7 @@ export interface Callbacks<Values = any> {
 }
 
 export interface WatchCallbacks {
-  onValuesChange?: (config: {
-    namePathList?: NamePath[];
-    type?: 'cancelRegister';
-    values?: Record<string, any>;
-    isListField?: boolean;
-  }) => void;
+  onValuesChange?: (config: { namePathList?: NamePath[]; values?: Record<string, any> }) => void;
 }
 
 export interface InternalHooks {

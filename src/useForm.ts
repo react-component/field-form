@@ -598,10 +598,11 @@ export class FormStore {
 
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
+    const namePath = entity.getNamePath();
 
     this.timeoutId = setTimeout(() => {
       this.timeoutId = null;
-      this.watchChange({ namePathList: [entity.getNamePath()], isListField: entity.isListField() });
+      this.watchChange({ namePathList: [namePath] });
     });
 
     // Set initial values
@@ -619,8 +620,7 @@ export class FormStore {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
       // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
-      const namePath = entity.getNamePath();
-      this.watchChange({ namePathList: [namePath], type: 'cancelRegister', isListField });
+      this.watchChange({ namePathList: [namePath] });
 
       if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
         const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
@@ -728,12 +728,13 @@ export class FormStore {
   // Let all child Field get update.
   private setFieldsValue = (store: Store) => {
     this.warningUnhooked();
-    this.watchChange({ values: store });
 
     const prevStore = this.store;
 
     if (store) {
-      this.updateStore(setValues(this.store, store));
+      const nextStore = setValues(this.store, store);
+      this.updateStore(nextStore);
+      this.watchChange({ values: nextStore });
     }
 
     this.notifyObservers(prevStore, null, {

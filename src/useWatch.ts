@@ -27,32 +27,20 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
 
   useEffect(() => {
     setWatchCallbacks(watchIdRef.current, {
-      onValuesChange: ({ namePathList, type, values, isListField }) => {
+      onValuesChange: ({ namePathList, values }) => {
         if (isDrop.current) return;
         valuesRef.current = getFieldsValue();
         const dependencyList = dependencies?.map(getNamePath);
         if (dependencies && namePathList) {
           const nameList = namePathList?.map(getNamePath);
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
-            dependencyList.forEach(name => {
-              const value = getFieldValue(name);
-              if (isListField) {
-                if (value !== undefined) {
-                  valuesRef.current = set(valuesRef.current, name, value);
-                }
-              } else {
-                valuesRef.current = set(
-                  valuesRef.current,
-                  name,
-                  type === 'cancelRegister' ? undefined : value,
-                );
-              }
-            });
             forceUpdate({});
           }
         } else {
+          console.log('v', values);
           getFieldEntities(true).forEach(field => {
             const name = field.getNamePath();
+            // set initialValues
             valuesRef.current = set(valuesRef.current, name, get(values, name));
           });
           forceUpdate({});
