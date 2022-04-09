@@ -37,7 +37,6 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
             forceUpdate({});
           }
         } else {
-          console.log('v', values);
           getFieldEntities(true).forEach(field => {
             const name = field.getNamePath();
             // set initialValues
