@@ -24,7 +24,7 @@ const Demo2 = React.memo(() => {
 });
 
 export default () => {
-  const [form] = Form.useForm(null);
+  const [form] = Form.useForm();
   const [visible, setVisible] = useState(true);
   const [visible2, setVisible2] = useState(true);
   const values = Form.useWatch(['name'], form);
