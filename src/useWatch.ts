@@ -29,7 +29,7 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
     setWatchCallbacks(watchIdRef.current, {
       onValuesChange: ({ namePathList, type, values, isListField }) => {
         if (isDrop.current) return;
-        valuesRef.current = getFieldsValue(true);
+        valuesRef.current = getFieldsValue();
         const dependencyList = dependencies?.map(getNamePath);
         if (dependencies && namePathList) {
           const nameList = namePathList?.map(getNamePath);
@@ -51,10 +51,9 @@ const useWatch = <Values>(dependencies?: NamePath[], form?: FormInstance<Values>
             forceUpdate({});
           }
         } else {
-          dependencyList?.forEach(name => {
-            if (getFieldEntities(true).find(item => item.getNamePath().join() === name.join())) {
-              valuesRef.current = set(valuesRef.current, name, get(values, name));
-            }
+          getFieldEntities(true).forEach(field => {
+            const name = field.getNamePath();
+            valuesRef.current = set(valuesRef.current, name, get(values, name));
           });
           forceUpdate({});
         }
