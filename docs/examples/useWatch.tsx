@@ -69,10 +69,9 @@ export default () => {
       </button>
       <button
         onClick={() => {
-          const values = form.getFieldsValue(true);
           form.setFields([
-            { name: 'name', value: `${values.name || ''}1` },
-            { name: 'main', value: `main` },
+            { name: 'name', value: 'name' },
+            { name: 'age', value: 'age' },
           ]);
         }}
       >
