@@ -749,7 +749,7 @@ describe('Form.Basic', () => {
           autoComplete="off"
         >
           <Form.List name="users">
-            {(fields, { add, remove }) => (
+            {fields => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
                   <Field
@@ -836,6 +836,27 @@ describe('Form.Basic', () => {
     wrapper.setProps({ remount: true });
     wrapper.update();
 
+    expect(wrapper.find('input').prop('value')).toEqual('bamboo');
+  });
+  it('children useForm()', () => {
+    const DemoChildren = () => {
+      const [form] = Form.useForm();
+      React.useEffect(() => {
+        form.setFields([{ name: 'name', value: 'bamboo' }]);
+      }, [form]);
+      return <div> </div>;
+    };
+    const Demo = () => {
+      return (
+        <Form initialValues={{ name: 'little' }}>
+          <Field name="name">
+            <Input />
+          </Field>
+          <DemoChildren />
+        </Form>
+      );
+    };
+    const wrapper = mount(<Demo />);
     expect(wrapper.find('input').prop('value')).toEqual('bamboo');
   });
 });
