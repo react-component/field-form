@@ -181,10 +181,10 @@ export class FormStore {
     this.watchCallbacks.set(watchId, callbacks);
   };
 
-  private watchChange: WatchCallbacks['onFieldsChange'] = config => {
+  private watchChange: WatchCallbacks['onFieldsChange'] = (...params) => {
     this.watchCallbacks.forEach(({ onFieldsChange }) => {
       if (onFieldsChange) {
-        onFieldsChange(config);
+        onFieldsChange(...params);
       }
     });
   };
