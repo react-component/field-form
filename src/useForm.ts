@@ -182,8 +182,7 @@ export class FormStore {
   };
 
   private watchChange: WatchCallbacks['onFieldsChange'] = config => {
-    this.watchCallbacks.forEach(item => {
-      const { onFieldsChange } = item;
+    this.watchCallbacks.forEach(({ onFieldsChange }) => {
       if (onFieldsChange) {
         onFieldsChange(config);
       }
@@ -519,10 +518,7 @@ export class FormStore {
 
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
-    this.watchChange({
-      namePathList: nameList,
-      registerValues: this.getRegisterFieldsValue(this.initialValues),
-    });
+    this.watchChange(nameList, this.getRegisterFieldsValue(this.initialValues));
 
     const prevStore = this.store;
     if (!nameList) {
@@ -565,7 +561,7 @@ export class FormStore {
       });
     });
 
-    this.watchChange({ namePathList });
+    this.watchChange(namePathList);
   };
 
   private getFields = (): InternalFieldData[] => {
@@ -611,7 +607,7 @@ export class FormStore {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
 
-    this.watchChange({ namePathList: [namePath] });
+    this.watchChange([namePath]);
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
@@ -628,7 +624,7 @@ export class FormStore {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
       // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
-      this.watchChange({ namePathList: [namePath] });
+      this.watchChange([namePath]);
 
       if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
         const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
@@ -717,7 +713,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
-    this.watchChange({ namePathList: [namePath] });
+    this.watchChange([namePath]);
 
     // Dependencies update
     const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
@@ -742,7 +738,7 @@ export class FormStore {
     if (store) {
       const nextStore = setValues(this.store, store);
       this.updateStore(nextStore);
-      this.watchChange({ registerValues: this.getRegisterFieldsValue(nextStore) });
+      this.watchChange(undefined, this.getRegisterFieldsValue(nextStore));
     }
 
     this.notifyObservers(prevStore, null, {
