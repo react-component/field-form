@@ -10,6 +10,7 @@ const warningFunc: any = () => {
 };
 
 const Context = React.createContext<InternalFormInstance>({
+  isInitForm: false,
   getFieldValue: warningFunc,
   getFieldsValue: warningFunc,
   getFieldError: warningFunc,

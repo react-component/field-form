@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Form from 'rc-field-form';
 import Input from './components/Input';
 
@@ -13,6 +13,15 @@ interface FormValues {
     path2?: string;
   };
 }
+
+const Demo = () => {
+  const [form] = Form.useForm();
+  useEffect(() => {
+    form.setFields([{ name: 'username', value: 'username' }]);
+  }, [form]);
+
+  return <>children useForm()</>;
+};
 
 export default () => {
   const [form] = useForm<FormValues>();
@@ -54,6 +63,7 @@ export default () => {
             </Field>
           ))}
         </React.Fragment>
+        <Demo />
       </Form>
     </div>
   );

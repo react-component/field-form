@@ -36,6 +36,7 @@ import {
   setValues,
 } from './utils/valueUtil';
 import cloneDeep from './utils/cloneDeep';
+import { FieldContext } from '.';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -79,6 +80,7 @@ export class FormStore {
   }
 
   public getForm = (): InternalFormInstance => ({
+    isInitForm: true,
     getFieldValue: this.getFieldValue,
     getFieldsValue: this.getFieldsValue,
     getFieldError: this.getFieldError,
@@ -141,6 +143,7 @@ export class FormStore {
 
       // We will take consider prev form unmount fields.
       // When the field is not `preserve`, we need fill this with initialValues instead of store.
+      // eslint-disable-next-line array-callback-return
       this.prevWithoutPreserves?.map(({ key: namePath }) => {
         nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
       });
@@ -932,10 +935,12 @@ export class FormStore {
 function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState({});
+  const fieldContext = React.useContext(FieldContext);
+  const formInstance = fieldContext.isInitForm ? form || fieldContext : form;
 
   if (!formRef.current) {
-    if (form) {
-      formRef.current = form;
+    if (formInstance) {
+      formRef.current = formInstance;
     } else {
       // Create a new FormStore if not provided
       const forceReRender = () => {
