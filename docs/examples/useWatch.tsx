@@ -46,11 +46,11 @@ export default () => {
         <Field name="age">
           <Input />
         </Field>
-        name、age 改变，这里也 render
+        name、age 改变 render
         <Field dependencies={['field_1']}>
           {() => {
             x += 1;
-            return ` count ${x}`;
+            return ` ${x}`;
           }}
         </Field>
         <br />
