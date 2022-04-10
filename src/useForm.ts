@@ -606,7 +606,6 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
-
     this.watchChange([namePath]);
 
     // Set initial values

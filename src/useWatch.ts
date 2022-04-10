@@ -5,7 +5,7 @@ import type { InternalFormInstance, NamePath } from './interface';
 import { useState, useRef, useContext, useMemo, useEffect } from 'react';
 import { getNamePath, containsNamePath } from './utils/valueUtil';
 
-const useWatch = <Values = any>(dependencies: NamePath[], form?: FormInstance<Values>) => {
+const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
   const [values, setValues] = useState<Values>({} as Values);
   const watchIdRef = useRef<symbol>(Symbol('watchId'));
   const isUnmount = useRef(false);
@@ -26,13 +26,13 @@ const useWatch = <Values = any>(dependencies: NamePath[], form?: FormInstance<Va
       onFieldsChange: (namePathList, registerValues) => {
         if (isUnmount.current) return;
         const dependencyList = dependencies?.map(getNamePath);
-        if (dependencies && namePathList) {
-          const nameList = namePathList?.map(getNamePath);
+        const nameList = namePathList?.map(getNamePath);
+        if (dependencies?.length && namePathList) {
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             setValues(getFieldsValue());
           }
         } else {
-          setValues(registerValues);
+          setValues(registerValues || getFieldsValue());
         }
       },
     });
