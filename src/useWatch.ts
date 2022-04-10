@@ -27,7 +27,7 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
         if (isUnmount.current) return;
         const dependencyList = dependencies?.map(getNamePath);
         const nameList = namePathList?.map(getNamePath);
-        if (dependencies?.length && namePathList) {
+        if (dependencies && namePathList) {
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             setValues(getFieldsValue());
           }

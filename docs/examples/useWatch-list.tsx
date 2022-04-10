@@ -7,7 +7,10 @@ const { List, useForm } = Form;
 const Demo = () => {
   const [form] = useForm();
   const list = Form.useWatch(['users'], form);
-  const values = Form.useWatch(list?.users?.map((_, index) => ['users', index]) || ['users'], form);
+  const values = Form.useWatch(
+    list?.users?.map((_, index) => ['users', index]),
+    form,
+  );
 
   console.log('values', values);
 
@@ -25,7 +28,7 @@ const Demo = () => {
             return (
               <div>
                 {fields.map((field, index) => (
-                  <Field {...field} rules={[{ required: true }]}>
+                  <Field key={field.key} {...field} rules={[{ required: true }]}>
                     {control => (
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         {index + 1}
