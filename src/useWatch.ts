@@ -2,11 +2,10 @@ import type { FormInstance } from '.';
 import { FieldContext } from '.';
 import { HOOK_MARK } from './FieldContext';
 import type { InternalFormInstance, NamePath } from './interface';
-import { useState, useRef, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { getNamePath, containsNamePath } from './utils/valueUtil';
 
 const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
-  const watchIdRef = useRef<object>({});
   const [, forceUpdate] = useState({});
 
   const fieldContext = useContext(FieldContext);
@@ -18,7 +17,7 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
   }, []);
 
   useEffect(() => {
-    const id = watchIdRef.current;
+    const id = {};
     watchCallbacks.set(id, {
       onFieldsChange: namePathList => {
         const dependencyList = dependencies?.map(getNamePath);
