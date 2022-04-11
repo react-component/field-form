@@ -69,7 +69,7 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
-  private watchCallbacks: Map<Record<string, any>, WatchCallbacks> = new Map();
+  private watchCallbacks: Map<object, WatchCallbacks> = new Map();
 
   private validateMessages: ValidateMessages = null;
 
@@ -177,7 +177,7 @@ export class FormStore {
     this.callbacks = callbacks;
   };
 
-  private setWatchCallbacks = (watchId: Record<string, any>, callbacks: WatchCallbacks) => {
+  private setWatchCallbacks = (watchId: object, callbacks: WatchCallbacks) => {
     this.watchCallbacks.set(watchId, callbacks);
   };
 
