@@ -8,6 +8,7 @@ import { getNamePath, containsNamePath } from './utils/valueUtil';
 const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
   const [values, setValues] = useState<Values>({} as Values);
   const watchIdRef = useRef<object>({});
+  const isRegister = useRef(false);
 
   const fieldContext = useContext(FieldContext);
   const { getFieldsValue, getInternalHooks } = (form || fieldContext) as InternalFormInstance;
@@ -20,19 +21,22 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
     };
   }, [setWatchCallbacks]);
 
-  setWatchCallbacks(watchIdRef.current, {
-    onFieldsChange: (namePathList, registerValues) => {
-      const dependencyList = dependencies?.map(getNamePath);
-      const nameList = namePathList?.map(getNamePath);
-      if (dependencies && namePathList) {
-        if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
-          setValues(getFieldsValue());
+  if (!isRegister.current) {
+    setWatchCallbacks(watchIdRef.current, {
+      onFieldsChange: (namePathList, registerValues) => {
+        const dependencyList = dependencies?.map(getNamePath);
+        const nameList = namePathList?.map(getNamePath);
+        if (dependencies && namePathList) {
+          if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
+            setValues(getFieldsValue());
+          }
+        } else {
+          setValues(registerValues || getFieldsValue());
         }
-      } else {
-        setValues(registerValues || getFieldsValue());
-      }
-    },
-  });
+      },
+    });
+    isRegister.current = true;
+  }
 
   return values;
 };
