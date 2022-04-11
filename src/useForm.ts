@@ -178,9 +178,7 @@ export class FormStore {
   };
 
   private setWatchCallbacks = (watchId: object, callbacks: WatchCallbacks) => {
-    if (!this.watchCallbacks.has(watchId)) {
-      this.watchCallbacks.set(watchId, callbacks);
-    }
+    this.watchCallbacks.set(watchId, callbacks);
   };
 
   private watchChange: WatchCallbacks['onFieldsChange'] = (...params) => {

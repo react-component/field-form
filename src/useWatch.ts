@@ -14,25 +14,29 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
   const { setWatchCallbacks } = getInternalHooks(HOOK_MARK);
 
   useEffect(() => {
+    setValues(getFieldsValue());
+  }, [getFieldsValue]);
+
+  useEffect(() => {
     const id = watchIdRef.current;
+    setWatchCallbacks(id, {
+      onFieldsChange: (namePathList, registerValues) => {
+        const dependencyList = dependencies?.map(getNamePath);
+        const nameList = namePathList?.map(getNamePath);
+        if (dependencies && namePathList) {
+          if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
+            setValues(getFieldsValue());
+          }
+        } else {
+          setValues(registerValues || getFieldsValue());
+        }
+      },
+    });
+
     return () => {
       setWatchCallbacks(id, {});
     };
-  }, [setWatchCallbacks]);
-
-  setWatchCallbacks(watchIdRef.current, {
-    onFieldsChange: (namePathList, registerValues) => {
-      const dependencyList = dependencies?.map(getNamePath);
-      const nameList = namePathList?.map(getNamePath);
-      if (dependencies && namePathList) {
-        if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
-          setValues(getFieldsValue());
-        }
-      } else {
-        setValues(registerValues || getFieldsValue());
-      }
-    },
-  });
+  }, [dependencies, getFieldsValue, setWatchCallbacks]);
 
   return values;
 };
