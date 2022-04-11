@@ -32,7 +32,11 @@ export default () => {
   console.log('main watch', values);
   return (
     <>
-      <Form form={form} initialValues={{ id: 1, age: '10', name: 'default' }}>
+      <Form
+        form={form}
+        initialValues={{ id: 1, age: '10', name: 'default' }}
+        onFinish={v => console.log('submit values', v)}
+      >
         no render
         <Field name="main">
           <Input />
@@ -65,6 +69,7 @@ export default () => {
         <Demo />
         demo2
         {visible2 && <Demo2 />}
+        <button type="submit">submit</button>
       </Form>
       <button
         onClick={() => {
