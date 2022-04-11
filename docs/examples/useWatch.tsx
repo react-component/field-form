@@ -27,7 +27,8 @@ export default () => {
   const [form] = Form.useForm();
   const [visible, setVisible] = useState(true);
   const [visible2, setVisible2] = useState(true);
-  const values = Form.useWatch(['name', 'age'], form);
+  const [visible3, setVisible3] = useState(true);
+  const values = Form.useWatch(['name', 'age', 'initialValue'], form);
   console.log('main watch', values);
   return (
     <>
@@ -46,6 +47,12 @@ export default () => {
         <Field name="age">
           <Input />
         </Field>
+        initialValue
+        {visible3 && (
+          <Field name="initialValue" initialValue="initialValue">
+            <Input />
+          </Field>
+        )}
         name、age 改变 render
         <Field dependencies={['field_1']}>
           {() => {
@@ -82,6 +89,7 @@ export default () => {
         setFieldsValue
       </button>
       <button onClick={() => setVisible(c => !c)}>isShow name</button>
+      <button onClick={() => setVisible3(c => !c)}>isShow initialValue</button>
       <button onClick={() => setVisible2(c => !c)}>isShow demo2</button>
     </>
   );
