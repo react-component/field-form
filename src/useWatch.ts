@@ -7,7 +7,7 @@ import { getNamePath, containsNamePath } from './utils/valueUtil';
 
 const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
   const [values, setValues] = useState<Values>({} as Values);
-  const watchIdRef = useRef<symbol>(Symbol('watchId'));
+  const watchIdRef = useRef<Record<string, any>>({});
   const isUnmount = useRef(false);
 
   const fieldContext = useContext(FieldContext);
