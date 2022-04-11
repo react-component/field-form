@@ -6,29 +6,29 @@ import { useState, useRef, useContext, useEffect } from 'react';
 import { getNamePath, containsNamePath } from './utils/valueUtil';
 
 const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<Values>) => {
-  const [values, setValues] = useState<Values>({} as Values);
   const watchIdRef = useRef<object>({});
+  const [, forceUpdate] = useState({});
 
   const fieldContext = useContext(FieldContext);
   const { getFieldsValue, getInternalHooks } = (form || fieldContext) as InternalFormInstance;
   const { setWatchCallbacks } = getInternalHooks(HOOK_MARK);
 
   useEffect(() => {
-    setValues(getFieldsValue());
-  }, [getFieldsValue]);
+    forceUpdate({});
+  }, []);
 
   useEffect(() => {
     const id = watchIdRef.current;
     setWatchCallbacks(id, {
-      onFieldsChange: (namePathList, registerValues) => {
+      onFieldsChange: namePathList => {
         const dependencyList = dependencies?.map(getNamePath);
         const nameList = namePathList?.map(getNamePath);
         if (dependencies && namePathList) {
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
-            setValues(getFieldsValue());
+            forceUpdate({});
           }
         } else {
-          setValues(registerValues || getFieldsValue());
+          forceUpdate({});
         }
       },
     });
@@ -38,7 +38,7 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
     };
   }, [dependencies, getFieldsValue, setWatchCallbacks]);
 
-  return values;
+  return getFieldsValue();
 };
 
 export default useWatch;

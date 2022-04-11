@@ -518,13 +518,13 @@ export class FormStore {
 
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
-    this.watchChange(nameList, this.getRegisterFieldsValue(this.initialValues));
 
     const prevStore = this.store;
     if (!nameList) {
       this.updateStore(setValues({}, this.initialValues));
       this.resetWithFieldInitialValue();
       this.notifyObservers(prevStore, null, { type: 'reset' });
+      this.watchChange();
       return;
     }
 
@@ -536,6 +536,7 @@ export class FormStore {
     });
     this.resetWithFieldInitialValue({ namePathList });
     this.notifyObservers(prevStore, namePathList, { type: 'reset' });
+    this.watchChange(nameList);
   };
 
   private setFields = (fields: FieldData[]) => {
@@ -737,13 +738,13 @@ export class FormStore {
     if (store) {
       const nextStore = setValues(this.store, store);
       this.updateStore(nextStore);
-      this.watchChange(undefined, this.getRegisterFieldsValue(nextStore));
     }
 
     this.notifyObservers(prevStore, null, {
       type: 'valueUpdate',
       source: 'external',
     });
+    this.watchChange();
   };
 
   private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {
