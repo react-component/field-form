@@ -193,8 +193,8 @@ export interface Callbacks<Values = any> {
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
-export interface WatchCallbacks<Values = any> {
-  onFieldsChange?: (namePathList?: NamePath[], registerValues?: Values) => void;
+export interface WatchCallbacks {
+  onFieldsChange?: (namePathList?: NamePath[]) => void;
 }
 
 export interface InternalHooks {
