@@ -36,6 +36,7 @@ import {
   setValues,
 } from './utils/valueUtil';
 import cloneDeep from './utils/cloneDeep';
+import get from 'rc-util/lib/utils/get';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -68,11 +69,11 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
-  private validateMessages: ValidateMessages = null;
+  private validateMessages: ValidateMessages = {};
 
-  private preserve?: boolean = null;
+  private preserve?: boolean = false;
 
-  private lastValidatePromise: Promise<FieldError[]> = null;
+  private lastValidatePromise?: Promise<FieldError[]>;
 
   constructor(forceRootUpdate: () => void) {
     this.forceRootUpdate = forceRootUpdate;
@@ -246,7 +247,7 @@ export class FormStore {
     }
 
     const fieldEntities = this.getFieldEntitiesForNamePathList(
-      Array.isArray(nameList) ? nameList : null,
+      Array.isArray(nameList) ? nameList : undefined,
     );
 
     const filteredNameList: NamePath[] = [];
@@ -263,8 +264,8 @@ export class FormStore {
       if (!filterFunc) {
         filteredNameList.push(namePath);
       } else {
-        const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
-        if (filterFunc(meta)) {
+        const meta = 'getMeta' in entity ? entity.getMeta() : undefined;
+        if (meta && filterFunc(meta)) {
           filteredNameList.push(namePath);
         }
       }
@@ -295,7 +296,7 @@ export class FormStore {
       }
 
       return {
-        name: getNamePath(nameList[index]),
+        name: getNamePath(get(nameList, [index])),
         errors: [],
         warnings: [],
       };
@@ -318,7 +319,7 @@ export class FormStore {
     return fieldError.warnings;
   };
 
-  private isFieldsTouched = (...args) => {
+  private isFieldsTouched = (...args: any[]) => {
     this.warningUnhooked();
 
     const [arg0, arg1] = args;
@@ -360,7 +361,7 @@ export class FormStore {
       const fieldNamePath = field.getNamePath();
 
       // Find matched entity and put into list
-      namePathList.forEach(shortNamePath => {
+      namePathList?.forEach(shortNamePath => {
         if (shortNamePath.every((nameUnit, i) => fieldNamePath[i] === nameUnit)) {
           map.update(shortNamePath, list => [...list, field]);
         }

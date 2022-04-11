@@ -112,11 +112,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     resetCount: 0,
   };
 
-  private cancelRegisterFunc: (
+  private cancelRegisterFunc?: (
     isListField?: boolean,
     preserve?: boolean,
     namePath?: InternalNamePath,
-  ) => void | null = null;
+  ) => void = undefined;
 
   private mounted = false;
 
@@ -133,9 +133,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
    */
   private dirty: boolean = false;
 
-  private validatePromise: Promise<string[]> | null = null;
+  private validatePromise?: Promise<RuleError[] | undefined>;
 
-  private prevValidating: boolean;
+  private prevValidating: boolean = false;
 
   private errors: string[] = EMPTY_ERRORS;
   private warnings: string[] = EMPTY_ERRORS;
@@ -147,8 +147,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // Register on init
     if (props.fieldContext) {
       const { getInternalHooks }: InternalFormInstance = props.fieldContext;
-      const { initEntityValue } = getInternalHooks(HOOK_MARK);
-      initEntityValue(this);
+      const { initEntityValue } = getInternalHooks(HOOK_MARK) || {};
+      initEntityValue?.(this as FieldEntity);
     }
   }
 
@@ -160,8 +160,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // Register on init
     if (fieldContext) {
       const { getInternalHooks }: InternalFormInstance = fieldContext;
-      const { registerField } = getInternalHooks(HOOK_MARK);
-      this.cancelRegisterFunc = registerField(this);
+      const { registerField } = getInternalHooks(HOOK_MARK) || {};
+      this.cancelRegisterFunc = registerField?.(this as FieldEntity);
     }
 
     // One more render for component in case fields not ready
@@ -182,13 +182,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     if (this.cancelRegisterFunc) {
       this.cancelRegisterFunc(isListField, preserve, getNamePath(name));
     }
-    this.cancelRegisterFunc = null;
+    this.cancelRegisterFunc = undefined;
   };
 
   // ================================== Utils ==================================
   public getNamePath = (): InternalNamePath => {
     const { name, fieldContext } = this.props;
-    const { prefixName = [] }: InternalFormInstance = fieldContext;
+    const { prefixName = [] } = fieldContext as InternalFormInstance;
 
     return name !== undefined ? [...prefixName, ...name] : [];
   };
@@ -196,12 +196,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public getRules = (): RuleObject[] => {
     const { rules = [], fieldContext } = this.props;
 
-    return rules.map((rule: Rule): RuleObject => {
-      if (typeof rule === 'function') {
+    const ruleList = rules.map(rule => {
+      if (typeof rule === 'function' && fieldContext) {
         return rule(fieldContext);
       }
       return rule;
     });
+    return ruleList as RuleObject[];
   };
 
   public reRender() {
@@ -241,7 +242,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
       this.touched = true;
       this.dirty = true;
-      this.validatePromise = null;
+      this.validatePromise = undefined;
       this.errors = EMPTY_ERRORS;
       this.warnings = EMPTY_ERRORS;
       this.triggerMetaEvent();
@@ -253,7 +254,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           // Clean up state
           this.touched = false;
           this.dirty = false;
-          this.validatePromise = null;
+          this.validatePromise = undefined;
           this.errors = EMPTY_ERRORS;
           this.warnings = EMPTY_ERRORS;
           this.triggerMetaEvent();
@@ -284,10 +285,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           const { data } = info;
 
           if ('touched' in data) {
-            this.touched = data.touched;
+            this.touched = !!data.touched;
           }
           if ('validating' in data && !('originRCField' in data)) {
-            this.validatePromise = data.validating ? Promise.resolve([]) : null;
+            this.validatePromise = data.validating ? Promise.resolve([]) : undefined;
           }
           if ('errors' in data) {
             this.errors = data.errors || EMPTY_ERRORS;
@@ -344,6 +345,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (
           namePathMatch ||
           ((!dependencies.length || namePath.length || shouldUpdate) &&
+            shouldUpdate &&
             requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
         ) {
           this.reRender();
@@ -357,7 +359,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }
   };
 
-  public validateRules = (options?: ValidateOptions): Promise<RuleError[]> => {
+  public validateRules = (options?: ValidateOptions): Promise<RuleError[] | undefined> => {
     // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
     const currentValue = this.getValue();
@@ -382,42 +384,43 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           return triggerList.includes(triggerName);
         });
       }
+      if (options) {
+        const promise = validateRules(
+          namePath,
+          currentValue,
+          filteredRules,
+          options,
+          validateFirst,
+          messageVariables,
+        );
 
-      const promise = validateRules(
-        namePath,
-        currentValue,
-        filteredRules,
-        options,
-        validateFirst,
-        messageVariables,
-      );
+        promise
+          .catch(e => e)
+          .then((ruleErrors: RuleError[] = EMPTY_ERRORS) => {
+            if (this.validatePromise === rootPromise) {
+              this.validatePromise = undefined;
 
-      promise
-        .catch(e => e)
-        .then((ruleErrors: RuleError[] = EMPTY_ERRORS) => {
-          if (this.validatePromise === rootPromise) {
-            this.validatePromise = null;
+              // Get errors & warnings
+              const nextErrors: string[] = [];
+              const nextWarnings: string[] = [];
+              ruleErrors.forEach(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
+                if (warningOnly) {
+                  nextWarnings.push(...errors);
+                } else {
+                  nextErrors.push(...errors);
+                }
+              });
 
-            // Get errors & warnings
-            const nextErrors: string[] = [];
-            const nextWarnings: string[] = [];
-            ruleErrors.forEach(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
-              if (warningOnly) {
-                nextWarnings.push(...errors);
-              } else {
-                nextErrors.push(...errors);
-              }
-            });
+              this.errors = nextErrors;
+              this.warnings = nextWarnings;
+              this.triggerMetaEvent();
 
-            this.errors = nextErrors;
-            this.warnings = nextWarnings;
-            this.triggerMetaEvent();
+              this.reRender();
+            }
+          });
 
-            this.reRender();
-          }
-        });
-
-      return promise;
+        return promise;
+      }
     });
 
     this.validatePromise = rootPromise;
@@ -444,8 +447,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     // Form set initialValue
     const { fieldContext } = this.props;
-    const { getInitialValue } = fieldContext.getInternalHooks(HOOK_MARK);
-    if (getInitialValue(this.getNamePath()) !== undefined) {
+    const { getInitialValue } = fieldContext?.getInternalHooks(HOOK_MARK) || {};
+    if (getInitialValue?.(this.getNamePath()) !== undefined) {
       return true;
     }
 
@@ -456,11 +459,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public getWarnings = () => this.warnings;
 
-  public isListField = () => this.props.isListField;
+  public isListField = () => !!this.props.isListField;
 
-  public isList = () => this.props.isList;
+  public isList = () => !!this.props.isList;
 
-  public isPreserve = () => this.props.preserve;
+  public isPreserve = () => !!this.props.preserve;
 
   // ============================= Child Component =============================
   public getMeta = (): Meta => {
@@ -489,7 +492,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       const meta = this.getMeta();
 
       return {
-        ...this.getOnlyChild(children(this.getControlled(), meta, this.props.fieldContext)),
+        ...this.getOnlyChild(
+          children(this.getControlled(), meta, this.props.fieldContext as InternalFormInstance),
+        ),
         isFunction: true,
       };
     }
@@ -505,7 +510,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ============================== Field Control ==============================
   public getValue = (store?: Store) => {
-    const { getFieldsValue }: FormInstance = this.props.fieldContext;
+    const { getFieldsValue } = this.props.fieldContext as FormInstance;
     const namePath = this.getNamePath();
     return getValue(store || getFieldsValue(true), namePath);
   };
@@ -522,16 +527,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     } = this.props;
 
     const mergedValidateTrigger =
-      validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
+      validateTrigger !== undefined ? validateTrigger : fieldContext?.validateTrigger;
 
     const namePath = this.getNamePath();
-    const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
-    const { dispatch } = getInternalHooks(HOOK_MARK);
+    const { getInternalHooks, getFieldsValue } = fieldContext as InternalFormInstance;
+    const { dispatch } = getInternalHooks(HOOK_MARK) || {};
     const value = this.getValue();
-    const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
+    const mergedGetValueProps =
+      getValueProps || ((val: StoreValue) => ({ [valuePropName as string]: val }));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originTriggerFunc: any = childProps[trigger];
+    const originTriggerFunc = childProps[trigger as string];
 
     const control = {
       ...childProps,
@@ -539,7 +544,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     };
 
     // Add trigger
-    control[trigger] = (...args: EventArgs) => {
+    control[trigger as string] = (...args: EventArgs) => {
       // Mark as touched
       this.touched = true;
       this.dirty = true;
@@ -550,14 +555,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       if (getValueFromEvent) {
         newValue = getValueFromEvent(...args);
       } else {
-        newValue = defaultGetValueFromEvent(valuePropName, ...args);
+        newValue = defaultGetValueFromEvent(valuePropName as string, ...args);
       }
 
       if (normalize) {
         newValue = normalize(newValue, value, getFieldsValue(true));
       }
 
-      dispatch({
+      dispatch?.({
         type: 'updateValue',
         namePath,
         value: newValue,
@@ -584,7 +589,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          dispatch({
+          dispatch?.({
             type: 'validateField',
             namePath,
             triggerName,
@@ -636,7 +641,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     process.env.NODE_ENV !== 'production' &&
     restProps.preserve === false &&
     restProps.isListField &&
-    namePath.length <= 1
+    (namePath?.length || 0) <= 1
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }

@@ -11,7 +11,7 @@ import cloneDeep from '../utils/cloneDeep';
  * 123 => [123]
  * ['a', 123] => ['a', 123]
  */
-export function getNamePath(path: NamePath | null): InternalNamePath {
+export function getNamePath(path?: NamePath): InternalNamePath {
   return toArray(path);
 }
 
@@ -60,13 +60,14 @@ function internalSetValues<T>(store: T, values: T): T {
   }
 
   Object.keys(values).forEach(key => {
-    const prevValue = newStore[key];
-    const value = values[key];
+    // const prevValue = newStore[key];
+    const prevValue = get(newStore, [key]);
+    const value = get(values, [key]);
 
     // If both are object (but target is not array), we use recursion to set deep value
     const recursive = isObject(prevValue) && isObject(value);
 
-    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : cloneDeep(value); // Clone deep for arrays
+    set(newStore, [key], recursive ? internalSetValues(prevValue, value || {}) : cloneDeep(value)); // Clone deep for arrays
   });
 
   return newStore;
@@ -109,8 +110,8 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
   const keys = new Set([...sourceKeys, ...targetKeys]);
 
   return [...keys].every(key => {
-    const sourceValue = source[key];
-    const targetValue = target[key];
+    const sourceValue = get(source, [key]);
+    const targetValue = get(target, [key]);
 
     if (typeof sourceValue === 'function' && typeof targetValue === 'function') {
       return true;
@@ -122,7 +123,7 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
 export function defaultGetValueFromEvent(valuePropName: string, ...args: EventArgs) {
   const event = args[0];
   if (event && event.target && typeof event.target === 'object' && valuePropName in event.target) {
-    return (event.target as HTMLInputElement)[valuePropName];
+    return get(event.target as HTMLInputElement, [valuePropName]);
   }
 
   return event;
