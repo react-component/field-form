@@ -1,5 +1,6 @@
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
+import set from 'rc-util/lib/utils/set';
 import type {
   Callbacks,
   FieldData,
@@ -694,14 +695,32 @@ export class FormStore {
     this.triggerOnFieldsChange([namePath, ...childrenFields]);
   };
 
+  private isNotTrivalStore(store: Store | (() => [NamePath, Store[keyof Store]][])): 
+    store is (() => [NamePath, Store[keyof Store]][]) {
+    return typeof store === 'function';
+  }
+
   // Let all child Field get update.
-  private setFieldsValue = (store: Store) => {
+  private setFieldsValue = (store: Store | (() => [NamePath, Store[keyof Store]][])) => {
     this.warningUnhooked();
 
     const prevStore = this.store;
 
-    if (store) {
-      this.updateStore(setValues(this.store, store));
+    let newStore: Store;
+    if(this.isNotTrivalStore(store)) {
+      const valuePairs = store();
+      newStore = valuePairs.reduce((prev: Store, namePathValuePair: [NamePath, Store[keyof Store]]) => {
+        if(!namePathValuePair) {
+          return prev;
+        }
+        set(prev, namePathValuePair[0], namePathValuePair[1]);
+        return prev;
+      }, {} as Store);
+    } else {
+      newStore = store;
+    }
+    if (newStore) {
+      this.updateStore(setValues(this.store, newStore));
     }
 
     this.notifyObservers(prevStore, null, {
