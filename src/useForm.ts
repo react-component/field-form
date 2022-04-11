@@ -233,15 +233,6 @@ export class FormStore {
     return this.fieldEntities.filter(field => field.getNamePath().length);
   };
 
-  private getRegisterFieldsValue = (store: Store) => {
-    let nextStore: Store = {};
-    this.getFieldEntities(true).forEach(field => {
-      const namePath = field.getNamePath();
-      nextStore = setValue(nextStore, namePath, getValue(store, namePath));
-    });
-    return nextStore;
-  };
-
   private getFieldsMap = (pure: boolean = false) => {
     const cache: NameMap<FieldEntity> = new NameMap();
     this.getFieldEntities(pure).forEach(field => {

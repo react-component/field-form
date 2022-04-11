@@ -23,7 +23,7 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
       onFieldsChange: namePathList => {
         const dependencyList = dependencies?.map(getNamePath);
         const nameList = namePathList?.map(getNamePath);
-        if (dependencies && namePathList) {
+        if (dependencyList && nameList) {
           if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
             forceUpdate({});
           }
@@ -32,10 +32,7 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
         }
       },
     });
-
-    return () => {
-      setWatchCallbacks(id, {});
-    };
+    return () => setWatchCallbacks(id, {});
   }, [dependencies, getFieldsValue, setWatchCallbacks]);
 
   return getFieldsValue();
