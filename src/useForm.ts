@@ -113,11 +113,11 @@ export class FormStore {
         setInitialValues: this.setInitialValues,
         destroyForm: this.destroyForm,
         setCallbacks: this.setCallbacks,
-        setWatchCallbacks: this.setWatchCallbacks,
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
+        watchCallbacks: this.watchCallbacks,
       };
     }
 
@@ -175,10 +175,6 @@ export class FormStore {
 
   private setCallbacks = (callbacks: Callbacks) => {
     this.callbacks = callbacks;
-  };
-
-  private setWatchCallbacks = (watchId: object, callbacks: WatchCallbacks) => {
-    this.watchCallbacks.set(watchId, callbacks);
   };
 
   private watchChange: WatchCallbacks['onFieldsChange'] = (...params) => {
