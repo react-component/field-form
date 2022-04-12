@@ -21,7 +21,6 @@ import type {
   InternalFieldData,
   ValuedNotifyInfo,
   RuleError,
-  WatchCallbacks,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -69,7 +68,7 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
-  private watchCallbacks: Map<object, WatchCallbacks> = new Map();
+  private watchCallbacks: InternalHooks['watchCallbacks'] = new Map();
 
   private validateMessages: ValidateMessages = null;
 
@@ -177,12 +176,8 @@ export class FormStore {
     this.callbacks = callbacks;
   };
 
-  private watchChange: WatchCallbacks['onFieldsChange'] = (...params) => {
-    this.watchCallbacks.forEach(({ onFieldsChange }) => {
-      if (onFieldsChange) {
-        onFieldsChange(...params);
-      }
-    });
+  private watchChange = (namePathList?: NamePath[]) => {
+    this.watchCallbacks.forEach(onFieldsChange => onFieldsChange(namePathList));
   };
 
   private setValidateMessages = (validateMessages: ValidateMessages) => {

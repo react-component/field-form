@@ -18,18 +18,16 @@ const useWatch = <Values = any>(dependencies?: NamePath[], form?: FormInstance<V
 
   useEffect(() => {
     const id = {};
-    watchCallbacks.set(id, {
-      onFieldsChange: namePathList => {
-        const dependencyList = dependencies?.map(getNamePath);
-        const nameList = namePathList?.map(getNamePath);
-        if (dependencyList && nameList) {
-          if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
-            forceUpdate({});
-          }
-        } else {
+    watchCallbacks.set(id, namePathList => {
+      const dependencyList = dependencies?.map(getNamePath);
+      const nameList = namePathList?.map(getNamePath);
+      if (dependencyList && nameList) {
+        if (dependencyList.some(dependency => containsNamePath(nameList, dependency))) {
           forceUpdate({});
         }
-      },
+      } else {
+        forceUpdate({});
+      }
     });
     return () => {
       watchCallbacks.delete(id);
