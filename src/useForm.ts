@@ -68,7 +68,7 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
-  private watchCallbacks: InternalHooks['watchCallbacks'] = new Map();
+  private watchMap: InternalHooks['watchMap'] = new Map();
 
   private validateMessages: ValidateMessages = null;
 
@@ -116,7 +116,7 @@ export class FormStore {
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
-        watchCallbacks: this.watchCallbacks,
+        watchMap: this.watchMap,
       };
     }
 
@@ -177,7 +177,7 @@ export class FormStore {
   };
 
   private watchChange = (namePathList?: NamePath[]) => {
-    this.watchCallbacks.forEach(onFieldsChange => onFieldsChange(namePathList));
+    this.watchMap.forEach(onFieldsChange => onFieldsChange(namePathList));
   };
 
   private setValidateMessages = (validateMessages: ValidateMessages) => {
