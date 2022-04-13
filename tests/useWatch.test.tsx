@@ -216,7 +216,7 @@ describe('useWatch', () => {
     mount(<Demo />);
 
     expect(errorSpy).toHaveBeenCalledWith(
-      'Warning: Can not find FormContext. Please make sure you wrap Field under Form.',
+      'Warning: useWatch requires a form instance since it can not auto detect from context.',
     );
   });
 });

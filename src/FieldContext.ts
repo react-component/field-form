@@ -24,6 +24,7 @@ const Context = React.createContext<InternalFormInstance>({
   setFieldsValue: warningFunc,
   validateFields: warningFunc,
   submit: warningFunc,
+  _init: false,
 
   getInternalHooks: () => {
     warningFunc();

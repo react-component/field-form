@@ -11,11 +11,12 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
 
   const fieldContext = useContext(FieldContext);
   const formInstance = (form as InternalFormInstance) || fieldContext;
+  const isValidForm = formInstance && formInstance._init !== false;
 
   // Warning if not exist form instance
   if (process.env.NODE_ENV !== 'production') {
     warning(
-      !!formInstance,
+      isValidForm,
       'useWatch requires a form instance since it can not auto detect from context.',
     );
   }
@@ -27,7 +28,7 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
   useEffect(
     () => {
       // Skip if not exist form instance
-      if (!formInstance) {
+      if (!isValidForm) {
         return;
       }
 
