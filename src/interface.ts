@@ -260,7 +260,7 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
   getInternalHooks: (secret: string) => InternalHooks | null;
 
   /** @private Internal usage. Do not use it in your production */
-  _init?: boolean;
+  _init: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

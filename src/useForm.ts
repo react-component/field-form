@@ -94,6 +94,7 @@ export class FormStore {
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
     submit: this.submit,
+    _init: true,
 
     getInternalHooks: this.getInternalHooks,
   });

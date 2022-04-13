@@ -11,7 +11,7 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
 
   const fieldContext = useContext(FieldContext);
   const formInstance = (form as InternalFormInstance) || fieldContext;
-  const isValidForm = formInstance && formInstance._init !== false;
+  const isValidForm = formInstance && formInstance._init;
 
   // Warning if not exist form instance
   if (process.env.NODE_ENV !== 'production') {
