@@ -193,6 +193,8 @@ export interface Callbacks<Values = any> {
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
+export type WatchCallBack = (values: Store, namePathList: InternalNamePath[]) => void;
+
 export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
   initEntityValue: (entity: FieldEntity) => void;
@@ -201,6 +203,7 @@ export interface InternalHooks {
   setInitialValues: (values: Store, init: boolean) => void;
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
+  registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
@@ -255,6 +258,9 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
    * We pass the `HOOK_MARK` as key to avoid user call the function.
    */
   getInternalHooks: (secret: string) => InternalHooks | null;
+
+  /** @private Internal usage. Do not use it in your production */
+  _init?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

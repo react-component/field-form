@@ -36,6 +36,7 @@ const Context = React.createContext<InternalFormInstance>({
       setInitialValues: warningFunc,
       destroyForm: warningFunc,
       setCallbacks: warningFunc,
+      registerWatch: warningFunc,
       getFields: warningFunc,
       setValidateMessages: warningFunc,
       setPreserve: warningFunc,
