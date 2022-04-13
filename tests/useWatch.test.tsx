@@ -219,4 +219,60 @@ describe('useWatch', () => {
       'Warning: useWatch requires a form instance since it can not auto detect from context.',
     );
   });
+
+  it('no more render time', () => {
+    let renderTime = 0;
+
+    const Demo = () => {
+      const [form] = Form.useForm();
+      const name = Form.useWatch<string>('name', form);
+
+      renderTime += 1;
+
+      return (
+        <Form form={form}>
+          <Field name="name">
+            <Input />
+          </Field>
+          <Field name="age">
+            <Input />
+          </Field>
+          <div className="value">{name}</div>
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    expect(renderTime).toEqual(1);
+
+    wrapper
+      .find('input')
+      .first()
+      .simulate('change', {
+        target: {
+          value: 'bamboo',
+        },
+      });
+    expect(renderTime).toEqual(2);
+
+    wrapper
+      .find('input')
+      .last()
+      .simulate('change', {
+        target: {
+          value: '123',
+        },
+      });
+    expect(renderTime).toEqual(2);
+
+    wrapper
+      .find('input')
+      .last()
+      .simulate('change', {
+        target: {
+          value: '123456',
+        },
+      });
+    expect(renderTime).toEqual(2);
+  });
 });
