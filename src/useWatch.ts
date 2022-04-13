@@ -44,6 +44,7 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
     setValue(initialValue);
 
     return cancelRegister;
+    // We do not need re-register since namePath content is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
