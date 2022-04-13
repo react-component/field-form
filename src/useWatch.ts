@@ -20,15 +20,20 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
     );
   }
 
-  const { getFieldsValue, getInternalHooks } = formInstance;
-  const { registerWatch } = getInternalHooks(HOOK_MARK);
-
   const namePath = getNamePath(dependencies);
   const namePathRef = useRef(namePath);
   namePathRef.current = namePath;
 
   useEffect(
     () => {
+      // Skip if not exist form instance
+      if (!formInstance) {
+        return;
+      }
+
+      const { getFieldsValue, getInternalHooks } = formInstance;
+      const { registerWatch } = getInternalHooks(HOOK_MARK);
+
       const cancelRegister = registerWatch(store => {
         const newValue = getValue(store, namePathRef.current);
         setValue(newValue);

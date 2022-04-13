@@ -204,4 +204,19 @@ describe('useWatch', () => {
       expect(wrapper.find('.values').text()).toEqual(JSON.stringify(['light']));
     });
   });
+
+  it('warning if not provide form', () => {
+    const errorSpy = jest.spyOn(console, 'error');
+
+    const Demo = () => {
+      Form.useWatch([]);
+      return null;
+    };
+
+    mount(<Demo />);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: Can not find FormContext. Please make sure you wrap Field under Form.',
+    );
+  });
 });
