@@ -264,5 +264,15 @@ describe('useWatch', () => {
         },
       });
     expect(renderTime).toEqual(2);
+
+    wrapper
+      .find('input')
+      .last()
+      .simulate('change', {
+        target: {
+          value: '123456',
+        },
+      });
+    expect(renderTime).toEqual(2);
   });
 });

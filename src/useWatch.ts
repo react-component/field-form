@@ -8,6 +8,8 @@ import { getNamePath, getValue } from './utils/valueUtil';
 
 const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormInstance) => {
   const [value, setValue] = useState<ValueType>();
+  const valueCacheRef = useRef<ValueType>();
+  valueCacheRef.current = value;
 
   const fieldContext = useContext(FieldContext);
   const formInstance = (form as InternalFormInstance) || fieldContext;
@@ -37,7 +39,9 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
 
       const cancelRegister = registerWatch(store => {
         const newValue = getValue(store, namePathRef.current);
-        setValue(newValue);
+        if (valueCacheRef.current !== newValue) {
+          setValue(newValue);
+        }
       });
 
       // TODO: We can improve this perf in future
@@ -46,10 +50,10 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
 
       return cancelRegister;
     },
-    /* eslint-disable react-hooks/exhaustive-deps */
+
     // We do not need re-register since namePath content is the same
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
-    /* eslint-enable */
   );
 
   return value;
