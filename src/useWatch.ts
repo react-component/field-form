@@ -25,32 +25,27 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
   const namePathRef = useRef(namePath);
   namePathRef.current = namePath;
 
-  useEffect(
-    () => {
-      // Skip if not exist form instance
-      if (!isValidForm) {
-        return;
-      }
+  useEffect(() => {
+    // Skip if not exist form instance
+    if (!isValidForm) {
+      return;
+    }
 
-      const { getFieldsValue, getInternalHooks } = formInstance;
-      const { registerWatch } = getInternalHooks(HOOK_MARK);
+    const { getFieldsValue, getInternalHooks } = formInstance;
+    const { registerWatch } = getInternalHooks(HOOK_MARK);
 
-      const cancelRegister = registerWatch(store => {
-        const newValue = getValue(store, namePathRef.current);
-        setValue(newValue);
-      });
+    const cancelRegister = registerWatch(store => {
+      const newValue = getValue(store, namePathRef.current);
+      setValue(newValue);
+    });
 
-      // TODO: We can improve this perf in future
-      const initialValue = getValue(getFieldsValue(), namePathRef.current);
-      setValue(initialValue);
+    // TODO: We can improve this perf in future
+    const initialValue = getValue(getFieldsValue(), namePathRef.current);
+    setValue(initialValue);
 
-      return cancelRegister;
-    },
-    /* eslint-disable react-hooks/exhaustive-deps */
-    // We do not need re-register since namePath content is the same
-    [],
-    /* eslint-enable */
-  );
+    return cancelRegister;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return value;
 };
