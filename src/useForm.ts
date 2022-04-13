@@ -21,6 +21,7 @@ import type {
   InternalFieldData,
   ValuedNotifyInfo,
   RuleError,
+  WatchCallBack,
 } from './interface';
 import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
@@ -68,8 +69,6 @@ export class FormStore {
 
   private callbacks: Callbacks = {};
 
-  private watchMap: InternalHooks['watchMap'] = new Map();
-
   private validateMessages: ValidateMessages = null;
 
   private preserve?: boolean = null;
@@ -116,7 +115,7 @@ export class FormStore {
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
-        watchMap: this.watchMap,
+        registerWatch: this.registerWatch,
       };
     }
 
@@ -176,16 +175,34 @@ export class FormStore {
     this.callbacks = callbacks;
   };
 
-  private watchChange = (namePathList?: NamePath[]) => {
-    this.watchMap.forEach(onFieldsChange => onFieldsChange(namePathList));
-  };
-
   private setValidateMessages = (validateMessages: ValidateMessages) => {
     this.validateMessages = validateMessages;
   };
 
   private setPreserve = (preserve?: boolean) => {
     this.preserve = preserve;
+  };
+
+  // ============================= Watch ============================
+  private watchList: WatchCallBack[] = [];
+
+  private registerWatch: InternalHooks['registerWatch'] = callback => {
+    this.watchList.push(callback);
+
+    return () => {
+      this.watchList = this.watchList.filter(fn => fn !== callback);
+    };
+  };
+
+  private notifyWatch = (namePath: InternalNamePath[] = []) => {
+    // No need to cost perf when nothing need to watch
+    if (this.watchList.length) {
+      const values = this.getFieldsValue();
+
+      this.watchList.forEach(callback => {
+        callback(values, namePath);
+      });
+    }
   };
 
   // ========================== Dev Warning =========================
@@ -506,7 +523,7 @@ export class FormStore {
       this.updateStore(setValues({}, this.initialValues));
       this.resetWithFieldInitialValue();
       this.notifyObservers(prevStore, null, { type: 'reset' });
-      this.watchChange();
+      this.notifyWatch();
       return;
     }
 
@@ -518,7 +535,7 @@ export class FormStore {
     });
     this.resetWithFieldInitialValue({ namePathList });
     this.notifyObservers(prevStore, namePathList, { type: 'reset' });
-    this.watchChange(nameList);
+    this.notifyWatch(namePathList);
   };
 
   private setFields = (fields: FieldData[]) => {
@@ -526,7 +543,7 @@ export class FormStore {
 
     const prevStore = this.store;
 
-    const namePathList = [];
+    const namePathList: InternalNamePath[] = [];
 
     fields.forEach((fieldData: FieldData) => {
       const { name, errors, ...data } = fieldData;
@@ -544,7 +561,7 @@ export class FormStore {
       });
     });
 
-    this.watchChange(namePathList);
+    this.notifyWatch(namePathList);
   };
 
   private getFields = (): InternalFieldData[] => {
@@ -589,7 +606,7 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
-    this.watchChange([namePath]);
+    this.notifyWatch([namePath]);
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
@@ -606,7 +623,6 @@ export class FormStore {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
       // Clean up store value if not preserve
       const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
-      this.watchChange([namePath]);
 
       if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
         const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
@@ -630,6 +646,8 @@ export class FormStore {
           this.triggerDependenciesUpdate(prevStore, namePath);
         }
       }
+
+      this.notifyWatch([namePath]);
     };
   };
 
@@ -695,7 +713,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
-    this.watchChange([namePath]);
+    this.notifyWatch([namePath]);
 
     // Dependencies update
     const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
@@ -726,7 +744,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'external',
     });
-    this.watchChange();
+    this.notifyWatch();
   };
 
   private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {

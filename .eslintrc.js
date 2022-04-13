@@ -19,6 +19,5 @@ module.exports = {
     '@typescript-eslint/method-signature-style': 0,
     'no-async-promise-executor': 0,
     '@typescript-eslint/consistent-type-definitions': 0,
-    '@typescript-eslint/no-shadow': 0,
   },
 };

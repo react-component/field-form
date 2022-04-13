@@ -9,10 +9,11 @@ import { Input } from './common/InfoField';
 
 describe('useWatch', () => {
   let staticForm: FormInstance<any> = null;
+
   it('field initialValue', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const values = Form.useWatch(['name'], form);
+      const nameValue = Form.useWatch<string>('name', form);
 
       return (
         <div>
@@ -21,22 +22,21 @@ describe('useWatch', () => {
               <Input />
             </Field>
           </Form>
-          <div className="values">{JSON.stringify(values)}</div>
+          <div className="values">{nameValue}</div>
         </div>
       );
     };
     await act(async () => {
       const wrapper = mount(<Demo />);
       await timeout();
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: 'bamboo' }),
-      );
+      expect(wrapper.find('.values').text()).toEqual('bamboo');
     });
   });
+
   it('form initialValue', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const values = Form.useWatch(['name'], form);
+      const nameValue = Form.useWatch<string>(['name'], form);
 
       return (
         <div>
@@ -45,22 +45,21 @@ describe('useWatch', () => {
               <Input />
             </Field>
           </Form>
-          <div className="values">{JSON.stringify(values)}</div>
+          <div className="values">{nameValue}</div>
         </div>
       );
     };
     await act(async () => {
       const wrapper = mount(<Demo />);
       await timeout();
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: 'bamboo' }),
-      );
+      expect(wrapper.find('.values').text()).toEqual('bamboo');
     });
   });
-  it('change name', async () => {
+
+  it('change value with form api', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const values = Form.useWatch(['name'], form);
+      const nameValue = Form.useWatch<string>(['name'], form);
 
       return (
         <div>
@@ -74,121 +73,116 @@ describe('useWatch', () => {
               <Input />
             </Field>
           </Form>
-          <div className="values">{JSON.stringify(values)}</div>
+          <div className="values">{nameValue}</div>
         </div>
       );
     };
     await act(async () => {
       const wrapper = mount(<Demo />);
       await timeout();
-      staticForm.setFields([{ name: 'name', value: 'setFields' }]);
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: 'setFields' }),
-      );
-      staticForm.setFieldsValue({ name: 'setFieldsValue' });
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: 'setFieldsValue' }),
-      );
+      staticForm.setFields([{ name: 'name', value: 'little' }]);
+      expect(wrapper.find('.values').text()).toEqual('little');
+
+      staticForm.setFieldsValue({ name: 'light' });
+      expect(wrapper.find('.values').text()).toEqual('light');
+
       staticForm.resetFields();
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: undefined }),
-      );
+      expect(wrapper.find('.values').text()).toEqual('');
     });
   });
-  it('unmount', async () => {
-    const Demo = ({ visible }: { visible: boolean }) => {
-      const [form] = Form.useForm();
-      const values = Form.useWatch(['name'], form);
 
-      return (
-        <div>
-          <Form form={form} initialValues={{ name: 'bamboo' }}>
-            {visible && (
-              <Field name="name">
-                <Input />
-              </Field>
-            )}
-          </Form>
-          <div className="values">{JSON.stringify(values)}</div>
-        </div>
-      );
-    };
-    await act(async () => {
-      const wrapper = mount(<Demo visible />);
-      await timeout();
-      wrapper.setProps({ visible: false });
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: undefined }),
-      );
-      wrapper.setProps({ visible: true });
-      await timeout();
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: 'bamboo' }),
-      );
+  describe('unmount', () => {
+    it('basic', async () => {
+      const Demo = ({ visible }: { visible: boolean }) => {
+        const [form] = Form.useForm();
+        const nameValue = Form.useWatch<string>(['name'], form);
+
+        return (
+          <div>
+            <Form form={form} initialValues={{ name: 'bamboo' }}>
+              {visible && (
+                <Field name="name">
+                  <Input />
+                </Field>
+              )}
+            </Form>
+            <div className="values">{nameValue}</div>
+          </div>
+        );
+      };
+
+      await act(async () => {
+        const wrapper = mount(<Demo visible />);
+        await timeout();
+
+        expect(wrapper.find('.values').text()).toEqual('bamboo');
+
+        wrapper.setProps({ visible: false });
+        expect(wrapper.find('.values').text()).toEqual('');
+
+        wrapper.setProps({ visible: true });
+        expect(wrapper.find('.values').text()).toEqual('bamboo');
+      });
+    });
+
+    it('nest children component', async () => {
+      const DemoWatch = () => {
+        Form.useWatch(['name']);
+
+        return (
+          <Field name="name">
+            <Input />
+          </Field>
+        );
+      };
+
+      const Demo = ({ visible }: { visible: boolean }) => {
+        const [form] = Form.useForm();
+        const nameValue = Form.useWatch<string>(['name'], form);
+
+        return (
+          <div>
+            <Form form={form} initialValues={{ name: 'bamboo' }}>
+              {visible && <DemoWatch />}
+            </Form>
+            <div className="values">{nameValue}</div>
+          </div>
+        );
+      };
+
+      await act(async () => {
+        const wrapper = mount(<Demo visible />);
+        await timeout();
+
+        expect(wrapper.find('.values').text()).toEqual('bamboo');
+
+        wrapper.setProps({ visible: false });
+        expect(wrapper.find('.values').text()).toEqual('');
+
+        wrapper.setProps({ visible: true });
+        expect(wrapper.find('.values').text()).toEqual('bamboo');
+      });
     });
   });
-  it('unmount useWatch', async () => {
-    const DemoWatch = () => {
-      Form.useWatch(['name']);
 
-      return (
-        <Field name="name">
-          <Input />
-        </Field>
-      );
-    };
-
-    const Demo = ({ visible }: { visible: boolean }) => {
-      const [form] = Form.useForm();
-      const values = Form.useWatch(['name'], form);
-
-      return (
-        <div>
-          <Form form={form} initialValues={{ name: 'bamboo' }}>
-            {visible && <DemoWatch />}
-          </Form>
-          <div className="values">{JSON.stringify(values)}</div>
-        </div>
-      );
-    };
-    await act(async () => {
-      const wrapper = mount(<Demo visible />);
-      await timeout();
-      wrapper.setProps({ visible: false });
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: undefined }),
-      );
-      wrapper.setProps({ visible: true });
-      await timeout();
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ name: 'bamboo' }),
-      );
-    });
-  });
   it('list', async () => {
     const Demo = () => {
       const [form] = Form.useForm();
-      const list = Form.useWatch(['users'], form);
-      const values = Form.useWatch(
-        list?.users?.map((_, index) => ['users', index]) || ['users'],
-        form,
-      );
+      const users = Form.useWatch<string[]>(['users'], form) || [];
 
       return (
         <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
-          <div className="values">{JSON.stringify(values)}</div>
+          <div className="values">{JSON.stringify(users)}</div>
           <List name="users" initialValue={['bamboo', 'light']}>
             {(fields, { remove }) => {
               return (
                 <div>
                   {fields.map((field, index) => (
-                    <Field {...field} rules={[{ required: true }]}>
+                    <Field {...field} key={field.key} rules={[{ required: true }]}>
                       {control => (
                         <div>
                           <Input {...control} />
-                          <a className="remove" onClick={() => remove(index)}>
-                            Remove
-                          </a>
+                          <a className="remove" onClick={() => remove(index)} />
                         </div>
                       )}
                     </Field>
@@ -203,14 +197,11 @@ describe('useWatch', () => {
     await act(async () => {
       const wrapper = mount(<Demo />);
       await timeout();
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ users: ['bamboo', 'light'] }),
-      );
+      expect(wrapper.find('.values').text()).toEqual(JSON.stringify(['bamboo', 'light']));
+
       wrapper.find('.remove').at(0).simulate('click');
       await timeout();
-      expect(wrapper.find('.values').at(0).getDOMNode().innerHTML).toBe(
-        JSON.stringify({ users: ['light'] }),
-      );
+      expect(wrapper.find('.values').text()).toEqual(JSON.stringify(['light']));
     });
   });
 });
