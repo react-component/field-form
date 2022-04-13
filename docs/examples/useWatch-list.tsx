@@ -6,17 +6,20 @@ const { List, useForm } = Form;
 
 const Demo = () => {
   const [form] = useForm();
-  const users = Form.useWatch(['users'], form) || [];
+  const users = Form.useWatch(['main'], form) || [];
 
-  console.log('values', users);
+  console.error('values', users);
 
   return (
     <div>
       <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
-        list length:{users.length}
+        {/* list length:{users.length} */}
         <br />
-        Users: {JSON.stringify(users, null, 2)}
+        {/* Users: {JSON.stringify(users, null, 2)} */}
         <Field name="main">
+          <Input />
+        </Field>
+        <Field name="ddd">
           <Input />
         </Field>
         <List name="users" initialValue={['bamboo', 'light']}>
