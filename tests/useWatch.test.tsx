@@ -8,7 +8,7 @@ import { act } from 'react-dom/test-utils';
 import { Input } from './common/InfoField';
 
 describe('useWatch', () => {
-  let staticForm: FormInstance<any> = null;
+  let staticForm: FormInstance<any>;
 
   it('field initialValue', async () => {
     const Demo = () => {
