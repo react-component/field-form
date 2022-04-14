@@ -43,10 +43,9 @@ function useWatch<TDependencies extends keyof GetGeneric<TForm>, TForm extends F
   form?: TForm,
 ): GetGeneric<TForm>[TDependencies];
 
-function useWatch<TForm extends FormInstance>(
-  dependencies: NamePath,
-  form?: TForm,
-): GetGeneric<TForm>;
+function useWatch<TForm extends FormInstance>(dependencies: [], form?: TForm): GetGeneric<TForm>;
+
+function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TForm): any;
 
 function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
 
