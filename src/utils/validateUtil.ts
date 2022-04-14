@@ -124,11 +124,7 @@ export function validateRules(
 
       // Replace validator if needed
       if (originValidatorFunc) {
-        cloneRule.validator = (
-          rule: RuleObject,
-          val: StoreValue,
-          callback: (error?: string) => void,
-        ) => {
+        cloneRule.validator = (rule, val, callback) => {
           let hasPromise = false;
 
           // Wrap callback only accept when promise not provided
