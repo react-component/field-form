@@ -7,22 +7,24 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
 function useWatch<
-  TKey1 extends keyof TObject['values'] | string | number,
+  TKey1 extends keyof TObject['values'],
   TObject extends FormInstance,
-  TKey2 extends keyof TObject['values'][TKey1] | string | number,
-  TKey3 extends keyof TObject['values'][TKey1][TKey2] | string | number,
+  TKey2 extends keyof TObject['values'][TKey1],
+  TKey3 extends keyof TObject['values'][TKey1][TKey2],
 >(path: [TKey1, TKey2, TKey3], object?: TObject): TObject['values'][TKey1][TKey2][TKey3];
 
 function useWatch<
-  TKey1 extends keyof TObject['values'] | string | number,
+  TKey1 extends keyof TObject['values'],
   TObject extends FormInstance,
-  TKey2 extends keyof TObject['values'][TKey1] | string | number,
+  TKey2 extends keyof TObject['values'][TKey1],
 >(path: [TKey1, TKey2], object?: TObject): TObject['values'][TKey1][TKey2];
 
-function useWatch<
-  TKey extends keyof TObject['values'] | string | number,
-  TObject extends FormInstance,
->(path: TKey | TKey[], object?: TObject): TObject['values'][TKey];
+function useWatch<TObject extends FormInstance>(path: any, object?: TObject): any;
+
+function useWatch<TKey extends keyof TObject['values'], TObject extends FormInstance>(
+  path: TKey | TKey[],
+  object?: TObject,
+): TObject['values'][TKey];
 
 function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
 

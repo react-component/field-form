@@ -4,8 +4,18 @@ import Input from './components/Input';
 
 let x = 0;
 
+type FieldType = {
+  main?: string;
+  name?: string;
+  age?: number;
+  demo?: string;
+  demo2?: string;
+  id?: number;
+  obj?: { demo?: { demo2?: string } };
+};
+
 const Demo = React.memo(() => {
-  const values = Form.useWatch(['demo']);
+  const values = Form.useWatch<FieldType['demo']>(['demo']);
   console.log('demo watch', values);
   return (
     <Field name="demo">
@@ -14,7 +24,7 @@ const Demo = React.memo(() => {
   );
 });
 const Demo2 = React.memo(() => {
-  const values = Form.useWatch(['demo2']);
+  const values = Form.useWatch<FieldType['demo2']>(['demo2']);
   console.log('demo2 watch', values);
   return (
     <Field name="demo2">
@@ -23,14 +33,6 @@ const Demo2 = React.memo(() => {
   );
 });
 
-type FieldType = {
-  main?: string;
-  name?: string;
-  age?: string;
-  id?: number;
-  obj?: { demo?: { demo2?: string } };
-};
-
 export default () => {
   const [form] = Form.useForm<FieldType>();
   const [visible, setVisible] = useState(true);
@@ -38,9 +40,8 @@ export default () => {
   const [visible3, setVisible3] = useState(true);
   const main = Form.useWatch(['main'], form);
   const name = Form.useWatch(['name'], form);
-  const obj = Form.useWatch(['obj', 'demo'], form);
-  const obj2 = Form.useWatch<FieldType>([], form);
-  console.log('main watch', obj, main, name, obj2);
+  const obj = Form.useWatch(['obj', 'demo', 'demo2'], form);
+  console.log('main watch', obj, main, name);
   return (
     <>
       <Form
