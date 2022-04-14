@@ -2,7 +2,7 @@ import type { FormInstance } from '.';
 import { FieldContext } from '.';
 import warning from 'rc-util/lib/warning';
 import { HOOK_MARK } from './FieldContext';
-import type { InternalFormInstance, NamePath, Store } from './interface';
+import type { InternalFormInstance, NamePath } from './interface';
 import { useState, useContext, useEffect, useRef } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
@@ -24,9 +24,9 @@ function useWatch<
   TObject extends FormInstance,
 >(path: TKey | TKey[], object?: TObject): TObject['values'][TKey];
 
-function useWatch<ValueType = Store>(dependencies: NamePath = [], form?: FormInstance) {
-  const [value, setValue] = useState<ValueType>();
-  const valueCacheRef = useRef<ValueType>();
+function useWatch(dependencies: NamePath = [], form?: FormInstance) {
+  const [value, setValue] = useState<any>();
+  const valueCacheRef = useRef<any>();
   valueCacheRef.current = value;
 
   const fieldContext = useContext(FieldContext);
