@@ -7,33 +7,39 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
 function useWatch<
-  TKey1 extends keyof TForm['values'],
+  TDependencies1 extends keyof TForm['values'],
   TForm extends FormInstance,
-  TKey2 extends keyof TForm['values'][TKey1],
-  TKey3 extends keyof TForm['values'][TKey1][TKey2],
-  TKey4 extends keyof TForm['values'][TKey1][TKey2][TKey3],
+  TDependencies2 extends keyof TForm['values'][TDependencies1],
+  TDependencies3 extends keyof TForm['values'][TDependencies1][TDependencies2],
+  TDependencies4 extends keyof TForm['values'][TDependencies1][TDependencies2][TDependencies3],
 >(
-  dependencies: [TKey1, TKey2, TKey3, TKey4],
+  dependencies: [TDependencies1, TDependencies2, TDependencies3, TDependencies4],
   form?: TForm,
-): TForm['values'][TKey1][TKey2][TKey3][TKey4];
+): TForm['values'][TDependencies1][TDependencies2][TDependencies3][TDependencies4];
 
 function useWatch<
-  TKey1 extends keyof TForm['values'],
+  TDependencies1 extends keyof TForm['values'],
   TForm extends FormInstance,
-  TKey2 extends keyof TForm['values'][TKey1],
-  TKey3 extends keyof TForm['values'][TKey1][TKey2],
->(dependencies: [TKey1, TKey2, TKey3], form?: TForm): TForm['values'][TKey1][TKey2][TKey3];
+  TDependencies2 extends keyof TForm['values'][TDependencies1],
+  TDependencies3 extends keyof TForm['values'][TDependencies1][TDependencies2],
+>(
+  dependencies: [TDependencies1, TDependencies2, TDependencies3],
+  form?: TForm,
+): TForm['values'][TDependencies1][TDependencies2][TDependencies3];
 
 function useWatch<
-  TKey1 extends keyof TForm['values'],
+  TDependencies1 extends keyof TForm['values'],
   TForm extends FormInstance,
-  TKey2 extends keyof TForm['values'][TKey1],
->(dependencies: [TKey1, TKey2], form?: TForm): TForm['values'][TKey1][TKey2];
-
-function useWatch<TKey extends keyof TForm['values'], TForm extends FormInstance>(
-  dependencies: TKey | [TKey],
+  TDependencies2 extends keyof TForm['values'][TDependencies1],
+>(
+  dependencies: [TDependencies1, TDependencies2],
   form?: TForm,
-): TForm['values'][TKey];
+): TForm['values'][TDependencies1][TDependencies2];
+
+function useWatch<TDependencies extends keyof TForm['values'], TForm extends FormInstance>(
+  dependencies: TDependencies | [TDependencies],
+  form?: TForm,
+): TForm['values'][TDependencies];
 
 function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TForm): any;
 
