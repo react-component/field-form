@@ -30,6 +30,16 @@ RefForm.List = List;
 RefForm.useForm = useForm;
 RefForm.useWatch = useWatch;
 
-export { FormInstance, Field, List, useForm, FormProvider, FormProps, FieldContext, ListContext };
+export {
+  FormInstance,
+  Field,
+  List,
+  useForm,
+  FormProvider,
+  FormProps,
+  FieldContext,
+  ListContext,
+  useWatch,
+};
 
 export default RefForm;
