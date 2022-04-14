@@ -6,7 +6,12 @@ import type { InternalFormInstance, NamePath, Store } from './interface';
 import { useState, useContext, useEffect, useRef } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
-const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormInstance) => {
+function useWatch<
+  TKey extends keyof TObject['values'] | string | number,
+  TObject extends FormInstance,
+>(path: TKey | TKey[], object?: TObject): TObject['values'][TKey];
+
+function useWatch<ValueType = Store>(dependencies: NamePath = [], form?: FormInstance) {
   const [value, setValue] = useState<ValueType>();
   const valueCacheRef = useRef<ValueType>();
   valueCacheRef.current = value;
@@ -57,6 +62,6 @@ const useWatch = <ValueType = Store>(dependencies: NamePath = [], form?: FormIns
   );
 
   return value;
-};
+}
 
 export default useWatch;
