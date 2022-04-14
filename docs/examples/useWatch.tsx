@@ -26,6 +26,7 @@ const Demo = React.memo(() => {
 });
 const Demo2 = React.memo(() => {
   const values = Form.useWatch<FieldType['demo2']>(['demo2']);
+
   console.log('demo2 watch', values);
   return (
     <Field name="demo2">
@@ -39,6 +40,7 @@ export default () => {
   const [visible, setVisible] = useState(true);
   const [visible2, setVisible2] = useState(true);
   const [visible3, setVisible3] = useState(true);
+  const values = Form.useWatch([], form);
   const main = Form.useWatch('main', form);
   const age = Form.useWatch(['age'], form);
   const demo1 = Form.useWatch(['demo1'], form);
@@ -47,7 +49,7 @@ export default () => {
   const demo4 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4'], form);
   const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
   const more = Form.useWatch(['age', 'name', 'gender'], form);
-  console.log('main watch', demo1, demo2, main, age, demo3, demo4, demo5, more);
+  console.log('main watch', values, demo1, demo2, main, age, demo3, demo4, demo5, more);
   return (
     <>
       <Form
