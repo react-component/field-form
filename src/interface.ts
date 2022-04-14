@@ -241,7 +241,6 @@ export interface FormInstance<Values = any> {
 
   // New API
   submit: () => void;
-  values?: Values;
 }
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
