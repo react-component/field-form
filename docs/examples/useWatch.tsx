@@ -23,7 +23,13 @@ const Demo2 = React.memo(() => {
   );
 });
 
-type FieldType = { main?: string; name?: string; age?: string; id?: number };
+type FieldType = {
+  main?: string;
+  name?: string;
+  age?: string;
+  id?: number;
+  obj?: { demo?: { demo2?: string } };
+};
 
 export default () => {
   const [form] = Form.useForm<FieldType>();
@@ -32,7 +38,8 @@ export default () => {
   const [visible3, setVisible3] = useState(true);
   const main = Form.useWatch(['main'], form);
   const name = Form.useWatch(['name'], form);
-  console.log('main watch', main, name);
+  const obj = Form.useWatch(['obj', 'demo'], form);
+  console.log('main watch', obj, main, name);
   return (
     <>
       <Form
