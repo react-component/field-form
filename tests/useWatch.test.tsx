@@ -275,4 +275,33 @@ describe('useWatch', () => {
       });
     expect(renderTime).toEqual(2);
   });
+  it('typescript', () => {
+    type FieldType = {
+      main?: string;
+      name?: string;
+      age?: number;
+      gender?: boolean;
+      demo?: string;
+      demo2?: string;
+      id?: number;
+      demo1?: { demo2?: { demo3?: { demo4?: string } } };
+    };
+
+    const Demo = () => {
+      const [form] = Form.useForm<FieldType>();
+      const main = Form.useWatch('main', form);
+      const age = Form.useWatch(['age'], form);
+      const demo1 = Form.useWatch(['demo1'], form);
+      const demo2 = Form.useWatch(['demo1', 'demo2'], form);
+      const demo3 = Form.useWatch(['demo1', 'demo2', 'demo3'], form);
+      const demo4 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4'], form);
+      const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
+      const more = Form.useWatch(['age', 'name', 'gender'], form);
+      const demo = Form.useWatch<string>(['demo']);
+
+      return <>{JSON.stringify({ main, age, demo1, demo2, demo3, demo4, demo5, more, demo })}</>;
+    };
+
+    mount(<Demo />);
+  });
 });
