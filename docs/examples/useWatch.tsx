@@ -8,10 +8,11 @@ type FieldType = {
   main?: string;
   name?: string;
   age?: number;
+  gender?: boolean;
   demo?: string;
   demo2?: string;
   id?: number;
-  obj?: { demo?: { demo2?: string } };
+  demo1?: { demo2?: { demo3?: { demo4?: string } } };
 };
 
 const Demo = React.memo(() => {
@@ -38,10 +39,15 @@ export default () => {
   const [visible, setVisible] = useState(true);
   const [visible2, setVisible2] = useState(true);
   const [visible3, setVisible3] = useState(true);
-  const main = Form.useWatch(['main'], form);
-  const name = Form.useWatch(['name'], form);
-  const obj = Form.useWatch(['obj', 'demo', 'demo2'], form);
-  console.log('main watch', obj, main, name);
+  const main = Form.useWatch('main', form);
+  const age = Form.useWatch(['age'], form);
+  const demo1 = Form.useWatch(['demo1'], form);
+  const demo2 = Form.useWatch(['demo1', 'demo2'], form);
+  const demo3 = Form.useWatch(['demo1', 'demo2', 'demo3'], form);
+  const demo4 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4'], form);
+  const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
+  const more = Form.useWatch(['age', 'name', 'gender'], form);
+  console.log('main watch', demo1, demo2, main, age, demo3, demo4, demo5, more);
   return (
     <>
       <Form
