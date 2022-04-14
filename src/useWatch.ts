@@ -7,35 +7,35 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
 function useWatch<
-  TKey1 extends keyof TObject['values'],
-  TObject extends FormInstance,
-  TKey2 extends keyof TObject['values'][TKey1],
-  TKey3 extends keyof TObject['values'][TKey1][TKey2],
-  TKey4 extends keyof TObject['values'][TKey1][TKey2][TKey3],
+  TKey1 extends keyof TForm['values'],
+  TForm extends FormInstance,
+  TKey2 extends keyof TForm['values'][TKey1],
+  TKey3 extends keyof TForm['values'][TKey1][TKey2],
+  TKey4 extends keyof TForm['values'][TKey1][TKey2][TKey3],
 >(
-  path: [TKey1, TKey2, TKey3, TKey4],
-  object?: TObject,
-): TObject['values'][TKey1][TKey2][TKey3][TKey4];
+  dependencies: [TKey1, TKey2, TKey3, TKey4],
+  form?: TForm,
+): TForm['values'][TKey1][TKey2][TKey3][TKey4];
 
 function useWatch<
-  TKey1 extends keyof TObject['values'],
-  TObject extends FormInstance,
-  TKey2 extends keyof TObject['values'][TKey1],
-  TKey3 extends keyof TObject['values'][TKey1][TKey2],
->(path: [TKey1, TKey2, TKey3], object?: TObject): TObject['values'][TKey1][TKey2][TKey3];
+  TKey1 extends keyof TForm['values'],
+  TForm extends FormInstance,
+  TKey2 extends keyof TForm['values'][TKey1],
+  TKey3 extends keyof TForm['values'][TKey1][TKey2],
+>(dependencies: [TKey1, TKey2, TKey3], form?: TForm): TForm['values'][TKey1][TKey2][TKey3];
 
 function useWatch<
-  TKey1 extends keyof TObject['values'],
-  TObject extends FormInstance,
-  TKey2 extends keyof TObject['values'][TKey1],
->(path: [TKey1, TKey2], object?: TObject): TObject['values'][TKey1][TKey2];
+  TKey1 extends keyof TForm['values'],
+  TForm extends FormInstance,
+  TKey2 extends keyof TForm['values'][TKey1],
+>(dependencies: [TKey1, TKey2], form?: TForm): TForm['values'][TKey1][TKey2];
 
-function useWatch<TKey extends keyof TObject['values'], TObject extends FormInstance>(
-  path: TKey | [TKey],
-  object?: TObject,
-): TObject['values'][TKey];
+function useWatch<TKey extends keyof TForm['values'], TForm extends FormInstance>(
+  dependencies: TKey | [TKey],
+  form?: TForm,
+): TForm['values'][TKey];
 
-function useWatch<TObject extends FormInstance>(path: NamePath, object?: TObject): any;
+function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TForm): any;
 
 function useWatch<ValueType = Store>(dependencies: NamePath): ValueType;
 
