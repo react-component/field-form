@@ -68,7 +68,7 @@ export type RuleObject = BaseRule & Partial<ValidatorRule>;
 
 export type Rule = RuleObject | RuleRender;
 
-export interface InternalRule extends Omit<RuleObject, 'validator'> {
+export interface InternalRule extends RuleObject {
   field?: string;
   fullField?: string;
   fullFields?: string[];
