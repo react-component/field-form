@@ -19,12 +19,15 @@ function useWatch<
   TKey2 extends keyof TObject['values'][TKey1],
 >(path: [TKey1, TKey2], object?: TObject): TObject['values'][TKey1][TKey2];
 
-function useWatch<TObject extends FormInstance>(path: any, object?: TObject): any;
-
 function useWatch<TKey extends keyof TObject['values'], TObject extends FormInstance>(
   path: TKey | TKey[],
   object?: TObject,
 ): TObject['values'][TKey];
+
+function useWatch<TKey extends any, TObject extends FormInstance>(
+  path: TKey[],
+  object?: TObject,
+): any;
 
 function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
 
