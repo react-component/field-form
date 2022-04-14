@@ -43,7 +43,7 @@ function useWatch<TDependencies extends keyof TForm['values'], TForm extends For
 
 function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TForm): any;
 
-function useWatch<ValueType = Store>(dependencies: NamePath): ValueType;
+function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
 
 function useWatch(dependencies: NamePath = [], form?: FormInstance) {
   const [value, setValue] = useState<any>();
