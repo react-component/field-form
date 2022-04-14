@@ -39,7 +39,8 @@ export default () => {
   const main = Form.useWatch(['main'], form);
   const name = Form.useWatch(['name'], form);
   const obj = Form.useWatch(['obj', 'demo'], form);
-  console.log('main watch', obj, main, name);
+  const obj2 = Form.useWatch<FieldType>([], form);
+  console.log('main watch', obj, main, name, obj2);
   return (
     <>
       <Form
