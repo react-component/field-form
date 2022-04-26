@@ -25,6 +25,8 @@ function replaceMessage(template: string, kv: Record<string, string>): string {
   });
 }
 
+const CODE_LOGIC_ERROR = 'CODE_LOGIC_ERROR';
+
 async function validateRule(
   name: string,
   value: StoreValue,
@@ -38,6 +40,18 @@ async function validateRule(
   // https://github.com/react-component/field-form/issues/316
   // https://github.com/react-component/field-form/issues/313
   delete (cloneRule as any).ruleIndex;
+
+  if (cloneRule.validator) {
+    const originValidator = cloneRule.validator;
+    cloneRule.validator = (...args) => {
+      try {
+        return originValidator(...args);
+      } catch (error) {
+        console.error(error);
+        return Promise.reject(CODE_LOGIC_ERROR);
+      }
+    };
+  }
 
   // We should special handle array validate
   let subRuleField: RuleObject = null;
@@ -59,15 +73,14 @@ async function validateRule(
     await Promise.resolve(validator.validate({ [name]: value }, { ...options }));
   } catch (errObj) {
     if (errObj.errors) {
-      result = errObj.errors.map(({ message }, index) =>
-        // Wrap ReactNode with `key`
-        React.isValidElement(message)
-          ? React.cloneElement(message, { key: `error_${index}` })
-          : message,
-      );
-    } else {
-      console.error(errObj);
-      result = [messages.default];
+      result = errObj.errors.map(({ message }, index: number) => {
+        const mergedMessage = message === CODE_LOGIC_ERROR ? messages.default : message;
+
+        return React.isValidElement(mergedMessage)
+          ? // Wrap ReactNode with `key`
+            React.cloneElement(mergedMessage, { key: `error_${index}` })
+          : mergedMessage;
+      });
     }
   }
 
