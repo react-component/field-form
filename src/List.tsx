@@ -70,7 +70,7 @@ const List: React.FunctionComponent<ListProps> = ({
     return null;
   }
 
-  const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }) => {
+  const shouldUpdate = (prevValue: StoreValue, nextValue: StoreValue, { source }: any) => {
     if (source === 'internal') {
       return false;
     }
@@ -98,7 +98,7 @@ const List: React.FunctionComponent<ListProps> = ({
              * Always get latest value in case user update fields by `form` api.
              */
             const operations: ListOperations = {
-              add: (defaultValue, index?: number) => {
+              add: (defaultValue, index = 0) => {
                 // Mapping keys
                 const newValue = getNewValue();
 

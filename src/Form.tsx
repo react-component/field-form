@@ -65,35 +65,35 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setValidateMessages,
     setPreserve,
     destroyForm,
-  } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
+  } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK) || {};
 
   // Pass ref with form instance
   React.useImperativeHandle(ref, () => formInstance);
 
   // Register form into Context
   React.useEffect(() => {
-    formContext.registerForm(name, formInstance);
+    formContext.registerForm(name as string, formInstance);
     return () => {
-      formContext.unregisterForm(name);
+      formContext.unregisterForm(name as string);
     };
   }, [formContext, formInstance, name]);
 
   // Pass props to store
-  setValidateMessages({
+  setValidateMessages?.({
     ...formContext.validateMessages,
     ...validateMessages,
   });
-  setCallbacks({
+  setCallbacks?.({
     onValuesChange,
     onFieldsChange: (changedFields: FieldData[], ...rest) => {
-      formContext.triggerFormChange(name, changedFields);
+      formContext.triggerFormChange(name as string, changedFields);
 
       if (onFieldsChange) {
         onFieldsChange(changedFields, ...rest);
       }
     },
     onFinish: (values: Store) => {
-      formContext.triggerFormFinish(name, values);
+      formContext.triggerFormFinish(name as string, values);
 
       if (onFinish) {
         onFinish(values);
@@ -101,11 +101,11 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     },
     onFinishFailed,
   });
-  setPreserve(preserve);
+  setPreserve?.(preserve);
 
   // Set initial value, init store value when first mount
-  const mountRef = React.useRef(null);
-  setInitialValues(initialValues, !mountRef.current);
+  const mountRef = React.useRef<boolean>();
+  setInitialValues?.(initialValues || {}, !mountRef.current);
   if (!mountRef.current) {
     mountRef.current = true;
   }
@@ -127,7 +127,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   }
 
   // Not use subscribe when using render props
-  useSubscribe(!childrenRenderProps);
+  useSubscribe?.(!childrenRenderProps);
 
   // Listen if fields provided. We use ref to save prev data here to avoid additional render
   const prevFieldsRef = React.useRef<FieldData[] | undefined>();
