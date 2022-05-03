@@ -81,7 +81,16 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
       const { getFieldsValue, getInternalHooks } = formInstance;
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
-      const cancelRegister = registerWatch(store => {
+      const cancelRegister = registerWatch((store, namePathList) => {
+        // Check if update affects this namePath
+        const needsUpdate = namePathList.some((path) =>
+          path.every((unit, i) => unit === namePathRef.current[i])
+        )
+
+        if (!needsUpdate) {
+          return
+        }
+
         const newValue = getValue(store, namePathRef.current);
         if (valueCacheRef.current !== newValue) {
           setValue(newValue);
