@@ -321,15 +321,15 @@ describe('useWatch', () => {
 
       React.useEffect(() => {
         updateA += 1;
-        console.log('Update A');
+        console.log('Update A', userA);
       }, [userA]);
       React.useEffect(() => {
         updateB += 1;
-        console.log('Update B');
+        console.log('Update B', userB);
       }, [userB]);
 
       return (
-        <Form>
+        <Form form={form}>
           <Field name={['a', 'name']}>
             <Input />
           </Field>
@@ -341,6 +341,8 @@ describe('useWatch', () => {
     };
 
     const wrapper = mount(<Demo />);
+
+    console.log('Change!');
     wrapper
       .find('input')
       .first()
