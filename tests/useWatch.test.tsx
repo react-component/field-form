@@ -275,6 +275,7 @@ describe('useWatch', () => {
       });
     expect(renderTime).toEqual(2);
   });
+
   it('typescript', () => {
     type FieldType = {
       main?: string;
@@ -306,5 +307,43 @@ describe('useWatch', () => {
     };
 
     mount(<Demo />);
+  });
+
+  // https://github.com/react-component/field-form/issues/431
+  it('not trigger effect', () => {
+    let updateA = 0;
+    let updateB = 0;
+
+    const Demo = () => {
+      const [form] = Form.useForm();
+      const userA = Form.useWatch(['a'], form);
+      const userB = Form.useWatch(['b'], form);
+
+      React.useEffect(() => {
+        updateA += 1;
+      }, [userA]);
+      React.useEffect(() => {
+        updateB += 1;
+      }, [userB]);
+
+      return (
+        <Form>
+          <Field name={['a', 'name']}>
+            <Input />
+          </Field>
+          <Field name={['b', 'name']}>
+            <Input />
+          </Field>
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    wrapper
+      .find('input')
+      .first()
+      .simulate('change', { target: { value: 'bamboo' } });
+
+    expect(updateA > updateB).toBeTruthy();
   });
 });
