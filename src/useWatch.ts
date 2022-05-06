@@ -3,11 +3,19 @@ import { FieldContext } from '.';
 import warning from 'rc-util/lib/warning';
 import { HOOK_MARK } from './FieldContext';
 import type { InternalFormInstance, NamePath, Store } from './interface';
-import { useState, useContext, useEffect, useRef } from 'react';
+import { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
+
+function stringify(value: any) {
+  try {
+    return JSON.stringify(value);
+  } catch (err) {
+    return Math.random();
+  }
+}
 
 function useWatch<
   TDependencies1 extends keyof GetGeneric<TForm>,
@@ -52,8 +60,10 @@ function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance
 
 function useWatch(dependencies: NamePath = [], form?: FormInstance) {
   const [value, setValue] = useState<any>();
-  const valueCacheRef = useRef<any>();
-  valueCacheRef.current = value;
+
+  const valueStr = useMemo(() => stringify(value), [value]);
+  const valueStrRef = useRef(valueStr);
+  valueStrRef.current = valueStr;
 
   const fieldContext = useContext(FieldContext);
   const formInstance = (form as InternalFormInstance) || fieldContext;
@@ -83,7 +93,10 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
       const cancelRegister = registerWatch(store => {
         const newValue = getValue(store, namePathRef.current);
-        if (valueCacheRef.current !== newValue) {
+        const nextValueStr = stringify(newValue);
+
+        // Compare stringify in case it's nest object
+        if (valueStrRef.current !== nextValueStr) {
           setValue(newValue);
         }
       });
