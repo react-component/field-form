@@ -321,9 +321,11 @@ describe('useWatch', () => {
 
       React.useEffect(() => {
         updateA += 1;
+        console.log('Update A');
       }, [userA]);
       React.useEffect(() => {
         updateB += 1;
+        console.log('Update B');
       }, [userB]);
 
       return (
