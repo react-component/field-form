@@ -31,10 +31,10 @@ export function setValue(
 }
 
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
-  let newStore = {};
+  const newStore = store;
   namePathList.forEach(namePath => {
     const value = getValue(store, namePath);
-    newStore = setValue(newStore, namePath, value);
+    setValue(newStore, namePath, value);
   });
 
   return newStore;
