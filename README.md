@@ -215,7 +215,7 @@ Validate Messages provides a list of error template. You can ref [here](https://
 
 `rc-field-form` is try to keep sync with `rc-form` in api level, but there still have something to change:
 
-### 1. Field will not keep snyc with `initialValues` when un-touched
+### 1. Field will not keep sync with `initialValues` when un-touched
 
 In `rc-form`, field value will get from `initialValues` if user not operate on it.
 It's a bug but user use as a feature which makes fixing will be a breaking change and we have to keep it.
