@@ -1,32 +1,33 @@
-import * as React from 'react';
 import warning from 'rc-util/lib/warning';
+import * as React from 'react';
+import { HOOK_MARK } from './FieldContext';
 import type {
   Callbacks,
   FieldData,
   FieldEntity,
   FieldError,
-  InternalNamePath,
+  FormInstance,
+  InternalFieldData,
+  InternalFormInstance,
   InternalHooks,
+  InternalNamePath,
+  InternalValidateFields,
+  Meta,
   NamePath,
   NotifyInfo,
-  Store,
-  ValidateOptions,
-  FormInstance,
-  ValidateMessages,
-  InternalValidateFields,
-  InternalFormInstance,
-  ValidateErrorEntity,
-  StoreValue,
-  Meta,
-  InternalFieldData,
-  ValuedNotifyInfo,
   RuleError,
+  Store,
+  StoreValue,
+  ValidateErrorEntity,
+  ValidateMessages,
+  ValidateOptions,
+  ValuedNotifyInfo,
   WatchCallBack,
 } from './interface';
-import { HOOK_MARK } from './FieldContext';
 import { allPromiseFinish } from './utils/asyncUtil';
-import NameMap from './utils/NameMap';
+import cloneDeep from './utils/cloneDeep';
 import { defaultValidateMessages } from './utils/messages';
+import NameMap from './utils/NameMap';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -36,7 +37,6 @@ import {
   setValue,
   setValues,
 } from './utils/valueUtil';
-import cloneDeep from './utils/cloneDeep';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -157,7 +157,7 @@ export class FormStore {
   private destroyForm = () => {
     const prevWithoutPreserves = new NameMap<boolean>();
     this.getFieldEntities(true).forEach(entity => {
-      if (!entity.isPreserve()) {
+      if (!this.isMergedPreserve(entity.isPreserve())) {
         prevWithoutPreserves.set(entity.getNamePath(), true);
       }
     });
@@ -604,6 +604,11 @@ export class FormStore {
     }
   };
 
+  private isMergedPreserve = (fieldPreserve?: boolean) => {
+    const mergedPreserve = fieldPreserve !== undefined ? fieldPreserve : this.preserve;
+    return mergedPreserve ?? true;
+  };
+
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
@@ -622,10 +627,9 @@ export class FormStore {
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
-      // Clean up store value if not preserve
-      const mergedPreserve = preserve !== undefined ? preserve : this.preserve;
 
-      if (mergedPreserve === false && (!isListField || subNamePath.length > 1)) {
+      // Clean up store value if not preserve
+      if (!this.isMergedPreserve(preserve) && (!isListField || subNamePath.length > 1)) {
         const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
 
         if (
