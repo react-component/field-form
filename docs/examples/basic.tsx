@@ -1,43 +1,37 @@
+import Form, { Field } from 'rc-field-form';
 import React from 'react';
-import Form, { Field, FormInstance } from 'rc-field-form';
 import Input from './components/Input';
 
 export default () => {
   const [form] = Form.useForm();
-  const [show, setShow] = React.useState(true);
-  const [timeoutShow, setTimeoutShow] = React.useState(show);
-
-  React.useEffect(() => {
-    if (show) {
-      console.log(
-        'show',
-      );
-      form.setFieldsValue({
-        name: '123',
-      });
-    }
-
-    const id = setTimeout(() =>{
-      setTimeoutShow(show);
-    }, 300);
-
-    return () => clearTimeout(id);
-  }, [show]);
-
-
 
   return (
-    <>
-      <button onClick={() =>{
-        setShow(!show);
-      }}>Trigger</button>
-      {
-        timeoutShow && <Form form={form}>
-          <Form.Field name="name">
-            <Input />
-          </Form.Field>
-        </Form>
-      }
-    </>
+    <Form form={form} preserve={false}>
+      <Field name="name">
+        <Input placeholder="Username" />
+      </Field>
+
+      <Field dependencies={['name']}>
+        {() => {
+          return form.getFieldValue('name') === '1' ? (
+            <Field name="password">
+              <Input placeholder="Password" />
+            </Field>
+          ) : null;
+        }}
+      </Field>
+
+      <Field dependencies={['password']}>
+        {() => {
+          const password = form.getFieldValue('password');
+          console.log('>>>', password);
+          return password ? (
+            <Field name="password2">
+              <Input placeholder="Password 2" />
+            </Field>
+          ) : null;
+        }}
+      </Field>
+    </Form>
   );
 };
