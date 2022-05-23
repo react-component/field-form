@@ -1,7 +1,8 @@
 /* eslint-disable no-template-curly-in-string, arrow-body-style */
-import React from 'react';
 import { mount } from 'enzyme';
-import Form, { FormInstance } from '../src';
+import React from 'react';
+import type { FormInstance } from '../src';
+import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
@@ -437,6 +438,38 @@ describe('Form.Preserve', () => {
       expect(wrapper.exists('#password')).toBeFalsy();
       expect(wrapper.exists('#password2')).toBeFalsy();
     });
+  });
+
+  it('should correct calculate preserve state', () => {
+    let instance: FormInstance;
+
+    const VisibleDemo = ({ visible = true }: { visible?: boolean }) => {
+      const [form] = Form.useForm();
+      instance = form;
+
+      return visible ? (
+        <Form form={form}>
+          <Form.Field name="name">
+            <Input />
+          </Form.Field>
+        </Form>
+      ) : (
+        <div />
+      );
+    };
+
+    const wrapper = mount(<VisibleDemo />);
+
+    wrapper.setProps({
+      visible: false,
+    });
+
+    instance.setFieldsValue({ name: 'bamboo' });
+    wrapper.setProps({
+      visible: true,
+    });
+
+    expect(wrapper.find('input').prop('value')).toEqual('bamboo');
   });
 });
 /* eslint-enable no-template-curly-in-string */
