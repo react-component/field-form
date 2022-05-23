@@ -32,6 +32,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFinishFailed?: Callbacks<Values>['onFinishFailed'];
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
+  _getSortFields?: (sortFields: string[]) => void
 }
 
 const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
@@ -49,6 +50,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFieldsChange,
     onFinish,
     onFinishFailed,
+    _getSortFields,
     ...restProps
   }: FormProps,
   ref,
@@ -125,6 +127,12 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   } else {
     childrenNode = children;
   }
+
+  React.useMemo(()=>{
+    if(_getSortFields) {
+      _getSortFields(childrenNode.filter(item=>(typeof item === 'object'&&item.props.name)).map(item=>item.props.name));
+    }
+  },[_getSortFields, childrenNode.filter(item=>(typeof item === 'object'&&item.props.name)).map(item=>item.props.name).join('')])
 
   // Not use subscribe when using render props
   useSubscribe(!childrenRenderProps);
