@@ -132,7 +132,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     if(_getSortFields) {
       _getSortFields(childrenNode.filter(item=>(typeof item === 'object'&&item.props.name)).map(item=>item.props.name));
     }
-  },[_getSortFields, childrenNode.filter(item=>(typeof item === 'object'&&item.props.name)).map(item=>item.props.name).join('')])
+  },[_getSortFields])
 
   // Not use subscribe when using render props
   useSubscribe(!childrenRenderProps);
