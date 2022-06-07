@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { mount } from 'enzyme';
 import type { FormInstance } from '../src';
 import { List } from '../src';
@@ -349,5 +349,40 @@ describe('useWatch', () => {
       .simulate('change', { target: { value: 'bamboo' } });
 
     expect(updateA > updateB).toBeTruthy();
+  });
+
+  it('mount while unmount', () => {
+    const Demo = () => {
+      const [form] = Form.useForm();
+      const [type, setType] = useState(true);
+      const name = Form.useWatch<string>('name', form);
+
+      return (
+        <Form form={form}>
+          <button type="button" onClick={() => setType(c => !c)}>
+            type
+          </button>
+          {type && (
+            <Field name="name">
+              <Input />
+            </Field>
+          )}
+          {!type && (
+            <Field name="name">
+              <Input />
+            </Field>
+          )}
+          <div className="value">{name}</div>
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    wrapper
+      .find('input')
+      .first()
+      .simulate('change', { target: { value: 'bamboo' } });
+    wrapper.find('button').at(0).simulate('click');
+    expect(wrapper.find('.value').text()).toEqual('bamboo');
   });
 });

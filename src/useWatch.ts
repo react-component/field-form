@@ -97,6 +97,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
         // Compare stringify in case it's nest object
         if (valueStrRef.current !== nextValueStr) {
+          valueStrRef.current = nextValueStr;
           setValue(newValue);
         }
       });
