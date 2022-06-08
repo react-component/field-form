@@ -3,7 +3,7 @@ import { FieldContext } from '.';
 import warning from 'rc-util/lib/warning';
 import { HOOK_MARK } from './FieldContext';
 import type { InternalFormInstance, NamePath, Store } from './interface';
-import { useState, useContext, useEffect, useRef } from 'react';
+import { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
@@ -59,8 +59,10 @@ function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TFo
 function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
 
 function useWatch(dependencies: NamePath = [], form?: FormInstance) {
-  const valueRef = useRef<any>();
-  const [, setUpdate] = useState({});
+  const [value, setValue] = useState<any>();
+
+  const valueStr = useMemo(() => stringify(value), [value]);
+  const valueStrRef = useRef(valueStr);
 
   const fieldContext = useContext(FieldContext);
   const formInstance = (form as InternalFormInstance) || fieldContext;
@@ -90,19 +92,19 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
       const cancelRegister = registerWatch(store => {
         const newValue = getValue(store, namePathRef.current);
+        const nextValueStr = stringify(newValue);
+
         // Compare stringify in case it's nest object
-        if (stringify(valueRef.current) !== stringify(newValue)) {
-          valueRef.current = newValue;
-          setUpdate({});
+        if (valueStrRef.current !== nextValueStr) {
+          valueStrRef.current = nextValueStr;
+          setValue(newValue);
         }
       });
 
       // TODO: We can improve this perf in future
       const initialValue = getValue(getFieldsValue(), namePathRef.current);
-      if (initialValue !== undefined) {
-        valueRef.current = initialValue;
-        setUpdate({});
-      }
+      setValue(initialValue);
+
       return cancelRegister;
     },
 
@@ -111,7 +113,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
     [],
   );
 
-  return valueRef.current;
+  return value;
 }
 
 export default useWatch;
