@@ -90,10 +90,8 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
       const cancelRegister = registerWatch(store => {
         const newValue = getValue(store, namePathRef.current);
-        const nextValueStr = stringify(newValue);
-
         // Compare stringify in case it's nest object
-        if (stringify(valueRef.current) !== nextValueStr) {
+        if (stringify(valueRef.current) !== stringify(newValue)) {
           valueRef.current = newValue;
           setUpdate({});
         }
