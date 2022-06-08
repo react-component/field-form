@@ -6,6 +6,7 @@ import Form, { Field } from '../src';
 import timeout from './common/timeout';
 import { act } from 'react-dom/test-utils';
 import { Input } from './common/InfoField';
+import { stringify } from '../src/useWatch';
 
 describe('useWatch', () => {
   let staticForm: FormInstance<any>;
@@ -384,5 +385,11 @@ describe('useWatch', () => {
       .simulate('change', { target: { value: 'bamboo' } });
     wrapper.find('button').at(0).simulate('click');
     expect(wrapper.find('.value').text()).toEqual('bamboo');
+  });
+  it('stringify error', () => {
+    const obj: any = {};
+    obj.name = obj;
+    const str = stringify(obj);
+    expect(typeof str === 'number').toBeTruthy();
   });
 });
