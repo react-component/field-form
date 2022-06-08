@@ -12,9 +12,7 @@ type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['va
 function stringify(value: any) {
   try {
     return JSON.stringify(value);
-  } catch (err) {
-    return Math.random();
-  }
+  } catch (err) {}
 }
 
 function useWatch<
