@@ -63,6 +63,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
   const valueStr = useMemo(() => stringify(value), [value]);
   const valueStrRef = useRef(valueStr);
+  valueStrRef.current = valueStr;
 
   const fieldContext = useContext(FieldContext);
   const formInstance = (form as InternalFormInstance) || fieldContext;
