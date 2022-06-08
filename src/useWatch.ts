@@ -3,7 +3,7 @@ import { FieldContext } from '.';
 import warning from 'rc-util/lib/warning';
 import { HOOK_MARK } from './FieldContext';
 import type { InternalFormInstance, NamePath, Store } from './interface';
-import { useState, useContext, useEffect, useRef, useMemo } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
@@ -59,11 +59,8 @@ function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TFo
 function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
 
 function useWatch(dependencies: NamePath = [], form?: FormInstance) {
-  const [value, setValue] = useState<any>();
-
-  const valueStr = useMemo(() => stringify(value), [value]);
-  const valueStrRef = useRef(valueStr);
-  valueStrRef.current = valueStr;
+  const valueRef = useRef<any>();
+  const [, setUpdate] = useState({});
 
   const fieldContext = useContext(FieldContext);
   const formInstance = (form as InternalFormInstance) || fieldContext;
@@ -96,16 +93,18 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
         const nextValueStr = stringify(newValue);
 
         // Compare stringify in case it's nest object
-        if (valueStrRef.current !== nextValueStr) {
-          valueStrRef.current = nextValueStr;
-          setValue(newValue);
+        if (stringify(valueRef.current) !== nextValueStr) {
+          valueRef.current = newValue;
+          setUpdate({});
         }
       });
 
       // TODO: We can improve this perf in future
       const initialValue = getValue(getFieldsValue(), namePathRef.current);
-      setValue(initialValue);
-
+      if (initialValue !== undefined) {
+        valueRef.current = initialValue;
+        setUpdate({});
+      }
       return cancelRegister;
     },
 
@@ -114,7 +113,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
     [],
   );
 
-  return value;
+  return valueRef.current;
 }
 
 export default useWatch;
