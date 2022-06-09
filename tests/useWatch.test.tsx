@@ -364,12 +364,12 @@ describe('useWatch', () => {
             type
           </button>
           {type && (
-            <Field name="name">
+            <Field name="name" key="a">
               <Input />
             </Field>
           )}
           {!type && (
-            <Field name="name">
+            <Field name="name" key="b">
               <Input />
             </Field>
           )}
