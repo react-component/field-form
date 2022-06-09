@@ -9,7 +9,7 @@ import { getNamePath, getValue } from './utils/valueUtil';
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
 
-function stringify(value: any) {
+export function stringify(value: any) {
   try {
     return JSON.stringify(value);
   } catch (err) {
@@ -97,6 +97,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
         // Compare stringify in case it's nest object
         if (valueStrRef.current !== nextValueStr) {
+          valueStrRef.current = nextValueStr;
           setValue(newValue);
         }
       });
