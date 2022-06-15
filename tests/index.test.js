@@ -1,9 +1,9 @@
-import React from 'react';
 import { mount } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
+import React from 'react';
 import Form, { Field, useForm } from '../src';
-import InfoField, { Input } from './common/InfoField';
 import { changeValue, getField, matchError } from './common';
+import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
 describe('Form.Basic', () => {
@@ -837,5 +837,47 @@ describe('Form.Basic', () => {
     wrapper.update();
 
     expect(wrapper.find('input').prop('value')).toEqual('bamboo');
+  });
+
+  it('setFieldValue', () => {
+    const formRef = React.createRef();
+
+    const Demo = () => (
+      <Form ref={formRef} initialValues={{ list: ['bamboo', 'little', 'light'] }}>
+        <Form.List name="list">
+          {fields =>
+            fields.map(field => (
+              <Field key={field.key} {...field}>
+                <Input />
+              </Field>
+            ))
+          }
+        </Form.List>
+
+        <Field name={['nest', 'target']} initialValue="nested">
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    const wrapper = mount(<Demo />);
+    expect(wrapper.find('input').map(input => input.prop('value'))).toEqual([
+      'bamboo',
+      'little',
+      'light',
+      'nested',
+    ]);
+
+    // Set
+    formRef.current.setFieldValue(['list', 1], 'tiny');
+    formRef.current.setFieldValue(['nest', 'target'], 'match');
+    wrapper.update();
+
+    expect(wrapper.find('input').map(input => input.prop('value'))).toEqual([
+      'bamboo',
+      'tiny',
+      'light',
+      'match',
+    ]);
   });
 });

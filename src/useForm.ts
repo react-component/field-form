@@ -91,6 +91,7 @@ export class FormStore {
     isFieldsValidating: this.isFieldsValidating,
     resetFields: this.resetFields,
     setFields: this.setFields,
+    setFieldValue: this.setFieldValue,
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
     submit: this.submit,
@@ -750,6 +751,15 @@ export class FormStore {
       source: 'external',
     });
     this.notifyWatch();
+  };
+
+  private setFieldValue = (name: NamePath, value: any) => {
+    this.setFields([
+      {
+        name,
+        value,
+      },
+    ]);
   };
 
   private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {

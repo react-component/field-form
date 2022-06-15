@@ -236,6 +236,7 @@ export interface FormInstance<Values = any> {
   isFieldsValidating: (nameList: NamePath[]) => boolean;
   resetFields: (fields?: NamePath[]) => void;
   setFields: (fields: FieldData[]) => void;
+  setFieldValue: (name: NamePath, value: any) => void;
   setFieldsValue: (values: RecursivePartial<Values>) => void;
   validateFields: ValidateFields<Values>;
 
