@@ -1,5 +1,5 @@
-import * as React from 'react';
 import warning from 'rc-util/lib/warning';
+import * as React from 'react';
 import type { InternalFormInstance } from './interface';
 
 export const HOOK_MARK = 'RC_FORM_INTERNAL_HOOKS';
@@ -21,6 +21,7 @@ const Context = React.createContext<InternalFormInstance>({
   isFieldsValidating: warningFunc,
   resetFields: warningFunc,
   setFields: warningFunc,
+  setFieldValue: warningFunc,
   setFieldsValue: warningFunc,
   validateFields: warningFunc,
   submit: warningFunc,
