@@ -838,4 +838,23 @@ describe('Form.Basic', () => {
 
     expect(wrapper.find('input').prop('value')).toEqual('bamboo');
   });
+
+  it('setFieldValue', () => {
+    const formRef = React.createRef();
+
+    const Demo = () => (
+      <Form ref={formRef} initialValues={{ list: ['bamboo', 'little', 'light'] }}>
+        <Form.List name="list">
+          {fields =>
+            fields.map(field => (
+              <Field key={field.key} {...field}>
+                <Input />
+              </Field>
+            ))
+          }
+        </Form.List>
+      </Form>
+    );
+    const wrapper = mount(<Demo />);
+  });
 });
