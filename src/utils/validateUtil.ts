@@ -84,7 +84,7 @@ async function validateRule(
     }
   }
 
-  if (!result.length && subRuleField) {
+  if (!result.length && subRuleField && Array.isArray(value)) {
     const subResults: string[][] = await Promise.all(
       (value as StoreValue[]).map((subValue: StoreValue, i: number) =>
         validateRule(`${name}.${i}`, subValue, subRuleField, options, messageVariables),
