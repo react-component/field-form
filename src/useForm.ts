@@ -712,6 +712,7 @@ export class FormStore {
 
   private updateValue = (name: NamePath, value: StoreValue) => {
     const namePath = getNamePath(name);
+    console.log('namePath', namePath, name);
     const prevStore = this.store;
     this.updateStore(setValue(this.store, namePath, value));
 
@@ -894,7 +895,7 @@ export class FormStore {
               const mergedErrors: string[] = [];
               const mergedWarnings: string[] = [];
 
-              ruleErrors.forEach(({ rule: { warningOnly }, errors }) => {
+              ruleErrors.forEach?.(({ rule: { warningOnly }, errors }) => {
                 if (warningOnly) {
                   mergedWarnings.push(...errors);
                 } else {
