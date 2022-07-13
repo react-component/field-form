@@ -74,7 +74,7 @@
     "np": "^5.0.3",
     "prettier": "^2.1.2",
     "react": "^16.14.0",
-    "react-dnd": "^8.0.3",
+    "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^8.0.3",
     "react-dom": "^16.14.0",
     "react-redux": "^4.4.10",
