@@ -8,8 +8,8 @@ const { Field } = Form;
 
 const Error = ({ children }) => (
   <ul style={{ color: 'red' }}>
-    {children.map(error => (
-      <li>{error}</li>
+    {children.map((error, i) => (
+      <li key={i}>{error}</li>
     ))}
   </ul>
 );
@@ -38,10 +38,6 @@ export default () => {
     console.log('Finish:', values);
   };
 
-  const onNameError = (errors: string[]) => {
-    console.log('🐞 Name Error Change:', errors);
-  };
-
   return (
     <div style={{ position: 'relative' }}>
       <h3>Validate Form</h3>
@@ -57,7 +53,7 @@ export default () => {
 
           return (
             <React.Fragment>
-              <Field name="username" rules={[{ required: true }]} onError={onNameError}>
+              <Field name="username" rules={[{ required: true }]}>
                 <Input
                   placeholder="Username"
                   onChange={({ target: { value } }) => {

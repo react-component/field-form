@@ -55,4 +55,35 @@ describe('legacy.validate-array', () => {
       );
     }
   });
+
+  // https://github.com/ant-design/ant-design/issues/36436
+  it('antd issue #36436', async () => {
+    let form;
+
+    mount(
+      <div>
+        <Form
+          ref={instance => {
+            form = instance;
+          }}
+        >
+          <Field
+            name="tags"
+            rules={[
+              {
+                type: 'array',
+                defaultField: { type: 'string' },
+              },
+            ]}
+          >
+            <input />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    expect(async () => {
+      await form.validateFields();
+    }).not.toThrow();
+  });
 });

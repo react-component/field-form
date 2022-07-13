@@ -3,7 +3,8 @@ import { FormInstance } from './interface';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';
-import FieldForm, { FormProps } from './Form';
+import type { FormProps } from './Form';
+import FieldForm from './Form';
 import { FormProvider } from './FormContext';
 import FieldContext from './FieldContext';
 import ListContext from './ListContext';
@@ -30,16 +31,8 @@ RefForm.List = List;
 RefForm.useForm = useForm;
 RefForm.useWatch = useWatch;
 
-export {
-  FormInstance,
-  Field,
-  List,
-  useForm,
-  FormProvider,
-  FormProps,
-  FieldContext,
-  ListContext,
-  useWatch,
-};
+export { FormInstance, Field, List, useForm, FormProvider, FieldContext, ListContext, useWatch };
+
+export type { FormProps };
 
 export default RefForm;

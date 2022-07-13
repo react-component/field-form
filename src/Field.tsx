@@ -401,7 +401,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
             // Get errors & warnings
             const nextErrors: string[] = [];
             const nextWarnings: string[] = [];
-            ruleErrors.forEach(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
+            ruleErrors.forEach?.(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
               if (warningOnly) {
                 nextWarnings.push(...errors);
               } else {

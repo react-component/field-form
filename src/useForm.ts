@@ -894,7 +894,7 @@ export class FormStore {
               const mergedErrors: string[] = [];
               const mergedWarnings: string[] = [];
 
-              ruleErrors.forEach(({ rule: { warningOnly }, errors }) => {
+              ruleErrors.forEach?.(({ rule: { warningOnly }, errors }) => {
                 if (warningOnly) {
                   mergedWarnings.push(...errors);
                 } else {
