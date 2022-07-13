@@ -57,7 +57,7 @@ describe('legacy.validate-array', () => {
   });
 
   // https://github.com/ant-design/ant-design/issues/36436
-  fit('antd issue #36436', async () => {
+  it('antd issue #36436', async () => {
     let form;
 
     mount(

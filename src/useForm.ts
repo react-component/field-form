@@ -712,7 +712,6 @@ export class FormStore {
 
   private updateValue = (name: NamePath, value: StoreValue) => {
     const namePath = getNamePath(name);
-    console.log('namePath', namePath, name);
     const prevStore = this.store;
     this.updateStore(setValue(this.store, namePath, value));
 
