@@ -61,7 +61,7 @@
     "@types/lodash": "^4.14.135",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@umijs/fabric": "^2.5.2",
+    "@umijs/fabric": "^3.0.0",
     "@umijs/test": "^3.2.27",
     "dumi": "^1.1.0",
     "enzyme": "^3.1.0",
