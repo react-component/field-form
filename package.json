@@ -63,7 +63,6 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@umijs/fabric": "^2.5.2",
-    "@umijs/test": "^3.2.27",
     "dumi": "^1.1.0",
     "enzyme": "^3.1.0",
     "enzyme-adapter-react-16": "^1.0.2",
@@ -79,6 +78,7 @@
     "react-dom": "^16.14.0",
     "react-redux": "^4.4.10",
     "redux": "^3.7.2",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.3",
+    "umi-test": "^1.9.7"
   }
 }
