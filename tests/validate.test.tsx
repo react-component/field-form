@@ -738,5 +738,30 @@ describe('Form.Validate', () => {
     await changeValue(getField(wrapper, 0), ['light']);
     matchError(wrapper, false);
   });
+  it('rule value = getValueProps value', async () => {
+    let ruleValue = '';
+    const wrapper = mount(
+      <Form initialValues={{ name: 'aaa' }}>
+        <Field
+          name="name"
+          getValueProps={value => ({ value: `${value}_rules` })}
+          rules={[
+            {
+              validator: (rule, value) => {
+                ruleValue = value;
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <Input />
+        </Field>
+        <button type="submit">Submit</button>
+      </Form>,
+    );
+    wrapper.find('form').simulate('submit');
+    await timeout();
+    expect(ruleValue).toBe('aaa_rules');
+  });
 });
 /* eslint-enable no-template-curly-in-string */

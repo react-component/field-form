@@ -360,7 +360,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public validateRules = (options?: ValidateOptions): Promise<RuleError[]> => {
     // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
-    const currentValue = this.getValue();
+    const currentValue = this.getValue(undefined, true);
 
     // Force change to async to avoid rule OOD under renderProps field
     const rootPromise = Promise.resolve().then(() => {
@@ -504,10 +504,18 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // ============================== Field Control ==============================
-  public getValue = (store?: Store) => {
+  public getValue = (store?: Store, isValue?: boolean) => {
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
-    return getValue(store || getFieldsValue(true), namePath);
+    let currentValue = getValue(store || getFieldsValue(true), namePath);
+    const { valuePropName, getValueProps } = this.props;
+    if (isValue) {
+      const mergedGetValueProps =
+        getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
+      currentValue = mergedGetValueProps(currentValue)[valuePropName];
+    }
+
+    return currentValue;
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
