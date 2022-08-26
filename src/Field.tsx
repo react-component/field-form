@@ -312,6 +312,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           this.reRender();
           return;
         }
+
+        // check dependencies when related fields changed
+        const hasDep =
+          namePathList &&
+          namePathList.some(p => containsNamePath(dependencies.map(getNamePath), p));
+        if (hasDep) {
+          this.reRender();
+        }
         break;
       }
 
