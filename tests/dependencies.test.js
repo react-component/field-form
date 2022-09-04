@@ -233,4 +233,33 @@ describe('Form.Dependencies', () => {
     // sync end
     expect(spy).toHaveBeenCalledTimes(3);
   });
+  it("field shouldn't rerender when setFields trigger dependencies", async () => {
+    let form;
+    const spy = jest.fn();
+    mount(
+      <Form
+        ref={instance => {
+          form = instance;
+        }}
+      >
+        <Field dependencies={['field_1']}>
+          {() => {
+            spy();
+            return 'gogogo';
+          }}
+        </Field>
+        <Field name="field_1">
+          <Input />
+        </Field>
+      </Form>,
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
+    form.setFields([
+      {
+        name: ['field_1'],
+        value: '1',
+      },
+    ]);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
 });

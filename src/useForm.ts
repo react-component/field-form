@@ -546,6 +546,7 @@ export class FormStore {
     const prevStore = this.store;
 
     const namePathList: InternalNamePath[] = [];
+    const valuesNamePathList: InternalNamePath[] = [];
 
     fields.forEach((fieldData: FieldData) => {
       const { name, errors, ...data } = fieldData;
@@ -554,7 +555,9 @@ export class FormStore {
 
       // Value
       if ('value' in data) {
-        this.updateStore(setValue(this.store, namePath, data.value));
+        const prevValue = getValue(prevStore, namePath);
+        if (prevValue !== data.value) valuesNamePathList.push(namePath);
+        this.updateValue(namePath, data.value);
       }
 
       this.notifyObservers(prevStore, [namePath], {
@@ -562,6 +565,15 @@ export class FormStore {
         data: fieldData,
       });
     });
+
+    const { onValuesChange } = this.callbacks;
+
+    if (onValuesChange && valuesNamePathList.length) {
+      const changedValues = cloneByNamePathList(this.store, valuesNamePathList);
+      onValuesChange(changedValues, this.getFieldsValue());
+    }
+
+    this.triggerOnFieldsChange(fields?.map(filed => getNamePath(filed.name)));
 
     this.notifyWatch(namePathList);
   };
