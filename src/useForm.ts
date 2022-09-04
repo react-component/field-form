@@ -556,8 +556,10 @@ export class FormStore {
       // Value
       if ('value' in data) {
         const prevValue = getValue(prevStore, namePath);
-        if (prevValue !== data.value) valuesNamePathList.push(namePath);
-        this.updateValue(namePath, data.value);
+        if (prevValue !== data.value) {
+          valuesNamePathList.push(namePath);
+          this.updateValue(namePath, data.value);
+        }
       }
 
       this.notifyObservers(prevStore, [namePath], {
