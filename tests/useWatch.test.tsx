@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { mount } from 'enzyme';
 import type { FormInstance } from '../src';
 import { List } from '../src';
@@ -394,23 +394,24 @@ describe('useWatch', () => {
   });
   it('first undefined', () => {
     const Demo = () => {
-      const formRef = useRef();
-      const name = Form.useWatch('name', formRef.current);
-
-      const [, setUpdate] = useState({});
-      useEffect(() => setUpdate({}), []);
+      const [form] = Form.useForm();
+      const [isForm, setIsForm] = useState(false);
+      const name = Form.useWatch('name', isForm && form);
 
       return (
-        <Form ref={formRef} initialValues={{ name: 'default' }}>
+        <Form form={form} initialValues={{ name: 'default' }}>
           <Field name="name" key="a">
             <Input />
           </Field>
+          <div className="setValue" onClick={() => setIsForm(true)} />
           <div className="value">{name}</div>
         </Form>
       );
     };
 
     const wrapper = mount(<Demo />);
+    expect(wrapper.find('.value').text()).toEqual('');
+    wrapper.find('.setValue').at(0).simulate('click');
     expect(wrapper.find('.value').text()).toEqual('default');
     wrapper
       .find('input')
