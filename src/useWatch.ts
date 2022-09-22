@@ -72,7 +72,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
   // Warning if not exist form instance
   if (process.env.NODE_ENV !== 'production') {
     warning(
-      isValidForm,
+      arguments.length === 2 || isValidForm,
       'useWatch requires a form instance since it can not auto detect from context.',
     );
   }
@@ -111,7 +111,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
     // We do not need re-register since namePath content is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [formInstance],
+    [isValidForm],
   );
 
   return value;
