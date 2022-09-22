@@ -111,7 +111,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
     // We do not need re-register since namePath content is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [formInstance],
   );
 
   return value;

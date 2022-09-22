@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { mount } from 'enzyme';
 import type { FormInstance } from '../src';
 import { List } from '../src';
@@ -391,5 +391,31 @@ describe('useWatch', () => {
     obj.name = obj;
     const str = stringify(obj);
     expect(typeof str === 'number').toBeTruthy();
+  });
+  it('first undefined', () => {
+    const Demo = () => {
+      const formRef = useRef();
+      const name = Form.useWatch('name', formRef.current);
+
+      const [, setUpdate] = useState({});
+      useEffect(() => setUpdate({}), []);
+
+      return (
+        <Form ref={formRef} initialValues={{ name: 'default' }}>
+          <Field name="name" key="a">
+            <Input />
+          </Field>
+          <div className="value">{name}</div>
+        </Form>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    expect(wrapper.find('.value').text()).toEqual('default');
+    wrapper
+      .find('input')
+      .at(0)
+      .simulate('change', { target: { value: 'bamboo' } });
+    expect(wrapper.find('.value').text()).toEqual('bamboo');
   });
 });
