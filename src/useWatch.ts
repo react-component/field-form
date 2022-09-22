@@ -72,7 +72,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
   // Warning if not exist form instance
   if (process.env.NODE_ENV !== 'production') {
     warning(
-      arguments.length === 2 || isValidForm,
+      arguments.length === 2 ? (form ? isValidForm : true) : isValidForm,
       'useWatch requires a form instance since it can not auto detect from context.',
     );
   }
