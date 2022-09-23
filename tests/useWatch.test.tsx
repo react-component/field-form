@@ -396,7 +396,7 @@ describe('useWatch', () => {
     const Demo = () => {
       const [form] = Form.useForm();
       const [isForm, setIsForm] = useState(false);
-      const name = Form.useWatch('name', form);
+      const name = Form.useWatch('name', isForm && form);
 
       return (
         <>
