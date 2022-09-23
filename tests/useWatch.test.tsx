@@ -396,16 +396,20 @@ describe('useWatch', () => {
     const Demo = () => {
       const [form] = Form.useForm();
       const [isForm, setIsForm] = useState(false);
-      const name = Form.useWatch('name', isForm && form);
+      const name = Form.useWatch('name', form);
 
       return (
-        <Form form={form} initialValues={{ name: 'default' }}>
-          <Field name="name" key="a">
-            <Input />
-          </Field>
+        <>
           <div className="setValue" onClick={() => setIsForm(true)} />
           <div className="value">{name}</div>
-        </Form>
+          {isForm && (
+            <Form form={form} initialValues={{ name: 'default' }}>
+              <Field name="name" key="a">
+                <Input />
+              </Field>
+            </Form>
+          )}
+        </>
       );
     };
 
