@@ -219,6 +219,7 @@ describe('useWatch', () => {
     expect(errorSpy).toHaveBeenCalledWith(
       'Warning: useWatch requires a form instance since it can not auto detect from context.',
     );
+    errorSpy.mockRestore();
   });
 
   it('no more render time', () => {
@@ -393,6 +394,7 @@ describe('useWatch', () => {
     expect(typeof str === 'number').toBeTruthy();
   });
   it('first undefined', () => {
+    const errorSpy = jest.spyOn(console, 'error');
     const Demo = () => {
       const formRef = useRef();
       const name = Form.useWatch('name', formRef.current);
@@ -420,5 +422,9 @@ describe('useWatch', () => {
       .at(0)
       .simulate('change', { target: { value: 'bamboo' } });
     expect(wrapper.find('.value').text()).toEqual('bamboo');
+    expect(errorSpy).not.toHaveBeenCalledWith(
+      'Warning: useWatch requires a form instance since it can not auto detect from context.',
+    );
+    errorSpy.mockRestore();
   });
 });
