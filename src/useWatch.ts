@@ -58,7 +58,8 @@ function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TFo
 
 function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
 
-function useWatch(dependencies: NamePath = [], form?: FormInstance) {
+function useWatch(...args: [NamePath, FormInstance]) {
+  const [dependencies = [], form] = args;
   const [value, setValue] = useState<any>();
 
   const valueStr = useMemo(() => stringify(value), [value]);
@@ -72,7 +73,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
   // Warning if not exist form instance
   if (process.env.NODE_ENV !== 'production') {
     warning(
-      isValidForm,
+      args.length === 2 ? (form ? isValidForm : true) : isValidForm,
       'useWatch requires a form instance since it can not auto detect from context.',
     );
   }
@@ -111,7 +112,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
 
     // We do not need re-register since namePath content is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [isValidForm],
   );
 
   return value;

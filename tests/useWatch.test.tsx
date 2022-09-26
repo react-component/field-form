@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { mount } from 'enzyme';
 import type { FormInstance } from '../src';
 import { List } from '../src';
@@ -219,6 +219,7 @@ describe('useWatch', () => {
     expect(errorSpy).toHaveBeenCalledWith(
       'Warning: useWatch requires a form instance since it can not auto detect from context.',
     );
+    errorSpy.mockRestore();
   });
 
   it('no more render time', () => {
@@ -391,5 +392,39 @@ describe('useWatch', () => {
     obj.name = obj;
     const str = stringify(obj);
     expect(typeof str === 'number').toBeTruthy();
+  });
+  it('first undefined', () => {
+    const errorSpy = jest.spyOn(console, 'error');
+    const Demo = () => {
+      const formRef = useRef();
+      const name = Form.useWatch('name', formRef.current);
+      const [, setUpdate] = useState({});
+
+      return (
+        <>
+          <div className="setUpdate" onClick={() => setUpdate({})} />
+          <div className="value">{name}</div>
+          <Form ref={formRef} initialValues={{ name: 'default' }}>
+            <Field name="name" key="a">
+              <Input />
+            </Field>
+          </Form>
+        </>
+      );
+    };
+
+    const wrapper = mount(<Demo />);
+    expect(wrapper.find('.value').text()).toEqual('');
+    wrapper.find('.setUpdate').at(0).simulate('click');
+    expect(wrapper.find('.value').text()).toEqual('default');
+    wrapper
+      .find('input')
+      .at(0)
+      .simulate('change', { target: { value: 'bamboo' } });
+    expect(wrapper.find('.value').text()).toEqual('bamboo');
+    expect(errorSpy).not.toHaveBeenCalledWith(
+      'Warning: useWatch requires a form instance since it can not auto detect from context.',
+    );
+    errorSpy.mockRestore();
   });
 });
