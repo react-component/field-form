@@ -561,6 +561,9 @@ export class FormStore {
         type: 'setField',
         data: fieldData,
       });
+
+      // Dependencies update
+      this.triggerDependenciesUpdate(prevStore, namePath);
     });
 
     this.notifyWatch(namePathList);
@@ -623,6 +626,9 @@ export class FormStore {
         type: 'valueUpdate',
         source: 'internal',
       });
+
+      // Dependencies update
+      this.triggerDependenciesUpdate(prevStore, namePath);
     }
 
     // un-register field callback
