@@ -738,5 +738,17 @@ describe('Form.Validate', () => {
     await changeValue(getField(wrapper, 0), ['light']);
     matchError(wrapper, false);
   });
+
+  it('filter empty rule', async () => {
+    const wrapper = mount(
+      <div>
+        <Form>
+          <InfoField name="user" rules={[{ required: true }, null]} />
+        </Form>
+      </div>,
+    );
+    await changeValue(wrapper, '');
+    matchError(wrapper, true);
+  });
 });
 /* eslint-enable no-template-curly-in-string */

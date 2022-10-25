@@ -373,14 +373,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       let filteredRules = this.getRules();
       if (triggerName) {
-        filteredRules = filteredRules.filter((rule: RuleObject) => {
-          const { validateTrigger } = rule;
-          if (!validateTrigger) {
-            return true;
-          }
-          const triggerList = toArray(validateTrigger);
-          return triggerList.includes(triggerName);
-        });
+        filteredRules = filteredRules
+          .filter(rule => rule)
+          .filter((rule: RuleObject) => {
+            const { validateTrigger } = rule;
+            if (!validateTrigger) {
+              return true;
+            }
+            const triggerList = toArray(validateTrigger);
+            return triggerList.includes(triggerName);
+          });
       }
 
       const promise = validateRules(
