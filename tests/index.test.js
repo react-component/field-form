@@ -880,4 +880,29 @@ describe('Form.Basic', () => {
       'match',
     ]);
   });
+
+  it('setFieldValue should check dependencies', () => {
+    const formRef = React.createRef();
+    let rendered = false;
+    const Demo = () => (
+      <Form ref={formRef}>
+        <Field name={['user', 'target']}>
+          <Input />
+        </Field>
+        <Field dependencies={[['user', 'target']]}>
+          {(_, __, { getFieldsValue }) => {
+            rendered = true;
+            return <pre>{JSON.stringify(getFieldsValue(), null, 2)}</pre>;
+          }}
+        </Field>
+      </Form>
+    );
+
+    const wrapper = mount(<Demo />);
+    // Set
+    rendered = false;
+    formRef.current.setFieldValue(['user', 'target'], 'setFieldValue');
+    wrapper.update();
+    expect(rendered).toBeTruthy();
+  });
 });
