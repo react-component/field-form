@@ -247,11 +247,6 @@ export interface FormInstance<Values = any> {
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
   validateFields: InternalValidateFields;
 
-  /**
-   * Passed by field context props
-   */
-  prefixName?: InternalNamePath;
-
   validateTrigger?: string | string[] | false;
 
   /**

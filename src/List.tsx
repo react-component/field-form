@@ -2,6 +2,7 @@ import * as React from 'react';
 import warning from 'rc-util/lib/warning';
 import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
 import FieldContext from './FieldContext';
+import PrefixContext from './PrefixContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
 import type { ListContextProps } from './ListContext';
@@ -45,12 +46,11 @@ const List: React.FunctionComponent<ListProps> = ({
   });
   const keyManager = keyRef.current;
 
+  const prefixNameContext = React.useContext(PrefixContext);
   const prefixName: InternalNamePath = React.useMemo(() => {
-    const parentPrefixName = getNamePath(context.prefixName) || [];
+    const parentPrefixName = getNamePath(prefixNameContext) || [];
     return [...parentPrefixName, ...getNamePath(name)];
-  }, [context.prefixName, name]);
-
-  const fieldContext = React.useMemo(() => ({ ...context, prefixName }), [context, prefixName]);
+  }, [prefixNameContext, name]);
 
   // List context
   const listContext = React.useMemo<ListContextProps>(
@@ -79,7 +79,7 @@ const List: React.FunctionComponent<ListProps> = ({
 
   return (
     <ListContext.Provider value={listContext}>
-      <FieldContext.Provider value={fieldContext}>
+      <PrefixContext.Provider value={prefixName}>
         <Field
           name={[]}
           shouldUpdate={shouldUpdate}
@@ -188,7 +188,7 @@ const List: React.FunctionComponent<ListProps> = ({
             );
           }}
         </Field>
-      </FieldContext.Provider>
+      </PrefixContext.Provider>
     </ListContext.Provider>
   );
 };
