@@ -1,5 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
-
 import { act } from 'react-dom/test-utils';
 import type { ReactWrapper } from 'enzyme';
 import timeout from './timeout';
@@ -42,7 +40,7 @@ export function matchError(
   }
 }
 
-export function getField(wrapper, index: string | number = 0) {
+export function getField(wrapper, index: string | number | string[] = 0) {
   if (typeof index === 'number') {
     return wrapper.find(Field).at(index);
   }
@@ -88,5 +86,3 @@ export async function validateFields(form, ...args) {
     await form.validateFields(...args);
   });
 }
-
-/* eslint-enable import/no-extraneous-dependencies */

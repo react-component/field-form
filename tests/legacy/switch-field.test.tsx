@@ -2,8 +2,6 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field, useForm } from '../../src';
 import { Input } from '../common/InfoField';
-import { changeValue, getField } from '../common';
-import timeout from '../common/timeout';
 
 // https://github.com/ant-design/ant-design/issues/12560
 describe('legacy.switch-field', () => {
@@ -66,21 +64,11 @@ describe('legacy.switch-field', () => {
       .simulate('change', { target: { value: 'value1' } });
     expect(Object.keys(form.getFieldsValue())).toEqual(expect.arrayContaining(['a']));
     expect(form.getFieldValue('a')).toBe('value1');
-    expect(
-      wrapper
-        .find('.one')
-        .last()
-        .getDOMNode().value,
-    ).toBe('value1');
+    expect(wrapper.find('.one').last().getDOMNode<HTMLInputElement>().value).toBe('value1');
 
     wrapper.find('.sw').simulate('click');
     expect(Object.keys(form.getFieldsValue())).toEqual(expect.arrayContaining(['a']));
     expect(form.getFieldValue('a')).toBe('value1');
-    expect(
-      wrapper
-        .find('.two')
-        .last()
-        .getDOMNode().value,
-    ).toBe('value1');
+    expect(wrapper.find('.two').last().getDOMNode<HTMLInputElement>().value).toBe('value1');
   });
 });

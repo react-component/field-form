@@ -1,18 +1,16 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
-import { Input } from '../common/InfoField';
-import { changeValue, getField, matchArray } from '../common';
-import timeout from '../common/timeout';
+import { matchArray } from '../common';
 
 describe('legacy.validate-array', () => {
-  const MyInput = ({ value = [''], onChange, ...props }) => (
+  const MyInput: React.FC<any> = ({ value = [''], onChange, ...props }) => (
     <input
       {...props}
+      value={value.join(',')}
       onChange={e => {
         onChange(e.target.value.split(','));
       }}
-      value={value.join(',')}
     />
   );
 

@@ -3,7 +3,6 @@ import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
 import { changeValue, getField, validateFields, matchArray } from '../common';
-import timeout from '../common/timeout';
 
 describe('legacy.dynamic-rule', () => {
   describe('should update errors', () => {

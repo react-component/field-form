@@ -1,5 +1,5 @@
 export default (timeout: number = 0) => {
-  return new Promise(resolve => {
+  return new Promise<void>(resolve => {
     setTimeout(resolve, timeout);
   });
 };

@@ -2,8 +2,6 @@ import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
-import { changeValue, getField } from '../common';
-import timeout from '../common/timeout';
 
 describe('legacy.form', () => {
   // https://github.com/ant-design/ant-design/issues/8386
