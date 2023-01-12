@@ -1,5 +1,6 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, fireEvent } from '@testing-library/react';
+import type { FormInstance } from '../../src';
 import Form, { Field, useForm } from '../../src';
 import { Input } from '../common/InfoField';
 
@@ -20,9 +21,9 @@ describe('legacy.switch-field', () => {
 
   // Prepare
 
-  let form;
+  let form: FormInstance = null;
 
-  const Demo = () => {
+  const Demo: React.FC = () => {
     [form] = useForm();
     const [list, setList] = React.useState(['a', 'b', 'c']);
     const [one, two, three] = list;
@@ -56,19 +57,14 @@ describe('legacy.switch-field', () => {
   };
 
   it('Preserve right fields when switch them', async () => {
-    const wrapper = mount(<Demo />);
-
-    wrapper
-      .find('.one')
-      .last()
-      .simulate('change', { target: { value: 'value1' } });
+    const { container } = render(<Demo />);
+    fireEvent.change(container.querySelector('.one'), { target: { value: 'value1' } });
     expect(Object.keys(form.getFieldsValue())).toEqual(expect.arrayContaining(['a']));
     expect(form.getFieldValue('a')).toBe('value1');
-    expect(wrapper.find('.one').last().getDOMNode<HTMLInputElement>().value).toBe('value1');
-
-    wrapper.find('.sw').simulate('click');
+    expect(container.querySelector<HTMLInputElement>('.one')?.value).toBe('value1');
+    fireEvent.click(container.querySelector<HTMLButtonElement>('.sw'));
     expect(Object.keys(form.getFieldsValue())).toEqual(expect.arrayContaining(['a']));
     expect(form.getFieldValue('a')).toBe('value1');
-    expect(wrapper.find('.two').last().getDOMNode<HTMLInputElement>().value).toBe('value1');
+    expect(container.querySelector<HTMLInputElement>('.two')?.value).toBe('value1');
   });
 });

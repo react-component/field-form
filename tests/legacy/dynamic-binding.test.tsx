@@ -1,20 +1,18 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, fireEvent } from '@testing-library/react';
+import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
 
+const getInput = (container: HTMLElement, id: string) =>
+  container.querySelector<HTMLInputElement>(id);
+
 describe('legacy.dynamic-binding', () => {
-  const getInput = (wrapper, id) => wrapper.find(id).last();
-
   it('normal input', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
-    const Test = ({ mode }) => (
-      <Form
-        ref={instance => {
-          form = instance;
-        }}
-      >
+    const Test: React.FC<any> = ({ mode }) => (
+      <Form ref={form}>
         <span>text content</span>
         {mode ? (
           <Field name="name">
@@ -33,31 +31,31 @@ describe('legacy.dynamic-binding', () => {
       </Form>
     );
 
-    const wrapper = mount(<Test mode />);
+    const { container, rerender } = render(<Test mode />);
 
-    getInput(wrapper, '#text').simulate('change', { target: { value: '123' } });
-    wrapper.setProps({ mode: false });
-    expect(getInput(wrapper, '#number').getDOMNode().value).toBe('123');
-    expect(form.getFieldValue('name')).toBe('123');
-    getInput(wrapper, '#number').simulate('change', { target: { value: '456' } });
-    wrapper.setProps({ mode: true });
-    expect(getInput(wrapper, '#text').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue('name')).toBe('456');
+    fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
 
-    const values = await form.validateFields();
+    rerender(<Test mode={false} />);
+
+    expect(getInput(container, '#number')?.value).toBe('123');
+    expect(form.current?.getFieldValue('name')).toBe('123');
+
+    fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+
+    rerender(<Test mode />);
+
+    expect(getInput(container, '#text')?.value).toBe('456');
+    expect(form.current?.getFieldValue('name')).toBe('456');
+    const values = await form.current?.validateFields();
     expect(values.name).toBe('456');
   });
 
   // [Legacy] We do not remove value in Field Form
   it('hidden input', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
-    const Test = ({ mode }) => (
-      <Form
-        ref={instance => {
-          form = instance;
-        }}
-      >
+    const Test: React.FC<any> = ({ mode }) => (
+      <Form ref={form}>
         <span>text content</span>
         {mode ? (
           <Field name="input1">
@@ -76,45 +74,46 @@ describe('legacy.dynamic-binding', () => {
       </Form>
     );
 
-    const wrapper = mount(<Test mode />);
-    getInput(wrapper, '#text1').simulate('change', { target: { value: '123' } });
-    getInput(wrapper, '#text2').simulate('change', { target: { value: '456' } });
-    expect(getInput(wrapper, '#text1').getDOMNode().value).toBe('123');
-    expect(getInput(wrapper, '#text2').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue('input1')).toBe('123');
-    expect(form.getFieldValue('input2')).toBe('456');
+    const { container, rerender } = render(<Test mode />);
+
+    fireEvent.change(getInput(container, '#text1'), { target: { value: '123' } });
+    fireEvent.change(getInput(container, '#text2'), { target: { value: '456' } });
+
+    expect(getInput(container, '#text1')?.value).toBe('123');
+    expect(getInput(container, '#text2')?.value).toBe('456');
+    expect(form.current?.getFieldValue('input1')).toBe('123');
+    expect(form.current?.getFieldValue('input2')).toBe('456');
 
     // Different with `rc-form`
-    wrapper.setProps({ mode: false });
-    expect(form.getFieldValue('input1')).toBeTruthy();
-    expect(form.getFieldValue('input2')).toBeTruthy();
 
-    wrapper.setProps({ mode: true });
-    expect(getInput(wrapper, '#text1').getDOMNode().value).toBe('123');
-    expect(getInput(wrapper, '#text2').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue('input1')).toBe('123');
-    expect(form.getFieldValue('input2')).toBe('456');
+    rerender(<Test mode={false} />);
+    expect(form.current?.getFieldValue('input1')).toBeTruthy();
+    expect(form.current?.getFieldValue('input2')).toBeTruthy();
 
-    getInput(wrapper, '#text1').simulate('change', { target: { value: '789' } });
-    expect(getInput(wrapper, '#text1').getDOMNode().value).toBe('789');
-    expect(getInput(wrapper, '#text2').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue('input1')).toBe('789');
-    expect(form.getFieldValue('input2')).toBe('456');
+    rerender(<Test mode />);
 
-    const values = await form.validateFields();
+    expect(getInput(container, '#text1')?.value).toBe('123');
+    expect(getInput(container, '#text2')?.value).toBe('456');
+    expect(form.current?.getFieldValue('input1')).toBe('123');
+    expect(form.current?.getFieldValue('input2')).toBe('456');
+
+    fireEvent.change(getInput(container, '#text1'), { target: { value: '789' } });
+
+    expect(getInput(container, '#text1')?.value).toBe('789');
+    expect(getInput(container, '#text2')?.value).toBe('456');
+    expect(form.current?.getFieldValue('input1')).toBe('789');
+    expect(form.current?.getFieldValue('input2')).toBe('456');
+
+    const values = await form.current?.validateFields();
     expect(values.input1).toBe('789');
     expect(values.input2).toBe('456');
   });
 
   it('nested fields', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
-    const Test = ({ mode }) => (
-      <Form
-        ref={instance => {
-          form = instance;
-        }}
-      >
+    const Test: React.FC<any> = ({ mode }) => (
+      <Form ref={form}>
         {mode ? (
           <Field name={['name', 'xxx']}>
             <Input id="text" />
@@ -129,31 +128,29 @@ describe('legacy.dynamic-binding', () => {
       </Form>
     );
 
-    const wrapper = mount(<Test mode />);
+    const { container, rerender } = render(<Test mode />);
 
-    getInput(wrapper, '#text').simulate('change', { target: { value: '123' } });
-    wrapper.setProps({ mode: false });
-    expect(getInput(wrapper, '#number').getDOMNode().value).toBe('123');
-    expect(form.getFieldValue(['name', 'xxx'])).toBe('123');
+    fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
 
-    getInput(wrapper, '#number').simulate('change', { target: { value: '456' } });
-    wrapper.setProps({ mode: true });
-    expect(getInput(wrapper, '#text').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue(['name', 'xxx'])).toBe('456');
+    rerender(<Test mode={false} />);
+    expect(getInput(container, '#number')?.value).toBe('123');
+    expect(form.current?.getFieldValue(['name', 'xxx'])).toBe('123');
 
-    const values = await form.validateFields();
+    fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+
+    rerender(<Test mode />);
+
+    expect(getInput(container, '#text')?.value).toBe('456');
+    expect(form.current?.getFieldValue(['name', 'xxx'])).toBe('456');
+    const values = await form.current?.validateFields();
     expect(values.name.xxx).toBe('456');
   });
 
   it('input with different keys', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
-    const Test = ({ mode }) => (
-      <Form
-        ref={instance => {
-          form = instance;
-        }}
-      >
+    const Test: React.FC<any> = ({ mode }) => (
+      <Form ref={form}>
         {mode ? (
           <Field name="name">
             <Input key="text" id="text" />
@@ -167,19 +164,23 @@ describe('legacy.dynamic-binding', () => {
       </Form>
     );
 
-    const wrapper = mount(<Test mode />);
+    const { container, rerender } = render(<Test mode />);
 
-    getInput(wrapper, '#text').simulate('change', { target: { value: '123' } });
-    wrapper.setProps({ mode: false });
-    expect(getInput(wrapper, '#number').getDOMNode().value).toBe('123');
-    expect(form.getFieldValue('name')).toBe('123');
+    fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
 
-    getInput(wrapper, '#number').simulate('change', { target: { value: '456' } });
-    wrapper.setProps({ mode: true });
-    expect(getInput(wrapper, '#text').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue('name')).toBe('456');
+    rerender(<Test mode={false} />);
 
-    const values = await form.validateFields();
+    expect(getInput(container, '#number')?.value).toBe('123');
+    expect(form.current?.getFieldValue('name')).toBe('123');
+
+    fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+
+    rerender(<Test mode />);
+
+    expect(getInput(container, '#text')?.value).toBe('456');
+    expect(form.current?.getFieldValue('name')).toBe('456');
+
+    const values = await form.current?.validateFields();
     expect(values.name).toBe('456');
   });
 
@@ -188,14 +189,10 @@ describe('legacy.dynamic-binding', () => {
   });
 
   it('reset fields', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
-    const Test = ({ mode }) => (
-      <Form
-        ref={instance => {
-          form = instance;
-        }}
-      >
+    const Test: React.FC<any> = ({ mode }) => (
+      <Form ref={form}>
         <span>text content</span>
         {mode ? (
           <Field name="input1">
@@ -214,38 +211,44 @@ describe('legacy.dynamic-binding', () => {
       </Form>
     );
 
-    const wrapper = mount(<Test mode />);
+    const { container, rerender } = render(<Test mode />);
 
-    getInput(wrapper, '#text1').simulate('change', { target: { value: '123' } });
-    getInput(wrapper, '#text2').simulate('change', { target: { value: '456' } });
-    expect(getInput(wrapper, '#text1').getDOMNode().value).toBe('123');
-    expect(getInput(wrapper, '#text2').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue('input1')).toBe('123');
-    expect(form.getFieldValue('input2')).toBe('456');
+    fireEvent.change(getInput(container, '#text1'), { target: { value: '123' } });
+    fireEvent.change(getInput(container, '#text2'), { target: { value: '456' } });
+
+    expect(getInput(container, '#text1')?.value).toBe('123');
+    expect(getInput(container, '#text2')?.value).toBe('456');
+
+    expect(form.current?.getFieldValue('input1')).toBe('123');
+    expect(form.current?.getFieldValue('input2')).toBe('456');
 
     // Different with `rc-form` test
-    wrapper.setProps({ mode: false });
-    expect(form.getFieldValue('input1')).toBeTruthy();
-    expect(form.getFieldValue('input2')).toBeTruthy();
 
-    form.resetFields();
-    wrapper.setProps({ mode: true });
-    expect(getInput(wrapper, '#text1').getDOMNode().value).toBe('');
-    expect(getInput(wrapper, '#text2').getDOMNode().value).toBe('');
-    expect(form.getFieldValue('input1')).toBe(undefined);
-    expect(form.getFieldValue('input2')).toBe(undefined);
+    rerender(<Test mode={false} />);
 
-    getInput(wrapper, '#text1').simulate('change', { target: { value: '789' } });
-    expect(getInput(wrapper, '#text1').getDOMNode().value).toBe('789');
-    expect(getInput(wrapper, '#text2').getDOMNode().value).toBe('');
-    expect(form.getFieldValue('input1')).toBe('789');
-    expect(form.getFieldValue('input2')).toBe(undefined);
+    expect(form.current?.getFieldValue('input1')).toBeTruthy();
+    expect(form.current?.getFieldValue('input2')).toBeTruthy();
 
-    getInput(wrapper, '#text2').simulate('change', { target: { value: '456' } });
-    expect(getInput(wrapper, '#text2').getDOMNode().value).toBe('456');
-    expect(form.getFieldValue('input2')).toBe('456');
+    form.current?.resetFields();
+    rerender(<Test mode />);
+    expect(getInput(container, '#text1')?.value).toBe('');
+    expect(getInput(container, '#text2')?.value).toBe('');
+    expect(form.current?.getFieldValue('input1')).toBe(undefined);
+    expect(form.current?.getFieldValue('input2')).toBe(undefined);
 
-    const values = await form.validateFields();
+    fireEvent.change(getInput(container, '#text1'), { target: { value: '789' } });
+
+    expect(getInput(container, '#text1')?.value).toBe('789');
+    expect(getInput(container, '#text2')?.value).toBe('');
+    expect(form.current?.getFieldValue('input1')).toBe('789');
+    expect(form.current?.getFieldValue('input2')).toBe(undefined);
+
+    fireEvent.change(getInput(container, '#text2'), { target: { value: '456' } });
+
+    expect(getInput(container, '#text2')?.value).toBe('456');
+    expect(form.current?.getFieldValue('input2')).toBe('456');
+
+    const values = await form.current?.validateFields();
     expect(values.input1).toBe('789');
     expect(values.input2).toBe('456');
   });
