@@ -1,6 +1,7 @@
 import { mount } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
 import React from 'react';
+import type { FormInstance } from '../src';
 import Form, { Field, useForm } from '../src';
 import { changeValue, getField, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
@@ -406,7 +407,7 @@ describe('Form.Basic', () => {
       </div>,
     );
 
-    expect(wrapper.find('.anything').props().light).toEqual('bamboo');
+    expect((wrapper.find('.anything').props() as any).light).toEqual('bamboo');
   });
 
   describe('shouldUpdate', () => {
@@ -514,7 +515,7 @@ describe('Form.Basic', () => {
 
     it('should trigger by setField', () => {
       const triggerUpdate = jest.fn();
-      const formRef = React.createRef();
+      const formRef = React.createRef<FormInstance>();
 
       const wrapper = mount(
         <div>
@@ -632,6 +633,7 @@ describe('Form.Basic', () => {
     mount(
       <div>
         <Form>
+          {/* @ts-ignore */}
           <Field>
             <h1 key="1">Light</h1>
             <h2 key="2">Bamboo</h2>
@@ -706,7 +708,7 @@ describe('Form.Basic', () => {
   });
 
   it('should not crash when return value contains target field', async () => {
-    const CustomInput = ({ value, onChange }) => {
+    const CustomInput: React.FC<any> = ({ value, onChange }) => {
       const onInputChange = e => {
         onChange({
           value: e.target.value,
@@ -749,7 +751,7 @@ describe('Form.Basic', () => {
           autoComplete="off"
         >
           <Form.List name="users">
-            {(fields, { add, remove }) => (
+            {fields => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
                   <Field
@@ -774,13 +776,13 @@ describe('Form.Basic', () => {
     };
 
     const wrapper = mount(<Demo />);
-    expect(wrapper.find('input').first().getDOMNode().value).toBe('11');
+    expect(wrapper.find('input').first().getDOMNode<HTMLInputElement>().value).toBe('11');
     wrapper.find('.reset-btn').first().simulate('click');
     expect(wrapper.find('input').length).toBe(0);
   });
 
   it('setFieldsValue should work for multiple Select', () => {
-    const Select = ({ value, defaultValue }) => {
+    const Select: React.FC<any> = ({ value, defaultValue }) => {
       return <div className="select-div">{(value || defaultValue || []).toString()}</div>;
     };
 
@@ -808,7 +810,7 @@ describe('Form.Basic', () => {
   it('remount should not clear current value', () => {
     let refForm;
 
-    const Demo = ({ remount }) => {
+    const Demo: React.FC<any> = ({ remount }) => {
       const [form] = Form.useForm();
       refForm = form;
 
@@ -840,9 +842,9 @@ describe('Form.Basic', () => {
   });
 
   it('setFieldValue', () => {
-    const formRef = React.createRef();
+    const formRef = React.createRef<FormInstance>();
 
-    const Demo = () => (
+    const Demo: React.FC = () => (
       <Form ref={formRef} initialValues={{ list: ['bamboo', 'little', 'light'] }}>
         <Form.List name="list">
           {fields =>

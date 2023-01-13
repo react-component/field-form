@@ -33,7 +33,7 @@ describe('Form.Dependencies', () => {
   });
 
   describe('initialValue', () => {
-    function test(name, formProps, fieldProps) {
+    function test(name, formProps, fieldProps = {}) {
       it(name, async () => {
         let validated = false;
 

@@ -90,7 +90,7 @@ export function matchNamePath(
 }
 
 // Like `shallowEqual`, but we not check the data which may cause re-render
-type SimilarObject = string | number | {};
+type SimilarObject = string | number | object;
 export function isSimilar(source: SimilarObject, target: SimilarObject) {
   if (source === target) {
     return true;
