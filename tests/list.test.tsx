@@ -38,7 +38,7 @@ describe('Form.List', () => {
       fields => (
         <div>
           {fields.map(field => (
-            <Field {...field}>
+            <Field {...field} key={field.key}>
               <Input />
             </Field>
           ))}
@@ -95,7 +95,7 @@ describe('Form.List', () => {
       return (
         <div>
           {fields.map(field => (
-            <Field {...field}>
+            <Field {...field} key={field.key}>
               <Input />
             </Field>
           ))}
@@ -238,7 +238,7 @@ describe('Form.List', () => {
       return (
         <div>
           {fields.map(field => (
-            <Field {...field}>
+            <Field {...field} key={field.key}>
               <Input />
             </Field>
           ))}
@@ -388,7 +388,7 @@ describe('Form.List', () => {
         (fields, { remove }) => (
           <div>
             {fields.map(field => (
-              <Field {...field} rules={[{ required: true }]}>
+              <Field {...field} key={field.key} rules={[{ required: true }]}>
                 <Input />
               </Field>
             ))}
@@ -422,7 +422,7 @@ describe('Form.List', () => {
         (fields, { remove }) => (
           <div>
             {fields.map(field => (
-              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
+              <Field {...field} key={field.key} rules={[{ required: true }, { min: 5 }]}>
                 <Input />
               </Field>
             ))}
@@ -467,7 +467,7 @@ describe('Form.List', () => {
         (fields, { add }) => (
           <div>
             {fields.map(field => (
-              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
+              <Field {...field} key={field.key} rules={[{ required: true }, { min: 5 }]}>
                 <Input />
               </Field>
             ))}
