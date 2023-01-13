@@ -1,5 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import Form, { FormProvider } from '../src';
 import InfoField from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
@@ -140,14 +141,11 @@ describe('Form.Context', () => {
   });
 
   it('do nothing if no Provider in use', () => {
-    const wrapper = mount(
+    const { rerender } = render(
       <div>
         <Form name="no" />
       </div>,
     );
-
-    wrapper.setProps({
-      children: null,
-    });
+    rerender(<div>{null}</div>);
   });
 });

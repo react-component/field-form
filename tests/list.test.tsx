@@ -329,8 +329,8 @@ describe('Form.List', () => {
       operation = opt;
       return (
         <div>
-          {fields.map(field => (
-            <Field {...field}>
+          {fields.map((field, index) => (
+            <Field key={index} {...field}>
               <Input />
             </Field>
           ))}

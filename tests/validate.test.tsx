@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
 import React from 'react';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
@@ -751,4 +750,3 @@ describe('Form.Validate', () => {
     matchError(wrapper, true);
   });
 });
-/* eslint-enable no-template-curly-in-string */
