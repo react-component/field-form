@@ -1,4 +1,5 @@
 import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
 import React from 'react';
 import type { FormInstance } from '../src';
@@ -6,74 +7,90 @@ import Form, { Field, useForm } from '../src';
 import { changeValue, getField, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
+import type { Meta } from '@/interface';
 
 describe('Form.Basic', () => {
   describe('create form', () => {
-    function renderContent() {
-      return (
-        <div>
-          <Field name="light">
-            <Input />
-          </Field>
-          <Field name="bamboo">{() => null}</Field>
-          <InfoField />
-        </div>
-      );
-    }
+    const Content: React.FC = () => (
+      <div>
+        <Field name="light">
+          <Input />
+        </Field>
+        <Field name="bamboo">{() => null}</Field>
+        <InfoField />
+      </div>
+    );
 
     it('sub component', () => {
-      const wrapper = mount(<Form>{renderContent()}</Form>);
-      expect(wrapper.find('form')).toBeTruthy();
-      expect(wrapper.find('input').length).toBe(2);
+      const { container } = render(
+        <Form>
+          <Content />
+        </Form>,
+      );
+      expect(container.querySelector<HTMLFormElement>('form')).toBeTruthy();
+      expect(container.querySelectorAll<HTMLInputElement>('input').length).toBe(2);
     });
 
     describe('component', () => {
       it('without dom', () => {
-        const wrapper = mount(<Form component={false}>{renderContent()}</Form>);
-        expect(wrapper.find('form').length).toBe(0);
-        expect(wrapper.find('input').length).toBe(2);
+        const { container } = render(
+          <Form component={false}>
+            <Content />
+          </Form>,
+        );
+        expect(container.querySelectorAll<HTMLFormElement>('form').length).toBe(0);
+        expect(container.querySelectorAll<HTMLInputElement>('input').length).toBe(2);
       });
 
       it('use string', () => {
-        const wrapper = mount(<Form component="pre">{renderContent()}</Form>);
-        expect(wrapper.find('form').length).toBe(0);
-        expect(wrapper.find('pre').length).toBe(1);
-        expect(wrapper.find('input').length).toBe(2);
+        const { container } = render(
+          <Form component="pre">
+            <Content />
+          </Form>,
+        );
+        expect(container.querySelectorAll<HTMLFormElement>('form').length).toBe(0);
+        expect(container.querySelectorAll<HTMLPreElement>('pre').length).toBe(1);
+        expect(container.querySelectorAll<HTMLInputElement>('input').length).toBe(2);
       });
 
       it('use component', () => {
-        const MyComponent = ({ children }) => <div>{children}</div>;
-        const wrapper = mount(<Form component={MyComponent}>{renderContent()}</Form>);
-        expect(wrapper.find('form').length).toBe(0);
-        expect(wrapper.find(MyComponent).length).toBe(1);
-        expect(wrapper.find('input').length).toBe(2);
+        const Component: React.FC<any> = ({ children }) => (
+          <div className="customize">{children}</div>
+        );
+        const { container } = render(
+          <Form component={Component}>
+            <Content />
+          </Form>,
+        );
+        expect(container.querySelectorAll<HTMLFormElement>('form').length).toBe(0);
+        expect(container.querySelectorAll<HTMLDivElement>('.customize').length).toBe(1);
+        expect(container.querySelectorAll<HTMLInputElement>('input').length).toBe(2);
       });
     });
 
     describe('render props', () => {
       it('normal', () => {
-        const wrapper = mount(<Form>{renderContent}</Form>);
-        expect(wrapper.find('form')).toBeTruthy();
-        expect(wrapper.find('input').length).toBe(2);
+        const { container } = render(
+          <Form>
+            <Content />
+          </Form>,
+        );
+        expect(container.querySelector<HTMLFormElement>('form')).toBeTruthy();
+        expect(container.querySelectorAll<HTMLInputElement>('input').length).toBe(2);
       });
-
       it('empty', () => {
-        const wrapper = mount(<Form>{() => null}</Form>);
-        expect(wrapper.find('form')).toBeTruthy();
+        const { container } = render(<Form>{() => null}</Form>);
+        expect(container.querySelector<HTMLFormElement>('form')).toBeTruthy();
       });
     });
   });
 
   it('fields touched', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
     const wrapper = mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <InfoField name="username" />
           <InfoField name="password" />
           <Field>{() => null}</Field>
@@ -81,36 +98,32 @@ describe('Form.Basic', () => {
       </div>,
     );
 
-    expect(form.isFieldsTouched()).toBeFalsy();
-    expect(form.isFieldsTouched(['username', 'password'])).toBeFalsy();
+    expect(form.current?.isFieldsTouched()).toBeFalsy();
+    expect(form.current?.isFieldsTouched(['username', 'password'])).toBeFalsy();
 
     await changeValue(getField(wrapper, 0), 'Bamboo');
-    expect(form.isFieldsTouched()).toBeTruthy();
-    expect(form.isFieldsTouched(['username', 'password'])).toBeTruthy();
-    expect(form.isFieldsTouched(true)).toBeFalsy();
-    expect(form.isFieldsTouched(['username', 'password'], true)).toBeFalsy();
+    expect(form.current?.isFieldsTouched()).toBeTruthy();
+    expect(form.current?.isFieldsTouched(['username', 'password'])).toBeTruthy();
+    expect(form.current?.isFieldsTouched(true)).toBeFalsy();
+    expect(form.current?.isFieldsTouched(['username', 'password'], true)).toBeFalsy();
 
     await changeValue(getField(wrapper, 1), 'Light');
-    expect(form.isFieldsTouched()).toBeTruthy();
-    expect(form.isFieldsTouched(['username', 'password'])).toBeTruthy();
-    expect(form.isFieldsTouched(true)).toBeTruthy();
-    expect(form.isFieldsTouched(['username', 'password'], true)).toBeTruthy();
+    expect(form.current?.isFieldsTouched()).toBeTruthy();
+    expect(form.current?.isFieldsTouched(['username', 'password'])).toBeTruthy();
+    expect(form.current?.isFieldsTouched(true)).toBeTruthy();
+    expect(form.current?.isFieldsTouched(['username', 'password'], true)).toBeTruthy();
   });
 
   describe('reset form', () => {
-    function resetTest(name, ...args) {
+    function resetTest(name: string, ...args) {
       it(name, async () => {
-        let form;
+        const form = React.createRef<FormInstance>();
         const onReset = jest.fn();
         const onMeta = jest.fn();
 
         const wrapper = mount(
           <div>
-            <Form
-              ref={instance => {
-                form = instance;
-              }}
-            >
+            <Form ref={form}>
               <Field
                 name="username"
                 rules={[{ required: true }]}
@@ -124,39 +137,31 @@ describe('Form.Basic', () => {
         );
 
         await changeValue(getField(wrapper, 'username'), 'Bamboo');
-        expect(form.getFieldValue('username')).toEqual('Bamboo');
-        expect(form.getFieldError('username')).toEqual([]);
-        expect(form.isFieldTouched('username')).toBeTruthy();
+        expect(form.current?.getFieldValue('username')).toEqual('Bamboo');
+        expect(form.current?.getFieldError('username')).toEqual([]);
+        expect(form.current?.isFieldTouched('username')).toBeTruthy();
         expect(onMeta).toHaveBeenCalledWith(
-          expect.objectContaining({
-            touched: true,
-            errors: [],
-            warnings: [],
-          }),
+          expect.objectContaining({ touched: true, errors: [], warnings: [] }),
         );
         expect(onReset).not.toHaveBeenCalled();
         onMeta.mockRestore();
         onReset.mockRestore();
 
-        form.resetFields(...args);
-        expect(form.getFieldValue('username')).toEqual(undefined);
-        expect(form.getFieldError('username')).toEqual([]);
-        expect(form.isFieldTouched('username')).toBeFalsy();
+        form.current?.resetFields(...args);
+        expect(form.current?.getFieldValue('username')).toEqual(undefined);
+        expect(form.current?.getFieldError('username')).toEqual([]);
+        expect(form.current?.isFieldTouched('username')).toBeFalsy();
         expect(onMeta).toHaveBeenCalledWith(
-          expect.objectContaining({
-            touched: false,
-            errors: [],
-            warnings: [],
-          }),
+          expect.objectContaining({ touched: false, errors: [], warnings: [] }),
         );
         expect(onReset).toHaveBeenCalled();
         onMeta.mockRestore();
         onReset.mockRestore();
 
         await changeValue(getField(wrapper, 'username'), '');
-        expect(form.getFieldValue('username')).toEqual('');
-        expect(form.getFieldError('username')).toEqual(["'username' is required"]);
-        expect(form.isFieldTouched('username')).toBeTruthy();
+        expect(form.current?.getFieldValue('username')).toEqual('');
+        expect(form.current?.getFieldError('username')).toEqual(["'username' is required"]);
+        expect(form.current?.isFieldTouched('username')).toBeTruthy();
         expect(onMeta).toHaveBeenCalledWith(
           expect.objectContaining({
             touched: true,
@@ -168,16 +173,12 @@ describe('Form.Basic', () => {
         onMeta.mockRestore();
         onReset.mockRestore();
 
-        form.resetFields(...args);
-        expect(form.getFieldValue('username')).toEqual(undefined);
-        expect(form.getFieldError('username')).toEqual([]);
-        expect(form.isFieldTouched('username')).toBeFalsy();
+        form.current?.resetFields(...args);
+        expect(form.current?.getFieldValue('username')).toEqual(undefined);
+        expect(form.current?.getFieldError('username')).toEqual([]);
+        expect(form.current?.isFieldTouched('username')).toBeFalsy();
         expect(onMeta).toHaveBeenCalledWith(
-          expect.objectContaining({
-            touched: false,
-            errors: [],
-            warnings: [],
-          }),
+          expect.objectContaining({ touched: false, errors: [], warnings: [] }),
         );
         expect(onReset).toHaveBeenCalled();
       });
@@ -187,15 +188,11 @@ describe('Form.Basic', () => {
     resetTest('without field name');
 
     it('not affect others', async () => {
-      let form;
+      const form = React.createRef<FormInstance>();
 
       const wrapper = mount(
         <div>
-          <Form
-            ref={instance => {
-              form = instance;
-            }}
-          >
+          <Form ref={form}>
             <Field name="username" rules={[{ required: true }]}>
               <Input />
             </Field>
@@ -209,14 +206,14 @@ describe('Form.Basic', () => {
 
       await changeValue(getField(wrapper, 'username'), 'Bamboo');
       await changeValue(getField(wrapper, 'password'), '');
-      form.resetFields(['username']);
+      form.current?.resetFields(['username']);
 
-      expect(form.getFieldValue('username')).toEqual(undefined);
-      expect(form.getFieldError('username')).toEqual([]);
-      expect(form.isFieldTouched('username')).toBeFalsy();
-      expect(form.getFieldValue('password')).toEqual('');
-      expect(form.getFieldError('password')).toEqual(["'password' is required"]);
-      expect(form.isFieldTouched('password')).toBeTruthy();
+      expect(form.current?.getFieldValue('username')).toEqual(undefined);
+      expect(form.current?.getFieldError('username')).toEqual([]);
+      expect(form.current?.isFieldTouched('username')).toBeFalsy();
+      expect(form.current?.getFieldValue('password')).toEqual('');
+      expect(form.current?.getFieldError('password')).toEqual(["'password' is required"]);
+      expect(form.current?.isFieldTouched('password')).toBeTruthy();
     });
 
     it('remove Field should trigger onMetaChange', () => {
@@ -237,7 +234,7 @@ describe('Form.Basic', () => {
   it('should throw if no Form in use', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    mount(
+    render(
       <Field>
         <Input />
       </Field>,
@@ -269,7 +266,7 @@ describe('Form.Basic', () => {
   it('onValuesChange should not return fully value', async () => {
     const onValuesChange = jest.fn();
 
-    const Demo = ({ showField = true }) => (
+    const Demo: React.FC<any> = ({ showField = true }) => (
       <Form onValuesChange={onValuesChange} initialValues={{ light: 'little' }}>
         {showField && (
           <Field name="light">
@@ -351,18 +348,14 @@ describe('Form.Basic', () => {
   it('getInternalHooks should not usable by user', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    let form;
+    const form = React.createRef<FormInstance>();
     mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        />
+        <Form ref={form} />
       </div>,
     );
 
-    expect(form.getInternalHooks()).toEqual(null);
+    expect((form.current as any)?.getInternalHooks()).toEqual(null);
 
     expect(errorSpy).toHaveBeenCalledWith(
       'Warning: `getInternalHooks` is internal usage. Should not call directly.',
@@ -372,14 +365,10 @@ describe('Form.Basic', () => {
   });
 
   it('valuePropName', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
     const wrapper = mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <Field name="check" valuePropName="checked">
             <Input type="checkbox" />
           </Field>
@@ -389,11 +378,11 @@ describe('Form.Basic', () => {
 
     wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: true } });
     await timeout();
-    expect(form.getFieldsValue()).toEqual({ check: true });
+    expect(form.current?.getFieldsValue()).toEqual({ check: true });
 
     wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: false } });
     await timeout();
-    expect(form.getFieldsValue()).toEqual({ check: false });
+    expect(form.current?.getFieldsValue()).toEqual({ check: false });
   });
 
   it('getValueProps', async () => {
@@ -412,8 +401,8 @@ describe('Form.Basic', () => {
 
   describe('shouldUpdate', () => {
     it('work', async () => {
-      let isAllTouched;
-      let hasError;
+      let isAllTouched: boolean;
+      let hasError: number;
 
       const wrapper = mount(
         <Form>
@@ -465,8 +454,8 @@ describe('Form.Basic', () => {
               return (
                 <span
                   id="holder"
-                  data-touched={form.isFieldsTouched(true)}
-                  data-value={form.getFieldsValue()}
+                  data-touched={form?.isFieldsTouched(true)}
+                  data-value={form?.getFieldsValue()}
                 />
               );
             }}
@@ -483,14 +472,10 @@ describe('Form.Basic', () => {
 
   describe('setFields', () => {
     it('should work', () => {
-      let form;
+      const form = React.createRef<FormInstance>();
       const wrapper = mount(
         <div>
-          <Form
-            ref={instance => {
-              form = instance;
-            }}
-          >
+          <Form ref={form}>
             <InfoField name="username">
               <Input />
             </InfoField>
@@ -498,19 +483,14 @@ describe('Form.Basic', () => {
         </div>,
       );
 
-      form.setFields([
-        {
-          name: 'username',
-          touched: false,
-          validating: true,
-          errors: ['Set It!'],
-        },
+      form.current?.setFields([
+        { name: 'username', touched: false, validating: true, errors: ['Set It!'] },
       ]);
       wrapper.update();
 
       matchError(wrapper, 'Set It!');
       expect(wrapper.find('.validating').length).toBeTruthy();
-      expect(form.isFieldsTouched()).toBeFalsy();
+      expect(form.current?.isFieldsTouched()).toBeFalsy();
     });
 
     it('should trigger by setField', () => {
@@ -572,16 +552,12 @@ describe('Form.Basic', () => {
   });
 
   it('setFieldsValue should clean up status', async () => {
-    let form;
-    let currentMeta;
+    const form = React.createRef<FormInstance>();
+    let currentMeta: Meta = null;
 
     const wrapper = mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <Field name="normal" rules={[{ validator: () => new Promise(() => {}) }]}>
             {(control, meta) => {
               currentMeta = meta;
@@ -593,37 +569,33 @@ describe('Form.Basic', () => {
     );
 
     // Init
-    expect(form.getFieldValue('normal')).toBe(undefined);
-    expect(form.isFieldTouched('normal')).toBeFalsy();
-    expect(form.getFieldError('normal')).toEqual([]);
+    expect(form.current?.getFieldValue('normal')).toBe(undefined);
+    expect(form.current?.isFieldTouched('normal')).toBeFalsy();
+    expect(form.current?.getFieldError('normal')).toEqual([]);
     expect(currentMeta.validating).toBeFalsy();
 
     // Set it
-    form.setFieldsValue({
-      normal: 'Light',
-    });
+    form.current?.setFieldsValue({ normal: 'Light' });
 
-    expect(form.getFieldValue('normal')).toBe('Light');
-    expect(form.isFieldTouched('normal')).toBeTruthy();
-    expect(form.getFieldError('normal')).toEqual([]);
+    expect(form.current?.getFieldValue('normal')).toBe('Light');
+    expect(form.current?.isFieldTouched('normal')).toBeTruthy();
+    expect(form.current?.getFieldError('normal')).toEqual([]);
     expect(currentMeta.validating).toBeFalsy();
 
     // Input it
     await changeValue(getField(wrapper), 'Bamboo');
 
-    expect(form.getFieldValue('normal')).toBe('Bamboo');
-    expect(form.isFieldTouched('normal')).toBeTruthy();
-    expect(form.getFieldError('normal')).toEqual([]);
+    expect(form.current?.getFieldValue('normal')).toBe('Bamboo');
+    expect(form.current?.isFieldTouched('normal')).toBeTruthy();
+    expect(form.current?.getFieldError('normal')).toEqual([]);
     expect(currentMeta.validating).toBeTruthy();
 
     // Set it again
-    form.setFieldsValue({
-      normal: 'Light',
-    });
+    form.current?.setFieldsValue({ normal: 'Light' });
 
-    expect(form.getFieldValue('normal')).toBe('Light');
-    expect(form.isFieldTouched('normal')).toBeTruthy();
-    expect(form.getFieldError('normal')).toEqual([]);
+    expect(form.current?.getFieldValue('normal')).toBe('Light');
+    expect(form.current?.isFieldTouched('normal')).toBeTruthy();
+    expect(form.current?.getFieldError('normal')).toEqual([]);
     expect(currentMeta.validating).toBeFalsy();
   });
 
@@ -670,15 +642,11 @@ describe('Form.Basic', () => {
   });
 
   it('filtering fields by meta', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
     const wrapper = mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <InfoField name="username" />
           <InfoField name="password" />
           <Field>{() => null}</Field>
@@ -687,33 +655,30 @@ describe('Form.Basic', () => {
     );
 
     expect(
-      form.getFieldsValue(null, meta => {
+      form.current?.getFieldsValue(null, meta => {
         expect(Object.keys(meta)).toEqual(['touched', 'validating', 'errors', 'warnings', 'name']);
         return false;
       }),
     ).toEqual({});
 
-    expect(form.getFieldsValue(null, () => true)).toEqual(form.getFieldsValue());
-    expect(form.getFieldsValue(null, meta => meta.touched)).toEqual({});
+    expect(form.current?.getFieldsValue(null, () => true)).toEqual(form.current?.getFieldsValue());
+    expect(form.current?.getFieldsValue(null, meta => meta.touched)).toEqual({});
 
     await changeValue(getField(wrapper, 0), 'Bamboo');
-    expect(form.getFieldsValue(null, () => true)).toEqual(form.getFieldsValue());
-    expect(form.getFieldsValue(null, meta => meta.touched)).toEqual({
+    expect(form.current?.getFieldsValue(null, () => true)).toEqual(form.current?.getFieldsValue());
+    expect(form.current?.getFieldsValue(null, meta => meta.touched)).toEqual({
       username: 'Bamboo',
     });
-    expect(form.getFieldsValue(['username'], meta => meta.touched)).toEqual({
+    expect(form.current?.getFieldsValue(['username'], meta => meta.touched)).toEqual({
       username: 'Bamboo',
     });
-    expect(form.getFieldsValue(['password'], meta => meta.touched)).toEqual({});
+    expect(form.current?.getFieldsValue(['password'], meta => meta.touched)).toEqual({});
   });
 
   it('should not crash when return value contains target field', async () => {
     const CustomInput: React.FC<any> = ({ value, onChange }) => {
-      const onInputChange = e => {
-        onChange({
-          value: e.target.value,
-          target: 'string',
-        });
+      const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange({ value: e.target.value, target: 'string' });
       };
       return <Input value={value} onChange={onInputChange} />;
     };
@@ -730,7 +695,7 @@ describe('Form.Basic', () => {
   });
 
   it('setFieldsValue for List should work', () => {
-    const Demo = () => {
+    const Demo: React.FC<any> = () => {
       const [form] = useForm();
 
       const handelReset = () => {
@@ -786,7 +751,7 @@ describe('Form.Basic', () => {
       return <div className="select-div">{(value || defaultValue || []).toString()}</div>;
     };
 
-    const Demo = () => {
+    const Demo: React.FC<any> = () => {
       const [formInstance] = Form.useForm();
 
       React.useEffect(() => {
@@ -808,12 +773,11 @@ describe('Form.Basic', () => {
 
   // https://github.com/ant-design/ant-design/issues/34768
   it('remount should not clear current value', () => {
-    let refForm;
+    let refForm: FormInstance = null;
 
     const Demo: React.FC<any> = ({ remount }) => {
       const [form] = Form.useForm();
       refForm = form;
-
       let node = (
         <Form form={form} initialValues={{ name: 'little' }}>
           <Field name="name">

@@ -6,7 +6,9 @@ interface InfoFieldProps extends FieldProps {
   children?: React.ReactElement;
 }
 
-export const Input = ({ value = '', ...props }) => <input {...props} value={value} />;
+export const Input: React.FC<any> = ({ value = '', ...props }) => (
+  <input {...props} value={value} />
+);
 
 /**
  * Return a wrapped Field with meta info
