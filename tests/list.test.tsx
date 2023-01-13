@@ -2,6 +2,7 @@ import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import type { ReactWrapper } from 'enzyme';
+import { render } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List } from '../src';
 import type { FormProps } from '../src';
@@ -13,41 +14,31 @@ import { changeValue, getField } from './common';
 import timeout from './common/timeout';
 
 describe('Form.List', () => {
-  let form;
+  const form = React.createRef<FormInstance>();
 
-  function generateForm(
-    renderList?: (
-      fields: ListField[],
-      operations: ListOperations,
-      meta: Meta,
-    ) => JSX.Element | React.ReactNode,
+  const generateForm = (
+    renderList?: (fields: ListField[], operations: ListOperations, meta: Meta) => React.ReactNode,
     formProps?: FormProps,
     listProps?: Partial<ListProps>,
-  ): [ReactWrapper, () => ReactWrapper] {
+  ): readonly [ReactWrapper, () => ReactWrapper] => {
     const wrapper = mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-          {...formProps}
-        >
+        <Form ref={form} {...formProps}>
           <List name="list" {...listProps}>
             {renderList}
           </List>
         </Form>
       </div>,
     );
-
-    return [wrapper, () => getField(wrapper).find('div')];
-  }
+    return [wrapper, () => getField(wrapper).find('div')] as const;
+  };
 
   it('basic', async () => {
     const [, getList] = generateForm(
       fields => (
         <div>
-          {fields.map((field, index) => (
-            <Field {...field} key={index}>
+          {fields.map(field => (
+            <Field {...field}>
               <Input />
             </Field>
           ))}
@@ -74,14 +65,12 @@ describe('Form.List', () => {
     await changeValue(getField(listNode, 1), '222');
     await changeValue(getField(listNode, 2), '333');
 
-    expect(form.getFieldsValue()).toEqual({
-      list: ['111', '222', '333'],
-    });
+    expect(form.current?.getFieldsValue()).toEqual({ list: ['111', '222', '333'] });
   });
 
   it('not crash', () => {
     // Empty only
-    mount(
+    render(
       <Form initialValues={{ list: null }}>
         <Form.List name="list">{() => null}</Form.List>
       </Form>,
@@ -90,7 +79,7 @@ describe('Form.List', () => {
     // Not a array
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     resetWarned();
-    mount(
+    render(
       <Form initialValues={{ list: {} }}>
         <Form.List name="list">{() => null}</Form.List>
       </Form>,
@@ -105,8 +94,8 @@ describe('Form.List', () => {
       operation = opt;
       return (
         <div>
-          {fields.map((field, index) => (
-            <Field {...field} key={index}>
+          {fields.map(field => (
+            <Field {...field}>
               <Input />
             </Field>
           ))}
@@ -133,9 +122,7 @@ describe('Form.List', () => {
 
     wrapper.update();
     expect(getList().find(Field).length).toEqual(3);
-    expect(form.getFieldsValue()).toEqual({
-      list: [undefined, '2', undefined],
-    });
+    expect(form.current?.getFieldsValue()).toEqual({ list: [undefined, '2', undefined] });
 
     matchKey(0, '0');
     matchKey(1, '1');
@@ -199,12 +186,12 @@ describe('Form.List', () => {
 
     // Modify
     await changeValue(getField(getList(), 1), '222');
-    expect(form.getFieldsValue()).toEqual({
+    expect(form.current?.getFieldsValue()).toEqual({
       list: [undefined, '222', undefined],
     });
-    expect(form.isFieldTouched(['list', 0])).toBeFalsy();
-    expect(form.isFieldTouched(['list', 1])).toBeTruthy();
-    expect(form.isFieldTouched(['list', 2])).toBeFalsy();
+    expect(form.current?.isFieldTouched(['list', 0])).toBeFalsy();
+    expect(form.current?.isFieldTouched(['list', 1])).toBeTruthy();
+    expect(form.current?.isFieldTouched(['list', 2])).toBeFalsy();
 
     matchKey(0, '0');
     matchKey(1, '1');
@@ -216,11 +203,11 @@ describe('Form.List', () => {
     });
     wrapper.update();
     expect(getList().find(Field).length).toEqual(2);
-    expect(form.getFieldsValue()).toEqual({
+    expect(form.current?.getFieldsValue()).toEqual({
       list: [undefined, undefined],
     });
-    expect(form.isFieldTouched(['list', 0])).toBeFalsy();
-    expect(form.isFieldTouched(['list', 2])).toBeFalsy();
+    expect(form.current?.isFieldTouched(['list', 0])).toBeFalsy();
+    expect(form.current?.isFieldTouched(['list', 2])).toBeFalsy();
 
     matchKey(0, '0');
     matchKey(1, '2');
@@ -250,8 +237,8 @@ describe('Form.List', () => {
       operation = opt;
       return (
         <div>
-          {fields.map((field, index) => (
-            <Field {...field} key={index}>
+          {fields.map(field => (
+            <Field {...field}>
               <Input />
             </Field>
           ))}
@@ -356,7 +343,7 @@ describe('Form.List', () => {
 
     wrapper.update();
     expect(getList().find(Field).length).toEqual(3);
-    expect(form.getFieldsValue()).toEqual({
+    expect(form.current?.getFieldsValue()).toEqual({
       list: [undefined, '1', '2'],
     });
 
@@ -369,7 +356,7 @@ describe('Form.List', () => {
 
     wrapper.update();
     expect(getList().find(Field).length).toEqual(5);
-    expect(form.getFieldsValue()).toEqual({
+    expect(form.current?.getFieldsValue()).toEqual({
       list: ['0', undefined, '1', '4', '2'],
     });
   });
@@ -393,15 +380,15 @@ describe('Form.List', () => {
 
       await changeValue(getField(getList()), '');
 
-      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+      expect(form.current?.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
     });
 
     it('remove should keep error', async () => {
       const [wrapper, getList] = generateForm(
         (fields, { remove }) => (
           <div>
-            {fields.map((field, index) => (
-              <Field {...field} key={index} rules={[{ required: true }]}>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }]}>
                 <Input />
               </Field>
             ))}
@@ -421,21 +408,21 @@ describe('Form.List', () => {
 
       expect(wrapper.find(Input)).toHaveLength(2);
       await changeValue(getField(getList(), 1), '');
-      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
+      expect(form.current?.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
 
       wrapper.find('button').simulate('click');
       wrapper.update();
 
       expect(wrapper.find(Input)).toHaveLength(1);
-      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
+      expect(form.current?.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
     });
 
     it('when param of remove is array', async () => {
       const [wrapper, getList] = generateForm(
         (fields, { remove }) => (
           <div>
-            {fields.map((field, index) => (
-              <Field {...field} key={index} rules={[{ required: true }, { min: 5 }]}>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
                 <Input />
               </Field>
             ))}
@@ -455,19 +442,23 @@ describe('Form.List', () => {
 
       expect(wrapper.find(Input)).toHaveLength(3);
       await changeValue(getField(getList(), 0), '');
-      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+      expect(form.current?.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
 
       await changeValue(getField(getList(), 1), 'test');
-      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' must be at least 5 characters"]);
+      expect(form.current?.getFieldError(['list', 1])).toEqual([
+        "'list.1' must be at least 5 characters",
+      ]);
 
       await changeValue(getField(getList(), 2), '');
-      expect(form.getFieldError(['list', 2])).toEqual(["'list.2' is required"]);
+      expect(form.current?.getFieldError(['list', 2])).toEqual(["'list.2' is required"]);
 
       wrapper.find('button').simulate('click');
       wrapper.update();
 
       expect(wrapper.find(Input)).toHaveLength(1);
-      expect(form.getFieldError(['list', 0])).toEqual(["'list.1' must be at least 5 characters"]);
+      expect(form.current?.getFieldError(['list', 0])).toEqual([
+        "'list.1' must be at least 5 characters",
+      ]);
       expect(wrapper.find('input').props().value).toEqual('test');
     });
 
@@ -475,8 +466,8 @@ describe('Form.List', () => {
       const [wrapper, getList] = generateForm(
         (fields, { add }) => (
           <div>
-            {fields.map((field, index) => (
-              <Field {...field} key={index} rules={[{ required: true }, { min: 5 }]}>
+            {fields.map(field => (
+              <Field {...field} rules={[{ required: true }, { min: 5 }]}>
                 <Input />
               </Field>
             ))}
@@ -505,16 +496,18 @@ describe('Form.List', () => {
 
       expect(wrapper.find(Input)).toHaveLength(3);
       await changeValue(getField(getList(), 0), '');
-      expect(form.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
+      expect(form.current?.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
 
       wrapper.find('.button').simulate('click');
       wrapper.find('.button1').simulate('click');
 
       expect(wrapper.find(Input)).toHaveLength(5);
-      expect(form.getFieldError(['list', 1])).toEqual(["'list.0' is required"]);
+      expect(form.current?.getFieldError(['list', 1])).toEqual(["'list.0' is required"]);
 
       await changeValue(getField(getList(), 1), 'test');
-      expect(form.getFieldError(['list', 1])).toEqual(["'list.1' must be at least 5 characters"]);
+      expect(form.current?.getFieldError(['list', 1])).toEqual([
+        "'list.1' must be at least 5 characters",
+      ]);
     });
   });
 
@@ -650,9 +643,9 @@ describe('Form.List', () => {
       );
 
       // Not changed
-      expect(formRef.current.isFieldTouched('user')).toBeFalsy();
-      expect(formRef.current.isFieldsTouched(['user'], false)).toBeFalsy();
-      expect(formRef.current.isFieldsTouched(['user'], true)).toBeFalsy();
+      expect(formRef.current?.isFieldTouched('user')).toBeFalsy();
+      expect(formRef.current?.isFieldsTouched(['user'], false)).toBeFalsy();
+      expect(formRef.current?.isFieldsTouched(['user'], true)).toBeFalsy();
 
       // Changed
       wrapper
@@ -660,9 +653,9 @@ describe('Form.List', () => {
         .first()
         .simulate('change', { target: { value: '' } });
 
-      expect(formRef.current.isFieldTouched('user')).toBeTruthy();
-      expect(formRef.current.isFieldsTouched(['user'], false)).toBeTruthy();
-      expect(formRef.current.isFieldsTouched(['user'], true)).toBeTruthy();
+      expect(formRef.current?.isFieldTouched('user')).toBeTruthy();
+      expect(formRef.current?.isFieldsTouched(['user'], false)).toBeTruthy();
+      expect(formRef.current?.isFieldsTouched(['user'], true)).toBeTruthy();
     });
 
     it('List children change', () => {
@@ -676,15 +669,13 @@ describe('Form.List', () => {
             ))}
           </div>
         ),
-        {
-          initialValues: { list: ['light', 'bamboo'] },
-        },
+        { initialValues: { list: ['light', 'bamboo'] } },
       );
 
       // Not changed yet
-      expect(form.isFieldTouched('list')).toBeFalsy();
-      expect(form.isFieldsTouched(['list'], false)).toBeFalsy();
-      expect(form.isFieldsTouched(['list'], true)).toBeFalsy();
+      expect(form.current?.isFieldTouched('list')).toBeFalsy();
+      expect(form.current?.isFieldsTouched(['list'], false)).toBeFalsy();
+      expect(form.current?.isFieldsTouched(['list'], true)).toBeFalsy();
 
       // Change children value
       wrapper
@@ -692,9 +683,9 @@ describe('Form.List', () => {
         .first()
         .simulate('change', { target: { value: 'little' } });
 
-      expect(form.isFieldTouched('list')).toBeTruthy();
-      expect(form.isFieldsTouched(['list'], false)).toBeTruthy();
-      expect(form.isFieldsTouched(['list'], true)).toBeTruthy();
+      expect(form.current?.isFieldTouched('list')).toBeTruthy();
+      expect(form.current?.isFieldsTouched(['list'], false)).toBeTruthy();
+      expect(form.current?.isFieldsTouched(['list'], true)).toBeTruthy();
     });
 
     it('List self change', () => {
@@ -715,16 +706,16 @@ describe('Form.List', () => {
       ));
 
       // Not changed yet
-      expect(form.isFieldTouched('list')).toBeFalsy();
-      expect(form.isFieldsTouched(['list'], false)).toBeFalsy();
-      expect(form.isFieldsTouched(['list'], true)).toBeFalsy();
+      expect(form.current?.isFieldTouched('list')).toBeFalsy();
+      expect(form.current?.isFieldsTouched(['list'], false)).toBeFalsy();
+      expect(form.current?.isFieldsTouched(['list'], true)).toBeFalsy();
 
       // Change children value
       wrapper.find('button').simulate('click');
 
-      expect(form.isFieldTouched('list')).toBeTruthy();
-      expect(form.isFieldsTouched(['list'], false)).toBeTruthy();
-      expect(form.isFieldsTouched(['list'], true)).toBeTruthy();
+      expect(form.current?.isFieldTouched('list')).toBeTruthy();
+      expect(form.current?.isFieldsTouched(['list'], false)).toBeTruthy();
+      expect(form.current?.isFieldsTouched(['list'], true)).toBeTruthy();
     });
   });
 
@@ -743,7 +734,7 @@ describe('Form.List', () => {
       { initialValue: ['light', 'bamboo'] },
     );
 
-    expect(form.getFieldsValue()).toEqual({
+    expect(form.current?.getFieldsValue()).toEqual({
       list: ['light', 'bamboo'],
     });
   });
