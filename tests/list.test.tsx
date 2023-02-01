@@ -51,7 +51,7 @@ describe('Form.List', () => {
       },
     );
 
-    function matchKey(index, key) {
+    function matchKey(index: number, key: React.Key) {
       expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
@@ -89,7 +89,7 @@ describe('Form.List', () => {
   });
 
   it('operation', async () => {
-    let operation;
+    let operation: ListOperations;
     const [wrapper, getList] = generateForm((fields, opt) => {
       operation = opt;
       return (
@@ -103,7 +103,7 @@ describe('Form.List', () => {
       );
     });
 
-    function matchKey(index, key) {
+    function matchKey(index: number, key: React.Key) {
       expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
@@ -232,7 +232,7 @@ describe('Form.List', () => {
   });
 
   it('remove when the param is Array', () => {
-    let operation;
+    let operation: ListOperations;
     const [wrapper, getList] = generateForm((fields, opt) => {
       operation = opt;
       return (
@@ -246,7 +246,7 @@ describe('Form.List', () => {
       );
     });
 
-    function matchKey(index, key) {
+    function matchKey(index: number, key: React.Key) {
       expect(getList().find(Field).at(index).key()).toEqual(key);
     }
 
@@ -310,7 +310,7 @@ describe('Form.List', () => {
   });
 
   it('add when the second param is number', () => {
-    let operation;
+    let operation: ListOperations;
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const [wrapper, getList] = generateForm((fields, opt) => {
       operation = opt;
@@ -523,7 +523,7 @@ describe('Form.List', () => {
 
   // https://github.com/ant-design/ant-design/issues/25584
   it('preserve should not break list', async () => {
-    let operation;
+    let operation: ListOperations;
     const [wrapper] = generateForm(
       (fields, opt) => {
         operation = opt;
@@ -563,9 +563,9 @@ describe('Form.List', () => {
   });
 
   it('list support validator', async () => {
-    let operation;
-    let currentMeta;
-    let currentValue;
+    let operation: ListOperations;
+    let currentMeta: Meta;
+    let currentValue: any;
 
     const [wrapper] = generateForm(
       (_, opt, meta) => {
@@ -647,11 +647,18 @@ describe('Form.List', () => {
       expect(formRef.current?.isFieldsTouched(['user'], false)).toBeFalsy();
       expect(formRef.current?.isFieldsTouched(['user'], true)).toBeFalsy();
 
+      // console.log(wrapper.html());
+
       // Changed
       wrapper
         .find('input')
         .first()
         .simulate('change', { target: { value: '' } });
+
+      // wrapper.update();
+
+      // console.log(wrapper.html());
+      // expect(wrapper.html()).toMatchSnapshot();
 
       expect(formRef.current?.isFieldTouched('user')).toBeTruthy();
       expect(formRef.current?.isFieldsTouched(['user'], false)).toBeTruthy();
