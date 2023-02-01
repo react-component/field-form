@@ -9,7 +9,7 @@ interface ErrorProps {
   children?: React.ReactNode[];
 }
 
-const Error = ({ children, warning }: ErrorProps) => (
+const Error: React.FC<ErrorProps> = ({ children, warning }) => (
   <ul style={{ color: warning ? 'orange' : 'red' }}>
     {children.map((error: React.ReactNode, index: number) => (
       <li key={index}>{error}</li>

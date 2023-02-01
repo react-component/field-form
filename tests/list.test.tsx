@@ -316,8 +316,8 @@ describe('Form.List', () => {
       operation = opt;
       return (
         <div>
-          {fields.map((field, index) => (
-            <Field key={index} {...field}>
+          {fields.map(field => (
+            <Field {...field} key={field.key}>
               <Input />
             </Field>
           ))}
@@ -366,8 +366,8 @@ describe('Form.List', () => {
       const [, getList] = generateForm(
         fields => (
           <div>
-            {fields.map((field, index) => (
-              <Field {...field} key={index} rules={[{ required: true }]}>
+            {fields.map(field => (
+              <Field {...field} key={field.key} rules={[{ required: true }]}>
                 <Input />
               </Field>
             ))}
@@ -529,8 +529,8 @@ describe('Form.List', () => {
         operation = opt;
         return (
           <div>
-            {fields.map((field, index) => (
-              <Field {...field} key={index}>
+            {fields.map(field => (
+              <Field {...field} key={field.key}>
                 <Input />
               </Field>
             ))}
@@ -603,8 +603,8 @@ describe('Form.List', () => {
     const [wrapper] = generateForm(
       (fields, operation) => (
         <div>
-          {fields.map((field, index) => (
-            <Field {...field} key={index} name={[field.name, 'first']}>
+          {fields.map(field => (
+            <Field {...field} key={field.key} name={[field.name, 'first']}>
               <Input />
             </Field>
           ))}
@@ -662,8 +662,8 @@ describe('Form.List', () => {
       const [wrapper] = generateForm(
         fields => (
           <div>
-            {fields.map((field, index) => (
-              <Field {...field} key={index}>
+            {fields.map(field => (
+              <Field {...field} key={field.key}>
                 <Input />
               </Field>
             ))}
@@ -691,8 +691,8 @@ describe('Form.List', () => {
     it('List self change', () => {
       const [wrapper] = generateForm((fields, opt) => (
         <div>
-          {fields.map((field, index) => (
-            <Field {...field} key={index}>
+          {fields.map(field => (
+            <Field {...field} key={field.key}>
               <Input />
             </Field>
           ))}
@@ -723,8 +723,8 @@ describe('Form.List', () => {
     generateForm(
       fields => (
         <div>
-          {fields.map((field, index) => (
-            <Field {...field} key={index}>
+          {fields.map(field => (
+            <Field {...field} key={field.key}>
               <Input />
             </Field>
           ))}

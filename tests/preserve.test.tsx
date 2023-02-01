@@ -112,8 +112,8 @@ describe('Form.Preserve', () => {
             {(fields, { remove }) => {
               return (
                 <div>
-                  {fields.map((field, index) => (
-                    <Form.Field key={index} {...field}>
+                  {fields.map(field => (
+                    <Form.Field {...field} key={field.key}>
                       <input />
                     </Form.Field>
                   ))}
@@ -136,8 +136,8 @@ describe('Form.Preserve', () => {
           <Form.List name="list">
             {(fields, { remove }) => (
               <>
-                {fields.map((field, index) => (
-                  <Form.Field key={index} {...field} preserve={false}>
+                {fields.map(field => (
+                  <Form.Field {...field} key={field.key} preserve={false}>
                     <input />
                   </Form.Field>
                 ))}

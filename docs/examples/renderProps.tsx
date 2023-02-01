@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import React from 'react';
 import Form from 'rc-field-form';
 import Input from './components/Input';
@@ -45,7 +44,6 @@ export default class Demo extends React.Component {
                   </div>
                 )}
               </Field>
-
               {list.map((_, index) => (
                 <Field key={index} name={`list_field_${index}`}>
                   <Input placeholder={`list_field_${index}`} />
