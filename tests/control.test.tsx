@@ -3,25 +3,25 @@ import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField from './common/InfoField';
 import { changeValue, matchError } from './common';
+import { render } from '@testing-library/react';
 
 describe('Form.Control', () => {
   it('fields', () => {
-    const wrapper = mount(
+    const { container, rerender } = render(
       <Form>
         <InfoField name="username" />
       </Form>,
     );
-
-    wrapper.setProps({
-      fields: [{ name: 'username', value: 'Bamboo' }],
-    });
-    wrapper.update();
-
-    expect(wrapper.find('input').props().value).toEqual('Bamboo');
+    rerender(
+      <Form fields={[{ name: 'username', value: 'Bamboo' }]}>
+        <InfoField name="username" />
+      </Form>,
+    );
+    expect(container.querySelector<HTMLInputElement>('input')?.value).toBe('Bamboo');
   });
 
   it('fully test', async () => {
-    const Test = () => {
+    const Test: React.FC = () => {
       const [fields, setFields] = React.useState([]);
 
       return (

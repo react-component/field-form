@@ -4,7 +4,7 @@ import timeout from './timeout';
 import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 
-export async function changeValue(wrapper, value) {
+export async function changeValue(wrapper: ReactWrapper, value: string | string[]) {
   wrapper.find('input').simulate('change', { target: { value } });
   await act(async () => {
     await timeout();

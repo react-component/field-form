@@ -1,5 +1,5 @@
 import { mount } from 'enzyme';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
 import React from 'react';
 import type { FormInstance } from '../src';
@@ -218,15 +218,14 @@ describe('Form.Basic', () => {
 
     it('remove Field should trigger onMetaChange', () => {
       const onMetaChange = jest.fn();
-      const wrapper = mount(
+      const { unmount } = render(
         <Form>
           <Field name="username" onMetaChange={onMetaChange}>
             <Input />
           </Field>
         </Form>,
       );
-
-      wrapper.unmount();
+      unmount();
       expect(onMetaChange).toHaveBeenCalledWith(expect.objectContaining({ destroy: true }));
     });
   });
@@ -349,7 +348,7 @@ describe('Form.Basic', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     const form = React.createRef<FormInstance>();
-    mount(
+    render(
       <div>
         <Form ref={form} />
       </div>,
@@ -497,7 +496,7 @@ describe('Form.Basic', () => {
       const triggerUpdate = jest.fn();
       const formRef = React.createRef<FormInstance>();
 
-      const wrapper = mount(
+      render(
         <div>
           <Form ref={formRef}>
             <Field shouldUpdate={(prev, next) => prev.value !== next.value}>
@@ -509,17 +508,17 @@ describe('Form.Basic', () => {
           </Form>
         </div>,
       );
-      wrapper.update();
+
       triggerUpdate.mockReset();
 
       // Not trigger render
       formRef.current.setFields([{ name: 'others', value: 'no need to update' }]);
-      wrapper.update();
+
       expect(triggerUpdate).not.toHaveBeenCalled();
 
       // Trigger render
       formRef.current.setFields([{ name: 'value', value: 'should update' }]);
-      wrapper.update();
+
       expect(triggerUpdate).toHaveBeenCalled();
     });
   });
@@ -528,7 +527,7 @@ describe('Form.Basic', () => {
     let called1 = false;
     let called2 = false;
 
-    mount(
+    render(
       <Form>
         <Field name="Light">
           {(_, meta) => {
@@ -602,7 +601,7 @@ describe('Form.Basic', () => {
   it('warning if invalidate element', () => {
     resetWarned();
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    mount(
+    render(
       <div>
         <Form>
           {/* @ts-ignore */}
@@ -624,14 +623,14 @@ describe('Form.Basic', () => {
     resetWarned();
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    const Test = () => {
+    const Test: React.FC = () => {
       const [form] = useForm();
       form.getFieldsValue();
 
       return <Form />;
     };
 
-    mount(<Test />);
+    render(<Test />);
 
     jest.runAllTimers();
     expect(errorSpy).toHaveBeenCalledWith(
@@ -682,7 +681,7 @@ describe('Form.Basic', () => {
       };
       return <Input value={value} onChange={onInputChange} />;
     };
-    const wrapper = mount(
+    const { container } = render(
       <Form>
         <Field name="user">
           <CustomInput />
@@ -690,7 +689,7 @@ describe('Form.Basic', () => {
       </Form>,
     );
     expect(() => {
-      wrapper.find('Input').simulate('change', { event: { target: { value: 'Light' } } });
+      fireEvent.change(container.querySelector('input'), { target: { value: 'Light' } });
     }).not.toThrowError();
   });
 
@@ -739,11 +738,10 @@ describe('Form.Basic', () => {
         </Form>
       );
     };
-
-    const wrapper = mount(<Demo />);
-    expect(wrapper.find('input').first().getDOMNode<HTMLInputElement>().value).toBe('11');
-    wrapper.find('.reset-btn').first().simulate('click');
-    expect(wrapper.find('input').length).toBe(0);
+    const { container } = render(<Demo />);
+    expect(container.querySelector<HTMLInputElement>('input')?.value).toBe('11');
+    fireEvent.click(container.querySelector('.reset-btn'));
+    expect(container.querySelectorAll<HTMLInputElement>('input').length).toBe(0);
   });
 
   it('setFieldsValue should work for multiple Select', () => {
@@ -767,8 +765,8 @@ describe('Form.Basic', () => {
       );
     };
 
-    const wrapper = mount(<Demo />);
-    expect(wrapper.find('.select-div').text()).toBe('K1,K2');
+    const { container } = render(<Demo />);
+    expect(container.querySelector('.select-div').textContent).toBe('K1,K2');
   });
 
   // https://github.com/ant-design/ant-design/issues/34768
@@ -793,16 +791,11 @@ describe('Form.Basic', () => {
       return node;
     };
 
-    const wrapper = mount(<Demo />);
+    const { container, rerender } = render(<Demo />);
     refForm.setFieldsValue({ name: 'bamboo' });
-    wrapper.update();
-
-    expect(wrapper.find('input').prop('value')).toEqual('bamboo');
-
-    wrapper.setProps({ remount: true });
-    wrapper.update();
-
-    expect(wrapper.find('input').prop('value')).toEqual('bamboo');
+    expect(container.querySelector<HTMLInputElement>('input').value).toBe('bamboo');
+    rerender(<Demo remount />);
+    expect(container.querySelector<HTMLInputElement>('input').value).toBe('bamboo');
   });
 
   it('setFieldValue', () => {
@@ -813,37 +806,29 @@ describe('Form.Basic', () => {
         <Form.List name="list">
           {fields =>
             fields.map(field => (
-              <Field key={field.key} {...field}>
+              <Field {...field} key={field.key}>
                 <Input />
               </Field>
             ))
           }
         </Form.List>
-
         <Field name={['nest', 'target']} initialValue="nested">
           <Input />
         </Field>
       </Form>
     );
 
-    const wrapper = mount(<Demo />);
-    expect(wrapper.find('input').map(input => input.prop('value'))).toEqual([
-      'bamboo',
-      'little',
-      'light',
-      'nested',
-    ]);
+    const { container } = render(<Demo />);
+    expect(
+      Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),
+    ).toEqual(['bamboo', 'little', 'light', 'nested']);
 
     // Set
     formRef.current.setFieldValue(['list', 1], 'tiny');
     formRef.current.setFieldValue(['nest', 'target'], 'match');
-    wrapper.update();
 
-    expect(wrapper.find('input').map(input => input.prop('value'))).toEqual([
-      'bamboo',
-      'tiny',
-      'light',
-      'match',
-    ]);
+    expect(
+      Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),
+    ).toEqual(['bamboo', 'tiny', 'light', 'match']);
   });
 });

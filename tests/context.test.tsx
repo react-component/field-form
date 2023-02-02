@@ -1,6 +1,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import { render } from '@testing-library/react';
+import type { FormInstance } from '../src';
 import Form, { FormProvider } from '../src';
 import InfoField from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
@@ -78,7 +79,7 @@ describe('Form.Context', () => {
     it('multiple context', async () => {
       const onFormChange = jest.fn();
 
-      const Demo = changed => (
+      const Demo: React.FC<{ changed?: boolean }> = ({ changed }) => (
         <FormProvider onFormChange={onFormChange}>
           <FormProvider>
             {!changed ? (
@@ -106,17 +107,12 @@ describe('Form.Context', () => {
 
   it('submit', async () => {
     const onFormFinish = jest.fn();
-    let form1;
+    const form = React.createRef<FormInstance>();
 
     const wrapper = mount(
       <div>
         <FormProvider onFormFinish={onFormFinish}>
-          <Form
-            name="form1"
-            ref={instance => {
-              form1 = instance;
-            }}
-          >
+          <Form name="form1" ref={form}>
             <InfoField name="name" rules={[{ required: true }]} />
           </Form>
           <Form name="form2" />
@@ -125,12 +121,12 @@ describe('Form.Context', () => {
     );
 
     await changeValue(getField(wrapper), '');
-    form1.submit();
+    form.current?.submit();
     await timeout();
     expect(onFormFinish).not.toHaveBeenCalled();
 
     await changeValue(getField(wrapper), 'Light');
-    form1.submit();
+    form.current?.submit();
     await timeout();
     expect(onFormFinish).toHaveBeenCalled();
 
