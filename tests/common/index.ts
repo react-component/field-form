@@ -4,7 +4,7 @@ import timeout from './timeout';
 import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 
-export async function changeValue(wrapper, value) {
+export async function changeValue(wrapper: ReactWrapper, value: string | string[]) {
   wrapper.find('input').simulate('change', { target: { value } });
   await act(async () => {
     await timeout();
@@ -40,17 +40,15 @@ export function matchError(
   }
 }
 
-export function getField(wrapper, index: string | number | string[] = 0) {
+export function getField(wrapper: ReactWrapper, index: string | number | string[] = 0) {
   if (typeof index === 'number') {
     return wrapper.find(Field).at(index);
   }
-
   const name = getNamePath(index);
   const fields = wrapper.find(Field);
   for (let i = 0; i < fields.length; i += 1) {
     const field = fields.at(i);
-    const fieldName = getNamePath(field.props().name);
-
+    const fieldName = getNamePath((field.props() as any).name);
     if (matchNamePath(name, fieldName)) {
       return field;
     }
@@ -58,7 +56,7 @@ export function getField(wrapper, index: string | number | string[] = 0) {
   return null;
 }
 
-export function matchArray(source, target, matchKey) {
+export function matchArray(source: any[], target: any[], matchKey: React.Key) {
   expect(matchKey).toBeTruthy();
 
   try {
@@ -66,10 +64,10 @@ export function matchArray(source, target, matchKey) {
   } catch (err) {
     throw new Error(
       `
-Array length not match.
-source(${source.length}): ${JSON.stringify(source)}
-target(${target.length}): ${JSON.stringify(target)}
-`.trim(),
+        Array length not match.
+        source(${source.length}): ${JSON.stringify(source)}
+        target(${target.length}): ${JSON.stringify(target)}
+      `.trim(),
     );
   }
 

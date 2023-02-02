@@ -1,5 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
+import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
 import timeout from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
@@ -7,15 +8,11 @@ import { changeValue, matchError, getField } from './common';
 
 describe('Form.Dependencies', () => {
   it('touched', async () => {
-    let form = null;
+    const form = React.createRef<FormInstance>();
 
     const wrapper = mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <InfoField name="field_1" />
           <InfoField name="field_2" rules={[{ required: true }]} dependencies={['field_1']} />
         </Form>
@@ -27,13 +24,13 @@ describe('Form.Dependencies', () => {
     matchError(getField(wrapper, 1), false);
 
     // Trigger if touched
-    form.setFields([{ name: 'field_2', touched: true }]);
+    form.current?.setFields([{ name: 'field_2', touched: true }]);
     await changeValue(getField(wrapper, 0), '');
     matchError(getField(wrapper, 1), true);
   });
 
   describe('initialValue', () => {
-    function test(name, formProps, fieldProps = {}) {
+    function test(name: string, formProps = {}, fieldProps = {}) {
       it(name, async () => {
         let validated = false;
 
@@ -68,16 +65,12 @@ describe('Form.Dependencies', () => {
   });
 
   it('nest dependencies', async () => {
-    let form = null;
+    const form = React.createRef<FormInstance>();
     let rendered = false;
 
     const wrapper = mount(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <Field name="field_1">
             <Input />
           </Field>
@@ -94,7 +87,7 @@ describe('Form.Dependencies', () => {
       </div>,
     );
 
-    form.setFields([
+    form.current?.setFields([
       { name: 'field_1', touched: true },
       { name: 'field_2', touched: true },
       { name: 'field_3', touched: true },

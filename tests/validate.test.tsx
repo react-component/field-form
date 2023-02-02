@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
 import React from 'react';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
@@ -6,6 +5,7 @@ import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
+import type { ValidateMessages } from '@/interface';
 
 describe('Form.Validate', () => {
   it('required', async () => {
@@ -49,7 +49,7 @@ describe('Form.Validate', () => {
   });
 
   describe('validateMessages', () => {
-    function renderForm(messages, fieldProps = {}) {
+    function renderForm(messages: ValidateMessages, fieldProps = {}) {
       return mount(
         <Form validateMessages={messages}>
           <InfoField name="username" rules={[{ required: true }]} {...fieldProps} />
@@ -751,4 +751,3 @@ describe('Form.Validate', () => {
     matchError(wrapper, true);
   });
 });
-/* eslint-enable no-template-curly-in-string */
