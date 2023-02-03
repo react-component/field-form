@@ -84,6 +84,16 @@ describe('Form.Validate', () => {
       await changeValue(wrapper, '');
       matchError(wrapper, "You miss 'Light&Bamboo'!");
     });
+
+    // Improve development experience, production will not trigger
+    // https://github.com/ant-design/ant-design/issues/40497
+    it('[low] console output warning', async () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const wrapper = renderForm({ required: '${name} is required' });
+      await changeValue(wrapper, '');
+      expect(warnSpy).toHaveBeenCalledWith("async-validator:", ["username is required"]);
+      warnSpy.mockRestore();
+    });
   });
 
   describe('customize validator', () => {
