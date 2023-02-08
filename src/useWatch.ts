@@ -2,7 +2,7 @@ import type { FormInstance } from '.';
 import { FieldContext } from '.';
 import warning from 'rc-util/lib/warning';
 import { HOOK_MARK } from './FieldContext';
-import type { InternalFormInstance, NamePath, Store } from './interface';
+import type { InternalFormInstance, InternalNamePath, NamePath, Store } from './interface';
 import { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 
@@ -16,6 +16,19 @@ export function stringify(value: any) {
     return Math.random();
   }
 }
+
+const useWatchWarning =
+  process.env.NODE_ENV !== 'production'
+    ? (namePath: InternalNamePath) => {
+        const fullyStr = namePath.join('__RC_FIELD_FORM_SPLIT__');
+        const nameStrRef = useRef(fullyStr);
+
+        warning(
+          nameStrRef.current === fullyStr,
+          '`useWatch` is not support dynamic `namePath`. Please provide static instead.',
+        );
+      }
+    : () => {};
 
 function useWatch<
   TDependencies1 extends keyof GetGeneric<TForm>,
@@ -81,6 +94,8 @@ function useWatch(...args: [NamePath, FormInstance]) {
   const namePath = getNamePath(dependencies);
   const namePathRef = useRef(namePath);
   namePathRef.current = namePath;
+
+  useWatchWarning(namePath);
 
   useEffect(
     () => {

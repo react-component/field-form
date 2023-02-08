@@ -386,4 +386,25 @@ describe('useWatch', () => {
     );
     errorSpy.mockRestore();
   });
+
+  it('dynamic change warning', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm();
+      const [watchPath, setWatchPath] = React.useState('light');
+      Form.useWatch(watchPath, form);
+
+      React.useEffect(() => {
+        setWatchPath('bamboo');
+      }, []);
+
+      return <Form form={form} />;
+    };
+    render(<Demo />);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: `useWatch` is not support dynamic `namePath`. Please provide static instead.',
+    );
+    errorSpy.mockRestore();
+  });
 });
