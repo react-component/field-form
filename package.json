@@ -1,6 +1,6 @@
 {
   "name": "rc-field-form",
-  "version": "1.27.3",
+  "version": "1.27.4",
   "description": "React Form Component",
   "typings": "es/index.d.ts",
   "engines": {
