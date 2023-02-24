@@ -106,17 +106,12 @@ async function validateRule(
   });
 
   const messages = setValues({}, defaultValidateMessages, options.validateMessages);
-
-  validator.messages(
-    process.env.NODE_ENV == 'production'
-      ? messages
-      : convertMessages(
-        messages,
-        name,
-        cloneRule,
-        messageVariables,
-      )
-  );
+  validator.messages(convertMessages(
+    messages,
+    name,
+    cloneRule,
+    messageVariables,
+  ));
 
   let result = [];
 
