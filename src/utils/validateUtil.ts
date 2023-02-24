@@ -7,7 +7,6 @@ import type {
   RuleObject,
   StoreValue,
   RuleError,
-  ValidateMessages,
 } from '../interface';
 import { defaultValidateMessages } from './messages';
 import { setValues } from './valueUtil';
@@ -27,46 +26,6 @@ function replaceMessage(template: string, kv: Record<string, string>): string {
 }
 
 const CODE_LOGIC_ERROR = 'CODE_LOGIC_ERROR';
-
-/**
- * We use `async-validator` to validate rules. So have to hot replace the message with validator.
- * { required: '${name} is required' } => { required: () => 'field is required' }
- */
-function convertMessages(
-  messages: ValidateMessages,
-  name: string,
-  rule: RuleObject,
-  messageVariables?: Record<string, string>,
-): ValidateMessages {
-  const kv = {
-    ...(rule as Record<string, string | number>),
-    name,
-    enum: (rule.enum || []).join(', '),
-  };
-
-  const replaceFunc = (template: string, additionalKV?: Record<string, string>) => () =>
-    replaceMessage(template, { ...kv, ...additionalKV });
-
-  /* eslint-disable no-param-reassign */
-  function fillTemplate(source: ValidateMessages, target: ValidateMessages = {}) {
-    Object.keys(source).forEach(ruleName => {
-      const value = source[ruleName];
-      if (typeof value === 'string') {
-        target[ruleName] = replaceFunc(value, messageVariables);
-      } else if (value && typeof value === 'object') {
-        target[ruleName] = {};
-        fillTemplate(value, target[ruleName]);
-      } else {
-        target[ruleName] = value;
-      }
-    });
-
-    return target;
-  }
-  /* eslint-enable */
-
-  return fillTemplate(setValues({}, defaultValidateMessages, messages)) as ValidateMessages;
-}
 
 async function validateRule(
   name: string,
@@ -106,12 +65,7 @@ async function validateRule(
   });
 
   const messages = setValues({}, defaultValidateMessages, options.validateMessages);
-  validator.messages(convertMessages(
-    messages,
-    name,
-    cloneRule,
-    messageVariables,
-  ));
+  validator.messages(messages);
 
   let result = [];
 
