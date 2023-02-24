@@ -41,6 +41,14 @@ async function validateRule(
   // https://github.com/react-component/field-form/issues/313
   delete (cloneRule as any).ruleIndex;
 
+  // avoid global warning (default true), globalThis.FORM_VALIDATOR_WARNING =  1 to enable
+  // https://github.com/ant-design/ant-design/issues/40497#issuecomment-1422282378
+  AsyncValidator.warning = (...args) => {
+    if (typeof globalThis.FORM_VALIDATOR_WARNING !== 'undefined') {
+      console.warn(...args);
+    }
+  };
+
   if (cloneRule.validator) {
     const originValidator = cloneRule.validator;
     cloneRule.validator = (...args) => {
