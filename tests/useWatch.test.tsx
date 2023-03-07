@@ -407,4 +407,34 @@ describe('useWatch', () => {
     );
     errorSpy.mockRestore();
   });
+
+  it('useWatch with preserve option', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm();
+      const nameValuePreserve = Form.useWatch<string>('name', {
+        form,
+        preserve: true,
+      });
+      const nameValue = Form.useWatch<string>('name', form);
+      React.useEffect(() => {
+        console.log(nameValuePreserve, nameValue);
+      }, [nameValuePreserve, nameValue]);
+      return (
+        <div>
+          <Form form={form} initialValues={{ name: 'bamboo' }} />
+          <div className="values">{nameValuePreserve}</div>
+          <button className="test-btn" onClick={() => form.setFieldValue('name', 'light')} />
+        </div>
+      );
+    };
+    await act(async () => {
+      const { container } = render(<Demo />);
+      await timeout();
+      expect(logSpy).toHaveBeenCalledWith('bamboo', undefined); // initialValue
+      fireEvent.click(container.querySelector('.test-btn'));
+      await timeout();
+      expect(logSpy).toHaveBeenCalledWith('light', undefined); // after setFieldValue
+    });
+  });
 });
