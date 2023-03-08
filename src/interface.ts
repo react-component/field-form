@@ -13,6 +13,7 @@ export interface Meta {
   errors: string[];
   warnings: string[];
   name: InternalNamePath;
+  validated: boolean;
 }
 
 export interface InternalFieldData extends Meta {
