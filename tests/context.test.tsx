@@ -44,6 +44,26 @@ describe('Form.Context', () => {
             touched: true,
             validating: false,
             value: 'Light',
+            validated: false,
+          },
+        ],
+        forms: {
+          form1: expect.objectContaining({}),
+        },
+      }),
+    );
+    expect(onFormChange).toHaveBeenCalledWith(
+      'form1',
+      expect.objectContaining({
+        changedFields: [
+          {
+            errors: [],
+            warnings: [],
+            name: ['username'],
+            touched: true,
+            validating: false,
+            value: 'Light',
+            validated: true,
           },
         ],
         forms: {
