@@ -475,7 +475,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       errors: this.errors,
       warnings: this.warnings,
       name: this.getNamePath(),
-      validated: this.validatePromise !== undefined,
+      validated: this.validatePromise === null,
     };
 
     return meta;
