@@ -655,7 +655,14 @@ describe('Form.Basic', () => {
 
     expect(
       form.current?.getFieldsValue(null, meta => {
-        expect(Object.keys(meta)).toEqual(['touched', 'validating', 'errors', 'warnings', 'name']);
+        expect(Object.keys(meta)).toEqual([
+          'touched',
+          'validating',
+          'errors',
+          'warnings',
+          'name',
+          'validated',
+        ]);
         return false;
       }),
     ).toEqual({});

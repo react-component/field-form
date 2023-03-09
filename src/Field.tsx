@@ -133,7 +133,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
    */
   private dirty: boolean = false;
 
-  private validatePromise: Promise<string[]> | null = null;
+  private validatePromise: Promise<string[]> | null;
 
   private prevValidating: boolean;
 
@@ -475,6 +475,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       errors: this.errors,
       warnings: this.warnings,
       name: this.getNamePath(),
+      validated: this.validatePromise === null,
     };
 
     return meta;

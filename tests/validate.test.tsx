@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 import Form, { Field, useForm } from '../src';
@@ -749,5 +749,49 @@ describe('Form.Validate', () => {
     );
     await changeValue(wrapper, '');
     matchError(wrapper, true);
+  });
+  it('validated status should be true when trigger validate', async () => {
+    const validateTrigger = jest.fn();
+    const validateNoTrigger = jest.fn();
+    const App = ({ trigger = true }) => {
+      const ref = React.useRef(null);
+      useEffect(() => {
+        if (!trigger) return;
+        ref.current!.validateFields();
+      }, [trigger]);
+      return (
+        <div>
+          <Form ref={ref}>
+            <InfoField
+              initialValue="test@qq.com"
+              name="email"
+              onMetaChange={meta => {
+                if (trigger) {
+                  validateTrigger(meta.validated);
+                } else {
+                  validateNoTrigger(meta.validated);
+                }
+              }}
+              rules={[
+                {
+                  type: 'email',
+                  message: 'Please input your e-mail',
+                },
+                {
+                  required: true,
+                  message: 'Please input your value',
+                },
+              ]}
+            />
+          </Form>
+        </div>
+      );
+    };
+    const wrapper = mount(<App trigger={false} />);
+    await timeout();
+    expect(validateNoTrigger).not.toHaveBeenCalled();
+    wrapper.setProps({ trigger: true });
+    await timeout();
+    expect(validateTrigger).toBeCalledWith(true);
   });
 });
