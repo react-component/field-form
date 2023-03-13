@@ -200,9 +200,10 @@ export class FormStore {
     // No need to cost perf when nothing need to watch
     if (this.watchList.length) {
       const values = this.getFieldsValue();
+      const allValues = this.getFieldsValue(true);
 
       this.watchList.forEach(callback => {
-        callback(values, namePath);
+        callback(values, allValues, namePath);
       });
     }
   };
@@ -548,7 +549,7 @@ export class FormStore {
     const namePathList: InternalNamePath[] = [];
 
     fields.forEach((fieldData: FieldData) => {
-      const { name, errors, ...data } = fieldData;
+      const { name, ...data } = fieldData;
       const namePath = getNamePath(name);
       namePathList.push(namePath);
 

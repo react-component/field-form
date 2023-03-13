@@ -194,7 +194,16 @@ export interface Callbacks<Values = any> {
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
-export type WatchCallBack = (values: Store, namePathList: InternalNamePath[]) => void;
+export type WatchCallBack = (
+  values: Store,
+  allValues: Store,
+  namePathList: InternalNamePath[],
+) => void;
+
+export interface WatchOptions<Form extends FormInstance = FormInstance> {
+  form?: Form;
+  preserve?: boolean;
+}
 
 export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
