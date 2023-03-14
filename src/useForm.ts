@@ -954,6 +954,9 @@ export class FormStore {
     // Do not throw in console
     returnPromise.catch<ValidateErrorEntity>(e => e);
 
+    // `validating` changed. Trigger `onFieldsChange`
+    this.triggerOnFieldsChange(namePathList);
+
     return returnPromise as Promise<Store>;
   };
 
