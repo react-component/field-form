@@ -794,4 +794,58 @@ describe('Form.Validate', () => {
     await timeout();
     expect(validateTrigger).toBeCalledWith(true);
   });
+
+  it('should trigger onFieldsChange 3 times', async () => {
+    const onFieldsChange = jest.fn();
+
+    const wrapper = mount(
+      <Form onFieldsChange={onFieldsChange}>
+        <InfoField name="test" rules={[{ required: true }]}>
+          <Input />
+        </InfoField>
+      </Form>,
+    );
+
+    await changeValue(getField(wrapper, 'test'), '');
+
+    await timeout();
+
+    // `validated: false` -> `validated: false` -> `validated: true`
+    // `validating: false` -> `validating: true` -> `validating: false`
+    expect(onFieldsChange).toHaveBeenCalledTimes(3);
+
+    expect(onFieldsChange).toHaveBeenNthCalledWith(
+      1,
+      [
+        expect.objectContaining({
+          name: ['test'],
+          validated: false,
+          validating: false,
+        }),
+      ],
+      expect.anything(),
+    );
+    expect(onFieldsChange).toHaveBeenNthCalledWith(
+      2,
+      [
+        expect.objectContaining({
+          name: ['test'],
+          validated: false,
+          validating: true,
+        }),
+      ],
+      expect.anything(),
+    );
+    expect(onFieldsChange).toHaveBeenNthCalledWith(
+      3,
+      [
+        expect.objectContaining({
+          name: ['test'],
+          validated: true,
+          validating: false,
+        }),
+      ],
+      expect.anything(),
+    );
+  });
 });
