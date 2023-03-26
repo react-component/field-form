@@ -220,16 +220,15 @@ export interface InternalHooks {
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
 }
 
-/** Only return partial when type is not any */
-type RecursivePartial<T> = T extends object
-  ? {
-      [P in keyof T]?: T[P] extends (infer U)[]
-        ? RecursivePartial<U>[]
-        : T[P] extends object
-        ? RecursivePartial<T[P]>
-        : T[P];
-    }
-  : any;
+type Primitive = number | string | boolean | bigint | symbol | undefined | null
+
+type RecursivePartial<T> = {
+  [P in keyof T]?: T[P] extends Primitive
+    ? T[P]
+    : T[P] extends (infer U)[]
+    ? RecursivePartial<U>[]
+    : RecursivePartial<T[P]>
+}
 
 export interface FormInstance<Values = any> {
   // Origin Form API
