@@ -1,8 +1,10 @@
-import get from 'rc-util/lib/utils/get';
-import set from 'rc-util/lib/utils/set';
+import getValue from 'rc-util/lib/utils/get';
+import setValue from 'rc-util/lib/utils/set';
 import type { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
 import cloneDeep from '../utils/cloneDeep';
+
+export { getValue, setValue };
 
 /**
  * Convert name to internal supported format.
@@ -13,21 +15,6 @@ import cloneDeep from '../utils/cloneDeep';
  */
 export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
-}
-
-export function getValue(store: Store, namePath: InternalNamePath) {
-  const value = get(store, namePath);
-  return value;
-}
-
-export function setValue(
-  store: Store,
-  namePath: InternalNamePath,
-  value: StoreValue,
-  removeIfUndefined = false,
-): Store {
-  const newStore = set(store, namePath, value, removeIfUndefined);
-  return newStore;
 }
 
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {

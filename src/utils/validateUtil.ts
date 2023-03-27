@@ -41,6 +41,9 @@ async function validateRule(
   // https://github.com/react-component/field-form/issues/313
   delete (cloneRule as any).ruleIndex;
 
+  // https://github.com/ant-design/ant-design/issues/40497#issuecomment-1422282378
+  AsyncValidator.warning = () => void 0;
+
   if (cloneRule.validator) {
     const originValidator = cloneRule.validator;
     cloneRule.validator = (...args) => {
