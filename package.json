@@ -30,6 +30,7 @@
   "license": "MIT",
   "main": "./lib/index",
   "module": "./es/index",
+  "typings": "es/index.d.ts",
   "scripts": {
     "start": "dumi dev",
     "docs:build": "dumi build",
