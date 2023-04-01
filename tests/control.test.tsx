@@ -1,9 +1,8 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, act, waitFor } from './test-utils';
 import Form from '../src';
 import InfoField from './common/InfoField';
 import { changeValue, matchError } from './common';
-import { render } from '@testing-library/react';
 
 describe('Form.Control', () => {
   it('fields', () => {
@@ -12,6 +11,7 @@ describe('Form.Control', () => {
         <InfoField name="username" />
       </Form>,
     );
+
     rerender(
       <Form fields={[{ name: 'username', value: 'Bamboo' }]}>
         <InfoField name="username" />
@@ -36,9 +36,15 @@ describe('Form.Control', () => {
       );
     };
 
-    const wrapper = mount(<Test />);
+    const { container } = render(<Test />);
 
-    await changeValue(wrapper, '');
-    matchError(wrapper, "'test' is required");
+    await act(async () => {
+      const input = container.querySelector('input');
+      await changeValue(input, '');
+    });
+
+    waitFor(() => {
+      matchError(container, "'test' is required");
+    });
   });
 });

@@ -1,29 +1,35 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render, act } from './test-utils';
 import Form, { Field } from '../src';
 
 describe('Form.Field', () => {
   it('field remount should trigger constructor again', () => {
+    let fieldRef;
     const Demo = ({ visible }: { visible: boolean }) => {
       const [form] = Form.useForm();
+      fieldRef = React.useRef(null);
 
-      const fieldNode = <Field name="light" initialValue="bamboo" />;
+      const fieldNode = <Field ref={fieldRef} name="light" initialValue="bamboo" />;
 
       return <Form form={form}>{visible ? fieldNode : null}</Form>;
     };
 
-    // First mount
-    const wrapper = mount(<Demo visible />);
-    const instance = wrapper.find('Field').instance() as any;
+    // // First mount
+    const { rerender } = render(<Demo visible />);
+    const instance = fieldRef.current;
     expect(instance.cancelRegisterFunc).toBeTruthy();
 
     // Hide
-    wrapper.setProps({ visible: false });
+    act(() => {
+      rerender(<Demo visible={false} />);
+    });
     expect(instance.cancelRegisterFunc).toBeFalsy();
 
     // Mount again
-    wrapper.setProps({ visible: true });
+    act(() => {
+      rerender(<Demo visible />);
+    });
     expect(instance.cancelRegisterFunc).toBeFalsy();
-    expect((wrapper.find('Field').instance() as any).cancelRegisterFunc).toBeTruthy();
+    expect(fieldRef.current.cancelRegisterFunc).toBeTruthy();
   });
 });

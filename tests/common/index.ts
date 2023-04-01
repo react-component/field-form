@@ -1,59 +1,66 @@
 import { act } from 'react-dom/test-utils';
-import type { ReactWrapper } from 'enzyme';
+import { mountNameByPath, matchNamePath } from '../../src/utils/valueUtil';
+import { fireEvent, waitFor } from '../../tests/test-utils';
+import type { NamePath } from '../../src/interface';
 import timeout from './timeout';
-import { Field } from '../../src';
-import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 
-export async function changeValue(wrapper: ReactWrapper, value: string | string[]) {
-  wrapper.find('input').simulate('change', { target: { value } });
-  await act(async () => {
+export async function changeValue(
+  input: HTMLElement,
+  value: string | string[],
+  ignoreTest = false,
+): Promise<void> {
+  expect(input).toBeTruthy();
+
+  fireEvent.focus(input);
+  // Force change value, because if empty and set empty, change not trigger effetct in test
+  if (!value) {
+    console.debug('changeValue called if "" (empty) value');
+    fireEvent.change(input, { target: { value: `${value}any` } });
     await timeout();
-  });
-  wrapper.update();
+  }
+
+  fireEvent.change(input, { target: { value } });
+  if (!ignoreTest) {
+    await waitFor(() => expect((input as HTMLInputElement).value).toBe(value));
+  }
 }
 
 export function matchError(
-  wrapper: ReactWrapper,
+  wrapper: HTMLElement,
   error?: boolean | string,
   warning?: boolean | string,
 ) {
   // Error
-  if (error) {
-    expect(wrapper.find('.errors li').length).toBeTruthy();
-  } else {
-    expect(wrapper.find('.errors li').length).toBeFalsy();
-  }
+  const errorsFound = wrapper.querySelectorAll('.errors li').length;
+  expect(!!errorsFound).toBe(!!error);
 
   if (error && typeof error !== 'boolean') {
-    expect(wrapper.find('.errors li').text()).toBe(error);
+    const errorFound = wrapper.querySelector('.errors li').textContent;
+    expect(errorFound).toBe(error);
   }
 
   // Warning
-  if (warning) {
-    expect(wrapper.find('.warnings li').length).toBeTruthy();
-  } else {
-    expect(wrapper.find('.warnings li').length).toBeFalsy();
-  }
+  const warningsFound = wrapper.querySelectorAll('.warnings li').length;
+  expect(!!warningsFound).toBe(!!warning);
 
   if (warning && typeof warning !== 'boolean') {
-    expect(wrapper.find('.warnings li').text()).toBe(warning);
+    const warningFound = wrapper.querySelector('.warnings li').textContent;
+    expect(warningFound).toBe(warning);
   }
 }
 
-export function getField(wrapper: ReactWrapper, index: string | number | string[] = 0) {
+export function getField(
+  wrapper: HTMLElement | Element,
+  index: NamePath | null = 0,
+): HTMLInputElement | null {
+  let name = index;
+  if (Array.isArray(index)) {
+    name = mountNameByPath(index);
+  }
   if (typeof index === 'number') {
-    return wrapper.find(Field).at(index);
+    return wrapper.querySelectorAll('form input')?.item(index) as HTMLInputElement;
   }
-  const name = getNamePath(index);
-  const fields = wrapper.find(Field);
-  for (let i = 0; i < fields.length; i += 1) {
-    const field = fields.at(i);
-    const fieldName = getNamePath((field.props() as any).name);
-    if (matchNamePath(name, fieldName)) {
-      return field;
-    }
-  }
-  return null;
+  return wrapper.querySelector(`form input[name="${name}"]`);
 }
 
 export function matchArray(source: any[], target: any[], matchKey: React.Key) {

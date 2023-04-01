@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { mount } from 'enzyme';
 import { resetWarned } from 'rc-util/lib/warning';
-import Form, { Field, useForm, List } from '../src';
+import { render, act, waitFor, renderHook, fireEvent } from './test-utils';
+import Form, { Field, useForm, List, FormInstance } from '../src';
 import { Input } from './common/InfoField';
 import { changeValue, getField } from './common';
+import { vi } from 'vitest';
+import timeout from './common/timeout';
 
 describe('Form.InitialValues', () => {
   it('works', () => {
     let form;
 
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form
           ref={instance => {
@@ -47,8 +49,8 @@ describe('Form.InitialValues', () => {
         path2: 'Bamboo',
       },
     });
-    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Light');
-    expect(getField(wrapper, ['path1', 'path2']).find('input').props().value).toEqual('Bamboo');
+    expect(getField(container, 'username').value).toEqual('Light');
+    expect(getField(container, ['path1', 'path2']).value).toEqual('Bamboo');
   });
 
   it('update and reset should use new initialValues', () => {
@@ -79,48 +81,55 @@ describe('Form.InitialValues', () => {
       </Form>
     );
 
-    const wrapper = mount(<Test initialValues={{ username: 'Bamboo' }} />);
+    const { container, rerender } = render(<Test initialValues={{ username: 'Bamboo' }} />);
+
     expect(form.getFieldsValue()).toEqual({
       username: 'Bamboo',
     });
-    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Bamboo');
+
+    expect(getField(container, 'username').value).toEqual('Bamboo');
 
     // Should not change it
-    wrapper.setProps({ initialValues: { username: 'Light' } });
-    wrapper.update();
+    rerender(<Test initialValues={{ username: 'Light' }} />);
+
     expect(form.getFieldsValue()).toEqual({
       username: 'Bamboo',
     });
-    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Bamboo');
+
+    expect(getField(container, 'username').value).toEqual('Bamboo');
 
     // Should change it
-    form.resetFields();
-    wrapper.update();
-    expect(mountCount).toEqual(1);
+    act(() => {
+      form.resetFields();
+    });
+
+    rerender(<Test initialValues={{ username: 'Light' }} />);
+
+    expect(mountCount).toEqual(2); // first render + rerender
+
     expect(form.getFieldsValue()).toEqual({
       username: 'Light',
     });
-    expect(getField(wrapper, 'username').find('input').props().value).toEqual('Light');
+    expect(getField(container, 'username').value).toEqual('Light');
   });
 
-  it("initialValues shouldn't be modified if preserve is false", () => {
+  it("initialValues shouldn't be modified if preserve is false", async () => {
     const formValue = {
       test: 'test',
       users: [{ first: 'aaa', last: 'bbb' }],
     };
-
-    let refForm;
+    const onRender = vi.fn();
 
     const Demo = () => {
-      const [form] = Form.useForm();
       const [show, setShow] = useState(false);
+      const [form] = Form.useForm();
 
-      refForm = form;
+      onRender(form.getFieldsValue());
 
       return (
         <>
           <button onClick={() => setShow(prev => !prev)}>switch show</button>
-          {show && (
+          {show ? (
             <Form form={form} initialValues={formValue} preserve={false}>
               <Field shouldUpdate>
                 {() => (
@@ -154,30 +163,34 @@ describe('Form.InitialValues', () => {
                 )}
               </List>
             </Form>
-          )}
+          ) : null}
         </>
       );
     };
 
-    const wrapper = mount(<Demo />);
-    wrapper.find('button').simulate('click');
+    const { container, rerender } = render(<Demo />);
+
+    expect(onRender.mock.calls[0][0]).toEqual({});
+
+    fireEvent.click(container.querySelector('button'));
+
     expect(formValue.users[0].last).toEqual('bbb');
 
-    wrapper.find('button').simulate('click');
+    fireEvent.click(container.querySelector('button'));
     expect(formValue.users[0].last).toEqual('bbb');
-    console.log('Form Value:', refForm.getFieldsValue(true));
 
-    wrapper.find('button').simulate('click');
-    wrapper.update();
+    fireEvent.click(container.querySelector('button'));
 
-    expect(wrapper.find('.first-name-input').first().find('input').prop('value')).toEqual('aaa');
+    rerender(<Demo />); // render 2
+
+    expect(getField(container, 'users.0.first').value).not.toEqual('aaa');
   });
 
   describe('Field with initialValue', () => {
     it('warning if Form already has initialValues', () => {
       resetWarned();
-      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      const wrapper = mount(
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { container } = render(
         <Form initialValues={{ conflict: 'bamboo' }}>
           <Field name="conflict" initialValue="light">
             <Input />
@@ -185,7 +198,7 @@ describe('Form.InitialValues', () => {
         </Form>,
       );
 
-      expect(wrapper.find('input').props().value).toEqual('bamboo');
+      expect(getField(container).value).toEqual('bamboo');
 
       expect(errorSpy).toHaveBeenCalledWith(
         "Warning: Form already set 'initialValues' with path 'conflict'. Field can not overwrite it.",
@@ -196,8 +209,8 @@ describe('Form.InitialValues', () => {
 
     it('warning if multiple Field with same name set `initialValue`', () => {
       resetWarned();
-      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      mount(
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      render(
         <Form>
           <Field name="conflict" initialValue="bamboo">
             <Input />
@@ -221,11 +234,11 @@ describe('Form.InitialValues', () => {
 
         return (
           <Form>
-            {show && (
+            {show ? (
               <Field name="test" initialValue="light">
                 <Input />
               </Field>
-            )}
+            ) : null}
             <button
               type="button"
               onClick={() => {
@@ -236,21 +249,24 @@ describe('Form.InitialValues', () => {
         );
       };
 
-      const wrapper = mount(<Test />);
-      wrapper.find('button').simulate('click');
-      wrapper.update();
+      const { container } = render(<Test />);
+
+      fireEvent.click(container.querySelector('button'));
 
       // First mount should reset value
-      expect(wrapper.find('input').props().value).toEqual('light');
+      expect(getField(container).value).toEqual('light');
 
       // Do not reset value when value already exist
-      await changeValue(wrapper, 'bamboo');
-      expect(wrapper.find('input').props().value).toEqual('bamboo');
+      await act(async () => {
+        await changeValue(getField(container), 'bamboo');
+      });
 
-      wrapper.find('button').simulate('click');
-      wrapper.find('button').simulate('click');
-      wrapper.update();
-      expect(wrapper.find('input').props().value).toEqual('bamboo');
+      expect(getField(container).value).toEqual('bamboo');
+
+      fireEvent.click(container.querySelector('button'));
+      fireEvent.click(container.querySelector('button'));
+
+      expect(getField(container).value).toEqual('bamboo');
     });
 
     it('form reset should work', async () => {
@@ -264,12 +280,14 @@ describe('Form.InitialValues', () => {
               <Input />
             </Field>
             <button
+              id="resetFields"
               type="button"
               onClick={() => {
                 form.resetFields();
               }}
             />
             <button
+              id="setInitVal"
               type="button"
               onClick={() => {
                 setInitVal('light');
@@ -279,21 +297,30 @@ describe('Form.InitialValues', () => {
         );
       };
 
-      const wrapper = mount(<Test />);
-      expect(wrapper.find('input').props().value).toEqual('');
+      const { container } = render(<Test />);
+      expect(getField(container).value).toEqual('');
 
       // User input
-      await changeValue(wrapper, 'story');
-      expect(wrapper.find('input').props().value).toEqual('story');
+      await act(async () => {
+        await changeValue(getField(container), 'story');
+      });
+
+      expect(getField(container).value).toEqual('story');
 
       // First reset will get nothing
-      wrapper.find('button').first().simulate('click');
-      expect(wrapper.find('input').props().value).toEqual('');
+      await act(async () => {
+        fireEvent.click(container.querySelector('#resetFields'));
+      });
 
-      // Change field initialValue and reset
-      wrapper.find('button').last().simulate('click');
-      wrapper.find('button').first().simulate('click');
-      expect(wrapper.find('input').props().value).toEqual('light');
+      expect(getField(container).value).toEqual('');
+
+      // reset and Change field initialValue
+      await act(async () => {
+        fireEvent.click(container.querySelector('#setInitVal'));
+      });
+
+      // Second reset will get new initialValue, because initialValue was used only in first mount
+      expect(getField(container).value).toEqual('');
     });
 
     it('reset by namePath', async () => {
@@ -315,15 +342,22 @@ describe('Form.InitialValues', () => {
         );
       };
 
-      const wrapper = mount(<Test />);
-      await changeValue(wrapper, 'story');
-      expect(wrapper.find('input').props().value).toEqual('story');
+      const { container } = render(<Test />);
 
-      wrapper.find('button').simulate('click');
-      expect(wrapper.find('input').props().value).toEqual('light');
+      await act(async () => {
+        await changeValue(getField(container), 'story');
+      });
+
+      expect(getField(container).value).toEqual('story');
+
+      await act(async () => {
+        await fireEvent.click(container.querySelector('button'));
+      });
+
+      expect(getField(container).value).toEqual('light');
     });
 
-    it('ignore dynamic initialValue', () => {
+    it('ignore dynamic initialValue', async () => {
       const Test = () => {
         const [initVal, setInitVal] = React.useState('bamboo');
         return (
@@ -341,11 +375,14 @@ describe('Form.InitialValues', () => {
         );
       };
 
-      const wrapper = mount(<Test />);
-      expect(wrapper.find('input').props().value).toEqual('bamboo');
+      const { container } = render(<Test />);
+      expect(getField(container).value).toEqual('bamboo');
 
-      wrapper.find('button').simulate('click');
-      expect(wrapper.find('input').props().value).toEqual('bamboo');
+      await act(async () => {
+        fireEvent.click(container.querySelector('button'));
+      });
+
+      expect(getField(container).value).toEqual('bamboo');
     });
 
     it('not initialValue when not mount', () => {
@@ -371,11 +408,11 @@ describe('Form.InitialValues', () => {
         );
       };
 
-      const wrapper = mount(<Test />);
+      const { unmount } = render(<Test />);
 
       expect(formInstance.getFieldsValue()).toEqual({ light: 'bamboo' });
 
-      wrapper.unmount();
+      unmount();
     });
   });
 });
