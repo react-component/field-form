@@ -1,5 +1,5 @@
-import getValue from 'rc-util/lib/utils/get';
-import setValue from 'rc-util/lib/utils/set';
+import getValue from 'rc-util/es/utils/get';
+import setValue from 'rc-util/es/utils/set';
 import type { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
 import cloneDeep from '../utils/cloneDeep';

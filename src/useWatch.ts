@@ -1,6 +1,6 @@
 import type { FormInstance } from '.';
 import { FieldContext } from '.';
-import warning from 'rc-util/lib/warning';
+import warning from 'rc-util/es/warning';
 import { HOOK_MARK } from './FieldContext';
 import type {
   InternalFormInstance,

@@ -1,5 +1,5 @@
-import toChildrenArray from 'rc-util/lib/Children/toArray';
-import warning from 'rc-util/lib/warning';
+import toChildrenArray from 'rc-util/es/Children/toArray';
+import warning from 'rc-util/es/warning';
 import * as React from 'react';
 import type {
   FieldEntity,

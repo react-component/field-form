@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { resetWarned } from 'rc-util/lib/warning';
+import { resetWarned } from 'rc-util/es/warning';
 import { render, act, waitFor, renderHook, fireEvent } from './test-utils';
 import Form, { Field, useForm, List, FormInstance } from '../src';
 import { Input } from './common/InfoField';

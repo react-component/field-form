@@ -1,5 +1,5 @@
 import { render, act, waitFor, renderHook, fireEvent } from './test-utils';
-import { resetWarned } from 'rc-util/lib/warning';
+import { resetWarned } from 'rc-util/es/warning';
 import React from 'react';
 import type { FormInstance } from '../src';
 import Form, { Field, useForm } from '../src';
