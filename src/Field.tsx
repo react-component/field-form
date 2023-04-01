@@ -25,6 +25,7 @@ import {
   defaultGetValueFromEvent,
   getNamePath,
   getValue,
+  mountNameByPath,
 } from './utils/valueUtil';
 
 const EMPTY_ERRORS: any[] = [];
@@ -490,9 +491,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // Support render props
     if (typeof children === 'function') {
       const meta = this.getMeta();
-
       return {
-        ...this.getOnlyChild(children(this.getControlled(), meta, this.props.fieldContext)),
+        ...this.getOnlyChild(
+          children(
+            this.getControlled({
+              name: mountNameByPath(this.getNamePath()),
+            }),
+            meta,
+            this.props.fieldContext,
+          ),
+        ),
         isFunction: true,
       };
     }
@@ -610,9 +618,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     if (isFunction) {
       returnChildNode = child;
     } else if (React.isValidElement(child)) {
+      const theProps = (child as React.ReactElement).props;
       returnChildNode = React.cloneElement(
         child as React.ReactElement,
-        this.getControlled((child as React.ReactElement).props),
+        this.getControlled({
+          ...theProps,
+          name: theProps?.name ?? mountNameByPath(this.getNamePath()),
+        }),
       );
     } else {
       warning(!child, '`children` of Field is not validate ReactElement.');

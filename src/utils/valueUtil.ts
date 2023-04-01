@@ -17,6 +17,14 @@ export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
+export function mountNameByPath(path: NamePath | null): string {
+  if (Array.isArray(path)) {
+    return path.join('.');
+  }
+
+  return `${path || ''}`;
+}
+
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
   let newStore = {};
   namePathList.forEach(namePath => {
