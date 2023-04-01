@@ -61,7 +61,7 @@ const List: React.FunctionComponent<ListProps> = ({
         return [keyManager.keys[pathName], namePath.slice(len + 1)];
       },
     }),
-    [prefixName],
+    [prefixName, keyManager.keys],
   );
 
   // User should not pass `children` as other type.
