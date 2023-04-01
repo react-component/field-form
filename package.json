@@ -4,7 +4,7 @@
   "type": "module",
   "description": "React Form Component",
   "engines": {
-    "node": ">=8.x"
+    "node": ">=18.x"
   },
   "keywords": [
     "react",
