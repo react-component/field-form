@@ -623,7 +623,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 }
 
-function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
+const WrapperField = React.forwardRef(function WrapperField<Values = any>(
+  { name, ...restProps }: FieldProps<Values>,
+  ref,
+) {
   const fieldContext = React.useContext(FieldContext);
 
   const namePath = name !== undefined ? getNamePath(name) : undefined;
@@ -644,7 +647,9 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
-  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
-}
+  return <Field ref={ref} key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
+});
+
+WrapperField.displayName = 'Field';
 
 export default WrapperField;
