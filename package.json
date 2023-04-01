@@ -62,6 +62,7 @@
     "@testing-library/user-event": "^14.4.3",
     "@types/jest": "^29.2.5",
     "@types/lodash": "^4.14.135",
+    "@types/node": "^18.15.11",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@umijs/fabric": "^2.5.2",
