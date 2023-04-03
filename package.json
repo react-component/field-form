@@ -32,19 +32,19 @@
   "module": "./es/index",
   "typings": "es/index.d.ts",
   "scripts": {
-    "start": "dumi dev",
-    "docs:build": "dumi build",
+    "start": "export NODE_OPTIONS=--openssl-legacy-provider && dumi dev",
+    "docs:build": "export NODE_OPTIONS=--openssl-legacy-provider && dumi build",
     "docs:deploy": "gh-pages -d docs-dist",
     "compile": "father-build",
-    "deploy": "npm run docs:build && npm run docs:deploy",
+    "deploy": "pnpm run docs:build && pnpm run docs:deploy",
     "prettier": "prettier --write \"**/*.{js,jsx,tsx,ts,less,md,json}\"",
     "test": "vitest --watch=false",
     "test:watch": "vitest --ui --changed",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "npm run compile && np --no-cleanup --yolo --no-publish",
+    "prepublishOnly": "pnpm run compile && np --no-cleanup --yolo --no-publish",
     "lint": "eslint src/ --ext .tsx,.ts",
     "lint:tsc": "tsc -p tsconfig.json --noEmit",
-    "now-build": "npm run docs:build"
+    "now-build": "pnpm run docs:build"
   },
   "peerDependencies": {
     "react": ">=18",
