@@ -26,9 +26,8 @@ describe('Form.Field', () => {
     expect(instance.cancelRegisterFunc).toBeFalsy();
 
     // Mount again
-    act(() => {
-      rerender(<Demo visible />);
-    });
+    rerender(<Demo visible />);
+
     expect(instance.cancelRegisterFunc).toBeFalsy();
     expect(fieldRef.current.cancelRegisterFunc).toBeTruthy();
   });

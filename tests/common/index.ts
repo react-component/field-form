@@ -14,7 +14,7 @@ export async function changeValue(
   fireEvent.focus(input);
   // Force change value, because if empty and set empty, change not trigger effetct in test
   if (!value) {
-    console.debug('changeValue called if "" (empty) value');
+    // changeValue called if "" (empty) value
     fireEvent.change(input, { target: { value: `${value}any` } });
     await timeout();
   }

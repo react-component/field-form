@@ -593,8 +593,8 @@ describe('Form.List', () => {
     let currentMeta: Meta;
     let currentValue: any;
 
-    const [container, _, rerender] = generateForm(
-      (_, opt, meta) => {
+    const [_conteiner, __, rerender] = generateForm(
+      (_any, opt, meta) => {
         operation = opt;
         currentMeta = meta;
         return null;
@@ -603,7 +603,7 @@ describe('Form.List', () => {
       {
         rules: [
           {
-            validator(_, value) {
+            validator(__any, value) {
               currentValue = value;
               return Promise.reject();
             },
@@ -626,7 +626,7 @@ describe('Form.List', () => {
   it('Nest list remove should trigger correct onValuesChange', () => {
     const onValuesChange = vi.fn();
 
-    const [container, _, rerender] = generateForm(
+    const [container, _] = generateForm(
       (fields, operation) => (
         <div>
           {fields.map(field => (
@@ -691,7 +691,7 @@ describe('Form.List', () => {
     });
 
     it('List children change', () => {
-      const [container, _, rerender] = generateForm(
+      const [container, _] = generateForm(
         fields => (
           <div>
             {fields.map(field => (
@@ -718,7 +718,7 @@ describe('Form.List', () => {
     });
 
     it('List self change', () => {
-      const [container, _, rerender] = generateForm((fields, opt) => (
+      const [container, _] = generateForm((fields, opt) => (
         <div>
           {fields.map(field => (
             <Field {...field} key={field.key}>

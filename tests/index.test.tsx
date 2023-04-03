@@ -546,10 +546,10 @@ describe('Form.Basic', () => {
       );
       const { container, rerender } = render(<Component />);
 
-      form.current?.setFields([
-        { name: 'username', touched: false, validating: true, errors: ['Set It!'] },
-      ]);
       await act(async () => {
+        form.current?.setFields([
+          { name: 'username', touched: false, validating: true, errors: ['Set It!'] },
+        ]);
         rerender(<Component />);
       });
 

@@ -38,8 +38,9 @@ describe('Form.Control', () => {
 
     const { container } = render(<Test />);
 
+    const input = container.querySelector('input');
+
     await act(async () => {
-      const input = container.querySelector('input');
       await changeValue(input, '');
     });
 

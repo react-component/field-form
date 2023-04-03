@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { render, act, waitFor, renderHook, fireEvent } from './test-utils';
-import Form, { Field, useForm, FormInstance } from '../src';
+import { render, act, fireEvent } from './test-utils';
+import Form, { Field, useForm } from '../src';
+import type { FormInstance } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
@@ -326,10 +327,7 @@ describe('Form.Validate', () => {
     it('form context', async () => {
       const Component = (props: { validateTrigger?: 'onBlur' | 'onChange' }) => {
         const { validateTrigger = 'onBlur' } = props;
-        console.debug(
-          '🚀 ~ file: validate.test.tsx:329 ~ Component ~ validateTrigger:',
-          validateTrigger,
-        );
+
         return (
           <Form {...props} validateTrigger={validateTrigger}>
             <InfoField name="test" rules={[{ required: true }]} />
@@ -423,16 +421,22 @@ describe('Form.Validate', () => {
       );
 
       // Submit callback
-      fireEvent.click(container.querySelector('button'));
-      await timeout();
+      await act(async () => {
+        fireEvent.click(container.querySelector('button'));
+        await timeout();
+      });
+
       expect(onFinish).toHaveBeenCalledWith({ switch: true, ignore: 'test' });
       onFinish.mockReset();
 
       // Hide one
       fireEvent.click(getField(container, 'switch'));
 
-      fireEvent.click(container.querySelector('button'));
-      await timeout();
+      await act(async () => {
+        fireEvent.click(container.querySelector('button'));
+        await timeout();
+      });
+
       expect(onFinish).toHaveBeenCalledWith({ switch: false });
     });
 
@@ -448,19 +452,20 @@ describe('Form.Validate', () => {
           </Form>
         </div>,
       );
-
-      // Validate callback
-      await new Promise(resolve => {
-        let failed = false;
-        form.current
-          .validateFields()
-          .catch(() => {
-            failed = true;
-          })
-          .then(() => {
-            expect(failed).toBeTruthy();
-            resolve('');
-          });
+      await act(async () => {
+        // Validate callback
+        await new Promise(resolve => {
+          let failed = false;
+          form.current
+            .validateFields()
+            .catch(() => {
+              failed = true;
+            })
+            .then(() => {
+              expect(failed).toBeTruthy();
+              resolve('');
+            });
+        });
       });
     });
   });
@@ -545,8 +550,10 @@ describe('Form.Validate', () => {
         await changeValue(getField(container), 'test');
       });
 
-      fireEvent.click(container.querySelector('button'));
-      await timeout();
+      await act(async () => {
+        fireEvent.click(container.querySelector('button'));
+        await timeout();
+      });
 
       matchError(container, false);
       expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
@@ -777,16 +784,23 @@ describe('Form.Validate', () => {
       await timeout();
     });
 
-    rerender(<Component />);
+    await act(async () => {
+      rerender(<Component />);
+    });
 
+    let values;
     try {
-      const values = await form.validateFields(['username'], { recursive: true });
+      await act(async () => {
+        values = await form.validateFields(['username'], { recursive: true });
+      });
       expect(values.username.do).toBe('');
     } catch (error) {
       expect(error.errorFields.length).toBe(2);
     }
 
-    const values = await form.validateFields(['username']);
+    await act(async () => {
+      values = await form.validateFields(['username']);
+    });
     expect(values.username.do).toBe('');
   });
 
@@ -814,7 +828,8 @@ describe('Form.Validate', () => {
       </div>,
     );
     await act(async () => {
-      changeValue(getField(container), '');
+      await changeValue(getField(container), '');
+      await timeout();
     });
     matchError(container, true);
   });
@@ -856,12 +871,14 @@ describe('Form.Validate', () => {
         </div>
       );
     };
-    const { container, rerender } = render(<App trigger={false} />);
+    const { rerender } = render(<App trigger={false} />);
     await timeout();
     expect(validateNoTrigger).not.toHaveBeenCalled();
 
-    rerender(<App trigger={true} />);
-    await timeout();
+    await act(async () => {
+      rerender(<App trigger={true} />);
+      await timeout();
+    });
     expect(validateTrigger).toBeCalledWith(true);
   });
 

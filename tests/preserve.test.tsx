@@ -262,6 +262,8 @@ describe('Form.Preserve', () => {
     });
 
     expect(form.current?.getFieldsValue()).toEqual({ light: 'little' });
+
+    unmount();
   });
 
   // https://github.com/ant-design/ant-design/issues/31297

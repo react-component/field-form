@@ -78,7 +78,9 @@ describe('legacy.async-validation', () => {
 
   it('validateFields works for error', async () => {
     try {
-      await form.validateFields();
+      await act(async () => {
+        await form.validateFields();
+      });
       throw new Error('should not pass');
     } catch ({ values, errorFields }) {
       expect(values.normal).toEqual(undefined);
@@ -92,17 +94,23 @@ describe('legacy.async-validation', () => {
   });
 
   it('validateFields works for ok', async () => {
-    await changeValue(getField(container, 'async'), '1');
-    const values = await form.validateFields();
-    expect(values.normal).toBe(undefined);
-    expect(values.async).toBe('1');
+    await act(async () => {
+      await changeValue(getField(container, 'async'), '1');
+    });
+    await act(async () => {
+      const values = await form.validateFields();
+      expect(values.normal).toBe(undefined);
+      expect(values.async).toBe('1');
+    });
   });
 
   it('will error if change when validating', async done => {
-    form.validateFields().catch(({ errorFields, outOfDate }) => {
-      expect(errorFields.length).toBeTruthy();
-      expect(outOfDate).toBeTruthy();
-      done();
+    await act(async () => {
+      form.validateFields().catch(({ errorFields, outOfDate }) => {
+        expect(errorFields.length).toBeTruthy();
+        expect(outOfDate).toBeTruthy();
+        done();
+      });
     });
 
     changeValue(getField(container, 'async'), '1');

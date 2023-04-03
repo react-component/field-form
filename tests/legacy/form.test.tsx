@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, act } from '../test-utils';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
@@ -17,7 +17,10 @@ describe('legacy.form', () => {
         </Form>
       </div>,
     );
-    form.current?.setFieldsValue({ normal: '2', notExist: 'oh' });
+
+    await act(async () => {
+      form.current?.setFieldsValue({ normal: '2', notExist: 'oh' });
+    });
     expect(form.current?.getFieldValue('normal')).toBe('2');
   });
 });

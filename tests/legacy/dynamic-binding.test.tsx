@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, act } from '../test-utils';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
@@ -33,14 +33,18 @@ describe('legacy.dynamic-binding', () => {
 
     const { container, rerender } = render(<Test mode />);
 
-    fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
+    });
 
     rerender(<Test mode={false} />);
 
     expect(getInput(container, '#number')?.value).toBe('123');
     expect(form.current?.getFieldValue('name')).toBe('123');
 
-    fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+    });
 
     rerender(<Test mode />);
 
@@ -76,8 +80,10 @@ describe('legacy.dynamic-binding', () => {
 
     const { container, rerender } = render(<Test mode />);
 
-    fireEvent.change(getInput(container, '#text1'), { target: { value: '123' } });
-    fireEvent.change(getInput(container, '#text2'), { target: { value: '456' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#text1'), { target: { value: '123' } });
+      fireEvent.change(getInput(container, '#text2'), { target: { value: '456' } });
+    });
 
     expect(getInput(container, '#text1')?.value).toBe('123');
     expect(getInput(container, '#text2')?.value).toBe('456');
@@ -96,8 +102,9 @@ describe('legacy.dynamic-binding', () => {
     expect(getInput(container, '#text2')?.value).toBe('456');
     expect(form.current?.getFieldValue('input1')).toBe('123');
     expect(form.current?.getFieldValue('input2')).toBe('456');
-
-    fireEvent.change(getInput(container, '#text1'), { target: { value: '789' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#text1'), { target: { value: '789' } });
+    });
 
     expect(getInput(container, '#text1')?.value).toBe('789');
     expect(getInput(container, '#text2')?.value).toBe('456');
@@ -130,13 +137,17 @@ describe('legacy.dynamic-binding', () => {
 
     const { container, rerender } = render(<Test mode />);
 
-    fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
+    });
 
     rerender(<Test mode={false} />);
     expect(getInput(container, '#number')?.value).toBe('123');
     expect(form.current?.getFieldValue(['name', 'xxx'])).toBe('123');
 
-    fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+    });
 
     rerender(<Test mode />);
 
@@ -166,14 +177,18 @@ describe('legacy.dynamic-binding', () => {
 
     const { container, rerender } = render(<Test mode />);
 
-    fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#text'), { target: { value: '123' } });
+    });
 
     rerender(<Test mode={false} />);
 
     expect(getInput(container, '#number')?.value).toBe('123');
     expect(form.current?.getFieldValue('name')).toBe('123');
 
-    fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#number'), { target: { value: '456' } });
+    });
 
     rerender(<Test mode />);
 
@@ -213,8 +228,10 @@ describe('legacy.dynamic-binding', () => {
 
     const { container, rerender } = render(<Test mode />);
 
-    fireEvent.change(getInput(container, '#text1'), { target: { value: '123' } });
-    fireEvent.change(getInput(container, '#text2'), { target: { value: '456' } });
+    await act(async () => {
+      fireEvent.change(getInput(container, '#text1'), { target: { value: '123' } });
+      fireEvent.change(getInput(container, '#text2'), { target: { value: '456' } });
+    });
 
     expect(getInput(container, '#text1')?.value).toBe('123');
     expect(getInput(container, '#text2')?.value).toBe('456');
@@ -229,7 +246,9 @@ describe('legacy.dynamic-binding', () => {
     expect(form.current?.getFieldValue('input1')).toBeTruthy();
     expect(form.current?.getFieldValue('input2')).toBeTruthy();
 
-    form.current?.resetFields();
+    await act(async () => {
+      form.current?.resetFields();
+    });
     rerender(<Test mode />);
     expect(getInput(container, '#text1')?.value).toBe('');
     expect(getInput(container, '#text2')?.value).toBe('');

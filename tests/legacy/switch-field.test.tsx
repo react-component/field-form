@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, act } from '../test-utils';
 import type { FormInstance } from '../../src';
 import Form, { Field, useForm } from '../../src';
 import { Input } from '../common/InfoField';
@@ -58,11 +58,15 @@ describe('legacy.switch-field', () => {
 
   it('Preserve right fields when switch them', async () => {
     const { container } = render(<Demo />);
-    fireEvent.change(container.querySelector('.one'), { target: { value: 'value1' } });
+    await act(async () => {
+      fireEvent.change(container.querySelector('.one'), { target: { value: 'value1' } });
+    });
     expect(Object.keys(form.getFieldsValue())).toEqual(expect.arrayContaining(['a']));
     expect(form.getFieldValue('a')).toBe('value1');
     expect(container.querySelector<HTMLInputElement>('.one')?.value).toBe('value1');
-    fireEvent.click(container.querySelector<HTMLButtonElement>('.sw'));
+    await act(async () => {
+      fireEvent.click(container.querySelector<HTMLButtonElement>('.sw'));
+    });
     expect(Object.keys(form.getFieldsValue())).toEqual(expect.arrayContaining(['a']));
     expect(form.getFieldValue('a')).toBe('value1');
     expect(container.querySelector<HTMLInputElement>('.two')?.value).toBe('value1');

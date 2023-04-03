@@ -45,7 +45,7 @@ describe('legacy.basic-form', () => {
 
     // [Legacy] Not trigger in field form. This is anti with origin test
     // https://github.com/react-component/form/blob/master/tests/createForm.spec.js#L70
-    it('**Not** trigger `onFieldsChange` when `setFields`', () => {
+    it('**Not** trigger `onFieldsChange` when `setFields`', async () => {
       let form;
       const onFieldsChange = vi.fn();
 
@@ -64,7 +64,9 @@ describe('legacy.basic-form', () => {
         </div>,
       );
 
-      form.setFields([{ name: 'name', value: '233' }]);
+      await act(async () => {
+        form.setFields([{ name: 'name', value: '233' }]);
+      });
 
       expect(onFieldsChange).not.toHaveBeenCalled();
     });
@@ -77,9 +79,7 @@ describe('legacy.basic-form', () => {
       const { container } = render(
         <Form onValuesChange={onValuesChange}>
           <Field name={['user', 'teste']}>
-            {() => {
-              return <Input />;
-            }}
+            <Input />
           </Field>
           <Field name={['user', 'name']}>
             <Input />
@@ -87,7 +87,7 @@ describe('legacy.basic-form', () => {
           <Field name={['user', 'age']}>
             <Input type="number" />
           </Field>
-          <Field name="agreement">
+          <Field name="agreement" valuePropName="checked">
             <Input type="checkbox" />
           </Field>
         </Form>,
@@ -96,13 +96,13 @@ describe('legacy.basic-form', () => {
       await act(async () => {
         const field = getField(container, ['user', 'name']);
         await changeValue(field, 'Bamboo');
+      });
 
-        expect(onValuesChange.mock.calls[0][0]).toMatchObject({ user: { name: 'Bamboo' } });
-        expect(onValuesChange.mock.calls[0][1]).toMatchObject({
-          user: {
-            name: 'Bamboo',
-          },
-        });
+      expect(onValuesChange.mock.calls[0][0]).toMatchObject({ user: { name: 'Bamboo' } });
+      expect(onValuesChange.mock.calls[0][1]).toMatchObject({
+        user: {
+          name: 'Bamboo',
+        },
       });
     });
 
