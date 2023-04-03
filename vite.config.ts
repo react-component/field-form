@@ -23,5 +23,20 @@ export default defineConfig({
     css: true,
     reporters: ['default', 'junit'],
     outputFile: './coverage/test-results.xml',
+    // @ts-ignore
+    coverage: {
+      all: true,
+      exclude: [
+        '**/*.stories.*',
+        '**/*.test.*',
+        '**/*.d.ts',
+        '**/types.ts',
+        '**/__mocks__',
+        'src/index.tsx',
+        'src/.umi/**/*',
+      ],
+      include: ['src/**/*.{ts,tsx}'],
+      reporter: ['cobertura', 'html', 'text-summary', 'text'],
+    },
   },
 });
