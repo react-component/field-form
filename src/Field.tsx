@@ -1,6 +1,6 @@
-import toChildrenArray from 'rc-util/es/Children/toArray';
 import warning from 'rc-util/es/warning';
 import * as React from 'react';
+import toChildrenArray from './utils/toChildrenArray';
 import type {
   FieldEntity,
   FormInstance,
