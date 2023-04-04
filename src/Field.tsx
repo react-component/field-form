@@ -1,6 +1,6 @@
-import toChildrenArray from 'rc-util/lib/Children/toArray';
-import warning from 'rc-util/lib/warning';
+import warning from 'rc-util/es/warning';
 import * as React from 'react';
+import toChildrenArray from './utils/toChildrenArray';
 import type {
   FieldEntity,
   FormInstance,
@@ -25,6 +25,7 @@ import {
   defaultGetValueFromEvent,
   getNamePath,
   getValue,
+  mountNameByPath,
 } from './utils/valueUtil';
 
 const EMPTY_ERRORS: any[] = [];
@@ -490,9 +491,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // Support render props
     if (typeof children === 'function') {
       const meta = this.getMeta();
-
       return {
-        ...this.getOnlyChild(children(this.getControlled(), meta, this.props.fieldContext)),
+        ...this.getOnlyChild(
+          children(
+            this.getControlled({
+              name: mountNameByPath(this.getNamePath()),
+            }),
+            meta,
+            this.props.fieldContext,
+          ),
+        ),
         isFunction: true,
       };
     }
@@ -610,9 +618,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     if (isFunction) {
       returnChildNode = child;
     } else if (React.isValidElement(child)) {
+      const theProps = (child as React.ReactElement).props;
       returnChildNode = React.cloneElement(
         child as React.ReactElement,
-        this.getControlled((child as React.ReactElement).props),
+        this.getControlled({
+          ...theProps,
+          name: theProps?.name ?? mountNameByPath(this.getNamePath()),
+        }),
       );
     } else {
       warning(!child, '`children` of Field is not validate ReactElement.');
@@ -623,7 +635,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 }
 
-function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
+const WrapperField = React.forwardRef(function WrapperField<Values = any>(
+  { name, ...restProps }: FieldProps<Values>,
+  ref,
+) {
   const fieldContext = React.useContext(FieldContext);
 
   const namePath = name !== undefined ? getNamePath(name) : undefined;
@@ -644,7 +659,9 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
-  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
-}
+  return <Field ref={ref} key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
+});
+
+WrapperField.displayName = 'Field';
 
 export default WrapperField;

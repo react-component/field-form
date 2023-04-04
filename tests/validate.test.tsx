@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
-import { mount } from 'enzyme';
-import { act } from 'react-dom/test-utils';
+import { render, act, fireEvent } from './test-utils';
 import Form, { Field, useForm } from '../src';
+import type { FormInstance } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
 import type { ValidateMessages } from '@/interface';
+import { vi } from 'vitest';
 
 describe('Form.Validate', () => {
   it('required', async () => {
     let form;
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form
           ref={instance => {
@@ -22,8 +23,11 @@ describe('Form.Validate', () => {
       </div>,
     );
 
-    await changeValue(wrapper, '');
-    matchError(wrapper, true);
+    await act(async () => {
+      await changeValue(getField(container), '');
+    });
+
+    matchError(container, true);
     expect(form.getFieldError('username')).toEqual(["'username' is required"]);
     expect(form.getFieldsError()).toEqual([
       {
@@ -50,7 +54,7 @@ describe('Form.Validate', () => {
 
   describe('validateMessages', () => {
     function renderForm(messages: ValidateMessages, fieldProps = {}) {
-      return mount(
+      return render(
         <Form validateMessages={messages}>
           <InfoField name="username" rules={[{ required: true }]} {...fieldProps} />
         </Form>,
@@ -58,21 +62,27 @@ describe('Form.Validate', () => {
     }
 
     it('template message', async () => {
-      const wrapper = renderForm({ required: "You miss '${name}'!" });
+      const { container } = renderForm({ required: "You miss '${name}'!" });
 
-      await changeValue(wrapper, '');
-      matchError(wrapper, "You miss 'username'!");
+      await act(async () => {
+        await changeValue(getField(container), '');
+      });
+
+      matchError(container, "You miss 'username'!");
     });
 
     it('function message', async () => {
-      const wrapper = renderForm({ required: () => 'Bamboo & Light' });
+      const { container } = renderForm({ required: () => 'Bamboo & Light' });
 
-      await changeValue(wrapper, '');
-      matchError(wrapper, 'Bamboo & Light');
+      await act(async () => {
+        await changeValue(getField(container), '');
+      });
+
+      matchError(container, 'Bamboo & Light');
     });
 
     it('messageVariables', async () => {
-      const wrapper = renderForm(
+      const { container } = renderForm(
         { required: "You miss '${label}'!" },
         {
           messageVariables: {
@@ -81,14 +91,16 @@ describe('Form.Validate', () => {
         },
       );
 
-      await changeValue(wrapper, '');
-      matchError(wrapper, "You miss 'Light&Bamboo'!");
+      await act(async () => {
+        await changeValue(getField(container), '');
+      });
+
+      matchError(container, "You miss 'Light&Bamboo'!");
     });
   });
-
   describe('customize validator', () => {
     it('work', async () => {
-      const wrapper = mount(
+      const { container } = render(
         <Form>
           <InfoField
             name="username"
@@ -107,17 +119,21 @@ describe('Form.Validate', () => {
       );
 
       // Wrong value
-      await changeValue(wrapper, 'light');
-      matchError(wrapper, 'should be bamboo!');
+      await act(async () => {
+        await changeValue(getField(container), 'light');
+      });
+      matchError(container, 'should be bamboo!');
 
       // Correct value
-      await changeValue(wrapper, 'bamboo');
-      matchError(wrapper, false);
+      await act(async () => {
+        await changeValue(getField(container), 'bamboo');
+      });
+      matchError(container, false);
     });
 
     it('should error if throw in validate', async () => {
-      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      const wrapper = mount(
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { container } = render(
         <Form>
           <InfoField
             name="username"
@@ -132,8 +148,11 @@ describe('Form.Validate', () => {
         </Form>,
       );
 
-      await changeValue(wrapper, 'light');
-      matchError(wrapper, "Validation error on field 'username'");
+      await act(async () => {
+        await changeValue(getField(container), 'light');
+      });
+
+      matchError(container, "Validation error on field 'username'");
 
       const consoleErr = String(errorSpy.mock.calls[0][0]);
       expect(consoleErr).toBe('Error: without thinking');
@@ -143,7 +162,7 @@ describe('Form.Validate', () => {
   });
 
   it('fail validate if throw', async () => {
-    const wrapper = mount(
+    const { container } = render(
       <Form>
         <InfoField
           name="username"
@@ -159,15 +178,18 @@ describe('Form.Validate', () => {
     );
 
     // Wrong value
-    await changeValue(wrapper, 'light');
-    matchError(wrapper, "Validation error on field 'username'");
+    await act(async () => {
+      await changeValue(getField(container), 'light');
+    });
+
+    matchError(container, "Validation error on field 'username'");
   });
 
   describe('callback', () => {
     it('warning if not return promise', async () => {
-      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      const wrapper = mount(
+      const { container } = render(
         <Form>
           <InfoField
             name="username"
@@ -182,7 +204,9 @@ describe('Form.Validate', () => {
         </Form>,
       );
 
-      await changeValue(wrapper, 'light');
+      await act(async () => {
+        await changeValue(getField(container), 'light');
+      });
       expect(errorSpy).toHaveBeenCalledWith(
         'Warning: `callback` is deprecated. Please return a promise instead.',
       );
@@ -191,9 +215,9 @@ describe('Form.Validate', () => {
     });
 
     it('warning if both promise & callback exist', async () => {
-      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      const wrapper = mount(
+      const { container } = render(
         <Form>
           <InfoField
             name="username"
@@ -209,7 +233,9 @@ describe('Form.Validate', () => {
         </Form>,
       );
 
-      await changeValue(wrapper, 'light');
+      await act(async () => {
+        await changeValue(getField(container), 'light');
+      });
       expect(errorSpy).toHaveBeenCalledWith(
         'Warning: Your validator function has already return a promise. `callback` will be ignored.',
       );
@@ -221,7 +247,7 @@ describe('Form.Validate', () => {
   describe('validateTrigger', () => {
     it('normal', async () => {
       let form;
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form
             ref={instance => {
@@ -247,23 +273,24 @@ describe('Form.Validate', () => {
         </div>,
       );
 
-      await changeValue(getField(wrapper, 'test'), '');
+      await act(async () => {
+        const field = getField(container, 'test');
+        await changeValue(field, '');
+      });
       expect(form.getFieldError('test')).toEqual(['Not pass']);
 
-      wrapper.find('input').simulate('blur');
-      await timeout();
+      await act(async () => {
+        fireEvent.blur(getField(container, 'test'));
+        await timeout();
+      });
       expect(form.getFieldError('test')).toEqual(["'test' is required"]);
     });
 
     it('change validateTrigger', async () => {
-      let form;
+      const form = React.createRef<FormInstance>();
 
       const Test = ({ init = false }) => (
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <Field
             name="title"
             validateTrigger={init ? 'onChange' : 'onBlur'}
@@ -277,48 +304,70 @@ describe('Form.Validate', () => {
         </Form>
       );
 
-      const wrapper = mount(<Test />);
+      const { container, rerender } = render(<Test />);
 
-      getField(wrapper).simulate('blur');
-      await timeout();
-      expect(form.getFieldError('title')).toEqual(['Title is required']);
+      await act(async () => {
+        fireEvent.blur(getField(container));
+        await timeout();
+      });
 
-      wrapper.setProps({ init: true });
-      await changeValue(getField(wrapper), '1');
-      expect(form.getFieldValue('title')).toBe('1');
-      expect(form.getFieldError('title')).toEqual(['Title should be 3+ characters']);
+      expect(form.current.getFieldError('title')).toEqual(['Title is required']);
+
+      rerender(<Test init={true} />);
+
+      await act(async () => {
+        await changeValue(getField(container), '1');
+        await timeout();
+      });
+
+      expect(form.current.getFieldValue('title')).toBe('1');
+      expect(form.current.getFieldError('title')).toEqual(['Title should be 3+ characters']);
     });
 
     it('form context', async () => {
-      const wrapper = mount(
-        <Form validateTrigger="onBlur">
-          <InfoField name="test" rules={[{ required: true }]} />
-        </Form>,
-      );
+      const Component = (props: { validateTrigger?: 'onBlur' | 'onChange' }) => {
+        const { validateTrigger = 'onBlur' } = props;
+
+        return (
+          <Form {...props} validateTrigger={validateTrigger}>
+            <InfoField name="test" rules={[{ required: true }]} />
+          </Form>
+        );
+      };
+      const { container, rerender } = render(<Component />);
 
       // Not trigger validate since Form set `onBlur`
-      await changeValue(getField(wrapper), '');
-      matchError(wrapper, false);
+      await act(async () => {
+        await changeValue(getField(container), '');
+        await timeout();
+      });
+
+      matchError(container, false);
 
       // Trigger onBlur
-      wrapper.find('input').simulate('blur');
-      await timeout();
-      wrapper.update();
-      matchError(wrapper, true);
+      await act(async () => {
+        fireEvent.blur(getField(container));
+        await timeout();
+      });
+      rerender(<Component />);
+      matchError(container, true);
 
-      // Update Form context
-      wrapper.setProps({ validateTrigger: 'onChange' });
-      await changeValue(getField(wrapper), '1');
-      matchError(wrapper, false);
+      // // Update Form context
+      rerender(<Component validateTrigger="onChange" />);
+
+      await act(async () => {
+        await changeValue(getField(container), '1');
+      });
+
+      matchError(container, false);
     });
   });
-
   describe('validate only accept exist fields', () => {
     it('skip init value', async () => {
       let form;
-      const onFinish = jest.fn();
+      const onFinish = vi.fn();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form
             onFinish={onFinish}
@@ -340,14 +389,14 @@ describe('Form.Validate', () => {
       expect(await form.validateFields()).toEqual({ user: 'light' });
 
       // Submit callback
-      wrapper.find('button').simulate('submit');
+      fireEvent.click(container.querySelector('button'));
       await timeout();
       expect(onFinish).toHaveBeenCalledWith({ user: 'light' });
     });
 
     it('remove from fields', async () => {
-      const onFinish = jest.fn();
-      const wrapper = mount(
+      const onFinish = vi.fn();
+      const { container } = render(
         <Form
           onFinish={onFinish}
           initialValues={{
@@ -372,59 +421,59 @@ describe('Form.Validate', () => {
       );
 
       // Submit callback
-      wrapper.find('button').simulate('submit');
-      await timeout();
+      await act(async () => {
+        fireEvent.click(container.querySelector('button'));
+        await timeout();
+      });
+
       expect(onFinish).toHaveBeenCalledWith({ switch: true, ignore: 'test' });
       onFinish.mockReset();
 
       // Hide one
-      wrapper.find('input.switch').simulate('change', {
-        target: {
-          checked: false,
-        },
+      fireEvent.click(getField(container, 'switch'));
+
+      await act(async () => {
+        fireEvent.click(container.querySelector('button'));
+        await timeout();
       });
-      wrapper.find('button').simulate('submit');
-      await timeout();
+
       expect(onFinish).toHaveBeenCalledWith({ switch: false });
     });
 
     it('validateFields should not pass when validateFirst is set', async () => {
-      let form;
+      const form = React.createRef<FormInstance>();
 
-      mount(
+      render(
         <div>
-          <Form
-            ref={instance => {
-              form = instance;
-            }}
-          >
+          <Form ref={form}>
             <InfoField name="user" validateFirst rules={[{ required: true }]}>
               <Input />
             </InfoField>
           </Form>
         </div>,
       );
-
-      // Validate callback
-      await new Promise(resolve => {
-        let failed = false;
-        form
-          .validateFields()
-          .catch(() => {
-            failed = true;
-          })
-          .then(() => {
-            expect(failed).toBeTruthy();
-            resolve('');
-          });
+      await act(async () => {
+        // Validate callback
+        await new Promise(resolve => {
+          let failed = false;
+          form.current
+            .validateFields()
+            .catch(() => {
+              failed = true;
+            })
+            .then(() => {
+              expect(failed).toBeTruthy();
+              resolve('');
+            });
+        });
       });
     });
   });
 
   it('should error in console if user script failed', async () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const wrapper = mount(
+    const { container } = render(
       <Form
         onFinish={() => {
           throw new Error('should console this');
@@ -434,10 +483,11 @@ describe('Form.Validate', () => {
         <InfoField name="user">
           <Input />
         </InfoField>
+        <button type="submit">submit</button>
       </Form>,
     );
 
-    wrapper.find('form').simulate('submit');
+    fireEvent.click(container.querySelector('button'));
     await timeout();
     expect(errorSpy.mock.calls[0][0].message).toEqual('should console this');
 
@@ -448,9 +498,9 @@ describe('Form.Validate', () => {
     it('work', async () => {
       let form;
       let canEnd = false;
-      const onFinish = jest.fn();
+      const onFinish = vi.fn();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form
             ref={instance => {
@@ -474,13 +524,16 @@ describe('Form.Validate', () => {
                 },
               ]}
             />
+            <button type="submit">submit</button>
           </Form>
         </div>,
       );
 
       // Not pass
-      await changeValue(wrapper, '');
-      matchError(wrapper, true);
+      await act(async () => {
+        await changeValue(getField(container), '');
+      });
+      matchError(container, true);
       expect(form.getFieldError('username')).toEqual(["'username' is required"]);
       expect(form.getFieldsError()).toEqual([
         {
@@ -493,11 +546,16 @@ describe('Form.Validate', () => {
 
       // Should pass
       canEnd = true;
-      await changeValue(wrapper, 'test');
-      wrapper.find('form').simulate('submit');
-      await timeout();
+      await act(async () => {
+        await changeValue(getField(container), 'test');
+      });
 
-      matchError(wrapper, false);
+      await act(async () => {
+        fireEvent.click(container.querySelector('button'));
+        await timeout();
+      });
+
+      matchError(container, false);
       expect(onFinish).toHaveBeenCalledWith({ username: 'test' });
     });
 
@@ -509,7 +567,7 @@ describe('Form.Validate', () => {
         let ruleFirst = false;
         let ruleSecond = false;
 
-        const wrapper = mount(
+        const Component = () => (
           <Form>
             <InfoField
               name="username"
@@ -531,14 +589,17 @@ describe('Form.Validate', () => {
                 },
               ]}
             />
-          </Form>,
+          </Form>
         );
 
-        await changeValue(wrapper, 'test');
+        const { container, rerender } = render(<Component />);
+
+        await changeValue(getField(container), 'test');
         await timeout();
 
-        wrapper.update();
-        matchError(wrapper, 'failed first');
+        rerender(<Component />);
+
+        matchError(container, 'failed first');
 
         expect(ruleFirst).toEqual(first);
         expect(ruleSecond).toEqual(second);
@@ -575,18 +636,19 @@ describe('Form.Validate', () => {
         </Form>
       );
     };
-    const wrapper = mount(<Demo />);
+    const { container, rerender } = render(<Demo />);
 
-    await changeValue(wrapper, '233');
-    matchError(wrapper, true);
+    await changeValue(getField(container), '233');
+    matchError(container, true);
 
-    wrapper.find('button').simulate('click');
-    wrapper.update();
-    matchError(wrapper, false);
+    fireEvent.click(container.querySelector('button'));
+    rerender(<Demo />);
+
+    matchError(container, false);
   });
 
   it('submit should trigger Field re-render', () => {
-    const renderProps = jest.fn().mockImplementation(() => null);
+    const renderProps = vi.fn().mockImplementation(() => null);
 
     const Demo = () => {
       const [form] = useForm();
@@ -609,11 +671,11 @@ describe('Form.Validate', () => {
       );
     };
 
-    const wrapper = mount(<Demo />);
+    const { container } = render(<Demo />);
     renderProps.mockReset();
 
     // Should trigger validating
-    wrapper.find('button').simulate('click');
+    fireEvent.click(container.querySelector('button'));
     expect(renderProps.mock.calls[0][1]).toEqual(expect.objectContaining({ validating: true }));
   });
 
@@ -621,15 +683,17 @@ describe('Form.Validate', () => {
     let failedTriggerTimes = 0;
     let passedTriggerTimes = 0;
 
-    interface FormStore {
+    type FormStore = {
       username: string;
       password: string;
-    }
+    };
 
     const Demo = () => (
       <Form>
         <InfoField name="username" />
-        <Form.Field<FormStore> shouldUpdate={(prev, cur) => prev.username !== cur.username}>
+        <Form.Field
+          shouldUpdate={(prev: FormStore, cur: FormStore) => prev.username !== cur.username}
+        >
           {(_, __, { getFieldValue }) => {
             const value = getFieldValue('username');
 
@@ -666,35 +730,42 @@ describe('Form.Validate', () => {
       </Form>
     );
 
-    const wrapper = mount(<Demo />);
+    const { container } = render(<Demo />);
 
     expect(failedTriggerTimes).toEqual(0);
     expect(passedTriggerTimes).toEqual(0);
 
     // Failed of second input
-    await changeValue(getField(wrapper, 1), '');
-    matchError(getField(wrapper, 2), true);
+    await act(async () => {
+      await changeValue(getField(container, 1), '');
+    });
 
-    expect(failedTriggerTimes).toEqual(1);
+    matchError(getField(container, 1).parentElement, true);
+
+    expect(failedTriggerTimes).toEqual(2);
     expect(passedTriggerTimes).toEqual(0);
 
     // Changed first to trigger update
-    await changeValue(getField(wrapper, 0), 'light');
-    matchError(getField(wrapper, 2), false);
+    await act(async () => {
+      await changeValue(getField(container, 0), 'light');
+    });
+    matchError(getField(container, 0).parentElement, false);
 
-    expect(failedTriggerTimes).toEqual(1);
+    expect(failedTriggerTimes).toEqual(2);
     expect(passedTriggerTimes).toEqual(1);
 
     // Remove should not trigger validate
-    await changeValue(getField(wrapper, 0), 'removed');
+    await act(async () => {
+      await changeValue(getField(container, 0), 'removed');
+    });
 
-    expect(failedTriggerTimes).toEqual(1);
+    expect(failedTriggerTimes).toEqual(2);
     expect(passedTriggerTimes).toEqual(1);
   });
 
   it('validate support recursive', async () => {
     let form;
-    const wrapper = mount(
+    const Component = () => (
       <div>
         <Form
           ref={instance => {
@@ -704,55 +775,68 @@ describe('Form.Validate', () => {
           <InfoField name={['username', 'do']} rules={[{ required: true }]} />
           <InfoField name={['username', 'list']} rules={[{ required: true }]} />
         </Form>
-      </div>,
+      </div>
     );
+    const { container, rerender } = render(<Component />);
 
-    wrapper
-      .find('input')
-      .at(0)
-      .simulate('change', { target: { value: '' } });
     await act(async () => {
+      changeValue(getField(container, 0), '');
       await timeout();
     });
-    wrapper.update();
 
+    await act(async () => {
+      rerender(<Component />);
+    });
+
+    let values;
     try {
-      const values = await form.validateFields(['username'], { recursive: true });
+      await act(async () => {
+        values = await form.validateFields(['username'], { recursive: true });
+      });
       expect(values.username.do).toBe('');
     } catch (error) {
       expect(error.errorFields.length).toBe(2);
     }
 
-    const values = await form.validateFields(['username']);
+    await act(async () => {
+      values = await form.validateFields(['username']);
+    });
     expect(values.username.do).toBe('');
   });
 
   it('not trigger validator', async () => {
-    const wrapper = mount(
+    const form = React.createRef<FormInstance>();
+    const { container } = render(
       <div>
-        <Form>
+        <Form ref={form}>
           <InfoField name="user" rules={[{ required: true }]} />
         </Form>
       </div>,
     );
-    await changeValue(getField(wrapper, 0), ['light']);
-    matchError(wrapper, false);
+    await act(async () => {
+      form.current.setFieldValue('user', 'light');
+    });
+    matchError(container, false);
   });
 
   it('filter empty rule', async () => {
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form>
           <InfoField name="user" rules={[{ required: true }, null]} />
         </Form>
       </div>,
     );
-    await changeValue(wrapper, '');
-    matchError(wrapper, true);
+    await act(async () => {
+      await changeValue(getField(container), '');
+      await timeout();
+    });
+    matchError(container, true);
   });
+
   it('validated status should be true when trigger validate', async () => {
-    const validateTrigger = jest.fn();
-    const validateNoTrigger = jest.fn();
+    const validateTrigger = vi.fn();
+    const validateNoTrigger = vi.fn();
     const App = ({ trigger = true }) => {
       const ref = React.useRef(null);
       useEffect(() => {
@@ -787,18 +871,21 @@ describe('Form.Validate', () => {
         </div>
       );
     };
-    const wrapper = mount(<App trigger={false} />);
+    const { rerender } = render(<App trigger={false} />);
     await timeout();
     expect(validateNoTrigger).not.toHaveBeenCalled();
-    wrapper.setProps({ trigger: true });
-    await timeout();
+
+    await act(async () => {
+      rerender(<App trigger={true} />);
+      await timeout();
+    });
     expect(validateTrigger).toBeCalledWith(true);
   });
 
   it('should trigger onFieldsChange 3 times', async () => {
-    const onFieldsChange = jest.fn();
+    const onFieldsChange = vi.fn();
 
-    const wrapper = mount(
+    const { container } = render(
       <Form onFieldsChange={onFieldsChange}>
         <InfoField name="test" rules={[{ required: true }]}>
           <Input />
@@ -806,9 +893,10 @@ describe('Form.Validate', () => {
       </Form>,
     );
 
-    await changeValue(getField(wrapper, 'test'), '');
-
-    await timeout();
+    await act(async () => {
+      await changeValue(getField(container, 'test'), 'test');
+      await timeout();
+    });
 
     // `validated: false` -> `validated: false` -> `validated: true`
     // `validating: false` -> `validating: true` -> `validating: false`

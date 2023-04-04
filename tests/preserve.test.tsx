@@ -1,20 +1,22 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, act } from './test-utils';
 import type { FormInstance } from '../src';
 import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
+import { changeValue, getField } from './common';
+import { vi } from 'vitest';
 
 describe('Form.Preserve', () => {
   const Demo: React.FC<any> = ({ removeField, formPreserve, fieldPreserve, onFinish }) => (
-    <Form onFinish={onFinish} initialValues={{ keep: 233, remove: 666 }} preserve={formPreserve}>
+    <Form onFinish={onFinish} initialValues={{ keep: 233, remove: 777 }} preserve={formPreserve}>
       <InfoField name="keep" />
       {!removeField && <InfoField name="remove" preserve={fieldPreserve} />}
     </Form>
   );
 
   it('field', async () => {
-    const onFinish = jest.fn();
+    const onFinish = vi.fn();
     const { container, rerender } = render(
       <Demo removeField={false} onFinish={onFinish} fieldPreserve={false} />,
     );
@@ -25,13 +27,13 @@ describe('Form.Preserve', () => {
       await timeout();
       expect(onFinish).toHaveBeenCalledWith(match);
     };
-    await matchTest(false, { keep: 233, remove: 666 });
+    await matchTest(false, { keep: 233, remove: 777 });
     await matchTest(true, { keep: 233 });
-    await matchTest(false, { keep: 233, remove: 666 });
+    await matchTest(false, { keep: 233, remove: 777 });
   });
 
   it('form', async () => {
-    const onFinish = jest.fn();
+    const onFinish = vi.fn();
     const { container, rerender } = render(
       <Demo removeField={false} onFinish={onFinish} formPreserve={false} />,
     );
@@ -42,9 +44,9 @@ describe('Form.Preserve', () => {
       await timeout();
       expect(onFinish).toHaveBeenCalledWith(match);
     };
-    await matchTest(false, { keep: 233, remove: 666 });
+    await matchTest(false, { keep: 233, remove: 777 });
     await matchTest(true, { keep: 233 });
-    await matchTest(false, { keep: 233, remove: 666 });
+    await matchTest(false, { keep: 233, remove: 777 });
   });
 
   it('keep preserve when other field exist the name', async () => {
@@ -63,29 +65,36 @@ describe('Form.Preserve', () => {
       </Form>
     );
 
-    const onFinish = jest.fn();
+    const onFinish = vi.fn();
     const { container, rerender } = render(<KeepDemo onFinish={onFinish} keep />);
 
     // Change value
-    fireEvent.change(container.querySelector<HTMLInputElement>('input'), {
-      target: { value: 'light' },
+    await act(async () => {
+      changeValue(container.querySelector<HTMLInputElement>('input'), 'light');
+      formRef.current?.submit();
+      await timeout();
     });
 
-    formRef.current?.submit();
-    await timeout();
     expect(onFinish).toHaveBeenCalledWith({ test: 'light' });
-    onFinish.mockReset();
+
+    await act(async () => {
+      onFinish.mockReset();
+    });
 
     // Remove preserve should not change the value
     rerender(<KeepDemo onFinish={onFinish} keep={false} />);
-    await timeout();
-    formRef.current?.submit();
-    await timeout();
+
+    await act(async () => {
+      await timeout();
+      formRef.current?.submit();
+      await timeout();
+    });
+
     expect(onFinish).toHaveBeenCalledWith({ test: 'light' });
   });
 
   it('form preserve but field !preserve', async () => {
-    const onFinish = jest.fn();
+    const onFinish = vi.fn();
     const { container, rerender } = render(
       <Demo removeField={false} onFinish={onFinish} formPreserve={false} fieldPreserve />,
     );
@@ -99,7 +108,7 @@ describe('Form.Preserve', () => {
       expect(onFinish).toHaveBeenCalledWith(match);
     };
     await matchTest(true, { keep: 233 });
-    await matchTest(false, { keep: 233, remove: 666 });
+    await matchTest(false, { keep: 233, remove: 777 });
   });
 
   describe('Form.List', () => {
@@ -129,8 +138,8 @@ describe('Form.Preserve', () => {
     });
 
     it('warning when Form.List use preserve', () => {
-      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       const form = React.createRef<FormInstance>();
+      vi.spyOn(console, 'error').mockImplementation(() => {});
       const { container } = render(
         <Form ref={form} initialValues={{ list: ['bamboo'] }}>
           <Form.List name="list">
@@ -154,15 +163,14 @@ describe('Form.Preserve', () => {
         </Form>,
       );
 
-      expect(errorSpy).toHaveBeenCalledWith(
+      expect(console.error).toHaveBeenCalledWith(
         'Warning: `preserve` should not apply on Form.List fields.',
       );
-
-      errorSpy.mockRestore();
 
       // Remove should not work
       fireEvent.click(container.querySelector<HTMLButtonElement>('button'));
       expect(form.current?.getFieldsValue()).toEqual({ list: [] });
+      (console.error as jest.Mock).mockRestore();
     });
 
     it('multiple level field can use preserve', async () => {
@@ -211,19 +219,13 @@ describe('Form.Preserve', () => {
       );
 
       // Change light value
-      fireEvent.change(container.querySelectorAll<HTMLInputElement>('input')[1], {
-        target: { value: '1128' },
-      });
+      changeValue(container.querySelectorAll<HTMLInputElement>('input')[1], '1128');
 
       // Change type
-      fireEvent.change(container.querySelectorAll<HTMLInputElement>('input')[0], {
-        target: { value: 'bamboo' },
-      });
+      changeValue(container.querySelectorAll<HTMLInputElement>('input')[0], 'bamboo');
 
       // Change type
-      fireEvent.change(container.querySelectorAll<HTMLInputElement>('input')[1], {
-        target: { value: '903' },
-      });
+      changeValue(container.querySelectorAll<HTMLInputElement>('input')[1], '903');
 
       expect(form.current?.getFieldsValue()).toEqual({ list: [{ type: 'bamboo', bamboo: '903' }] });
 
@@ -234,7 +236,7 @@ describe('Form.Preserve', () => {
     });
   });
 
-  it('nest render props should not clean full store', () => {
+  it('nest render props should not clean full store', async () => {
     const form = React.createRef<FormInstance>();
 
     const { container, unmount } = render(
@@ -250,14 +252,15 @@ describe('Form.Preserve', () => {
       </Form>,
     );
 
-    fireEvent.change(container.querySelector<HTMLInputElement>('input'), {
-      target: { value: 'bamboo' },
+    await act(async () => {
+      changeValue(getField(container), 'bamboo');
     });
     expect(form.current?.getFieldsValue()).toEqual({ light: 'bamboo' });
 
-    fireEvent.change(container.querySelector<HTMLInputElement>('input'), {
-      target: { value: 'little' },
+    await act(async () => {
+      changeValue(getField(container), 'little');
     });
+
     expect(form.current?.getFieldsValue()).toEqual({ light: 'little' });
 
     unmount();
@@ -265,7 +268,7 @@ describe('Form.Preserve', () => {
 
   // https://github.com/ant-design/ant-design/issues/31297
   describe('A -> B -> C should keep trigger refresh', () => {
-    it('shouldUpdate', () => {
+    it('shouldUpdate', async () => {
       const DepDemo: React.FC = () => {
         const [form] = Form.useForm();
         return (
@@ -298,21 +301,21 @@ describe('Form.Preserve', () => {
       const { container } = render(<DepDemo />);
 
       // Input name to show password
-      fireEvent.change(container.querySelector<HTMLInputElement>('#name'), {
-        target: { value: '1' },
+      await act(async () => {
+        changeValue(container.querySelector<HTMLInputElement>('#name'), '1');
       });
       expect(container.querySelector<HTMLInputElement>('#password')).toBeTruthy();
       expect(container.querySelector<HTMLInputElement>('#password2')).toBeFalsy();
 
       // Input password to show password2
-      fireEvent.change(container.querySelector<HTMLInputElement>('#password'), {
-        target: { value: '1' },
+      await act(async () => {
+        changeValue(container.querySelector<HTMLInputElement>('#password'), '1');
       });
       expect(container.querySelector<HTMLInputElement>('#password2')).toBeTruthy();
 
       // Change name to hide password
-      fireEvent.change(container.querySelector<HTMLInputElement>('#name'), {
-        target: { value: '2' },
+      await act(async () => {
+        changeValue(container.querySelector<HTMLInputElement>('#name'), '2');
       });
       expect(container.querySelector<HTMLInputElement>('#password')).toBeFalsy();
       expect(container.querySelector<HTMLInputElement>('#password2')).toBeFalsy();
@@ -355,22 +358,16 @@ describe('Form.Preserve', () => {
       const { container } = render(<DepDemo />);
 
       // Input name to show password
-      fireEvent.change(container.querySelector<HTMLInputElement>('#name'), {
-        target: { value: '1' },
-      });
+      changeValue(container.querySelector<HTMLInputElement>('#name'), '1');
       expect(container.querySelector<HTMLInputElement>('#password')).toBeTruthy();
       expect(container.querySelector<HTMLInputElement>('#password2')).toBeFalsy();
 
       // Input password to show password2
-      fireEvent.change(container.querySelector<HTMLInputElement>('#password'), {
-        target: { value: '1' },
-      });
+      changeValue(container.querySelector<HTMLInputElement>('#password'), '1');
       expect(container.querySelector<HTMLInputElement>('#password2')).toBeTruthy();
 
       // Change name to hide password
-      fireEvent.change(container.querySelector<HTMLInputElement>('#name'), {
-        target: { value: '2' },
-      });
+      changeValue(container.querySelector<HTMLInputElement>('#name'), '2');
       expect(container.querySelector<HTMLInputElement>('#password')).toBeFalsy();
       expect(container.querySelector<HTMLInputElement>('#password2')).toBeFalsy();
     });

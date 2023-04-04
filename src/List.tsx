@@ -1,5 +1,5 @@
 import * as React from 'react';
-import warning from 'rc-util/lib/warning';
+import warning from 'rc-util/es/warning';
 import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
@@ -61,7 +61,7 @@ const List: React.FunctionComponent<ListProps> = ({
         return [keyManager.keys[pathName], namePath.slice(len + 1)];
       },
     }),
-    [prefixName],
+    [prefixName, keyManager.keys],
   );
 
   // User should not pass `children` as other type.

@@ -1,6 +1,5 @@
-import { mount } from 'enzyme';
-import { fireEvent, render } from '@testing-library/react';
-import { resetWarned } from 'rc-util/lib/warning';
+import { render, act, waitFor, renderHook, fireEvent } from './test-utils';
+import { resetWarned } from 'rc-util/es/warning';
 import React from 'react';
 import type { FormInstance } from '../src';
 import Form, { Field, useForm } from '../src';
@@ -8,6 +7,7 @@ import { changeValue, getField, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
 import type { Meta } from '@/interface';
+import { vi } from 'vitest';
 
 describe('Form.Basic', () => {
   describe('create form', () => {
@@ -88,7 +88,7 @@ describe('Form.Basic', () => {
   it('fields touched', async () => {
     const form = React.createRef<FormInstance>();
 
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form ref={form}>
           <InfoField name="username" />
@@ -101,13 +101,19 @@ describe('Form.Basic', () => {
     expect(form.current?.isFieldsTouched()).toBeFalsy();
     expect(form.current?.isFieldsTouched(['username', 'password'])).toBeFalsy();
 
-    await changeValue(getField(wrapper, 0), 'Bamboo');
+    await act(async () => {
+      await changeValue(getField(container, 0), 'Bamboo');
+    });
+
     expect(form.current?.isFieldsTouched()).toBeTruthy();
     expect(form.current?.isFieldsTouched(['username', 'password'])).toBeTruthy();
     expect(form.current?.isFieldsTouched(true)).toBeFalsy();
     expect(form.current?.isFieldsTouched(['username', 'password'], true)).toBeFalsy();
 
-    await changeValue(getField(wrapper, 1), 'Light');
+    await act(async () => {
+      await changeValue(getField(container, 1), 'Light');
+    });
+
     expect(form.current?.isFieldsTouched()).toBeTruthy();
     expect(form.current?.isFieldsTouched(['username', 'password'])).toBeTruthy();
     expect(form.current?.isFieldsTouched(true)).toBeTruthy();
@@ -118,10 +124,10 @@ describe('Form.Basic', () => {
     function resetTest(name: string, ...args) {
       it(name, async () => {
         const form = React.createRef<FormInstance>();
-        const onReset = jest.fn();
-        const onMeta = jest.fn();
+        const onReset = vi.fn();
+        const onMeta = vi.fn();
 
-        const wrapper = mount(
+        const { container } = render(
           <div>
             <Form ref={form}>
               <Field
@@ -136,7 +142,10 @@ describe('Form.Basic', () => {
           </div>,
         );
 
-        await changeValue(getField(wrapper, 'username'), 'Bamboo');
+        await act(async () => {
+          await changeValue(getField(container, 'username'), 'Bamboo');
+        });
+
         expect(form.current?.getFieldValue('username')).toEqual('Bamboo');
         expect(form.current?.getFieldError('username')).toEqual([]);
         expect(form.current?.isFieldTouched('username')).toBeTruthy();
@@ -147,7 +156,10 @@ describe('Form.Basic', () => {
         onMeta.mockRestore();
         onReset.mockRestore();
 
-        form.current?.resetFields(...args);
+        await act(async () => {
+          form.current?.resetFields(...args);
+        });
+
         expect(form.current?.getFieldValue('username')).toEqual(undefined);
         expect(form.current?.getFieldError('username')).toEqual([]);
         expect(form.current?.isFieldTouched('username')).toBeFalsy();
@@ -158,7 +170,10 @@ describe('Form.Basic', () => {
         onMeta.mockRestore();
         onReset.mockRestore();
 
-        await changeValue(getField(wrapper, 'username'), '');
+        await act(async () => {
+          await changeValue(getField(container, 'username'), '');
+        });
+
         expect(form.current?.getFieldValue('username')).toEqual('');
         expect(form.current?.getFieldError('username')).toEqual(["'username' is required"]);
         expect(form.current?.isFieldTouched('username')).toBeTruthy();
@@ -173,7 +188,10 @@ describe('Form.Basic', () => {
         onMeta.mockRestore();
         onReset.mockRestore();
 
-        form.current?.resetFields(...args);
+        await act(async () => {
+          form.current?.resetFields(...args);
+        });
+
         expect(form.current?.getFieldValue('username')).toEqual(undefined);
         expect(form.current?.getFieldError('username')).toEqual([]);
         expect(form.current?.isFieldTouched('username')).toBeFalsy();
@@ -190,7 +208,7 @@ describe('Form.Basic', () => {
     it('not affect others', async () => {
       const form = React.createRef<FormInstance>();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form ref={form}>
             <Field name="username" rules={[{ required: true }]}>
@@ -204,9 +222,11 @@ describe('Form.Basic', () => {
         </div>,
       );
 
-      await changeValue(getField(wrapper, 'username'), 'Bamboo');
-      await changeValue(getField(wrapper, 'password'), '');
-      form.current?.resetFields(['username']);
+      await act(async () => {
+        await changeValue(getField(container, 'username'), 'Bamboo');
+        await changeValue(getField(container, 'password'), '');
+        form.current?.resetFields(['username']);
+      });
 
       expect(form.current?.getFieldValue('username')).toEqual(undefined);
       expect(form.current?.getFieldError('username')).toEqual([]);
@@ -217,7 +237,7 @@ describe('Form.Basic', () => {
     });
 
     it('remove Field should trigger onMetaChange', () => {
-      const onMetaChange = jest.fn();
+      const onMetaChange = vi.fn();
       const { unmount } = render(
         <Form>
           <Field name="username" onMetaChange={onMetaChange}>
@@ -231,7 +251,7 @@ describe('Form.Basic', () => {
   });
 
   it('should throw if no Form in use', () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(
       <Field>
@@ -247,23 +267,36 @@ describe('Form.Basic', () => {
   });
 
   it('keep origin input function', async () => {
-    const onChange = jest.fn();
-    const onValuesChange = jest.fn();
-    const wrapper = mount(
-      <Form onValuesChange={onValuesChange}>
-        <Field name="username">
-          <Input onChange={onChange} />
-        </Field>
-      </Form>,
-    );
+    const onChange = vi.fn();
+    const onValuesChange = vi.fn();
+    const Component = () => {
+      const onChangeHandler = React.useCallback(e => {
+        onChange(e);
+      }, []);
+      const onValuesChangeHandler = React.useCallback((changedValues, allValues) => {
+        onValuesChange(changedValues, allValues);
+      }, []);
 
-    await changeValue(getField(wrapper), 'Bamboo');
+      return (
+        <Form onValuesChange={onValuesChangeHandler}>
+          <Field name="username">
+            <Input onChange={onChangeHandler} />
+          </Field>
+        </Form>
+      );
+    };
+    const { container } = render(<Component />);
+
+    await act(async () => {
+      await changeValue(getField(container), 'Bamboo');
+    });
+
     expect(onValuesChange).toHaveBeenCalledWith({ username: 'Bamboo' }, { username: 'Bamboo' });
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ target: { value: 'Bamboo' } }));
+    expect(onChange.mock.calls[0][0].target).toContain({ value: 'Bamboo' });
   });
 
   it('onValuesChange should not return fully value', async () => {
-    const onValuesChange = jest.fn();
+    const onValuesChange = vi.fn();
 
     const Demo: React.FC<any> = ({ showField = true }) => (
       <Form onValuesChange={onValuesChange} initialValues={{ light: 'little' }}>
@@ -278,21 +311,27 @@ describe('Form.Basic', () => {
       </Form>
     );
 
-    const wrapper = mount(<Demo />);
-    await changeValue(getField(wrapper, 'bamboo'), 'cute');
+    const { container, rerender } = render(<Demo />);
+    await act(async () => {
+      await changeValue(getField(container, 'bamboo'), 'cute');
+    });
+
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), {
       light: 'little',
       bamboo: 'cute',
     });
 
     onValuesChange.mockReset();
-    wrapper.setProps({ showField: false });
-    await changeValue(getField(wrapper, 'bamboo'), 'beauty');
+
+    rerender(<Demo showField={false} />);
+
+    await changeValue(getField(container, 'bamboo'), 'beauty');
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { bamboo: 'beauty' });
   });
+
   it('should call onReset fn, when the button is clicked', async () => {
-    const resetFn = jest.fn();
-    const wrapper = mount(
+    const resetFn = vi.fn();
+    const { container } = render(
       <Form onReset={resetFn}>
         <InfoField name={'user'}>
           <Input />
@@ -300,18 +339,21 @@ describe('Form.Basic', () => {
         <button type="reset">reset</button>
       </Form>,
     );
-    await changeValue(getField(wrapper), 'Bamboo');
-    wrapper.find('button').simulate('reset');
-    await timeout();
-    expect(resetFn).toHaveBeenCalledTimes(1);
-    const { value } = wrapper.find('input').props();
-    expect(value).toEqual('');
-  });
-  it('submit', async () => {
-    const onFinish = jest.fn();
-    const onFinishFailed = jest.fn();
+    await act(async () => {
+      await changeValue(getField(container), 'Bamboo');
+      fireEvent.click(container.querySelector('button'));
+      await timeout();
+    });
 
-    const wrapper = mount(
+    expect(resetFn).toHaveBeenCalledTimes(1);
+    expect(getField(container).value).toEqual('');
+  });
+
+  it('submit', async () => {
+    const onFinish = vi.fn();
+    const onFinishFailed = vi.fn();
+
+    const { container } = render(
       <Form onFinish={onFinish} onFinishFailed={onFinishFailed}>
         <InfoField name="user" rules={[{ required: true }]}>
           <Input />
@@ -321,10 +363,12 @@ describe('Form.Basic', () => {
     );
 
     // Not trigger
-    wrapper.find('button').simulate('submit');
-    await timeout();
-    wrapper.update();
-    matchError(wrapper, "'user' is required");
+    await act(async () => {
+      fireEvent.click(container.querySelector('button'));
+      await timeout();
+    });
+    // wrapper.update();
+    matchError(container, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
     expect(onFinishFailed).toHaveBeenCalledWith({
       errorFields: [{ name: ['user'], errors: ["'user' is required"], warnings: [] }],
@@ -335,17 +379,20 @@ describe('Form.Basic', () => {
     onFinish.mockReset();
     onFinishFailed.mockReset();
 
-    // Trigger
-    await changeValue(getField(wrapper), 'Bamboo');
-    wrapper.find('button').simulate('submit');
-    await timeout();
-    matchError(wrapper, false);
+    await act(async () => {
+      // Trigger
+      await changeValue(getField(container), 'Bamboo');
+      // wrapper.find('button').simulate('submit');
+      fireEvent.click(container.querySelector('button'));
+      await timeout();
+    });
+    matchError(container, false);
     expect(onFinish).toHaveBeenCalledWith({ user: 'Bamboo' });
     expect(onFinishFailed).not.toHaveBeenCalled();
   });
 
   it('getInternalHooks should not usable by user', () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const form = React.createRef<FormInstance>();
     render(
@@ -365,7 +412,7 @@ describe('Form.Basic', () => {
 
   it('valuePropName', async () => {
     const form = React.createRef<FormInstance>();
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form ref={form}>
           <Field name="check" valuePropName="checked">
@@ -375,17 +422,23 @@ describe('Form.Basic', () => {
       </div>,
     );
 
-    wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: true } });
-    await timeout();
+    const field = getField(container);
+    await act(async () => {
+      fireEvent.click(field); // click to change
+      await timeout();
+    });
+
     expect(form.current?.getFieldsValue()).toEqual({ check: true });
 
-    wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: false } });
-    await timeout();
+    await act(async () => {
+      fireEvent.click(field); // click again to change
+      await timeout();
+    });
     expect(form.current?.getFieldsValue()).toEqual({ check: false });
   });
 
   it('getValueProps', async () => {
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form initialValues={{ test: 'bamboo' }}>
           <Field name="test" getValueProps={val => ({ light: val })}>
@@ -395,7 +448,10 @@ describe('Form.Basic', () => {
       </div>,
     );
 
-    expect((wrapper.find('.anything').props() as any).light).toEqual('bamboo');
+    const field = container.querySelector('.anything');
+
+    expect(field.getAttributeNames()).toContain('light');
+    expect(field.getAttribute('light')).toEqual('bamboo');
   });
 
   describe('shouldUpdate', () => {
@@ -403,7 +459,7 @@ describe('Form.Basic', () => {
       let isAllTouched: boolean;
       let hasError: number;
 
-      const wrapper = mount(
+      const { container } = render(
         <Form>
           <Field name="username" rules={[{ required: true }]}>
             <Input />
@@ -422,27 +478,34 @@ describe('Form.Basic', () => {
         </Form>,
       );
 
-      await changeValue(getField(wrapper, 'username'), '');
+      await act(async () => {
+        await changeValue(getField(container, 'username'), '');
+      });
       expect(isAllTouched).toBeFalsy();
       expect(hasError).toBeTruthy();
 
-      await changeValue(getField(wrapper, 'username'), 'Bamboo');
+      await act(async () => {
+        await changeValue(getField(container, 'username'), 'Bamboo');
+      });
       expect(isAllTouched).toBeFalsy();
       expect(hasError).toBeFalsy();
 
-      await changeValue(getField(wrapper, 'password'), 'Light');
+      await act(async () => {
+        await changeValue(getField(container, 'password'), 'Light');
+      });
       expect(isAllTouched).toBeTruthy();
       expect(hasError).toBeFalsy();
 
-      await changeValue(getField(wrapper, 'password'), '');
+      await act(async () => {
+        await changeValue(getField(container, 'password'), '');
+      });
       expect(isAllTouched).toBeTruthy();
       expect(hasError).toBeTruthy();
     });
-
     it('true will force one more update', async () => {
       let renderPhase = 0;
 
-      const wrapper = mount(
+      const { container } = render(
         <Form initialValues={{ username: 'light' }}>
           <Field name="username">
             <Input />
@@ -454,7 +517,7 @@ describe('Form.Basic', () => {
                 <span
                   id="holder"
                   data-touched={form?.isFieldsTouched(true)}
-                  data-value={form?.getFieldsValue()}
+                  data-value={JSON.stringify(form?.getFieldsValue())}
                 />
               );
             }}
@@ -462,44 +525,47 @@ describe('Form.Basic', () => {
         </Form>,
       );
 
-      const props = wrapper.find('#holder').props();
+      const field = container.querySelector('#holder');
       expect(renderPhase).toEqual(2);
-      expect(props['data-touched']).toBeFalsy();
-      expect(props['data-value']).toEqual({ username: 'light' });
+      expect(field.getAttribute('data-touched')).toEqual('false');
+      expect(field.getAttribute('data-value')).toEqual(JSON.stringify({ username: 'light' }));
     });
   });
 
   describe('setFields', () => {
-    it('should work', () => {
+    it('should work', async () => {
       const form = React.createRef<FormInstance>();
-      const wrapper = mount(
+      const Component = () => (
         <div>
           <Form ref={form}>
             <InfoField name="username">
               <Input />
             </InfoField>
           </Form>
-        </div>,
+        </div>
       );
+      const { container, rerender } = render(<Component />);
 
-      form.current?.setFields([
-        { name: 'username', touched: false, validating: true, errors: ['Set It!'] },
-      ]);
-      wrapper.update();
+      await act(async () => {
+        form.current?.setFields([
+          { name: 'username', touched: false, validating: true, errors: ['Set It!'] },
+        ]);
+        rerender(<Component />);
+      });
 
-      matchError(wrapper, 'Set It!');
-      expect(wrapper.find('.validating').length).toBeTruthy();
+      matchError(container, 'Set It!');
+      expect(container.querySelectorAll('.validating').length).toBeTruthy();
       expect(form.current?.isFieldsTouched()).toBeFalsy();
     });
 
-    it('should trigger by setField', () => {
-      const triggerUpdate = jest.fn();
+    it('should trigger by setField', async () => {
+      const triggerUpdate = vi.fn();
       const formRef = React.createRef<FormInstance>();
 
       render(
         <div>
           <Form ref={formRef}>
-            <Field shouldUpdate={(prev, next) => prev.value !== next.value}>
+            <Field shouldUpdate={(prev: any, next: any) => prev.value !== next.value}>
               {() => {
                 triggerUpdate();
                 return <input />;
@@ -517,7 +583,9 @@ describe('Form.Basic', () => {
       expect(triggerUpdate).not.toHaveBeenCalled();
 
       // Trigger render
-      formRef.current.setFields([{ name: 'value', value: 'should update' }]);
+      await act(async () => {
+        formRef.current.setFields([{ name: 'value', value: 'should update' }]);
+      });
 
       expect(triggerUpdate).toHaveBeenCalled();
     });
@@ -549,12 +617,11 @@ describe('Form.Basic', () => {
     expect(called1).toBeTruthy();
     expect(called2).toBeTruthy();
   });
-
   it('setFieldsValue should clean up status', async () => {
     const form = React.createRef<FormInstance>();
     let currentMeta: Meta = null;
 
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form ref={form}>
           <Field name="normal" rules={[{ validator: () => new Promise(() => {}) }]}>
@@ -574,7 +641,9 @@ describe('Form.Basic', () => {
     expect(currentMeta.validating).toBeFalsy();
 
     // Set it
-    form.current?.setFieldsValue({ normal: 'Light' });
+    await act(async () => {
+      form.current?.setFieldsValue({ normal: 'Light' });
+    });
 
     expect(form.current?.getFieldValue('normal')).toBe('Light');
     expect(form.current?.isFieldTouched('normal')).toBeTruthy();
@@ -582,7 +651,9 @@ describe('Form.Basic', () => {
     expect(currentMeta.validating).toBeFalsy();
 
     // Input it
-    await changeValue(getField(wrapper), 'Bamboo');
+    await act(async () => {
+      await changeValue(getField(container), 'Bamboo');
+    });
 
     expect(form.current?.getFieldValue('normal')).toBe('Bamboo');
     expect(form.current?.isFieldTouched('normal')).toBeTruthy();
@@ -590,7 +661,9 @@ describe('Form.Basic', () => {
     expect(currentMeta.validating).toBeTruthy();
 
     // Set it again
-    form.current?.setFieldsValue({ normal: 'Light' });
+    await act(async () => {
+      form.current?.setFieldsValue({ normal: 'Light' });
+    });
 
     expect(form.current?.getFieldValue('normal')).toBe('Light');
     expect(form.current?.isFieldTouched('normal')).toBeTruthy();
@@ -600,7 +673,7 @@ describe('Form.Basic', () => {
 
   it('warning if invalidate element', () => {
     resetWarned();
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(
       <div>
         <Form>
@@ -619,9 +692,9 @@ describe('Form.Basic', () => {
   });
 
   it('warning if call function before set prop', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     resetWarned();
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const Test: React.FC = () => {
       const [form] = useForm();
@@ -632,18 +705,18 @@ describe('Form.Basic', () => {
 
     render(<Test />);
 
-    jest.runAllTimers();
+    vi.runAllTimers();
     expect(errorSpy).toHaveBeenCalledWith(
       'Warning: Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?',
     );
     errorSpy.mockRestore();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('filtering fields by meta', async () => {
     const form = React.createRef<FormInstance>();
 
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form ref={form}>
           <InfoField name="username" />
@@ -670,7 +743,10 @@ describe('Form.Basic', () => {
     expect(form.current?.getFieldsValue(null, () => true)).toEqual(form.current?.getFieldsValue());
     expect(form.current?.getFieldsValue(null, meta => meta.touched)).toEqual({});
 
-    await changeValue(getField(wrapper, 0), 'Bamboo');
+    await act(async () => {
+      await changeValue(getField(container, 0), 'Bamboo');
+    });
+
     expect(form.current?.getFieldsValue(null, () => true)).toEqual(form.current?.getFieldsValue());
     expect(form.current?.getFieldsValue(null, meta => meta.touched)).toEqual({
       username: 'Bamboo',
@@ -700,7 +776,7 @@ describe('Form.Basic', () => {
     }).not.toThrowError();
   });
 
-  it('setFieldsValue for List should work', () => {
+  it('setFieldsValue for List should work', async () => {
     const Demo: React.FC<any> = () => {
       const [form] = useForm();
 
@@ -747,7 +823,11 @@ describe('Form.Basic', () => {
     };
     const { container } = render(<Demo />);
     expect(container.querySelector<HTMLInputElement>('input')?.value).toBe('11');
-    fireEvent.click(container.querySelector('.reset-btn'));
+
+    await act(async () => {
+      fireEvent.click(container.querySelector('.reset-btn'));
+    });
+
     expect(container.querySelectorAll<HTMLInputElement>('input').length).toBe(0);
   });
 
@@ -777,7 +857,7 @@ describe('Form.Basic', () => {
   });
 
   // https://github.com/ant-design/ant-design/issues/34768
-  it('remount should not clear current value', () => {
+  it('remount should not clear current value', async () => {
     let refForm: FormInstance = null;
 
     const Demo: React.FC<any> = ({ remount }) => {
@@ -799,13 +879,20 @@ describe('Form.Basic', () => {
     };
 
     const { container, rerender } = render(<Demo />);
-    refForm.setFieldsValue({ name: 'bamboo' });
+    await act(() => {
+      refForm.setFieldsValue({ name: 'bamboo' });
+    });
+
     expect(container.querySelector<HTMLInputElement>('input').value).toBe('bamboo');
-    rerender(<Demo remount />);
+
+    await act(() => {
+      rerender(<Demo remount />);
+    });
+
     expect(container.querySelector<HTMLInputElement>('input').value).toBe('bamboo');
   });
 
-  it('setFieldValue', () => {
+  it('setFieldValue', async () => {
     const formRef = React.createRef<FormInstance>();
 
     const Demo: React.FC = () => (
@@ -826,13 +913,20 @@ describe('Form.Basic', () => {
     );
 
     const { container } = render(<Demo />);
-    expect(
-      Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),
-    ).toEqual(['bamboo', 'little', 'light', 'nested']);
+    const fields = container.querySelectorAll<HTMLInputElement>('input');
 
-    // Set
-    formRef.current.setFieldValue(['list', 1], 'tiny');
-    formRef.current.setFieldValue(['nest', 'target'], 'match');
+    expect(Array.from(fields).map(input => input?.value)).toEqual([
+      'bamboo',
+      'little',
+      'light',
+      'nested',
+    ]);
+
+    await act(() => {
+      // Set
+      formRef.current.setFieldValue(['list', 1], 'tiny');
+      formRef.current.setFieldValue(['nest', 'target'], 'match');
+    });
 
     expect(
       Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),

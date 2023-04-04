@@ -15,33 +15,35 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '12'
+          node-version: '18'
 
-      - name: cache package-lock.json
+      - name: cache pnpm-lock.yaml
         uses: actions/cache@v2
         with:
           path: package-temp-dir
           key: lock-${{ github.sha }}
 
-      - name: create package-lock.json
-        run: npm i --package-lock-only
+      - name: create pnpm-lock.yaml
+        run: |
+          npm install --global pnpm@7 
+          pnpm config set store-dir .pnpm-store
 
       - name: hack for singe file
         run: |
           if [ ! -d "package-temp-dir" ]; then
             mkdir package-temp-dir
           fi
-          cp package-lock.json package-temp-dir
+          cp pnpm-lock.yaml package-temp-dir
       - name: cache node_modules
         id: node_modules_cache_id
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: node_modules-${{ hashFiles('**/package-temp-dir/package-lock.json') }}
+          key: node_modules-${{ hashFiles('**/package-temp-dir/pnpm-lock.yaml') }}
 
       - name: install
         if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
-        run: npm ci
+        run: pnpm install
 
   lint:
     runs-on: ubuntu-latest
@@ -49,7 +51,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@master
 
-      - name: restore cache from package-lock.json
+      - name: restore cache from pnpm-lock.yaml
         uses: actions/cache@v2
         with:
           path: package-temp-dir
@@ -59,10 +61,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: node_modules-${{ hashFiles('**/package-temp-dir/package-lock.json') }}
+          key: node_modules-${{ hashFiles('**/package-temp-dir/pnpm-lock.yaml') }}
 
       - name: lint
-        run: npm run lint
+        run: pnpm lint
 
     needs: setup
 
@@ -72,7 +74,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@master
 
-      - name: restore cache from package-lock.json
+      - name: restore cache from pnpm-lock.yaml
         uses: actions/cache@v2
         with:
           path: package-temp-dir
@@ -82,10 +84,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: node_modules-${{ hashFiles('**/package-temp-dir/package-lock.json') }}
+          key: node_modules-${{ hashFiles('**/package-temp-dir/pnpm-lock.yaml') }}
 
       - name: compile
-        run: npm run compile
+        run: pnpm compile
 
     needs: setup
 
@@ -95,7 +97,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@master
 
-      - name: restore cache from package-lock.json
+      - name: restore cache from pnpm-lock.yaml
         uses: actions/cache@v2
         with:
           path: package-temp-dir
@@ -105,9 +107,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: node_modules-${{ hashFiles('**/package-temp-dir/package-lock.json') }}
+          key: node_modules-${{ hashFiles('**/package-temp-dir/pnpm-lock.yaml') }}
 
       - name: coverage
-        run: npm test -- --coverage && bash <(curl -s https://codecov.io/bash)
+        run: pnpm test:coverage && bash <(curl -s https://codecov.io/bash)
 
     needs: setup

@@ -1,13 +1,13 @@
-import React from 'react';
-import { mount } from 'enzyme';
+import { render, act } from '../test-utils';
 import Form, { Field } from '../../src';
+import type { FormInstance } from '../../src';
 import { Input } from '../common/InfoField';
 import { changeValue, getField } from '../common';
 import timeout from '../common/timeout';
 
 describe('legacy.async-validation', () => {
-  let wrapper;
-  let form;
+  let container;
+  let form: FormInstance;
 
   const checkRule = (_, value, callback) => {
     setTimeout(() => {
@@ -20,7 +20,7 @@ describe('legacy.async-validation', () => {
   };
 
   beforeEach(() => {
-    wrapper = mount(
+    const rendered = render(
       <div>
         <Form
           ref={instance => {
@@ -36,35 +36,51 @@ describe('legacy.async-validation', () => {
         </Form>
       </div>,
     );
+    container = rendered.container;
   });
 
   it('works', async () => {
-    await changeValue(getField(wrapper, 'async'), '');
-    expect(form.getFieldValue('async')).toBe('');
-    expect(form.getFieldError('async')).toEqual([]);
-    expect(form.isFieldValidating('async')).toBeTruthy();
-    expect(form.isFieldsValidating()).toBeTruthy();
+    expect(form.getFieldsValue()).toEqual({ normal: undefined, async: undefined });
+    expect(form.isFieldsTouched()).toBeFalsy();
 
-    await timeout(200);
-    expect(form.getFieldError('async')).toEqual(['must be 1']);
-    expect(form.isFieldValidating('async')).toBe(false);
-    expect(form.isFieldsValidating()).toBe(false);
+    await act(async () => {
+      await changeValue(getField(container, 'async'), 'a');
+      await changeValue(getField(container, 'async'), '');
+      expect(form.isFieldsTouched()).toBeTruthy();
+      expect(form.getFieldValue('async')).toBe('');
+      expect(form.getFieldError('async')).toEqual([]);
+      expect(form.isFieldValidating('async')).toBeTruthy();
+      expect(form.isFieldsValidating(['async'])).toBeTruthy();
+    });
 
-    await changeValue(getField(wrapper, 'async'), '1');
-    expect(form.getFieldValue('async')).toBe('1');
-    expect(form.getFieldError('async')).toEqual([]);
-    expect(form.isFieldValidating('async')).toBeTruthy();
-    expect(form.isFieldsValidating()).toBeTruthy();
+    await act(async () => {
+      await timeout(200);
+      expect(form.getFieldError('async')).toEqual(['must be 1']);
+      expect(form.isFieldValidating('async')).toBe(false);
+      expect(form.isFieldsValidating(['async'])).toBe(false);
+    });
 
-    await timeout(200);
-    expect(form.getFieldError('async')).toEqual([]);
-    expect(form.isFieldValidating('async')).toBeFalsy();
-    expect(form.isFieldsValidating()).toBeFalsy();
+    await act(async () => {
+      await changeValue(getField(container, 'async'), '1');
+      expect(form.getFieldValue('async')).toBe('1');
+      expect(form.getFieldError('async')).toEqual([]);
+      expect(form.isFieldValidating('async')).toBeTruthy();
+      expect(form.isFieldsValidating(['async'])).toBeTruthy();
+    });
+
+    await act(async () => {
+      await timeout(200);
+      expect(form.getFieldError('async')).toEqual([]);
+      expect(form.isFieldValidating('async')).toBeFalsy();
+      expect(form.isFieldsValidating(['async'])).toBeFalsy();
+    });
   });
 
   it('validateFields works for error', async () => {
     try {
-      await form.validateFields();
+      await act(async () => {
+        await form.validateFields();
+      });
       throw new Error('should not pass');
     } catch ({ values, errorFields }) {
       expect(values.normal).toEqual(undefined);
@@ -78,19 +94,25 @@ describe('legacy.async-validation', () => {
   });
 
   it('validateFields works for ok', async () => {
-    await changeValue(getField(wrapper, 'async'), '1');
-    const values = await form.validateFields();
-    expect(values.normal).toBe(undefined);
-    expect(values.async).toBe('1');
+    await act(async () => {
+      await changeValue(getField(container, 'async'), '1');
+    });
+    await act(async () => {
+      const values = await form.validateFields();
+      expect(values.normal).toBe(undefined);
+      expect(values.async).toBe('1');
+    });
   });
 
   it('will error if change when validating', async done => {
-    form.validateFields().catch(({ errorFields, outOfDate }) => {
-      expect(errorFields.length).toBeTruthy();
-      expect(outOfDate).toBeTruthy();
-      done();
+    await act(async () => {
+      form.validateFields().catch(({ errorFields, outOfDate }) => {
+        expect(errorFields.length).toBeTruthy();
+        expect(outOfDate).toBeTruthy();
+        done();
+      });
     });
 
-    changeValue(getField(wrapper, 'async'), '1');
+    changeValue(getField(container, 'async'), '1');
   });
 });

@@ -1,5 +1,5 @@
-import getValue from 'rc-util/lib/utils/get';
-import setValue from 'rc-util/lib/utils/set';
+import getValue from 'rc-util/es/utils/get';
+import setValue from 'rc-util/es/utils/set';
 import type { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
 import cloneDeep from '../utils/cloneDeep';
@@ -15,6 +15,14 @@ export { getValue, setValue };
  */
 export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
+}
+
+export function mountNameByPath(path: NamePath | null): string {
+  if (Array.isArray(path)) {
+    return path.join('.');
+  }
+
+  return `${path || ''}`;
 }
 
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {

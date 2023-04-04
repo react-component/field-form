@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, act } from '../test-utils';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { matchArray } from '../common';
@@ -39,7 +39,9 @@ describe('legacy.validate-array', () => {
     );
 
     try {
-      await form.current?.validateFields();
+      await act(async () => {
+        await form.current?.validateFields();
+      });
       throw new Error('Should not pass!');
     } catch ({ errorFields }) {
       matchArray(
@@ -63,7 +65,9 @@ describe('legacy.validate-array', () => {
       </div>,
     );
     expect(async () => {
-      await form.current?.validateFields();
+      await act(async () => {
+        await form.current?.validateFields();
+      });
     }).not.toThrow();
   });
 });

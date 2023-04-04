@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, act } from '../test-utils';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
@@ -26,7 +26,9 @@ describe('legacy.clean-field', () => {
     const { rerender } = render(<Test show />);
 
     try {
-      await form.current?.validateFields();
+      await act(async () => {
+        await form.current?.validateFields();
+      });
       throw new Error('should not pass');
     } catch ({ errorFields }) {
       expect(errorFields.length).toBe(1);
@@ -36,7 +38,9 @@ describe('legacy.clean-field', () => {
     rerender(<Test show={false} />);
 
     try {
-      await form.current?.validateFields();
+      await act(async () => {
+        await form.current?.validateFields();
+      });
       throw new Error('should not pass');
     } catch ({ errorFields }) {
       expect(errorFields.length).toBe(1);

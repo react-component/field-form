@@ -1,6 +1,5 @@
 import React from 'react';
-import type { ReactWrapper } from 'enzyme';
-import { mount } from 'enzyme';
+import { render } from '../test-utils';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
@@ -10,7 +9,7 @@ describe('legacy.dynamic-rule', () => {
   describe('should update errors', () => {
     const doTest = (
       name: string,
-      renderFunc: () => Promise<readonly [React.RefObject<FormInstance<any>>, ReactWrapper]>,
+      renderFunc: () => Promise<readonly [React.RefObject<FormInstance<any>>, HTMLElement]>,
     ) => {
       it(name, async () => {
         const [form, wrapper] = await renderFunc();
@@ -37,7 +36,7 @@ describe('legacy.dynamic-rule', () => {
     doTest('render props', async () => {
       const form = React.createRef<FormInstance>();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form ref={form}>
             {(_, { getFieldValue }) => (
@@ -57,15 +56,13 @@ describe('legacy.dynamic-rule', () => {
         </div>,
       );
 
-      wrapper.update();
-
-      return [form, wrapper] as const;
+      return [form, container] as const;
     });
 
     doTest('use function rule', async () => {
       const form = React.createRef<FormInstance>();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form ref={form}>
             <Field name="type">
@@ -87,9 +84,7 @@ describe('legacy.dynamic-rule', () => {
         </div>,
       );
 
-      wrapper.update();
-
-      return [form, wrapper] as const;
+      return [form, container] as const;
     });
   });
 });

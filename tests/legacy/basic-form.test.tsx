@@ -1,15 +1,15 @@
-import React from 'react';
-import { mount } from 'enzyme';
+import { render, act } from '../test-utils';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
 import { changeValue, getField, matchArray } from '../common';
+import { vi } from 'vitest';
 
 describe('legacy.basic-form', () => {
   describe('onFieldsChange', () => {
     it('trigger `onFieldsChange` when value change', async () => {
-      const onFieldsChange = jest.fn();
+      const onFieldsChange = vi.fn();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form onFieldsChange={onFieldsChange}>
             <Field name={['user', 'name']}>
@@ -25,28 +25,31 @@ describe('legacy.basic-form', () => {
         </div>,
       );
 
-      await changeValue(getField(wrapper, ['user', 'name']), 'Light');
-      expect(onFieldsChange.mock.calls[0][0]).toMatchObject([
-        { name: ['user', 'name'], value: 'Light' },
-      ]);
-      matchArray(
-        onFieldsChange.mock.calls[0][1],
-        [
+      await act(async () => {
+        const input = getField(container, ['user', 'name']);
+        await changeValue(input, 'Light');
+        expect(onFieldsChange.mock.calls[0][0]).toMatchObject([
           { name: ['user', 'name'], value: 'Light' },
-          { name: ['user', 'age'], value: undefined },
-          { name: ['agreement'], value: undefined },
-        ],
-        'name',
-      );
+        ]);
+        matchArray(
+          onFieldsChange.mock.calls[0][1],
+          [
+            { name: ['user', 'name'], value: 'Light' },
+            { name: ['user', 'age'], value: undefined },
+            { name: ['agreement'], value: undefined },
+          ],
+          'name',
+        );
+      });
     });
 
     // [Legacy] Not trigger in field form. This is anti with origin test
     // https://github.com/react-component/form/blob/master/tests/createForm.spec.js#L70
-    it('**Not** trigger `onFieldsChange` when `setFields`', () => {
+    it('**Not** trigger `onFieldsChange` when `setFields`', async () => {
       let form;
-      const onFieldsChange = jest.fn();
+      const onFieldsChange = vi.fn();
 
-      mount(
+      render(
         <div>
           <Form
             ref={instance => {
@@ -61,7 +64,9 @@ describe('legacy.basic-form', () => {
         </div>,
       );
 
-      form.setFields([{ name: 'name', value: '233' }]);
+      await act(async () => {
+        form.setFields([{ name: 'name', value: '233' }]);
+      });
 
       expect(onFieldsChange).not.toHaveBeenCalled();
     });
@@ -69,23 +74,29 @@ describe('legacy.basic-form', () => {
 
   describe('onValuesChange', () => {
     it('trigger `onValuesChange` when value change', async () => {
-      const onValuesChange = jest.fn();
+      const onValuesChange = vi.fn();
 
-      const wrapper = mount(
+      const { container } = render(
         <Form onValuesChange={onValuesChange}>
+          <Field name={['user', 'teste']}>
+            <Input />
+          </Field>
           <Field name={['user', 'name']}>
             <Input />
           </Field>
           <Field name={['user', 'age']}>
             <Input type="number" />
           </Field>
-          <Field name="agreement">
+          <Field name="agreement" valuePropName="checked">
             <Input type="checkbox" />
           </Field>
         </Form>,
       );
 
-      await changeValue(getField(wrapper, ['user', 'name']), 'Bamboo');
+      await act(async () => {
+        const field = getField(container, ['user', 'name']);
+        await changeValue(field, 'Bamboo');
+      });
 
       expect(onValuesChange.mock.calls[0][0]).toMatchObject({ user: { name: 'Bamboo' } });
       expect(onValuesChange.mock.calls[0][1]).toMatchObject({
@@ -97,11 +108,11 @@ describe('legacy.basic-form', () => {
 
     // [Legacy] Not trigger in field form. This is anti with origin test
     // https://github.com/react-component/form/blob/master/tests/createForm.spec.js#L184
-    it('**Not** trigger `onValuesChange` when `setFieldsValue`', () => {
+    it('**Not** trigger `onValuesChange` when `setFieldsValue`', async () => {
       let form;
-      const onValuesChange = jest.fn();
+      const onValuesChange = vi.fn();
 
-      mount(
+      render(
         <div>
           <Form
             ref={instance => {
@@ -122,8 +133,10 @@ describe('legacy.basic-form', () => {
         </div>,
       );
 
-      form.setFieldsValue({ user: { name: 'Light' } });
-      expect(onValuesChange).not.toHaveBeenCalled();
+      await act(async () => {
+        form.setFieldsValue({ user: { name: 'Light' } });
+        expect(onValuesChange).not.toHaveBeenCalled();
+      });
     });
   });
 });

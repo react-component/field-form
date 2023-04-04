@@ -157,6 +157,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   return (
     <Component
       {...restProps}
+      name={name}
       onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
