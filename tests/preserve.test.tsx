@@ -403,4 +403,46 @@ describe('Form.Preserve', () => {
 
     expect(container.querySelector<HTMLInputElement>('input')?.value).toEqual('bamboo');
   });
+
+  it('nest Form.List should clear correctly', async () => {
+    const { container } = render(
+      <Form
+        preserve={false}
+        initialValues={{
+          parent: [[{ name: 'bamboo' }]],
+        }}
+      >
+        <Form.List name="parent">
+          {(fields, { remove }) => {
+            return fields.map(field => (
+              <div key={field.key}>
+                <button
+                  onClick={() => {
+                    remove(field.name);
+                  }}
+                />
+                <Form.List {...field} name={[field.name]}>
+                  {childFields =>
+                    childFields.map(childField => (
+                      <div key={childField.key}>
+                        <Form.Field {...childField} name={[childField.name, 'name']}>
+                          <input />
+                        </Form.Field>
+                      </div>
+                    ))
+                  }
+                </Form.List>
+              </div>
+            ));
+          }}
+        </Form.List>
+      </Form>,
+    );
+
+    expect(container.querySelector('input').value).toEqual('bamboo');
+
+    // Clean
+    fireEvent.click(container.querySelector('button'));
+    expect(container.querySelector('input')).toBeFalsy();
+  });
 });
