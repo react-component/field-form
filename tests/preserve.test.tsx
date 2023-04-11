@@ -421,7 +421,7 @@ describe('Form.Preserve', () => {
                     remove(field.name);
                   }}
                 />
-                <Form.List name={[field.name]}>
+                <Form.List {...field} name={[field.name]}>
                   {childFields =>
                     childFields.map(childField => (
                       <div key={childField.key}>
