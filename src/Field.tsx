@@ -26,6 +26,7 @@ import {
   getNamePath,
   getValue,
 } from './utils/valueUtil';
+import PrefixContext from './PrefixContext';
 
 const EMPTY_ERRORS: any[] = [];
 
@@ -88,6 +89,8 @@ export interface InternalFieldProps<Values = any> {
   /** @private Pass context as prop instead of context api
    *  since class component can not get context in constructor */
   fieldContext?: InternalFormInstance;
+
+  prefixName?: InternalNamePath;
 }
 
 export interface FieldProps<Values = any>
@@ -151,6 +154,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       initEntityValue(this);
     }
   }
+  props: { name?: NamePath; rules?: Rule[]; dependencies?: NamePath[]; initialValue?: any; };
 
   public componentDidMount() {
     const { shouldUpdate, fieldContext } = this.props;
@@ -187,8 +191,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ================================== Utils ==================================
   public getNamePath = (): InternalNamePath => {
-    const { name, fieldContext } = this.props;
-    const { prefixName = [] }: InternalFormInstance = fieldContext;
+    const { name, prefixName = [] } = this.props;
 
     return name !== undefined ? [...prefixName, ...name] : [];
   };
@@ -625,6 +628,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
+  const prefixName = React.useContext(PrefixContext);
 
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
@@ -644,7 +648,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
-  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
+  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} prefixName={prefixName} />;
 }
 
 export default WrapperField;

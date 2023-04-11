@@ -7,6 +7,7 @@ import type { FormProps } from './Form';
 import FieldForm from './Form';
 import { FormProvider } from './FormContext';
 import FieldContext from './FieldContext';
+import PrefixContext from './PrefixContext';
 import ListContext from './ListContext';
 import useWatch from './useWatch';
 
@@ -31,7 +32,7 @@ RefForm.List = List;
 RefForm.useForm = useForm;
 RefForm.useWatch = useWatch;
 
-export { FormInstance, Field, List, useForm, FormProvider, FieldContext, ListContext, useWatch };
+export { FormInstance, Field, List, useForm, FormProvider, FieldContext, ListContext, PrefixContext, useWatch };
 
 export type { FormProps };
 
