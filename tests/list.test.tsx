@@ -604,10 +604,21 @@ describe('Form.List', () => {
       (fields, operation) => (
         <div>
           {fields.map(field => (
-            <Field {...field} key={field.key} name={[field.name, 'first']}>
-              <Input />
-            </Field>
+            <div key={field.key}>
+              <Field name={[field.name, 'first']}>
+                <Input />
+              </Field>
+              <Field name={[field.name, 'second']}>
+                <Input />
+              </Field>
+            </div>
           ))}
+          <button
+            type="button"
+            onClick={() => {
+              operation.add();
+            }}
+          />
           <button
             type="button"
             onClick={() => {
@@ -619,12 +630,12 @@ describe('Form.List', () => {
       {
         onValuesChange,
         initialValues: {
-          list: [{ first: 'light' }, { first: 'bamboo' }],
+          list: [{ first: 'light' }],
         },
       },
     );
-
-    wrapper.find('button').simulate('click');
+    wrapper.find('button').first().simulate('click');
+    wrapper.find('button').last().simulate('click');
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
   });
 
