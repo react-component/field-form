@@ -3,7 +3,6 @@ import type { InternalNamePath } from './interface';
 
 export interface ListContextProps {
   getKey: (namePath: InternalNamePath) => [React.Key, InternalNamePath];
-  inList: boolean;
 }
 
 const ListContext = React.createContext<ListContextProps | null>(null);

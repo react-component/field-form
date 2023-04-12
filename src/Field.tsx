@@ -627,15 +627,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
+  const mergedIsListField = restProps.isListField || (!restProps.isList && !!listContext);
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
   if (!restProps.isListField) {
     key = `_${(namePath || []).join('_')}`;
-  }
-
-  if (restProps.isListField === undefined && !restProps.isList && listContext) {
-    restProps.isListField = listContext.inList;
   }
 
   // Warning if it's a directly list field.
@@ -649,7 +646,15 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
-  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
+  return (
+    <Field
+      key={key}
+      name={namePath}
+      isListField={mergedIsListField}
+      {...restProps}
+      fieldContext={fieldContext}
+    />
+  );
 }
 
 export default WrapperField;
