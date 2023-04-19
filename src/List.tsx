@@ -43,6 +43,7 @@ const List: React.FunctionComponent<ListProps> = ({
   isListField,
 }) => {
   const context = React.useContext(FieldContext);
+  const wrapperListContext = React.useContext(ListContext);
   const keyRef = React.useRef({
     keys: [],
     id: 0,
@@ -91,7 +92,7 @@ const List: React.FunctionComponent<ListProps> = ({
           validateTrigger={validateTrigger}
           initialValue={initialValue}
           isList
-          isListField={isListField}
+          isListField={isListField ?? !!wrapperListContext}
         >
           {({ value = [], onChange }, meta) => {
             const { getFieldValue } = context;

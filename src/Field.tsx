@@ -627,7 +627,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
-  const mergedIsListField = restProps.isListField || (!restProps.isList && !!listContext);
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
@@ -650,7 +649,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     <Field
       key={key}
       name={namePath}
-      isListField={mergedIsListField}
+      isListField={!!listContext}
       {...restProps}
       fieldContext={fieldContext}
     />
