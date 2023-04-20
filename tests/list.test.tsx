@@ -604,6 +604,37 @@ describe('Form.List', () => {
       (fields, operation) => (
         <div>
           {fields.map(field => (
+            <Field {...field} key={field.key} name={[field.name, 'first']}>
+              <Input />
+            </Field>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              operation.remove(1);
+            }}
+          />
+        </div>
+      ),
+      {
+        onValuesChange,
+        initialValues: {
+          list: [{ first: 'light' }, { first: 'bamboo' }],
+        },
+      },
+    );
+
+    wrapper.find('button').simulate('click');
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
+  });
+
+  it('Nest list remove should trigger correct onValuesChange when no spread field props', () => {
+    const onValuesChange = jest.fn();
+
+    const [wrapper] = generateForm(
+      (fields, operation) => (
+        <div>
+          {fields.map(field => (
             <div key={field.key}>
               <Field name={[field.name, 'first']}>
                 <Input />
