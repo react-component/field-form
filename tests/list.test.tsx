@@ -666,6 +666,9 @@ describe('Form.List', () => {
       },
     );
     wrapper.find('button').first().simulate('click');
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), {
+      list: [{ first: 'light' }, undefined],
+    });
     wrapper.find('button').last().simulate('click');
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
   });
