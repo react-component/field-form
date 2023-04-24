@@ -797,14 +797,28 @@ describe('Form.Validate', () => {
 
   it('should trigger onFieldsChange 3 times', async () => {
     const onFieldsChange = jest.fn();
+    const onMetaChange = jest.fn();
 
-    const wrapper = mount(
-      <Form onFieldsChange={onFieldsChange}>
-        <InfoField name="test" rules={[{ required: true }]}>
-          <Input />
-        </InfoField>
-      </Form>,
-    );
+    const App = () => {
+      const ref = React.useRef(null);
+      return (
+        <Form ref={ref} onFieldsChange={onFieldsChange}>
+          <InfoField
+            name="test"
+            rules={[{ required: true }]}
+            onMetaChange={meta => {
+              onMetaChange(meta.validated);
+            }}
+          >
+            <Input />
+          </InfoField>
+          <button id="reset" type="reset">
+            reset
+          </button>
+        </Form>
+      );
+    };
+    const wrapper = mount(<App />);
 
     await changeValue(getField(wrapper, 'test'), '');
 
@@ -847,5 +861,10 @@ describe('Form.Validate', () => {
       ],
       expect.anything(),
     );
+    // should reset validated and validating when reset btn had been clicked
+    wrapper.find('#reset').simulate('reset');
+    await timeout();
+    expect(onMetaChange).toHaveBeenNthCalledWith(3, true);
+    expect(onMetaChange).toHaveBeenNthCalledWith(4, false);
   });
 });
