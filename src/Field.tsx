@@ -253,7 +253,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           // Clean up state
           this.touched = false;
           this.dirty = false;
-          this.validatePromise = null;
+          this.validatePromise = undefined;
           this.errors = EMPTY_ERRORS;
           this.warnings = EMPTY_ERRORS;
           this.triggerMetaEvent();
