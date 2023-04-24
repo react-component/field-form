@@ -628,6 +628,51 @@ describe('Form.List', () => {
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
   });
 
+  it('Nest list remove should trigger correct onValuesChange when no spread field props', () => {
+    const onValuesChange = jest.fn();
+
+    const [wrapper] = generateForm(
+      (fields, operation) => (
+        <div>
+          {fields.map(field => (
+            <div key={field.key}>
+              <Field name={[field.name, 'first']}>
+                <Input />
+              </Field>
+              <Field name={[field.name, 'second']}>
+                <Input />
+              </Field>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              operation.add();
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              operation.remove(1);
+            }}
+          />
+        </div>
+      ),
+      {
+        onValuesChange,
+        initialValues: {
+          list: [{ first: 'light' }],
+        },
+      },
+    );
+    wrapper.find('button').first().simulate('click');
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), {
+      list: [{ first: 'light' }, undefined],
+    });
+    wrapper.find('button').last().simulate('click');
+    expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
+  });
+
   describe('isFieldTouched edge case', () => {
     it('virtual object', () => {
       const formRef = React.createRef<FormInstance>();

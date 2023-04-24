@@ -18,6 +18,7 @@ import type {
   RuleError,
 } from './interface';
 import FieldContext, { HOOK_MARK } from './FieldContext';
+import ListContext from './ListContext';
 import { toArray } from './utils/typeUtil';
 import { validateRules } from './utils/validateUtil';
 import {
@@ -625,7 +626,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
-
+  const listContext = React.useContext(ListContext);
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
@@ -644,7 +645,15 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
-  return <Field key={key} name={namePath} {...restProps} fieldContext={fieldContext} />;
+  return (
+    <Field
+      key={key}
+      name={namePath}
+      isListField={!!listContext}
+      {...restProps}
+      fieldContext={fieldContext}
+    />
+  );
 }
 
 export default WrapperField;
