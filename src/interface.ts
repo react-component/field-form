@@ -133,13 +133,10 @@ export interface ValidateOptions {
   validateOnly?: boolean;
 }
 
-export type ValidateAllFields<Values = any> = (opt?: ValidateOptions) => Promise<Values>;
-export type ValidatePathFields<Values = any> = (
-  nameList?: NamePath[],
-  opt?: ValidateOptions,
-) => Promise<Values>;
-
-export type ValidateFields<Values = any> = ValidateAllFields<Values> | ValidatePathFields<Values>;
+export type ValidateFields<Values = any> = {
+  (opt?: ValidateOptions): Promise<Values>;
+  (nameList?: NamePath[], opt?: ValidateOptions): Promise<Values>;
+};
 
 export interface InternalValidateOptions extends ValidateOptions {
   triggerName?: string;
@@ -151,19 +148,10 @@ export interface InternalValidateOptions extends ValidateOptions {
   recursive?: boolean;
 }
 
-export type InternalValidateAllFields<Values = any> = (
-  nameList?: NamePath[],
-  options?: InternalValidateOptions,
-) => Promise<Values>;
-
-export type InternalValidatePathFields<Values = any> = (
-  nameList?: NamePath[],
-  options?: InternalValidateOptions,
-) => Promise<Values>;
-
-export type InternalValidateFields<Values = any> =
-  | InternalValidateAllFields<Values>
-  | InternalValidatePathFields<Values>;
+export type InternalValidateFields<Values = any> = {
+  (nameList?: NamePath[], options?: InternalValidateOptions): Promise<Values>;
+  (nameList?: NamePath[], options?: InternalValidateOptions): Promise<Values>;
+};
 
 // >>>>>> Info
 interface ValueUpdateInfo {

@@ -363,6 +363,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePath = this.getNamePath();
     const currentValue = this.getValue();
 
+    const { triggerName, validateOnly = false } = options || {};
+
     // Force change to async to avoid rule OOD under renderProps field
     const rootPromise = Promise.resolve().then(() => {
       if (!this.mounted) {
@@ -370,7 +372,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       const { validateFirst = false, messageVariables } = this.props;
-      const { triggerName } = (options || {}) as InternalValidateOptions;
 
       let filteredRules = this.getRules();
       if (triggerName) {
@@ -422,6 +423,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       return promise;
     });
+
+    if (validateOnly) {
+      return rootPromise;
+    }
 
     this.validatePromise = rootPromise;
     this.dirty = true;
