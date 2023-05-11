@@ -102,7 +102,7 @@ export interface FieldEntity {
   isListField: () => boolean;
   isList: () => boolean;
   isPreserve: () => boolean;
-  validateRules: (options?: ValidateOptions) => Promise<RuleError[]>;
+  validateRules: (options?: InternalValidateOptions) => Promise<RuleError[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
   getErrors: () => string[];
@@ -127,6 +127,18 @@ export interface RuleError {
 }
 
 export interface ValidateOptions {
+  /**
+   * Validate only and not trigger UI and Field status update
+   */
+  validateOnly?: boolean;
+}
+
+export type ValidateFields<Values = any> = {
+  (opt?: ValidateOptions): Promise<Values>;
+  (nameList?: NamePath[], opt?: ValidateOptions): Promise<Values>;
+};
+
+export interface InternalValidateOptions extends ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
   /**
@@ -136,11 +148,10 @@ export interface ValidateOptions {
   recursive?: boolean;
 }
 
-export type InternalValidateFields<Values = any> = (
-  nameList?: NamePath[],
-  options?: ValidateOptions,
-) => Promise<Values>;
-export type ValidateFields<Values = any> = (nameList?: NamePath[]) => Promise<Values>;
+export type InternalValidateFields<Values = any> = {
+  (options?: InternalValidateOptions): Promise<Values>;
+  (nameList?: NamePath[], options?: InternalValidateOptions): Promise<Values>;
+};
 
 // >>>>>> Info
 interface ValueUpdateInfo {

@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
+import { render } from '@testing-library/react';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 import Form, { Field, useForm } from '../src';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getField } from './common';
 import timeout from './common/timeout';
-import type { ValidateMessages } from '@/interface';
+import type { FormInstance, ValidateMessages } from '../src/interface';
 
 describe('Form.Validate', () => {
   it('required', async () => {
@@ -866,5 +867,27 @@ describe('Form.Validate', () => {
     await timeout();
     expect(onMetaChange).toHaveBeenNthCalledWith(3, true);
     expect(onMetaChange).toHaveBeenNthCalledWith(4, false);
+  });
+
+  it('validateOnly', async () => {
+    const formRef = React.createRef<FormInstance>();
+    const { container } = render(
+      <Form ref={formRef}>
+        <InfoField name="test" rules={[{ required: true }]}>
+          <Input />
+        </InfoField>
+      </Form>,
+    );
+
+    // Validate only
+    const result = await formRef.current.validateFields({ validateOnly: true }).catch(e => e);
+    await timeout();
+    expect(result.errorFields).toHaveLength(1);
+    expect(container.querySelector('.errors').textContent).toBeFalsy();
+
+    // Normal validate
+    await formRef.current.validateFields().catch(e => e);
+    await timeout();
+    expect(container.querySelector('.errors').textContent).toEqual(`'test' is required`);
   });
 });

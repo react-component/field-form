@@ -3,7 +3,7 @@ import * as React from 'react';
 import warning from 'rc-util/lib/warning';
 import type {
   InternalNamePath,
-  ValidateOptions,
+  InternalValidateOptions,
   RuleObject,
   StoreValue,
   RuleError,
@@ -31,7 +31,7 @@ async function validateRule(
   name: string,
   value: StoreValue,
   rule: RuleObject,
-  options: ValidateOptions,
+  options: InternalValidateOptions,
   messageVariables?: Record<string, string>,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
@@ -123,7 +123,7 @@ export function validateRules(
   namePath: InternalNamePath,
   value: StoreValue,
   rules: RuleObject[],
-  options: ValidateOptions,
+  options: InternalValidateOptions,
   validateFirst: boolean | 'parallel',
   messageVariables?: Record<string, string>,
 ) {

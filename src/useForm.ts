@@ -20,7 +20,7 @@ import type {
   StoreValue,
   ValidateErrorEntity,
   ValidateMessages,
-  ValidateOptions,
+  InternalValidateOptions,
   ValuedNotifyInfo,
   WatchCallBack,
 } from './interface';
@@ -836,11 +836,18 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
-  private validateFields: InternalValidateFields = (
-    nameList?: NamePath[],
-    options?: ValidateOptions,
-  ) => {
+  private validateFields: InternalValidateFields = (arg1?: any, arg2?: any) => {
     this.warningUnhooked();
+
+    let nameList: NamePath[];
+    let options: InternalValidateOptions;
+
+    if (Array.isArray(arg1) || typeof arg1 === 'string' || typeof arg2 === 'string') {
+      nameList = arg1;
+      options = arg2;
+    } else {
+      options = arg1;
+    }
 
     const provideNameList = !!nameList;
     const namePathList: InternalNamePath[] | undefined = provideNameList
