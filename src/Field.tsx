@@ -10,7 +10,7 @@ import type {
   NotifyInfo,
   Rule,
   Store,
-  ValidateOptions,
+  InternalValidateOptions,
   InternalFormInstance,
   RuleObject,
   StoreValue,
@@ -358,7 +358,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }
   };
 
-  public validateRules = (options?: ValidateOptions): Promise<RuleError[]> => {
+  public validateRules = (options?: InternalValidateOptions): Promise<RuleError[]> => {
     // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
     const currentValue = this.getValue();
@@ -370,7 +370,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       const { validateFirst = false, messageVariables } = this.props;
-      const { triggerName } = (options || {}) as ValidateOptions;
+      const { triggerName } = (options || {}) as InternalValidateOptions;
 
       let filteredRules = this.getRules();
       if (triggerName) {

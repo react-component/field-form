@@ -102,7 +102,7 @@ export interface FieldEntity {
   isListField: () => boolean;
   isList: () => boolean;
   isPreserve: () => boolean;
-  validateRules: (options?: ValidateOptions) => Promise<RuleError[]>;
+  validateRules: (options?: InternalValidateOptions) => Promise<RuleError[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
   getErrors: () => string[];
@@ -127,6 +127,21 @@ export interface RuleError {
 }
 
 export interface ValidateOptions {
+  /**
+   * Validate only and not trigger UI and Field status update
+   */
+  validateOnly?: boolean;
+}
+
+export type ValidateAllFields<Values = any> = (opt?: ValidateOptions) => Promise<Values>;
+export type ValidatePathFields<Values = any> = (
+  nameList?: NamePath[],
+  opt?: ValidateOptions,
+) => Promise<Values>;
+
+export type ValidateFields<Values = any> = ValidateAllFields<Values> | ValidatePathFields<Values>;
+
+export interface InternalValidateOptions extends ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
   /**
@@ -136,11 +151,19 @@ export interface ValidateOptions {
   recursive?: boolean;
 }
 
-export type InternalValidateFields<Values = any> = (
+export type InternalValidateAllFields<Values = any> = (
   nameList?: NamePath[],
-  options?: ValidateOptions,
+  options?: InternalValidateOptions,
 ) => Promise<Values>;
-export type ValidateFields<Values = any> = (nameList?: NamePath[]) => Promise<Values>;
+
+export type InternalValidatePathFields<Values = any> = (
+  nameList?: NamePath[],
+  options?: InternalValidateOptions,
+) => Promise<Values>;
+
+export type InternalValidateFields<Values = any> =
+  | InternalValidateAllFields<Values>
+  | InternalValidatePathFields<Values>;
 
 // >>>>>> Info
 interface ValueUpdateInfo {
