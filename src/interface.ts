@@ -149,7 +149,7 @@ export interface InternalValidateOptions extends ValidateOptions {
 }
 
 export type InternalValidateFields<Values = any> = {
-  (nameList?: NamePath[], options?: InternalValidateOptions): Promise<Values>;
+  (options?: InternalValidateOptions): Promise<Values>;
   (nameList?: NamePath[], options?: InternalValidateOptions): Promise<Values>;
 };
 

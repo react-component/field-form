@@ -836,7 +836,7 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
-  private validateFields: InternalValidateFields = (arg1, arg2) => {
+  private validateFields: InternalValidateFields = (arg1?: any, arg2?: any) => {
     this.warningUnhooked();
 
     let nameList: NamePath[];
