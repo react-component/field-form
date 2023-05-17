@@ -50,7 +50,7 @@ export default () => {
 
           return (
             <React.Fragment>
-              <Field name="username" rules={[{ required: true }]}>
+              <Field name="username" rules={[{ required: true, groupId: 'GroupA', id: '1' }]}>
                 <Input
                   placeholder="Username"
                   onChange={({ target: { value } }) => {
@@ -64,8 +64,10 @@ export default () => {
               <Field
                 name="password"
                 rules={[
-                  { required: true },
+                  { required: true, groupId: 'GroupA', id: '2' },
                   context => ({
+                    groupId: 'GroupA',
+                    id: '3',
                     validator(_, __, callback) {
                       if (context.isFieldTouched('password2')) {
                         context.validateFields(['password2']);
@@ -85,8 +87,10 @@ export default () => {
               <Field
                 name="password2"
                 rules={[
-                  { required: true },
+                  { required: true, groupId: 'GroupB', id: '4' },
                   context => ({
+                    groupId: 'GroupB',
+                    id: '5',
                     validator(rule, value, callback) {
                       const { password } = context.getFieldsValue(true);
                       if (password !== value) {
@@ -102,7 +106,7 @@ export default () => {
               <FieldState form={form} name="password2" />
               <Error>{password2Error}</Error>
 
-              <Field name="renderProps" rules={[{ required: true }]}>
+              <Field name="renderProps" rules={[{ required: true, id: '6' }]}>
                 {(control, meta) => (
                   <div>
                     Use Meta:
@@ -117,8 +121,9 @@ export default () => {
                 name="validateTrigger"
                 validateTrigger={['onSubmit', 'onChange']}
                 rules={[
-                  { required: true, validateTrigger: 'onSubmit' },
+                  { required: true, validateTrigger: 'onSubmit', id: '7' },
                   {
+                    id: '8',
                     validator(rule, value, callback) {
                       setTimeout(() => {
                         if (Number(value).toString() === value) {
@@ -154,6 +159,38 @@ export default () => {
                 }}
               >
                 Validate All
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  form.validateFields({
+                    groupId: 'GroupA',
+                  });
+                }}
+              >
+                Validate GroupA
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  form.validateFields({
+                    groupId: 'GroupB',
+                  });
+                }}
+              >
+                Validate GroupB
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  form.validateFields({
+                    ignore: (rule) => {
+                      return (Number(rule.id) % 2) === 0
+                    }
+                  });
+                }}
+              >
+                Validate Logical 
               </button>
 
               <button type="submit">Submit</button>
