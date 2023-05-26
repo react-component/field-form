@@ -25,7 +25,7 @@ import type {
   WatchCallBack,
 } from './interface';
 import { allPromiseFinish } from './utils/asyncUtil';
-import cloneDeep from './utils/cloneDeep';
+import { merge } from 'rc-util/lib/utils/set';
 import { defaultValidateMessages } from './utils/messages';
 import NameMap from './utils/NameMap';
 import {
@@ -35,7 +35,6 @@ import {
   getValue,
   matchNamePath,
   setValue,
-  setValues,
 } from './utils/valueUtil';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
@@ -141,7 +140,7 @@ export class FormStore {
   private setInitialValues = (initialValues: Store, init: boolean) => {
     this.initialValues = initialValues || {};
     if (init) {
-      let nextStore = setValues({}, initialValues, this.store);
+      let nextStore = merge(initialValues, this.store);
 
       // We will take consider prev form unmount fields.
       // When the field is not `preserve`, we need fill this with initialValues instead of store.
@@ -170,7 +169,7 @@ export class FormStore {
     const initValue = getValue(this.initialValues, namePath);
 
     // Not cloneDeep when without `namePath`
-    return namePath.length ? cloneDeep(initValue) : initValue;
+    return namePath.length ? merge(initValue) : initValue;
   };
 
   private setCallbacks = (callbacks: Callbacks) => {
@@ -523,7 +522,7 @@ export class FormStore {
 
     const prevStore = this.store;
     if (!nameList) {
-      this.updateStore(setValues({}, this.initialValues));
+      this.updateStore(merge(this.initialValues));
       this.resetWithFieldInitialValue();
       this.notifyObservers(prevStore, null, { type: 'reset' });
       this.notifyWatch();
@@ -743,7 +742,7 @@ export class FormStore {
     const prevStore = this.store;
 
     if (store) {
-      const nextStore = setValues(this.store, store);
+      const nextStore = merge(this.store, store);
       this.updateStore(nextStore);
     }
 

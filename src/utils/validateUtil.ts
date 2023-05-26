@@ -9,7 +9,7 @@ import type {
   RuleError,
 } from '../interface';
 import { defaultValidateMessages } from './messages';
-import { setValues } from './valueUtil';
+import { merge } from 'rc-util/lib/utils/set';
 
 // Remove incorrect original ts define
 const AsyncValidator: any = RawAsyncValidator;
@@ -67,7 +67,7 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const messages = setValues({}, defaultValidateMessages, options.validateMessages);
+  const messages = merge(defaultValidateMessages, options.validateMessages);
   validator.messages(messages);
 
   let result = [];
