@@ -232,11 +232,11 @@ export interface InternalHooks {
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> = T extends object
+type RecursivePartial<T> = NonNullable<T> extends object
   ? {
-      [P in keyof T]?: T[P] extends (infer U)[]
+      [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
         ? RecursivePartial<U>[]
-        : T[P] extends object
+        : NonNullable<T[P]> extends object
         ? RecursivePartial<T[P]>
         : T[P];
     }
