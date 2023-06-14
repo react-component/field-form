@@ -827,4 +827,32 @@ describe('Form.List', () => {
     expect(wrapper.find('.internal-rest').text()).toEqual('user');
     expect(wrapper.find('input').prop('value')).toEqual('bamboo');
   });
+
+  it('list should not pass context', () => {
+    const onValuesChange = jest.fn();
+
+    const InnerForm = () => (
+      <Form onValuesChange={onValuesChange}>
+        <Field name="name">
+          <Input />
+        </Field>
+        <Field name="age" initialValue={2}>
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    const wrapper = mount(
+      <Form>
+        <Form.List name="parent">{() => <InnerForm />}</Form.List>
+      </Form>,
+    );
+
+    wrapper
+      .find('input')
+      .first()
+      .simulate('change', { target: { value: 'little' } });
+
+    expect(onValuesChange).toHaveBeenCalledWith({ name: 'little' }, { name: 'little', age: 2 });
+  });
 });
