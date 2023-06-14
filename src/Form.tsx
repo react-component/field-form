@@ -12,6 +12,7 @@ import FieldContext, { HOOK_MARK } from './FieldContext';
 import type { FormContextProps } from './FormContext';
 import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
+import ListContext from './ListContext';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
@@ -147,7 +148,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   );
 
   const wrapperNode = (
-    <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
+    <ListContext.Provider value={null}>
+      <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
+    </ListContext.Provider>
   );
 
   if (Component === false) {
