@@ -1,8 +1,7 @@
-import type { FormInstance } from '.';
-import { FieldContext } from '.';
 import warning from 'rc-util/lib/warning';
-import { HOOK_MARK } from './FieldContext';
+import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
+  FormInstance,
   InternalFormInstance,
   InternalNamePath,
   NamePath,
