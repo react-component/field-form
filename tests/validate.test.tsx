@@ -869,6 +869,42 @@ describe('Form.Validate', () => {
     expect(onMetaChange).toHaveBeenNthCalledWith(4, false);
   });
 
+  it('should not trigger onFieldsChange if no rules', async () => {
+    const onFieldsChange = jest.fn();
+    const onFinish = jest.fn();
+
+    const App = () => {
+      return (
+        <Form
+          onFieldsChange={onFieldsChange}
+          initialValues={{
+            list: ['hello'],
+          }}
+          onFinish={onFinish}
+        >
+          <Form.List name="list">
+            {fields =>
+              fields.map(field => (
+                <InfoField key={field.key} {...field}>
+                  <Input />
+                </InfoField>
+              ))
+            }
+          </Form.List>
+        </Form>
+      );
+    };
+    const wrapper = mount(<App />);
+    wrapper.find('form').simulate('submit');
+
+    await timeout();
+
+    expect(onFieldsChange).not.toHaveBeenCalled();
+    expect(onFinish).toHaveBeenCalledWith({
+      list: ['hello'],
+    });
+  });
+
   it('validateOnly', async () => {
     const formRef = React.createRef<FormInstance>();
     const { container } = render(
