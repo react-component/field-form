@@ -895,6 +895,7 @@ describe('Form.Validate', () => {
       );
     };
     const wrapper = mount(<App />);
+
     wrapper.find('form').simulate('submit');
 
     await timeout();

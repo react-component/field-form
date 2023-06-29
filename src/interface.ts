@@ -103,6 +103,7 @@ export interface FieldEntity {
   isList: () => boolean;
   isPreserve: () => boolean;
   validateRules: (options?: InternalValidateOptions) => Promise<RuleError[]>;
+  getRules: () => RuleObject[];
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
   getErrors: () => string[];

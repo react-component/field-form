@@ -6,7 +6,13 @@ export default () => {
   const [form] = Form.useForm();
 
   return (
-    <Form form={form} preserve={false}>
+    <Form
+      form={form}
+      preserve={false}
+      onFieldsChange={fields => {
+        console.error('fields:', fields);
+      }}
+    >
       <Field name="name">
         <Input placeholder="Username" />
       </Field>
@@ -32,6 +38,8 @@ export default () => {
           ) : null;
         }}
       </Field>
+
+      <button type="submit">Submit</button>
     </Form>
   );
 };
