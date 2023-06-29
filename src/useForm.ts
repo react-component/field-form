@@ -894,12 +894,6 @@ export class FormStore {
 
       // Add field validate rule in to promise list
       if (!provideNameList || containsNamePath(namePathList, fieldNamePath)) {
-        // Skip if no rules
-        const hasRules = !!field.getRules().length;
-        if (hasRules) {
-          return;
-        }
-
         const promise = field.validateRules({
           validateMessages: {
             ...defaultValidateMessages,
