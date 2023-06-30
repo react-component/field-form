@@ -830,7 +830,10 @@ export class FormStore {
       const changedFields = fields.filter(({ name: fieldName }) =>
         containsNamePath(namePathList, fieldName as InternalNamePath),
       );
-      onFieldsChange(changedFields, fields);
+
+      if (changedFields.length) {
+        onFieldsChange(changedFields, fields);
+      }
     }
   };
 
@@ -855,6 +858,10 @@ export class FormStore {
 
     // Collect result in promise list
     const promiseList: Promise<FieldError>[] = [];
+
+    // We temp save the path which need trigger for `onFieldsChange`
+    const TMP_SPLIT = String(Date.now());
+    const validateNamePathList = new Set<string>();
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
@@ -883,6 +890,8 @@ export class FormStore {
       }
 
       const fieldNamePath = field.getNamePath();
+      validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
+
       // Add field validate rule in to promise list
       if (!provideNameList || containsNamePath(namePathList, fieldNamePath)) {
         const promise = field.validateRules({
@@ -961,7 +970,10 @@ export class FormStore {
     returnPromise.catch<ValidateErrorEntity>(e => e);
 
     // `validating` changed. Trigger `onFieldsChange`
-    this.triggerOnFieldsChange(namePathList);
+    const triggerNamePathList = namePathList.filter(namePath =>
+      validateNamePathList.has(namePath.join(TMP_SPLIT)),
+    );
+    this.triggerOnFieldsChange(triggerNamePathList);
 
     return returnPromise as Promise<Store>;
   };
