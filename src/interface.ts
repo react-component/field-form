@@ -240,7 +240,7 @@ type RecursivePartial<T> = NonNullable<T> extends object
         ? RecursivePartial<T[P]>
         : T[P];
     }
-  : any;
+  : T;
 
 export interface FormInstance<Values = any> {
   // Origin Form API
