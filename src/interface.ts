@@ -231,12 +231,14 @@ export interface InternalHooks {
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
 }
 
+type NoUndefined<T> = Exclude<T, undefined>;
+
 /** Only return partial when type is not any */
-type RecursivePartial<T> = NonNullable<T> extends object
+type RecursivePartial<T> = NoUndefined<T> extends object
   ? {
-      [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
+      [P in keyof T]?: NoUndefined<T[P]> extends (infer U)[]
         ? RecursivePartial<U>[]
-        : NonNullable<T[P]> extends object
+        : NoUndefined<T[P]> extends object
         ? RecursivePartial<T[P]>
         : T[P];
     }
