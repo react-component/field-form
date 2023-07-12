@@ -1,49 +1,59 @@
-type DefineNamePathBase<T, T1 extends any[] = never> = T extends any[]
+type DefineNamePathBase<T, T1 extends any[] = []> = T extends any[]
   ?
       | [...T1, number]
-      | (T[number] extends Record<string, any>
+      | (Required<T>[number] extends Record<string, any>
           ? {
-              [K in keyof T[number]]: [...T1, number, K];
+              [K in keyof Required<Required<T>[number]>]:
+                | [...T1, number, K]
+                | (Required<Required<T>[number]>[K] extends any[]
+                    ? [...T1, number, K, number]
+                    : never);
             }[keyof T[number]]
-          : undefined)
+          : never)
   : Required<T> extends Record<string, any>
   ? {
-      [K in keyof T]: Required<T>[K] extends any[] ? [...T1, K] | [...T1, K, number] : [...T1, K];
+      [K in keyof Required<T>]:
+        | [...T1, K]
+        | (Required<T>[K] extends any[] ? [...T1, K, number] : never);
     }[keyof T]
-  : undefined;
+  : never;
 
-type DefineNamePath1<T, T1 extends any[] = never> = T extends any[]
-  ? undefined
+export type Check<T> = Required<T> extends any[]
+  ? false
   : Required<T> extends Record<string, any>
-  ? {
-      [K in keyof T]: DefineNamePathBase<Required<T>[K], [...T1, K]>;
-    }[keyof T]
-  : undefined;
+  ? true
+  : false;
 
-type DefineNamePath2<T, T1 extends any[] = never> = T extends any[]
-  ? undefined
-  : Required<T> extends Record<string, any>
+export type DefineNamePath1<T, T1 extends any[] = []> = Check<T> extends true
   ? {
-      [K in keyof T]: DefineNamePath1<Required<T>[K], [...T1, K]>;
+      [K in keyof Required<T>]: DefineNamePathBase<Required<T>[K], [...T1, K]>;
     }[keyof T]
-  : undefined;
+  : never;
 
-type DefineNamePath3<T, T1 extends any[] = never> = T extends any[]
-  ? undefined
-  : Required<T> extends Record<string, any>
+export type DefineNamePath2<T, T1 extends any[] = []> = Check<T> extends true
   ? {
-      [K in keyof T]: DefineNamePath2<Required<T>[K], [...T1, K]>;
+      [K in keyof Required<T>]: DefineNamePath1<Required<T>[K], [...T1, K]>;
     }[keyof T]
-  : undefined;
+  : never;
 
-export type DefineNamePath<T = any> = T extends any[] | number | string
+export type DefineNamePath3<T, T1 extends any[] = []> = Check<T> extends true
+  ? {
+      [K in keyof Required<T>]: DefineNamePath2<Required<T>[K], [...T1, K]>;
+    }[keyof T]
+  : never;
+
+export type DefineNamePath4<T, T1 extends any[] = []> = Check<T> extends true
+  ? {
+      [K in keyof Required<T>]: DefineNamePath3<Required<T>[K], [...T1, K]>;
+    }[keyof T]
+  : never;
+
+export type DefineNamePath<T> = T extends any[] | number | string
   ? T
-  : {
-      [K in keyof T]:
-        | K
-        | [K]
-        | DefineNamePathBase<Required<T>[K], [K]>
-        | DefineNamePath1<Required<T>[K], [K]>
-        | DefineNamePath2<Required<T>[K], [K]>
-        | DefineNamePath3<Required<T>[K], [K]>;
-    }[keyof T];
+  :
+      | keyof T
+      | [keyof T]
+      | DefineNamePath1<T>
+      | DefineNamePath2<T>
+      | DefineNamePath3<T>
+      | DefineNamePath4<T>;
