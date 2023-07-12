@@ -1,12 +1,12 @@
 type DefineNamePathBase<T, T1 extends any[] = never> = T extends any[]
   ?
       | [...T1, number]
-      | (T[number] extends object
+      | (T[number] extends Record<string, any>
           ? {
               [K in keyof T[number]]: [...T1, number, K];
             }[keyof T[number]]
           : undefined)
-  : Required<T> extends object
+  : Required<T> extends Record<string, any>
   ? {
       [K in keyof T]: Required<T>[K] extends any[] ? [...T1, K] | [...T1, K, number] : [...T1, K];
     }[keyof T]
@@ -14,7 +14,7 @@ type DefineNamePathBase<T, T1 extends any[] = never> = T extends any[]
 
 type DefineNamePath1<T, T1 extends any[] = never> = T extends any[]
   ? undefined
-  : Required<T> extends object
+  : Required<T> extends Record<string, any>
   ? {
       [K in keyof T]: DefineNamePathBase<Required<T>[K], [...T1, K]>;
     }[keyof T]
@@ -22,7 +22,7 @@ type DefineNamePath1<T, T1 extends any[] = never> = T extends any[]
 
 type DefineNamePath2<T, T1 extends any[] = never> = T extends any[]
   ? undefined
-  : Required<T> extends object
+  : Required<T> extends Record<string, any>
   ? {
       [K in keyof T]: DefineNamePath1<Required<T>[K], [...T1, K]>;
     }[keyof T]
@@ -30,7 +30,7 @@ type DefineNamePath2<T, T1 extends any[] = never> = T extends any[]
 
 type DefineNamePath3<T, T1 extends any[] = never> = T extends any[]
   ? undefined
-  : Required<T> extends object
+  : Required<T> extends Record<string, any>
   ? {
       [K in keyof T]: DefineNamePath2<Required<T>[K], [...T1, K]>;
     }[keyof T]
