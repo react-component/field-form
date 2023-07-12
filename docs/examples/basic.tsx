@@ -2,6 +2,12 @@ import Form, { Field } from 'rc-field-form';
 import React from 'react';
 import Input from './components/Input';
 
+type FormData = {
+  name?: string;
+  password?: string;
+  password2?: string;
+};
+
 export default () => {
   const [form] = Form.useForm();
 
@@ -13,11 +19,11 @@ export default () => {
         console.error('fields:', fields);
       }}
     >
-      <Field name="name">
+      <Field<FormData> name="name">
         <Input placeholder="Username" />
       </Field>
 
-      <Field dependencies={['name']}>
+      <Field<FormData> dependencies={['name']}>
         {() => {
           return form.getFieldValue('name') === '1' ? (
             <Field name="password">
@@ -32,7 +38,7 @@ export default () => {
           const password = form.getFieldValue('password');
           console.log('>>>', password);
           return password ? (
-            <Field name="password2">
+            <Field<FormData> name={['password2']}>
               <Input placeholder="Password 2" />
             </Field>
           ) : null;

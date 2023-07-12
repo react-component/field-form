@@ -27,6 +27,7 @@ import {
   getNamePath,
   getValue,
 } from './utils/valueUtil';
+import type { DefineNamePath } from './namePathType';
 
 const EMPTY_ERRORS: any[] = [];
 
@@ -93,7 +94,7 @@ export interface InternalFieldProps<Values = any> {
 
 export interface FieldProps<Values = any>
   extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
-  name?: NamePath;
+  name?: DefineNamePath<Values>;
 }
 
 export interface FieldState {
@@ -632,7 +633,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
-  const namePath = name !== undefined ? getNamePath(name) : undefined;
+  const namePath = name !== undefined ? getNamePath(name as any) : undefined;
 
   let key: string = 'keep';
   if (!restProps.isListField) {
