@@ -27,7 +27,6 @@ import {
   getNamePath,
   getValue,
 } from './utils/valueUtil';
-import type { DefineNamePath } from './namePathType';
 
 const EMPTY_ERRORS: any[] = [];
 
@@ -94,7 +93,7 @@ export interface InternalFieldProps<Values = any> {
 
 export interface FieldProps<Values = any>
   extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
-  name?: DefineNamePath<Values>;
+  name?: NamePath<Values>;
 }
 
 export interface FieldState {
