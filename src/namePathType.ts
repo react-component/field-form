@@ -36,19 +36,6 @@ type DefineNamePath3<T, T1 extends any[] = never> = T extends any[]
     }[keyof T]
   : undefined;
 
-// export type DefineNamePath<T = any> =
-//   | keyof T
-//   | [keyof T]
-//   | {
-//       [K in keyof T]:
-//         | K
-//         | [K]
-//         | DefineNamePathBase<Required<T>[K], [K]>
-//         | DefineNamePath1<Required<T>[K], [K]>
-//         | DefineNamePath2<Required<T>[K], [K]>
-//         | DefineNamePath3<Required<T>[K], [K]>;
-//     }[keyof T];
-
 export type DefineNamePath<T = any> = T extends any[] | number | string
   ? T
   : {
