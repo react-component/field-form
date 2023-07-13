@@ -48,12 +48,19 @@ export type DefineNamePath4<T, T1 extends any[] = []> = Check<T> extends true
     }[keyof T]
   : never;
 
-export type DefineNamePath<T> = T extends any[] | number | string
-  ? T
-  :
-      | keyof T
-      | [keyof T]
-      | DefineNamePath1<T>
-      | DefineNamePath2<T>
-      | DefineNamePath3<T>
-      | DefineNamePath4<T>;
+type DefineNamePathUnion<T, T1 extends any[] = []> =
+  | DefineNamePath1<T, T1>
+  | DefineNamePath2<T, T1>
+  | DefineNamePath3<T, T1>
+  | DefineNamePath4<T, T1>;
+
+export type DefineNamePath<T = any> =
+  | T
+  | (T extends string | number | (string | number)[]
+      ? T
+      : T extends Record<string, any>[]
+      ?
+          | [number]
+          | [number, keyof Required<T>[number]]
+          | [number, ...DefineNamePathUnion<Required<T>[number]>]
+      : keyof T | [keyof T] | DefineNamePathUnion<T>);

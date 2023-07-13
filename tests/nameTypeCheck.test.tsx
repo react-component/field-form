@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { Field } from '../src';
+import Form, { Field, List } from '../src';
 
 describe('nameTypeCheck', () => {
   it('typescript', () => {
@@ -10,11 +10,12 @@ describe('nameTypeCheck', () => {
       c?: { c1?: string; c2?: string[] }[];
       d?: { d1?: string[]; d2?: string };
       e?: { e1?: { e2?: string; e3?: string[]; e4: { e5: { e6: string } } } };
+      list?: { age?: string }[];
     };
 
     const Demo: React.FC = () => {
       return (
-        <>
+        <Form>
           <Field<FieldType> name={'a'} />
           <Field<FieldType> name={'b'} />
           <Field<FieldType> name={'c'} />
@@ -40,7 +41,15 @@ describe('nameTypeCheck', () => {
           <Field<FieldType> name={['e', 'e1', 'e4']} />
           <Field<FieldType> name={['e', 'e1', 'e4', 'e5']} />
           <Field<FieldType> name={['e', 'e1', 'e4', 'e5', 'e6']} />
-        </>
+          {/* list */}
+          <List<FieldType> name={'list'}>
+            {fields => {
+              return fields.map(field => (
+                <Field<FieldType['list']> {...field} name={[1, 'age']} key={field.key} />
+              ));
+            }}
+          </List>
+        </Form>
       );
     };
     render(<Demo />);
