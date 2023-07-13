@@ -54,13 +54,13 @@ type DefineNamePathUnion<T, T1 extends any[] = []> =
   | DefineNamePath3<T, T1>
   | DefineNamePath4<T, T1>;
 
-export type DefineNamePath<T = any> =
-  | T
-  | (T extends string | number | (string | number)[]
-      ? T
-      : T extends Record<string, any>[]
-      ?
-          | [number]
-          | [number, keyof Required<T>[number]]
-          | [number, ...DefineNamePathUnion<Required<T>[number]>]
-      : keyof T | [keyof T] | DefineNamePathUnion<T>);
+export type DefineNamePath<T = any> = T extends Record<string, any>
+  ? T extends string | number | (string | number)[]
+    ? T
+    : T extends Record<string, any>[]
+    ?
+        | [number]
+        | [number, keyof Required<T>[number]]
+        | [number, ...DefineNamePathUnion<Required<T>[number]>]
+    : keyof T | [keyof T] | DefineNamePathUnion<T>
+  : T;
