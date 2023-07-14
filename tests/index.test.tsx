@@ -853,7 +853,8 @@ describe('Form.Basic', () => {
 
     render(<Demo />);
 
-    expect(onMetaChange).not.toHaveBeenCalled();
+    formRef.current?.setFieldsValue({});
+    onMetaChange.mockReset();
 
     // Re-render should not trigger `onMetaChange`
     for (let i = 0; i < 10; i += 1) {

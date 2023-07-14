@@ -1,5 +1,6 @@
 import toChildrenArray from 'rc-util/lib/Children/toArray';
 import warning from 'rc-util/lib/warning';
+import isEqual from 'rc-util/lib/isEqual';
 import * as React from 'react';
 import type {
   FieldEntity,
@@ -54,6 +55,8 @@ interface ChildProps {
   [name: string]: any;
 }
 
+export type MetaEvent = Meta & { destroy?: boolean };
+
 export interface InternalFieldProps<Values = any> {
   children?:
     | React.ReactElement
@@ -77,7 +80,7 @@ export interface InternalFieldProps<Values = any> {
   messageVariables?: Record<string, string>;
   initialValue?: any;
   onReset?: () => void;
-  onMetaChange?: (meta: Meta & { destroy?: boolean }) => void;
+  onMetaChange?: (meta: MetaEvent) => void;
   preserve?: boolean;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
@@ -222,10 +225,22 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // Event should only trigger when meta changed
+  private metaCache: MetaEvent = null;
+
   public triggerMetaEvent = (destroy?: boolean) => {
     const { onMetaChange } = this.props;
 
-    onMetaChange?.({ ...this.getMeta(), destroy });
+    if (onMetaChange) {
+      const meta = { ...this.getMeta(), destroy };
+
+      if (!isEqual(this.metaCache, meta)) {
+        onMetaChange(meta);
+      }
+
+      this.metaCache = meta;
+    } else {
+      this.metaCache = null;
+    }
   };
 
   // ========================= Field Entity Interfaces =========================
