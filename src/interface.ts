@@ -1,9 +1,9 @@
 import type { ReactElement } from 'react';
-import type { DefineNamePath } from './namePathType';
+import type { DeepNamePath } from './namePathType';
 import type { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
-export type NamePath<T = any> = DefineNamePath<T>;
+export type NamePath<T = any> = DeepNamePath<T>;
 
 export type StoreValue = any;
 export type Store = Record<string, StoreValue>;
