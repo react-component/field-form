@@ -221,6 +221,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }));
   };
 
+  // Event should only trigger when meta changed
   public triggerMetaEvent = (destroy?: boolean) => {
     const { onMetaChange } = this.props;
 

@@ -838,4 +838,28 @@ describe('Form.Basic', () => {
       Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),
     ).toEqual(['bamboo', 'tiny', 'light', 'match']);
   });
+
+  it('onMetaChange should only trigger when meta changed', () => {
+    const onMetaChange = jest.fn();
+    const formRef = React.createRef<FormInstance>();
+
+    const Demo: React.FC = () => (
+      <Form ref={formRef}>
+        <Field onMetaChange={onMetaChange} shouldUpdate={() => false}>
+          {() => null}
+        </Field>
+      </Form>
+    );
+
+    render(<Demo />);
+
+    expect(onMetaChange).not.toHaveBeenCalled();
+
+    // Re-render should not trigger `onMetaChange`
+    for (let i = 0; i < 10; i += 1) {
+      formRef.current?.setFieldsValue({});
+    }
+
+    expect(onMetaChange).toHaveBeenCalledTimes(0);
+  });
 });
