@@ -16,9 +16,14 @@ describe('nameTypeCheck', () => {
     const Demo: React.FC = () => {
       return (
         <Form>
+          {/* 无类型 */}
+          <Field name={[]} />
+          <Field name={'a'} />
+          <Field name={[11]} />
           <Field name={['a']} />
           <Field name={['d', 'd1']} />
-          <Field name={[]} />
+          {/* <Field name={{ aa: '111' }} /> */}
+          {/* 有类型 */}
           <Field<FieldType> name={'a'} />
           <Field<FieldType> name={'b'} />
           <Field<FieldType> name={'c'} />

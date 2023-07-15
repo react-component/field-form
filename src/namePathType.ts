@@ -1,7 +1,7 @@
 export type DeepNamePath<T = any, T1 extends any[] = []> =
   | (T extends string | number | (string | number)[] ? T : never)
   | (any extends T
-      ? never
+      ? string | number | (string | number)[]
       : Required<T> extends []
       ? Required<T>
       : {
