@@ -16,6 +16,9 @@ describe('nameTypeCheck', () => {
     const Demo: React.FC = () => {
       return (
         <Form>
+          <Field name={['a']} />
+          <Field name={['d', 'd1']} />
+          <Field name={[]} />
           <Field<FieldType> name={'a'} />
           <Field<FieldType> name={'b'} />
           <Field<FieldType> name={'c'} />
@@ -42,7 +45,7 @@ describe('nameTypeCheck', () => {
           <Field<FieldType> name={['e', 'e1', 'e4', 'e5']} />
           <Field<FieldType> name={['e', 'e1', 'e4', 'e5', 'e6']} />
           {/* list */}
-          <List<FieldType> name={'list'}>
+          <List name={'list'}>
             {fields => {
               return fields.map(field => (
                 <Field<FieldType['list']> {...field} name={[1, 'age']} key={field.key} />
