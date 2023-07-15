@@ -1,4 +1,4 @@
-export type DeepNamePath<T = unknown, T1 extends any[] = []> =
+export type DeepNamePath<T = any, T1 extends any[] = []> =
   | (T extends string | number | (string | number)[] ? T : never)
   | (any extends T
       ? never
