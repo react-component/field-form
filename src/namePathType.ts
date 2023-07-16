@@ -1,5 +1,5 @@
 export type DeepNamePath<T = any, T1 extends any[] = []> = any extends T
-  ? Record<string, any> | undefined extends T
+  ? Record<string, any> extends T
     ? T
     : Required<T> extends string | number | (string | number)[]
     ? T
