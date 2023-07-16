@@ -632,7 +632,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
-  const namePath = name !== undefined ? getNamePath(name as any) : undefined;
+  const namePath = name !== undefined ? getNamePath(name) : undefined;
 
   let key: string = 'keep';
   if (!restProps.isListField) {
