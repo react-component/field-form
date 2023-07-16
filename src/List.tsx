@@ -34,7 +34,6 @@ export interface ListProps<Values = any> {
   isListField?: boolean;
 }
 
-// const List: React.FunctionComponent<ListProps> = ({
 function List<Values = any>({
   name,
   initialValue,
