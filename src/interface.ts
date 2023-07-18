@@ -1,11 +1,16 @@
 import type { ReactElement } from 'react';
+import type {
+  Value as StoreValue,
+  Values as Store,
+  RuleType,
+  ValidateMessages,
+} from 'async-validator';
 import type { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
 
-export type StoreValue = any;
-export type Store = Record<string, StoreValue>;
+export type { RuleType, StoreValue, Store, ValidateMessages };
 
 export interface Meta {
   touched: boolean;
@@ -27,25 +32,10 @@ export interface FieldData extends Partial<Omit<InternalFieldData, 'name'>> {
   name: NamePath;
 }
 
-export type RuleType =
-  | 'string'
-  | 'number'
-  | 'boolean'
-  | 'method'
-  | 'regexp'
-  | 'integer'
-  | 'float'
-  | 'object'
-  | 'enum'
-  | 'date'
-  | 'url'
-  | 'hex'
-  | 'email';
-
 type Validator = (
-  rule: RuleObject,
+  rule: InternalRule,
   value: StoreValue,
-  callback: (error?: string) => void,
+  callback: (error?: string | Error) => void,
 ) => Promise<void | any> | void;
 
 export type RuleRender = (form: FormInstance) => RuleObject;
@@ -68,21 +58,22 @@ interface BaseRule {
   transform?: (value: StoreValue) => StoreValue;
   type?: RuleType;
   whitespace?: boolean;
+  defaultField?: RuleObject;
+  fields?: Record<string, RuleObject>;
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
 }
 
-type AggregationRule = BaseRule & Partial<ValidatorRule>;
-
-interface ArrayRule extends Omit<AggregationRule, 'type'> {
-  type: 'array';
-  defaultField?: RuleObject;
-}
-
-export type RuleObject = AggregationRule | ArrayRule;
+export type RuleObject = BaseRule & Partial<ValidatorRule>;
 
 export type Rule = RuleObject | RuleRender;
+
+export interface InternalRule extends RuleObject {
+  field?: string;
+  fullField?: string;
+  fullFields?: string[];
+}
 
 export interface ValidateErrorEntity<Values = any> {
   values: Values;
@@ -287,52 +278,3 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventArgs = any[];
-
-type ValidateMessage = string | (() => string);
-export interface ValidateMessages {
-  default?: ValidateMessage;
-  required?: ValidateMessage;
-  enum?: ValidateMessage;
-  whitespace?: ValidateMessage;
-  date?: {
-    format?: ValidateMessage;
-    parse?: ValidateMessage;
-    invalid?: ValidateMessage;
-  };
-  types?: {
-    string?: ValidateMessage;
-    method?: ValidateMessage;
-    array?: ValidateMessage;
-    object?: ValidateMessage;
-    number?: ValidateMessage;
-    date?: ValidateMessage;
-    boolean?: ValidateMessage;
-    integer?: ValidateMessage;
-    float?: ValidateMessage;
-    regexp?: ValidateMessage;
-    email?: ValidateMessage;
-    url?: ValidateMessage;
-    hex?: ValidateMessage;
-  };
-  string?: {
-    len?: ValidateMessage;
-    min?: ValidateMessage;
-    max?: ValidateMessage;
-    range?: ValidateMessage;
-  };
-  number?: {
-    len?: ValidateMessage;
-    min?: ValidateMessage;
-    max?: ValidateMessage;
-    range?: ValidateMessage;
-  };
-  array?: {
-    len?: ValidateMessage;
-    min?: ValidateMessage;
-    max?: ValidateMessage;
-    range?: ValidateMessage;
-  };
-  pattern?: {
-    mismatch?: ValidateMessage;
-  };
-}
