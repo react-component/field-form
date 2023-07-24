@@ -1,3 +1,7 @@
+/**
+ * T：泛型
+ * T1：缓存上一次的 name list
+ */
 export type DeepNamePath<T = any, T1 extends any[] = []> = any extends T
   ? Record<string, any> extends T
     ? T
