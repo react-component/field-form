@@ -50,7 +50,7 @@ describe('nameTypeCheck', () => {
           <Field<FieldType> name={['e', 'e1', 'e4', 'e5']} />
           <Field<FieldType> name={['e', 'e1', 'e4', 'e5', 'e6']} />
           {/* list */}
-          <List name={'list'}>
+          <List<FieldType> name={'list'}>
             {fields => {
               return fields.map(field => (
                 <Field<FieldType['list']> {...field} name={[1, 'age']} key={field.key} />
