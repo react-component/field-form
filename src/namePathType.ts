@@ -3,9 +3,7 @@
  * T1：缓存上一次的 name list
  */
 export type DeepNamePath<T = any, T1 extends any[] = []> = any extends T
-  ? Record<string, any> extends T
-    ? T
-    : T extends string | number | (string | number)[]
+  ? T extends string | number | (string | number)[]
     ? T
     : never
   : {
