@@ -23,6 +23,8 @@ import type {
   InternalValidateOptions,
   ValuedNotifyInfo,
   WatchCallBack,
+  FilterFunc,
+  GetFieldsValueConfig,
 } from './interface';
 import { allPromiseFinish } from './utils/asyncUtil';
 import { merge } from 'rc-util/lib/utils/set';
@@ -52,10 +54,6 @@ interface ValidateAction {
 }
 
 export type ReducerAction = UpdateAction | ValidateAction;
-
-export const STRICT = {} as const;
-
-export type StrictType = typeof STRICT;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -270,17 +268,30 @@ export class FormStore {
   };
 
   private getFieldsValue = (
-    nameList?: NamePath[] | true | StrictType,
-    filterFunc?: (meta: Meta) => boolean,
+    nameList?: NamePath[] | true | GetFieldsValueConfig,
+    filterFunc?: FilterFunc,
   ) => {
     this.warningUnhooked();
 
-    if (nameList === true && !filterFunc) {
+    // Fill args
+    let mergedNameList: NamePath[] | true;
+    let mergedFilterFunc: FilterFunc;
+    let mergedStrict: boolean;
+
+    if (nameList === true || Array.isArray(nameList)) {
+      mergedNameList = nameList;
+      mergedFilterFunc = filterFunc;
+    } else if (nameList && typeof nameList === 'object') {
+      mergedStrict = nameList.strict;
+      mergedFilterFunc = nameList.filter;
+    }
+
+    if (mergedNameList === true && !mergedFilterFunc) {
       return this.store;
     }
 
     const fieldEntities = this.getFieldEntitiesForNamePathList(
-      Array.isArray(nameList) ? nameList : null,
+      Array.isArray(mergedNameList) ? mergedNameList : null,
     );
 
     const filteredNameList: NamePath[] = [];
@@ -290,17 +301,19 @@ export class FormStore {
 
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
-      if (nameList === STRICT && (entity as FieldEntity).isList?.()) {
-        return;
-      } else if (!nameList && (entity as FieldEntity).isListField?.()) {
+      if (mergedStrict) {
+        if ((entity as FieldEntity).isList?.()) {
+          return;
+        }
+      } else if (!mergedNameList && (entity as FieldEntity).isListField?.()) {
         return;
       }
 
-      if (!filterFunc) {
+      if (!mergedFilterFunc) {
         filteredNameList.push(namePath);
       } else {
         const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
-        if (filterFunc(meta)) {
+        if (mergedFilterFunc(meta)) {
           filteredNameList.push(namePath);
         }
       }

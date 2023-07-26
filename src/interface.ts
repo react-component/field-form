@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { ReducerAction, StrictType } from './useForm';
+import type { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
@@ -242,11 +242,16 @@ type RecursivePartial<T> = NonNullable<T> extends object
     }
   : T;
 
+export type FilterFunc = (meta: Meta) => boolean;
+
+export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
+
 export interface FormInstance<Values = any> {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
   getFieldsValue: (() => Values) &
-    ((nameList: NamePath[] | true | StrictType, filterFunc?: (meta: Meta) => boolean) => any);
+    ((nameList: NamePath[] | true, filterFunc?: FilterFunc) => any) &
+    ((config: GetFieldsValueConfig) => any);
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   getFieldWarning: (name: NamePath) => string[];
