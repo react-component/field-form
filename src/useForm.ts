@@ -53,6 +53,10 @@ interface ValidateAction {
 
 export type ReducerAction = UpdateAction | ValidateAction;
 
+export const STRICT = {} as const;
+
+export type StrictType = typeof STRICT;
+
 export class FormStore {
   private formHooked: boolean = false;
 
@@ -265,7 +269,10 @@ export class FormStore {
     });
   };
 
-  private getFieldsValue = (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => {
+  private getFieldsValue = (
+    nameList?: NamePath[] | true | StrictType,
+    filterFunc?: (meta: Meta) => boolean,
+  ) => {
     this.warningUnhooked();
 
     if (nameList === true && !filterFunc) {
@@ -283,7 +290,9 @@ export class FormStore {
 
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
-      if (!nameList && (entity as FieldEntity).isListField?.()) {
+      if (nameList === STRICT && (entity as FieldEntity).isList?.()) {
+        return;
+      } else if (!nameList && (entity as FieldEntity).isListField?.()) {
         return;
       }
 

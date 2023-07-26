@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { ReducerAction } from './useForm';
+import type { ReducerAction, StrictType } from './useForm';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath = string | number | InternalNamePath;
@@ -246,7 +246,7 @@ export interface FormInstance<Values = any> {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
   getFieldsValue: (() => Values) &
-    ((nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => any);
+    ((nameList: NamePath[] | true | StrictType, filterFunc?: (meta: Meta) => boolean) => any);
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
   getFieldWarning: (name: NamePath) => string[];

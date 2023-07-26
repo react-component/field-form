@@ -855,4 +855,37 @@ describe('Form.List', () => {
 
     expect(onValuesChange).toHaveBeenCalledWith({ name: 'little' }, { name: 'little', age: 2 });
   });
+
+  it('getFieldsValue with Strict mode', () => {
+    const formRef = React.createRef<FormInstance>();
+
+    const initialValues = { list: [{ bamboo: 1, light: 3 }], little: 9 };
+
+    mount(
+      <div>
+        <Form ref={formRef} initialValues={initialValues}>
+          <Field name="little">
+            <Input />
+          </Field>
+          <Form.List name="list">
+            {fields =>
+              fields.map(field => (
+                <Field key={field.key} name={[field.name, 'bamboo']}>
+                  <Input />
+                </Field>
+              ))
+            }
+          </Form.List>
+        </Form>
+      </div>,
+    );
+
+    expect(formRef.current.getFieldsValue()).toEqual(initialValues);
+
+    // Strict only return field not list
+    expect(formRef.current.getFieldsValue(Form.STRICT)).toEqual({
+      list: [{ bamboo: 1 }],
+      little: 9,
+    });
+  });
 });
