@@ -1,21 +1,31 @@
 /**
- * T：泛型
- * T1：缓存上一次的 name list
+ * Store: The store type from `FormInstance<Store>`
+ * ParentNamePath: Auto generate by nest logic. Do not fill manually.
  */
-export type DeepNamePath<T = any, T1 extends any[] = []> = any extends T
-  ? T extends string | number | (string | number)[]
-    ? T
+export type DeepNamePath<Store = any, ParentNamePath extends any[] = []> = any extends Store
+  ? // Return if Store is basic type
+    Store extends string | number | (string | number)[]
+    ? Store
     : never
-  : {
-      [P in keyof Required<T>]:
-        | (T1['length'] extends 0 ? P | [...T1, P] : never)
-        | (Required<T>[P] extends any[]
-            ?
-                | ([...T1, P] | [...T1, P, number])
-                | (Required<T>[P] extends (string | number)[]
+  : // If Store is object.
+    // Let's create an <Store.Key, RootStore.KeyPath> map
+    // And get from the map by Store.Key.
+    {
+      [FieldKey in keyof Required<Store>]:
+        | (ParentNamePath['length'] extends 0 ? FieldKey | [...ParentNamePath, FieldKey] : never)
+        | (Required<Store>[FieldKey] extends any[]
+            ? // If is a validate array path
+              | ([...ParentNamePath, FieldKey] | [...ParentNamePath, FieldKey, number])
+                | (Required<Store>[FieldKey] extends (string | number)[]
                     ? never
-                    : DeepNamePath<Required<T>[P][number], [...T1, P, number]>)
-            : Required<T>[P] extends Record<string, any>
-            ? [...T1, P] | DeepNamePath<Required<T>[P], [...T1, P]>
-            : [...T1, P]);
-    }[keyof T];
+                    : // Dig with [...ParentNamePath, FieldKey, number]
+                      DeepNamePath<
+                        Required<Store>[FieldKey][number],
+                        [...ParentNamePath, FieldKey, number]
+                      >)
+            : Required<Store>[FieldKey] extends Record<string, any>
+            ? // If value is a object, dig into value.
+              | [...ParentNamePath, FieldKey]
+                | DeepNamePath<Required<Store>[FieldKey], [...ParentNamePath, FieldKey]>
+            : [...ParentNamePath, FieldKey]);
+    }[keyof Store];
