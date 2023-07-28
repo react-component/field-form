@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import Form, { Field, List } from '../src';
+import type { NamePath } from '@/interface';
 
 describe('nameTypeCheck', () => {
   it('typescript', () => {
@@ -12,6 +13,9 @@ describe('nameTypeCheck', () => {
       e?: { e1?: { e2?: string; e3?: string[]; e4: { e5: { e6: string } } } };
       list?: { age?: string }[];
     };
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    type fieldType = NamePath<FieldType>;
 
     const Demo: React.FC = () => {
       return (
