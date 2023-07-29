@@ -19,7 +19,7 @@ export type DeepNamePathBase<Store = any, ParentNamePath extends any[] = []> =
     : Store extends Record<string, any> // Check if `Store` is `object`
     ? {
         // Convert `Store` to <key, value>. We mark key a `FieldKey`
-        [FieldKey in keyof Store]: Store[FieldKey] extends (...p: any) => any // Filter function
+        [FieldKey in keyof Store]: Store[FieldKey] extends Function // Filter function
           ? never
           :
               | (ParentNamePath['length'] extends 0 ? FieldKey : never) // If `ParentNamePath` is empty, it can use `FieldKey` without array path
