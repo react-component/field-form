@@ -8,7 +8,7 @@ describe('nameTypeCheck', () => {
     type FieldType = {
       a: string;
       b?: string[];
-      c?: { c1?: string; c2?: string[] }[];
+      c?: { c1?: string; c2?: string[]; c3?: boolean[] }[];
       d?: { d1?: string[]; d2?: string };
       e?: { e1?: { e2?: string; e3?: string[]; e4: { e5: { e6: string } } } };
       list?: { age?: string }[];
@@ -45,6 +45,8 @@ describe('nameTypeCheck', () => {
           <Field<FieldType> name={['c', 1, 'c1']} />
           <Field<FieldType> name={['c', 1, 'c2']} />
           <Field<FieldType> name={['c', 1, 'c2', 1]} />
+          <Field<FieldType> name={['c', 1, 'c3']} />
+          <Field<FieldType> name={['c', 1, 'c3', 1]} />
           <Field<FieldType> name={['d', 'd1']} />
           <Field<FieldType> name={['d', 'd1', 1]} />
           <Field<FieldType> name={['d', 'd2']} />

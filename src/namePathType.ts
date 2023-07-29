@@ -24,7 +24,7 @@ export type DeepNamePathBase<Store = any, ParentNamePath extends any[] = []> =
           :
               | (ParentNamePath['length'] extends 0 ? FieldKey : never) // If `ParentNamePath` is empty, it can use `FieldKey` without array path
               | [...ParentNamePath, FieldKey] // Exist `ParentNamePath`, connect it
-              | (Store[FieldKey] extends (number | string)[]
+              | (Store[FieldKey] extends (number | string | boolean)[]
                   ? [...ParentNamePath, FieldKey, number] // If `Store[FieldKey]` is base array type
                   : Store[FieldKey] extends Record<string, any>
                   ? DeepNamePathBase<Store[FieldKey], [...ParentNamePath, FieldKey]> // If `Store[FieldKey]` is object
