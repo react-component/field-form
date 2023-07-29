@@ -35,25 +35,23 @@
  * ParentNamePath: Auto generate by nest logic. Do not fill manually.
  */
 export type DeepNamePath<Store = any, ParentNamePath extends any[] = []> = any extends Store
-  ? // Return if Store is basic type
-    Store extends string | number | (string | number)[]
+  ? Store extends string | number
+    ? string | number
+    : string[] extends Store
+    ? Store
+    : number[] extends Store
     ? Store
     : never
   : Store extends Record<string, any>[]
-  ? // If is a validate array path
-    [...ParentNamePath, number] | DeepNamePath<Store[number], [...ParentNamePath, number]>
+  ? [...ParentNamePath, number] | DeepNamePath<Store[number], [...ParentNamePath, number]>
   : Store extends Record<string, any>
   ? {
-      // If Store is object.
-      // Let's create an <Store.Key, RootStore.KeyPath> map
-      // And get from the map by Store.Key.
       [FieldKey in keyof Store]:
         | (ParentNamePath['length'] extends 0 ? FieldKey : never)
         | [...ParentNamePath, FieldKey]
         | (Store[FieldKey] extends (number | string)[]
             ? [...ParentNamePath, FieldKey, number]
-            : // If value is a object, dig into value.
-            Store[FieldKey] extends Record<string, any>
+            : Store[FieldKey] extends Record<string, any>
             ? DeepNamePath<Store[FieldKey], [...ParentNamePath, FieldKey]>
             : never);
     }[keyof Store]
