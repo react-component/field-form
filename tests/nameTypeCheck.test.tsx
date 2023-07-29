@@ -23,8 +23,10 @@ describe('nameTypeCheck', () => {
           {/* 无类型 */}
           <Field name={[]} />
           <Field name={'a'} />
-          <Field name={[11]} />
           <Field name={['a']} />
+          <Field name={12} />
+          <Field name={[11]} />
+          <Field name={['d', 1]} />
           <Field name={['d', 'd1']} />
           {/* <Field name={{ aa: '111' }} /> */}
           {/* 有类型 */}
@@ -65,5 +67,15 @@ describe('nameTypeCheck', () => {
       );
     };
     render(<Demo />);
+  });
+  it('type inference', () => {
+    interface Props<T = any> {
+      data?: T[];
+      list?: { name?: NamePath<T> }[];
+    }
+    function func<T = any>(props: Props<T>) {
+      return props;
+    }
+    func({ data: [{ a: { b: 'c' } }], list: [{ name: ['a', 'b'] }] });
   });
 });
