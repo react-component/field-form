@@ -32,7 +32,9 @@ export type DeepNamePathBase<Store = any, ParentNamePath extends any[] = []> =
       }[keyof Store]
     : never;
 
-type IsOptional<Key extends keyof Obj, Obj> = {} extends Pick<Obj, Key> ? Key : never;
+type IsOptional<Key extends keyof Obj, Obj> = Record<string, any> extends Pick<Obj, Key>
+  ? Key
+  : never;
 
 export type DeepRequired<T = any> = {
   [Key in keyof T]-?: IsOptional<Key, T> extends never ? T[Key] : DeepRequired<T[Key]>;
