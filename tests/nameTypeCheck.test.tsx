@@ -66,4 +66,14 @@ describe('nameTypeCheck', () => {
     };
     render(<Demo />);
   });
+  it('type inference', () => {
+    interface Props<T = any> {
+      data?: T[];
+      list?: { name?: NamePath<T> }[];
+    }
+    function func<T = any>(props: Props<T>) {
+      return props;
+    }
+    func({ data: [{ a: { b: 'c' } }], list: [{ name: ['a', 'b'] }] });
+  });
 });
