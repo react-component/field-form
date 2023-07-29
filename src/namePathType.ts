@@ -19,14 +19,16 @@ export type DeepNamePathBase<Store = any, ParentNamePath extends any[] = []> =
     : Store extends Record<string, any> // Check if `Store` is `object`
     ? {
         // Convert `Store` to <key, value>. We mark key a `FieldKey`
-        [FieldKey in keyof Store]:
-          | (ParentNamePath['length'] extends 0 ? FieldKey : never) // If `ParentNamePath` is empty, it can use `FieldKey` without array path
-          | [...ParentNamePath, FieldKey] // Exist `ParentNamePath`, connect it
-          | (Store[FieldKey] extends (number | string)[]
-              ? [...ParentNamePath, FieldKey, number] // If `Store[FieldKey]` is base array type
-              : Store[FieldKey] extends Record<string, any>
-              ? DeepNamePathBase<Store[FieldKey], [...ParentNamePath, FieldKey]> // If `Store[FieldKey]` is object
-              : never);
+        [FieldKey in keyof Store]: Store[FieldKey] extends (...p: any) => any // Filter function
+          ? never
+          :
+              | (ParentNamePath['length'] extends 0 ? FieldKey : never) // If `ParentNamePath` is empty, it can use `FieldKey` without array path
+              | [...ParentNamePath, FieldKey] // Exist `ParentNamePath`, connect it
+              | (Store[FieldKey] extends (number | string)[]
+                  ? [...ParentNamePath, FieldKey, number] // If `Store[FieldKey]` is base array type
+                  : Store[FieldKey] extends Record<string, any>
+                  ? DeepNamePathBase<Store[FieldKey], [...ParentNamePath, FieldKey]> // If `Store[FieldKey]` is object
+                  : never);
       }[keyof Store]
     : never;
 
