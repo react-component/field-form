@@ -81,12 +81,14 @@ describe('nameTypeCheck', () => {
     func({ data: [{ a: { b: 'c' } }], list: [{ name: ['a', 'b'] }] });
   });
   it('more type', () => {
-    interface Moment extends Object {
+    // Moment
+    type t1 = NamePath<{ a: { b: string; func: Moment } }>;
+    // Function
+    type t2 = NamePath<{ a: { b: string; func: () => { c: string } } }>;
+
+    interface Moment {
+      func2: Function;
       format: (format?: string) => string;
     }
-    // Moment
-    type t1 = NamePath<{ data: { a: Moment } }>;
-    // Function
-    type t2 = NamePath<{ a: { b: string; func: () => 1 } }>;
   });
 });
