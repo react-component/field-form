@@ -28,6 +28,8 @@ describe('nameTypeCheck', () => {
           <Field name={[11]} />
           <Field name={['d', 1]} />
           <Field name={['d', 'd1']} />
+          <Field name={[1, 2]} />
+          <Field name={[true, false]} />
           {/* <Field name={{ aa: '111' }} /> */}
           {/* 有类型 */}
           <Field<FieldType> name={'a'} />

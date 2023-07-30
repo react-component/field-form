@@ -4,9 +4,7 @@
  */
 export type DeepNamePath<Store = any, ParentNamePath extends any[] = []> =
   // Follow code is batch check if `Store` is base type
-  Store extends Function
-    ? never // Ignore function type
-    : string extends Store
+  string extends Store
     ? ParentNamePath['length'] extends 0
       ? Store // Return `string` instead of array if `ParentNamePath` is empty
       : never
@@ -32,8 +30,10 @@ export type DeepNamePath<Store = any, ParentNamePath extends any[] = []> =
       [...ParentNamePath, number] | DeepNamePath<Store[number], [...ParentNamePath, number]>
     : {
         // Convert `Store` to <key, value>. We mark key a `FieldKey`
-        [FieldKey in keyof Store]:
-          | (ParentNamePath['length'] extends 0 ? FieldKey : never) // If `ParentNamePath` is empty, it can use `FieldKey` without array path
-          | [...ParentNamePath, FieldKey] // Exist `ParentNamePath`, connect it
-          | DeepNamePath<Required<Store>[FieldKey], [...ParentNamePath, FieldKey]>; // If `Store[FieldKey]` is object
+        [FieldKey in keyof Store]: Store[FieldKey] extends Function
+          ? never
+          :
+              | (ParentNamePath['length'] extends 0 ? FieldKey : never) // If `ParentNamePath` is empty, it can use `FieldKey` without array path
+              | [...ParentNamePath, FieldKey] // Exist `ParentNamePath`, connect it
+              | DeepNamePath<Required<Store>[FieldKey], [...ParentNamePath, FieldKey]>; // If `Store[FieldKey]` is object
       }[keyof Store];
