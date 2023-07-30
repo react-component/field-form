@@ -93,4 +93,11 @@ describe('nameTypeCheck', () => {
       format: (format?: string) => string;
     }
   });
+  it('tree', () => {
+    type t1 = NamePath<{ a: { b: TreeNode } }>;
+
+    interface TreeNode {
+      child: TreeNode[];
+    }
+  });
 });
