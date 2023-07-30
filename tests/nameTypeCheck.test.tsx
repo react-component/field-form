@@ -94,7 +94,7 @@ describe('nameTypeCheck', () => {
     }
   });
   it('tree', () => {
-    type t1 = NamePath<{ a: { b: TreeNode } }>;
+    type t1 = NamePath<{ a: TreeNode }>;
 
     interface TreeNode {
       child: TreeNode[];
