@@ -8,27 +8,15 @@ export type DeepNamePath<
 > = ParentNamePath['length'] extends 10
   ? never
   : // Follow code is batch check if `Store` is base type
-  string extends Store
+  true extends (Store extends string | number | boolean ? true : false)
   ? ParentNamePath['length'] extends 0
-    ? Store // Return `string` instead of array if `ParentNamePath` is empty
+    ? Store // Return `string | number | boolean` instead of array if `ParentNamePath` is empty
     : never
-  : number extends Store
+  : true extends (Store extends (string | number | boolean)[] ? true : false)
   ? ParentNamePath['length'] extends 0
-    ? Store // Return `number` instead of array if `ParentNamePath` is empty
-    : never
-  : string[] extends Store
-  ? ParentNamePath['length'] extends 0
-    ? Store // Return `string[]` instead of array if `ParentNamePath` is empty
-    : [...ParentNamePath, number] // Connect string path
-  : number[] extends Store
-  ? ParentNamePath['length'] extends 0
-    ? Store // Return `number[]` instead of array if `ParentNamePath` is empty
-    : [...ParentNamePath, number] // Connect number path
-  : boolean[] extends Store
-  ? ParentNamePath['length'] extends 0
-    ? Store // Return `boolean[]` instead of array if `ParentNamePath` is empty
-    : [...ParentNamePath, number] // Connect boolean path
-  : Store extends any[] // Check if `Store` is `object[]`
+    ? Store // Return `(string | number | boolean)[]` instead of array if `ParentNamePath` is empty
+    : [...ParentNamePath, number] // Connect path
+  : Store extends any[] // Check if `Store` is `any[]`
   ? // Connect path. e.g. { a: { b: string }[] }
     // Get: [a] | [ a,number] | [ a ,number , b]
     [...ParentNamePath, number] | DeepNamePath<Store[number], [...ParentNamePath, number]>

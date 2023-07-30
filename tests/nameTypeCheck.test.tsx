@@ -2,7 +2,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import Form, { Field, List } from '../src';
-import type { NamePath } from '@/interface';
+import type { NamePath } from '../src/interface';
 
 describe('nameTypeCheck', () => {
   it('typescript', () => {
