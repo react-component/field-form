@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { render } from '@testing-library/react';
 import Form, { Field, List } from '../src';
@@ -14,7 +15,6 @@ describe('nameTypeCheck', () => {
       list?: { age?: string }[];
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type fieldType = NamePath<FieldType>;
 
     const Demo: React.FC = () => {
@@ -79,5 +79,14 @@ describe('nameTypeCheck', () => {
       return props;
     }
     func({ data: [{ a: { b: 'c' } }], list: [{ name: ['a', 'b'] }] });
+  });
+  it('more type', () => {
+    interface Moment extends Object {
+      format: (format?: string) => string;
+    }
+    // Moment
+    type t1 = NamePath<{ data: { a: Moment } }>;
+    // Function
+    type t2 = NamePath<{ a: { b: string; func: () => 1 } }>;
   });
 });

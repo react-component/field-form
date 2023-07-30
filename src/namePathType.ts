@@ -4,12 +4,26 @@
  */
 export type DeepNamePath<Store = any, ParentNamePath extends any[] = []> =
   // Follow code is batch check if `Store` is base type
-  Store extends string | number
-    ? Store
+  string extends Store
+    ? ParentNamePath['length'] extends 0
+      ? Store
+      : never
+    : number extends Store
+    ? ParentNamePath['length'] extends 0
+      ? Store
+      : never
     : string[] extends Store
-    ? Store
+    ? ParentNamePath['length'] extends 0
+      ? Store
+      : [...ParentNamePath, number]
     : number[] extends Store
-    ? Store
+    ? ParentNamePath['length'] extends 0
+      ? Store
+      : [...ParentNamePath, number]
+    : boolean[] extends Store
+    ? ParentNamePath['length'] extends 0
+      ? Store
+      : [...ParentNamePath, number]
     : Store extends Record<string, any>[] // Check if `Store` is `object[]`
     ? Store[0] extends undefined
       ? []
@@ -24,10 +38,6 @@ export type DeepNamePath<Store = any, ParentNamePath extends any[] = []> =
           :
               | (ParentNamePath['length'] extends 0 ? FieldKey : never) // If `ParentNamePath` is empty, it can use `FieldKey` without array path
               | [...ParentNamePath, FieldKey] // Exist `ParentNamePath`, connect it
-              | (Required<Store>[FieldKey] extends (number | string | boolean)[]
-                  ? [...ParentNamePath, FieldKey, number] // If `Store[FieldKey]` is base array type
-                  : Required<Store>[FieldKey] extends Record<string, any>
-                  ? DeepNamePath<Required<Store>[FieldKey], [...ParentNamePath, FieldKey]> // If `Store[FieldKey]` is object
-                  : never);
+              | DeepNamePath<Required<Store>[FieldKey], [...ParentNamePath, FieldKey]>; // If `Store[FieldKey]` is object
       }[keyof Store]
     : never;
