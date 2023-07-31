@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { render } from '@testing-library/react';
 import Form, { Field, List } from '../src';
 import type { NamePath } from '../src/interface';
@@ -20,6 +20,8 @@ describe('nameTypeCheck', () => {
     const Demo: React.FC = () => {
       return (
         <Form>
+          <Field name={'use by strictNullChecks set true' as string} />
+          <Field name={'use by strictNullChecks set true' as string | number} />
           {/* 无类型 */}
           <Field name={[]} />
           <Field name={'a'} />

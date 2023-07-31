@@ -1,3 +1,4 @@
+type BaseNamePath = string | number | boolean | (string | number | boolean)[];
 /**
  * Store: The store type from `FormInstance<Store>`
  * ParentNamePath: Auto generate by nest logic. Do not fill manually.
@@ -8,14 +9,12 @@ export type DeepNamePath<
 > = ParentNamePath['length'] extends 10
   ? never
   : // Follow code is batch check if `Store` is base type
-  true extends (Store extends string | number | boolean ? true : false)
+  true extends (Store extends BaseNamePath ? true : false)
   ? ParentNamePath['length'] extends 0
-    ? Store // Return `string | number | boolean` instead of array if `ParentNamePath` is empty
+    ? Store | BaseNamePath // Return `(string | number | boolean)[]` instead of array if `ParentNamePath` is empty
+    : Store extends any[]
+    ? [...ParentNamePath, number] // Connect path
     : never
-  : true extends (Store extends (string | number | boolean)[] ? true : false)
-  ? ParentNamePath['length'] extends 0
-    ? Store // Return `(string | number | boolean)[]` instead of array if `ParentNamePath` is empty
-    : [...ParentNamePath, number] // Connect path
   : Store extends any[] // Check if `Store` is `any[]`
   ? // Connect path. e.g. { a: { b: string }[] }
     // Get: [a] | [ a,number] | [ a ,number , b]
