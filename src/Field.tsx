@@ -96,7 +96,7 @@ export interface InternalFieldProps<Values = any> {
 
 export interface FieldProps<Values = any>
   extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
-  name?: NamePath;
+  name?: NamePath<Values>;
 }
 
 export interface FieldState {
