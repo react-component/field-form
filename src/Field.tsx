@@ -379,7 +379,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePath = this.getNamePath();
     const currentValue = this.getValue();
 
-    const { triggerName, validateOnly = false } = options || {};
+    const { triggerName, validateOnly = false, groupId, ignore } = options || {};
 
     // Force change to async to avoid rule OOD under renderProps field
     const rootPromise = Promise.resolve().then(() => {
@@ -401,6 +401,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
             const triggerList = toArray(validateTrigger);
             return triggerList.includes(triggerName);
           });
+      }
+
+      if (groupId) {
+        filteredRules = filteredRules.filter(rule => rule.groupId === groupId)
+      }
+
+      if (ignore) {
+        filteredRules = filteredRules.filter(rule => !ignore(rule))
       }
 
       const promise = validateRules(

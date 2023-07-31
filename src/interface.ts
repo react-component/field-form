@@ -69,6 +69,8 @@ interface BaseRule {
   transform?: (value: StoreValue) => StoreValue;
   type?: RuleType;
   whitespace?: boolean;
+  id?: string
+  groupId?: string
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
@@ -132,6 +134,8 @@ export interface ValidateOptions {
    * Validate only and not trigger UI and Field status update
    */
   validateOnly?: boolean;
+  groupId?: string
+  ignore?: (rule: RuleObject) => boolean
 }
 
 export type ValidateFields<Values = any> = {
