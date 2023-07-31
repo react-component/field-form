@@ -11,7 +11,7 @@ export type DeepNamePath<
   : // Follow code is batch check if `Store` is base type
   true extends (Store extends BaseNamePath ? true : false)
   ? ParentNamePath['length'] extends 0
-    ? Store | BaseNamePath // Return `(string | number | boolean)[]` instead of array if `ParentNamePath` is empty
+    ? Store | BaseNamePath // Return `BaseNamePath` instead of array if `ParentNamePath` is empty
     : Store extends any[]
     ? [...ParentNamePath, number] // Connect path
     : never
