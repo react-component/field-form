@@ -11,6 +11,7 @@ import type {
 import { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 import { isFormInstance } from './utils/typeUtil';
+import type { DeepNamePath, Demo } from './namePathType';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
@@ -37,39 +38,12 @@ const useWatchWarning =
     : () => {};
 
 function useWatch<
-  TDependencies1 extends keyof GetGeneric<TForm>,
-  TForm extends FormInstance,
-  TDependencies2 extends keyof GetGeneric<TForm>[TDependencies1],
-  TDependencies3 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2],
-  TDependencies4 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3],
+  TForm extends FormInstance = FormInstance,
+  const TDependencies extends DeepNamePath<GetGeneric<TForm>> = any,
 >(
-  dependencies: [TDependencies1, TDependencies2, TDependencies3, TDependencies4],
+  dependencies: TDependencies,
   form?: TForm | WatchOptions<TForm>,
-): GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3][TDependencies4];
-
-function useWatch<
-  TDependencies1 extends keyof GetGeneric<TForm>,
-  TForm extends FormInstance,
-  TDependencies2 extends keyof GetGeneric<TForm>[TDependencies1],
-  TDependencies3 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2],
->(
-  dependencies: [TDependencies1, TDependencies2, TDependencies3],
-  form?: TForm | WatchOptions<TForm>,
-): GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3];
-
-function useWatch<
-  TDependencies1 extends keyof GetGeneric<TForm>,
-  TForm extends FormInstance,
-  TDependencies2 extends keyof GetGeneric<TForm>[TDependencies1],
->(
-  dependencies: [TDependencies1, TDependencies2],
-  form?: TForm | WatchOptions<TForm>,
-): GetGeneric<TForm>[TDependencies1][TDependencies2];
-
-function useWatch<TDependencies extends keyof GetGeneric<TForm>, TForm extends FormInstance>(
-  dependencies: TDependencies | [TDependencies],
-  form?: TForm | WatchOptions<TForm>,
-): GetGeneric<TForm>[TDependencies];
+): Demo<GetGeneric<TForm>, TDependencies extends readonly any[] ? TDependencies : [TDependencies]>;
 
 function useWatch<TForm extends FormInstance>(
   dependencies: [],
