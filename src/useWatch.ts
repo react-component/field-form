@@ -11,7 +11,7 @@ import type {
 import { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { getNamePath, getValue } from './utils/valueUtil';
 import { isFormInstance } from './utils/typeUtil';
-import type { DeepNamePath, Demo } from './namePathType';
+import type { DeepNamePath, GetNameType } from './namePathType';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
@@ -43,7 +43,10 @@ function useWatch<
 >(
   dependencies: TDependencies,
   form?: TForm | WatchOptions<TForm>,
-): Demo<GetGeneric<TForm>, TDependencies extends readonly any[] ? TDependencies : [TDependencies]>;
+): GetNameType<
+  GetGeneric<TForm>,
+  TDependencies extends readonly any[] ? TDependencies : [TDependencies]
+>;
 
 function useWatch<TForm extends FormInstance>(
   dependencies: [],
