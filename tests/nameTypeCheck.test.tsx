@@ -89,6 +89,8 @@ describe('nameTypeCheck', () => {
     type t1 = NamePath<{ a: { b: string; func: Moment } }>;
     // Function
     type t2 = NamePath<{ a: { b: string; func: () => { c: string } } }>;
+    // known
+    const t3: NamePath<unknown> = 'a';
 
     interface Moment {
       func2: Function;
