@@ -19,6 +19,8 @@ export type DeepNamePath<
   ? // Connect path. e.g. { a: { b: string }[] }
     // Get: [a] | [ a,number] | [ a ,number , b]
     [...ParentNamePath, number] | DeepNamePath<Store[number], [...ParentNamePath, number]>
+  : keyof Store extends never // unknown
+  ? Store
   : {
       // Convert `Store` to <key, value>. We mark key a `FieldKey`
       [FieldKey in keyof Store]: Store[FieldKey] extends Function
