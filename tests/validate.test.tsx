@@ -728,7 +728,7 @@ describe('Form.Validate', () => {
     await changeEmptyValue(container.querySelector('input'));
 
     try {
-      await form.validateFields([['username']], { recursive: true } as any);
+      await form.validateFields([['username']], { recursive: true });
 
       // Should not reach this
       expect(false).toBeTruthy();
