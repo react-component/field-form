@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 import Form, { Field, useForm } from '../src';
@@ -694,8 +694,8 @@ describe('Form.Validate', () => {
   });
 
   it('validate support recursive', async () => {
-    let form;
-    const wrapper = mount(
+    let form: FormInstance;
+    const { container } = render(
       <div>
         <Form
           ref={instance => {
@@ -708,24 +708,39 @@ describe('Form.Validate', () => {
       </div>,
     );
 
-    wrapper
-      .find('input')
-      .at(0)
-      .simulate('change', { target: { value: '' } });
+    async function changeEmptyValue(input: HTMLElement) {
+      fireEvent.change(input, {
+        target: {
+          value: '2',
+        },
+      });
+      fireEvent.change(input, {
+        target: {
+          value: '',
+        },
+      });
+
+      await act(async () => {
+        await timeout();
+      });
+    }
+
+    await changeEmptyValue(container.querySelector('input'));
+
+    try {
+      await form.validateFields([['username']], { recursive: true } as any);
+
+      // Should not reach this
+      expect(false).toBeTruthy();
+    } catch (error) {
+      expect(error.errorFields.length).toBe(2);
+      expect(error.errorFields[0].errors).toEqual(["'username.do' is required"]);
+      expect(error.errorFields[1].errors).toEqual(["'username.list' is required"]);
+    }
+
     await act(async () => {
       await timeout();
     });
-    wrapper.update();
-
-    try {
-      const values = await form.validateFields(['username'], { recursive: true });
-      expect(values.username.do).toBe('');
-    } catch (error) {
-      expect(error.errorFields.length).toBe(2);
-    }
-
-    const values = await form.validateFields(['username']);
-    expect(values.username.do).toBe('');
   });
 
   it('not trigger validator', async () => {

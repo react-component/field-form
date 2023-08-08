@@ -885,25 +885,12 @@ export class FormStore {
     const TMP_SPLIT = String(Date.now());
     const validateNamePathList = new Set<string>();
 
+    const recursive = options?.recursive;
+
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
       if (!provideNameList) {
         namePathList.push(field.getNamePath());
-      }
-
-      /**
-       * Recursive validate if configured.
-       * TODO: perf improvement @zombieJ
-       */
-      if (options?.recursive && provideNameList) {
-        const namePath = field.getNamePath();
-        if (
-          // nameList[i] === undefined 说明是以 nameList 开头的
-          // ['name'] -> ['name','list']
-          namePath.every((nameUnit, i) => nameList[i] === nameUnit || nameList[i] === undefined)
-        ) {
-          namePathList.push(namePath);
-        }
       }
 
       // Skip if without rule
@@ -915,7 +902,7 @@ export class FormStore {
       validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
 
       // Add field validate rule in to promise list
-      if (!provideNameList || containsNamePath(namePathList, fieldNamePath)) {
+      if (!provideNameList || containsNamePath(namePathList, fieldNamePath, recursive)) {
         const promise = field.validateRules({
           validateMessages: {
             ...defaultValidateMessages,
