@@ -708,7 +708,7 @@ describe('Form.Validate', () => {
       </div>,
     );
 
-    async function changeEmptyValue(input: HTMLElement) {
+    async function changeInputValue(input: HTMLElement, value = '') {
       fireEvent.change(input, {
         target: {
           value: '2',
@@ -716,7 +716,7 @@ describe('Form.Validate', () => {
       });
       fireEvent.change(input, {
         target: {
-          value: '',
+          value,
         },
       });
 
@@ -725,7 +725,7 @@ describe('Form.Validate', () => {
       });
     }
 
-    await changeEmptyValue(container.querySelector('input'));
+    await changeInputValue(container.querySelector('input'));
 
     try {
       await form.validateFields([['username']], { recursive: true });
@@ -741,6 +741,13 @@ describe('Form.Validate', () => {
     await act(async () => {
       await timeout();
     });
+
+    // Passed
+    await changeInputValue(container.querySelectorAll('input')[0], 'do');
+    await changeInputValue(container.querySelectorAll('input')[1], 'list');
+
+    const passedValues = await form.validateFields([['username']], { recursive: true });
+    expect(passedValues).toEqual({ username: { do: 'do', list: 'list' } });
   });
 
   it('not trigger validator', async () => {
