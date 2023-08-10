@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
 import React from 'react';
 import type { FormInstance } from '../src';
@@ -412,10 +412,10 @@ describe('Form.Basic', () => {
       const { container } = render(
         <Form>
           <Field name="username" rules={[{ required: true }]}>
-            <Input />
+            <Input data-name="username" />
           </Field>
           <Field name="password" rules={[{ required: true }]}>
-            <Input />
+            <Input data-name="password" />
           </Field>
           <Field shouldUpdate>
             {(_, __, { getFieldsError, isFieldsTouched }) => {
@@ -428,7 +428,7 @@ describe('Form.Basic', () => {
         </Form>,
       );
 
-      await changeValue(getInput(container, 'username'), '');
+      await changeValue(getInput(container, 'username'), ['bamboo', '']);
       expect(isAllTouched).toBeFalsy();
       expect(hasError).toBeTruthy();
 
@@ -459,8 +459,8 @@ describe('Form.Basic', () => {
               return (
                 <span
                   id="holder"
-                  data-touched={form?.isFieldsTouched(true)}
-                  data-value={form?.getFieldsValue()}
+                  data-touched={JSON.stringify(form?.isFieldsTouched(true))}
+                  data-value={JSON.stringify(form?.getFieldsValue())}
                 />
               );
             }}
@@ -473,6 +473,10 @@ describe('Form.Basic', () => {
       // expect(props['data-touched']).toBeFalsy();
       // expect(props['data-value']).toEqual({ username: 'light' });
       expect(container.querySelector('#holder')).toHaveAttribute('data-touched', 'false');
+      expect(container.querySelector('#holder')).toHaveAttribute(
+        'data-value',
+        '{"username":"light"}',
+      );
     });
   });
 
@@ -489,13 +493,14 @@ describe('Form.Basic', () => {
         </div>,
       );
 
-      form.current?.setFields([
-        { name: 'username', touched: false, validating: true, errors: ['Set It!'] },
-      ]);
-      wrapper.update();
+      act(() => {
+        form.current?.setFields([
+          { name: 'username', touched: false, validating: true, errors: ['Set It!'] },
+        ]);
+      });
 
-      matchError(wrapper, 'Set It!');
-      expect(wrapper.find('.validating').length).toBeTruthy();
+      matchError(container, 'Set It!');
+      expect(container.querySelector('.validating')).toBeTruthy();
       expect(form.current?.isFieldsTouched()).toBeFalsy();
     });
 
@@ -519,12 +524,16 @@ describe('Form.Basic', () => {
       triggerUpdate.mockReset();
 
       // Not trigger render
-      formRef.current.setFields([{ name: 'others', value: 'no need to update' }]);
+      act(() => {
+        formRef.current.setFields([{ name: 'others', value: 'no need to update' }]);
+      });
 
       expect(triggerUpdate).not.toHaveBeenCalled();
 
       // Trigger render
-      formRef.current.setFields([{ name: 'value', value: 'should update' }]);
+      act(() => {
+        formRef.current.setFields([{ name: 'value', value: 'should update' }]);
+      });
 
       expect(triggerUpdate).toHaveBeenCalled();
     });
@@ -581,7 +590,9 @@ describe('Form.Basic', () => {
     expect(currentMeta.validating).toBeFalsy();
 
     // Set it
-    form.current?.setFieldsValue({ normal: 'Light' });
+    act(() => {
+      form.current?.setFieldsValue({ normal: 'Light' });
+    });
 
     expect(form.current?.getFieldValue('normal')).toBe('Light');
     expect(form.current?.isFieldTouched('normal')).toBeTruthy();
@@ -597,7 +608,9 @@ describe('Form.Basic', () => {
     expect(currentMeta.validating).toBeTruthy();
 
     // Set it again
-    form.current?.setFieldsValue({ normal: 'Light' });
+    act(() => {
+      form.current?.setFieldsValue({ normal: 'Light' });
+    });
 
     expect(form.current?.getFieldValue('normal')).toBe('Light');
     expect(form.current?.isFieldTouched('normal')).toBeTruthy();
@@ -806,7 +819,9 @@ describe('Form.Basic', () => {
     };
 
     const { container, rerender } = render(<Demo />);
-    refForm.setFieldsValue({ name: 'bamboo' });
+    act(() => {
+      refForm.setFieldsValue({ name: 'bamboo' });
+    });
     expect(container.querySelector<HTMLInputElement>('input').value).toBe('bamboo');
     rerender(<Demo remount />);
     expect(container.querySelector<HTMLInputElement>('input').value).toBe('bamboo');
@@ -838,8 +853,10 @@ describe('Form.Basic', () => {
     ).toEqual(['bamboo', 'little', 'light', 'nested']);
 
     // Set
-    formRef.current.setFieldValue(['list', 1], 'tiny');
-    formRef.current.setFieldValue(['nest', 'target'], 'match');
+    act(() => {
+      formRef.current.setFieldValue(['list', 1], 'tiny');
+      formRef.current.setFieldValue(['nest', 'target'], 'match');
+    });
 
     expect(
       Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),
