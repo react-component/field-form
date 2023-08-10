@@ -90,14 +90,6 @@ describe('Form.Context', () => {
         </FormProvider>,
       );
 
-      // wrapper.setProps({
-      //   children: (
-      //     <Form name="form2">
-      //       <InfoField name="test" />
-      //     </Form>
-      //   ),
-      // });
-
       await changeValue(getInput(container), 'Bamboo');
       const { forms } = onFormChange.mock.calls[0][1];
       expect(Object.keys(forms)).toEqual(['form2']);
@@ -121,10 +113,6 @@ describe('Form.Context', () => {
       );
 
       const { container, rerender } = render(<Demo />);
-
-      // wrapper.setProps({
-      //   changed: true,
-      // });
 
       rerender(<Demo changed />);
 

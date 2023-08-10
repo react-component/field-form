@@ -5,12 +5,19 @@ import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 import { fireEvent } from '@testing-library/react';
 
-export function getInput(wrapper: HTMLElement, dataName?: string): HTMLInputElement {
-  if (!dataName) {
-    return wrapper.querySelector('input');
+export function getInput(
+  container: HTMLElement,
+  dataNameOrIndex?: string | number,
+): HTMLInputElement {
+  if (!dataNameOrIndex) {
+    return container.querySelector('input');
   }
 
-  return wrapper.querySelector(`[data-name="${dataName}"]`);
+  if (typeof dataNameOrIndex === 'number') {
+    return container.querySelectorAll('input')[dataNameOrIndex];
+  }
+
+  return container.querySelector(`[data-name="${dataNameOrIndex}"]`);
 }
 
 export async function changeValue(wrapper: ReactWrapper | HTMLElement, value: string | string[]) {
