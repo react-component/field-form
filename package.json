@@ -82,5 +82,9 @@
     "react-redux": "^4.4.10",
     "redux": "^3.7.2",
     "typescript": "^5.1.6"
+  },
+  "jest": {
+    "verbose": true,
+    "testURL": "http://localhost/"
   }
 }
