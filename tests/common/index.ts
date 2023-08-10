@@ -5,17 +5,25 @@ import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
 import { fireEvent } from '@testing-library/react';
 
-export function getInput(wrapper: HTMLElement, dataName: string): HTMLElement {
+export function getInput(wrapper: HTMLElement, dataName?: string): HTMLInputElement {
+  if (!dataName) {
+    return wrapper.querySelector('input');
+  }
+
   return wrapper.querySelector(`[data-name="${dataName}"]`);
 }
 
 export async function changeValue(wrapper: ReactWrapper | HTMLElement, value: string | string[]) {
   if (wrapper instanceof HTMLElement) {
-    fireEvent.change(wrapper, { target: { value } });
+    const values = Array.isArray(value) ? value : [value];
 
-    await act(async () => {
-      await timeout();
-    });
+    for (let i = 0; i < values.length; i += 1) {
+      fireEvent.change(wrapper, { target: { value: values[i] } });
+
+      await act(async () => {
+        await timeout();
+      });
+    }
 
     return;
   }
