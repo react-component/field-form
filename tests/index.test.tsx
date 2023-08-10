@@ -129,7 +129,7 @@ describe('Form.Basic', () => {
                 onReset={onReset}
                 onMetaChange={onMeta}
               >
-                <Input />
+                <Input data-name="username" />
               </Field>
             </Form>
           </div>,
@@ -193,18 +193,19 @@ describe('Form.Basic', () => {
         <div>
           <Form ref={form}>
             <Field name="username" rules={[{ required: true }]}>
-              <Input />
+              <Input data-name="username" />
             </Field>
 
             <Field name="password" rules={[{ required: true }]}>
-              <Input />
+              <Input data-name="password" />
             </Field>
           </Form>
         </div>,
       );
 
       await changeValue(getInput(container, 'username'), 'Bamboo');
-      await changeValue(getInput(container, 'password'), '');
+      await changeValue(getInput(container, 'password'), ['bamboo', '']);
+
       form.current?.resetFields(['username']);
 
       expect(form.current?.getFieldValue('username')).toEqual(undefined);
@@ -258,7 +259,7 @@ describe('Form.Basic', () => {
 
     await changeValue(getInput(container), 'Bamboo');
     expect(onValuesChange).toHaveBeenCalledWith({ username: 'Bamboo' }, { username: 'Bamboo' });
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ target: { value: 'Bamboo' } }));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ target: getInput(container) }));
   });
 
   it('onValuesChange should not return fully value', async () => {
@@ -268,11 +269,11 @@ describe('Form.Basic', () => {
       <Form onValuesChange={onValuesChange} initialValues={{ light: 'little' }}>
         {showField && (
           <Field name="light">
-            <Input />
+            <Input data-name="light" />
           </Field>
         )}
         <Field name="bamboo">
-          <Input />
+          <Input data-name="bamboo" />
         </Field>
       </Form>
     );
@@ -301,12 +302,10 @@ describe('Form.Basic', () => {
       </Form>,
     );
     await changeValue(getInput(container), 'Bamboo');
-    // wrapper.find('button').simulate('reset');
-    fireEvent.click(container.querySelector('button'));
+    fireEvent.reset(container.querySelector('form'));
     await timeout();
     expect(resetFn).toHaveBeenCalledTimes(1);
-    // const { value } = wrapper.find('input').props();
-    expect(getInput(container)).toEqual('');
+    expect(getInput(container).value).toEqual('');
   });
   it('submit', async () => {
     const onFinish = jest.fn();
@@ -317,15 +316,13 @@ describe('Form.Basic', () => {
         <InfoField name="user" rules={[{ required: true }]}>
           <Input />
         </InfoField>
-        <button type="submit">submit</button>
       </Form>,
     );
 
     // Not trigger
-    // wrapper.find('button').simulate('submit');
-    fireEvent.click(container.querySelector('button'));
+    fireEvent.submit(container.querySelector('form'));
     await timeout();
-    // wrapper.update();
+    console.log(container.innerHTML);
     matchError(container, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
     expect(onFinishFailed).toHaveBeenCalledWith({
@@ -339,8 +336,7 @@ describe('Form.Basic', () => {
 
     // Trigger
     await changeValue(getInput(container), 'Bamboo');
-    // wrapper.find('button').simulate('submit');
-    fireEvent.click(container.querySelector('button'));
+    fireEvent.submit(container.querySelector('form'));
     await timeout();
     matchError(container, false);
     expect(onFinish).toHaveBeenCalledWith({ user: 'Bamboo' });
@@ -401,7 +397,7 @@ describe('Form.Basic', () => {
     );
 
     // expect((container.querySelector('.anything').props() as any).light).toEqual('bamboo');
-    expect((container.querySelector('.anything') as any).toHaveAttribute('data-light', 'bamboo'));
+    expect(container.querySelector('.anything')).toHaveAttribute('data-light', 'bamboo');
   });
 
   describe('shouldUpdate', () => {

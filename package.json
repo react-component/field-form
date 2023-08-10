@@ -61,7 +61,6 @@
     "@types/lodash": "^4.14.135",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@types/testing-library__jest-dom": "^5.14.9",
     "@umijs/fabric": "^2.5.2",
     "@umijs/test": "^3.2.27",
     "dumi": "^1.1.0",
