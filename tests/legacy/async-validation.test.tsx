@@ -1,8 +1,7 @@
-import React from 'react';
 import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
-import { Input } from '../common/InfoField';
 import { changeValue, getField } from '../common';
+import { Input } from '../common/InfoField';
 import timeout from '../common/timeout';
 
 describe('legacy.async-validation', () => {
@@ -84,7 +83,7 @@ describe('legacy.async-validation', () => {
     expect(values.async).toBe('1');
   });
 
-  it('will error if change when validating', async done => {
+  it('will error if change when validating', done => {
     form.validateFields().catch(({ errorFields, outOfDate }) => {
       expect(errorFields.length).toBeTruthy();
       expect(outOfDate).toBeTruthy();
