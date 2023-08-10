@@ -3,8 +3,23 @@ import type { ReactWrapper } from 'enzyme';
 import timeout from './timeout';
 import { Field } from '../../src';
 import { getNamePath, matchNamePath } from '../../src/utils/valueUtil';
+import { fireEvent } from '@testing-library/react';
 
-export async function changeValue(wrapper: ReactWrapper, value: string | string[]) {
+export function getInput(wrapper: HTMLElement, dataName: string): HTMLElement {
+  return wrapper.querySelector(`[data-name="${dataName}"]`);
+}
+
+export async function changeValue(wrapper: ReactWrapper | HTMLElement, value: string | string[]) {
+  if (wrapper instanceof HTMLElement) {
+    fireEvent.change(wrapper, { target: { value } });
+
+    await act(async () => {
+      await timeout();
+    });
+
+    return;
+  }
+
   wrapper.find('input').simulate('change', { target: { value } });
   await act(async () => {
     await timeout();
