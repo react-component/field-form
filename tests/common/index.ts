@@ -36,10 +36,36 @@ export async function changeValue(wrapper: ReactWrapper | HTMLElement, value: st
 }
 
 export function matchError(
-  wrapper: ReactWrapper,
+  wrapper: ReactWrapper | HTMLElement,
   error?: boolean | string,
   warning?: boolean | string,
 ) {
+  if (wrapper instanceof HTMLElement) {
+    // Error
+    if (error) {
+      expect(wrapper.querySelector('.errors li')).toBeTruthy();
+    } else {
+      expect(wrapper.querySelector('.errors li')).toBeFalsy();
+    }
+
+    if (error && typeof error !== 'boolean') {
+      expect(wrapper.querySelector('.errors li').textContent).toBe(error);
+    }
+
+    // Warning
+    if (warning) {
+      expect(wrapper.querySelector('.warnings li')).toBeTruthy();
+    } else {
+      expect(wrapper.querySelector('.warnings li')).toBeFalsy();
+    }
+
+    if (warning && typeof warning !== 'boolean') {
+      expect(wrapper.querySelector('.warnings li').textContent).toBe(warning);
+    }
+
+    return;
+  }
+
   // Error
   if (error) {
     expect(wrapper.find('.errors li').length).toBeTruthy();
