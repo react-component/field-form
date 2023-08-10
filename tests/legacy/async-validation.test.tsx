@@ -1,12 +1,13 @@
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import Form, { Field } from '../../src';
-import { changeValue, getField } from '../common';
+import type { FormInstance } from '../../src';
+import { changeValue, getInput } from '../common';
 import { Input } from '../common/InfoField';
 import timeout from '../common/timeout';
 
 describe('legacy.async-validation', () => {
-  let wrapper;
-  let form;
+  let container: HTMLElement;
+  let form: FormInstance;
 
   const checkRule = (_, value, callback) => {
     setTimeout(() => {
@@ -19,7 +20,7 @@ describe('legacy.async-validation', () => {
   };
 
   beforeEach(() => {
-    wrapper = mount(
+    ({ container } = render(
       <div>
         <Form
           ref={instance => {
@@ -27,18 +28,18 @@ describe('legacy.async-validation', () => {
           }}
         >
           <Field name="normal">
-            <Input />
+            <Input data-name="normal" />
           </Field>
           <Field name="async" rules={[{ validator: checkRule }]}>
-            <Input />
+            <Input data-name="async" />
           </Field>
         </Form>
       </div>,
-    );
+    ));
   });
 
   it('works', async () => {
-    await changeValue(getField(wrapper, 'async'), '');
+    await changeValue(getInput(container, 'async'), ['bamboo', '']);
     expect(form.getFieldValue('async')).toBe('');
     expect(form.getFieldError('async')).toEqual([]);
     expect(form.isFieldValidating('async')).toBeTruthy();
@@ -49,7 +50,7 @@ describe('legacy.async-validation', () => {
     expect(form.isFieldValidating('async')).toBe(false);
     expect(form.isFieldsValidating()).toBe(false);
 
-    await changeValue(getField(wrapper, 'async'), '1');
+    await changeValue(getInput(container, 'async'), '1');
     expect(form.getFieldValue('async')).toBe('1');
     expect(form.getFieldError('async')).toEqual([]);
     expect(form.isFieldValidating('async')).toBeTruthy();
@@ -77,7 +78,7 @@ describe('legacy.async-validation', () => {
   });
 
   it('validateFields works for ok', async () => {
-    await changeValue(getField(wrapper, 'async'), '1');
+    await changeValue(getInput(container, 'async'), '1');
     const values = await form.validateFields();
     expect(values.normal).toBe(undefined);
     expect(values.async).toBe('1');
@@ -90,6 +91,6 @@ describe('legacy.async-validation', () => {
       done();
     });
 
-    changeValue(getField(wrapper, 'async'), '1');
+    changeValue(getInput(container, 'async'), '1');
   });
 });

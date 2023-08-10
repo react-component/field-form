@@ -73,7 +73,7 @@ describe('legacy.field-props', () => {
     expect(getInput(container).value).toBe('A');
   });
 
-  it.only('support jsx message', async () => {
+  it('support jsx message', async () => {
     const form = React.createRef<FormInstance>();
     const { container } = render(
       <div>
