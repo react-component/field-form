@@ -8,16 +8,23 @@ import { fireEvent } from '@testing-library/react';
 export function getInput(
   container: HTMLElement,
   dataNameOrIndex?: string | number,
+  parentField = false,
 ): HTMLInputElement {
+  let ele: HTMLInputElement | null = null;
+
   if (!dataNameOrIndex) {
-    return container.querySelector('input');
+    ele = container.querySelector('input');
+  } else if (typeof dataNameOrIndex === 'number') {
+    ele = container.querySelectorAll('input')[dataNameOrIndex];
+  } else {
+    ele = container.querySelector(`[data-name="${dataNameOrIndex}"]`);
   }
 
-  if (typeof dataNameOrIndex === 'number') {
-    return container.querySelectorAll('input')[dataNameOrIndex];
+  if (parentField) {
+    return ele.closest('.field');
   }
 
-  return container.querySelector(`[data-name="${dataNameOrIndex}"]`);
+  return ele!;
 }
 
 export async function changeValue(wrapper: ReactWrapper | HTMLElement, value: string | string[]) {
