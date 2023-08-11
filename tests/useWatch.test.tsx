@@ -227,8 +227,7 @@ describe('useWatch', () => {
     errorSpy.mockRestore();
   });
 
-  // FIXME: Not work in React 18
-  it.skip('no more render time', async () => {
+  it('no more render time', async () => {
     let renderTime = 0;
 
     const Demo: React.FC = () => {
