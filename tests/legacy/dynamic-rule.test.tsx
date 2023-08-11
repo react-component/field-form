@@ -1,21 +1,20 @@
 import React from 'react';
-import type { ReactWrapper } from 'enzyme';
-import { mount } from 'enzyme';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
-import { changeValue, getField, validateFields, matchArray } from '../common';
+import { changeValue, validateFields, matchArray, getInput } from '../common';
+import { render } from '@testing-library/react';
 
 describe('legacy.dynamic-rule', () => {
   describe('should update errors', () => {
     const doTest = (
       name: string,
-      renderFunc: () => Promise<readonly [React.RefObject<FormInstance<any>>, ReactWrapper]>,
+      renderFunc: () => Promise<readonly [React.RefObject<FormInstance<any>>, HTMLElement]>,
     ) => {
       it(name, async () => {
-        const [form, wrapper] = await renderFunc();
+        const [form, container] = await renderFunc();
 
-        await changeValue(getField(wrapper, 'type'), 'test');
+        await changeValue(getInput(container, 'type'), 'test');
         try {
           await validateFields(form.current);
           throw new Error('should not pass');
@@ -23,7 +22,7 @@ describe('legacy.dynamic-rule', () => {
           matchArray(errorFields, [{ name: ['val1'] }], 'name');
         }
 
-        await changeValue(getField(wrapper, 'type'), '');
+        await changeValue(getInput(container, 'type'), '');
         try {
           await validateFields(form.current);
           throw new Error('should not pass');
@@ -37,19 +36,19 @@ describe('legacy.dynamic-rule', () => {
     doTest('render props', async () => {
       const form = React.createRef<FormInstance>();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form ref={form}>
             {(_, { getFieldValue }) => (
               <React.Fragment>
                 <Field name="type">
-                  <Input />
+                  <Input data-name="type" />
                 </Field>
                 <Field name="val1" rules={[{ required: getFieldValue('type') }]}>
-                  <Input />
+                  <Input data-name="val1" />
                 </Field>
                 <Field name="val2" rules={[{ required: !getFieldValue('type') }]}>
-                  <Input />
+                  <Input data-name="val2" />
                 </Field>
               </React.Fragment>
             )}
@@ -57,39 +56,35 @@ describe('legacy.dynamic-rule', () => {
         </div>,
       );
 
-      wrapper.update();
-
-      return [form, wrapper] as const;
+      return [form, container] as const;
     });
 
     doTest('use function rule', async () => {
       const form = React.createRef<FormInstance>();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form ref={form}>
             <Field name="type">
-              <Input />
+              <Input data-name="type" />
             </Field>
             <Field
               name="val1"
               rules={[({ getFieldValue }) => ({ required: getFieldValue('type') })]}
             >
-              <Input />
+              <Input data-name="val1" />
             </Field>
             <Field
               name="val2"
               rules={[({ getFieldValue }) => ({ required: !getFieldValue('type') })]}
             >
-              <Input />
+              <Input data-name="val2" />
             </Field>
           </Form>
         </div>,
       );
 
-      wrapper.update();
-
-      return [form, wrapper] as const;
+      return [form, container] as const;
     });
   });
 });

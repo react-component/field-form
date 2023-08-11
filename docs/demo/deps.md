@@ -1,4 +1,4 @@
 ## deps
 
 
-<code src="../examples/deps.tsx" />
+<code src="../examples/deps.tsx"></code>
