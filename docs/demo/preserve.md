@@ -1,4 +1,4 @@
 ## preserve
 
 
-<code src="../examples/preserve.tsx" />
+<code src="../examples/preserve.tsx"></code>

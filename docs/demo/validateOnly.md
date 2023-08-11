@@ -1,3 +1,3 @@
 ## validateOnly
 
-<code src="../examples/validateOnly.tsx" />
+<code src="../examples/validateOnly.tsx"></code>
