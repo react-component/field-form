@@ -62,7 +62,6 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@umijs/fabric": "^2.5.2",
-    "@umijs/test": "^3.2.27",
     "dumi": "^2.0.0",
     "eslint": "^7.18.0",
     "father": "^4.0.0",
