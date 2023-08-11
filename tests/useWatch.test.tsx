@@ -7,7 +7,7 @@ import timeout from './common/timeout';
 import { act } from 'react-dom/test-utils';
 import { Input } from './common/InfoField';
 import { stringify } from '../src/useWatch';
-import { changeValue, getInput } from './common';
+import { changeValue } from './common';
 
 describe('useWatch', () => {
   it('field initialValue', async () => {
