@@ -18,7 +18,7 @@ describe('Form.List', () => {
     renderList?: (fields: ListField[], operations: ListOperations, meta: Meta) => React.ReactNode,
     formProps?: FormProps,
     listProps?: Partial<ListProps>,
-  ): readonly [container: HTMLElement, getField: () => HTMLElement] => {
+  ): readonly [container: HTMLElement] => {
     const { container } = render(
       <div>
         <Form ref={form} {...formProps}>
@@ -30,7 +30,7 @@ describe('Form.List', () => {
         </Form>
       </div>,
     );
-    return [container, () => container.querySelector('.list')] as const;
+    return [container] as const;
   };
 
   it('basic', async () => {
@@ -52,15 +52,12 @@ describe('Form.List', () => {
     );
 
     function matchKey(index: number, key: React.Key) {
-      // expect(getList().find(Field).at(index).key()).toEqual(key);
       expect(getInput(container, index)).toHaveAttribute('data-key', String(key));
     }
 
     matchKey(0, '0');
     matchKey(1, '1');
     matchKey(2, '2');
-
-    // const listNode = getList();
 
     await changeValue(getInput(container, 0), '111');
     await changeValue(getInput(container, 1), '222');
@@ -91,7 +88,7 @@ describe('Form.List', () => {
 
   it('operation', async () => {
     let operation: ListOperations;
-    const [container, getList] = generateForm((fields, opt) => {
+    const [container] = generateForm((fields, opt) => {
       operation = opt;
       return (
         <div>
@@ -105,7 +102,6 @@ describe('Form.List', () => {
     });
 
     function matchKey(index: number, key: React.Key) {
-      // expect(getList().find(Field).at(index).key()).toEqual(key);
       expect(getInput(container, index)).toHaveAttribute('data-key', String(key));
     }
 
@@ -122,8 +118,6 @@ describe('Form.List', () => {
       operation.add();
     });
 
-    // wrapper.update();
-    // expect(getList().find(Field).length).toEqual(3);
     expect(container.querySelectorAll('input')).toHaveLength(3);
     expect(form.current?.getFieldsValue()).toEqual({ list: [undefined, '2', undefined] });
 
@@ -135,7 +129,6 @@ describe('Form.List', () => {
     act(() => {
       operation.move(2, 0);
     });
-    // container.update();
     matchKey(0, '2');
     matchKey(1, '0');
     matchKey(2, '1');
@@ -144,7 +137,6 @@ describe('Form.List', () => {
     act(() => {
       operation.move(-1, 0);
     });
-    // container.update();
     matchKey(0, '2');
     matchKey(1, '0');
     matchKey(2, '1');
@@ -154,7 +146,6 @@ describe('Form.List', () => {
       operation.move(0, 10);
     });
 
-    // container.update();
     matchKey(0, '2');
     matchKey(1, '0');
     matchKey(2, '1');
@@ -164,7 +155,6 @@ describe('Form.List', () => {
       operation.move(-1, 10);
     });
 
-    // container.update();
     matchKey(0, '2');
     matchKey(1, '0');
     matchKey(2, '1');
@@ -173,7 +163,6 @@ describe('Form.List', () => {
     act(() => {
       operation.move(0, 0);
     });
-    // container.update();
     matchKey(0, '2');
     matchKey(1, '0');
     matchKey(2, '1');
@@ -182,7 +171,6 @@ describe('Form.List', () => {
     act(() => {
       operation.move(0, 2);
     });
-    // container.update();
     matchKey(0, '0');
     matchKey(1, '1');
     matchKey(2, '2');
@@ -204,7 +192,6 @@ describe('Form.List', () => {
     act(() => {
       operation.remove(1);
     });
-    // container.update();
     expect(container.querySelectorAll('input')).toHaveLength(2);
     expect(form.current?.getFieldsValue()).toEqual({
       list: [undefined, undefined],
@@ -219,7 +206,6 @@ describe('Form.List', () => {
     act(() => {
       operation.remove(-1);
     });
-    // container.update();
 
     matchKey(0, '0');
     matchKey(1, '2');
@@ -228,7 +214,6 @@ describe('Form.List', () => {
     act(() => {
       operation.remove(99);
     });
-    // container.update();
 
     matchKey(0, '0');
     matchKey(1, '2');
@@ -236,7 +221,7 @@ describe('Form.List', () => {
 
   it('remove when the param is Array', () => {
     let operation: ListOperations;
-    const [container, getList] = generateForm((fields, opt) => {
+    const [container] = generateForm((fields, opt) => {
       operation = opt;
       return (
         <div>
@@ -250,7 +235,6 @@ describe('Form.List', () => {
     });
 
     function matchKey(index: number, key: React.Key) {
-      // expect(getList().find(Field).at(index).key()).toEqual(key);
       expect(getInput(container, index)).toHaveAttribute('data-key', String(key));
     }
 
@@ -262,16 +246,12 @@ describe('Form.List', () => {
       operation.add();
     });
 
-    // container.update();
-    // expect(getList().find(Field).length).toEqual(2);
     expect(container.querySelectorAll('input')).toHaveLength(2);
 
     // remove empty array
     act(() => {
       operation.remove([]);
     });
-
-    // container.update();
 
     matchKey(0, '0');
     matchKey(1, '1');
@@ -280,7 +260,6 @@ describe('Form.List', () => {
     act(() => {
       operation.remove([-1, 99]);
     });
-    // container.update();
 
     matchKey(0, '0');
     matchKey(1, '1');
@@ -289,8 +268,6 @@ describe('Form.List', () => {
       operation.remove([0]);
     });
 
-    // container.update();
-    // expect(getList().find(Field).length).toEqual(1);
     expect(container.querySelectorAll('input')).toHaveLength(1);
     matchKey(0, '1');
 
@@ -302,7 +279,6 @@ describe('Form.List', () => {
       operation.add();
     });
 
-    // container.update();
     matchKey(0, '1');
     matchKey(1, '2');
     matchKey(2, '3');
@@ -311,14 +287,13 @@ describe('Form.List', () => {
       operation.remove([0, 1]);
     });
 
-    // container.update();
     matchKey(0, '3');
   });
 
   it('add when the second param is number', () => {
     let operation: ListOperations;
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const [container, getList] = generateForm((fields, opt) => {
+    const [container] = generateForm((fields, opt) => {
       operation = opt;
       return (
         <div>
@@ -347,8 +322,6 @@ describe('Form.List', () => {
     );
     errorSpy.mockRestore();
 
-    // container.update();
-    // expect(getList().find(Field).length).toEqual(3);
     expect(container.querySelectorAll('input')).toHaveLength(3);
     expect(form.current?.getFieldsValue()).toEqual({
       list: [undefined, '1', '2'],
@@ -361,8 +334,6 @@ describe('Form.List', () => {
       operation.add('4', 3);
     });
 
-    // container.update();
-    // expect(getList().find(Field).length).toEqual(5);
     expect(container.querySelectorAll('input')).toHaveLength(5);
     expect(form.current?.getFieldsValue()).toEqual({
       list: ['0', undefined, '1', '4', '2'],
@@ -392,7 +363,7 @@ describe('Form.List', () => {
     });
 
     it('remove should keep error', async () => {
-      const [container, getList] = generateForm(
+      const [container] = generateForm(
         (fields, { remove }) => (
           <div>
             {fields.map(field => (
@@ -414,22 +385,18 @@ describe('Form.List', () => {
         },
       );
 
-      // expect(wrapper.find(Input)).toHaveLength(2);
       expect(container.querySelectorAll('input')).toHaveLength(2);
       await changeValue(getInput(container, 1), ['bamboo', '']);
       expect(form.current?.getFieldError(['list', 1])).toEqual(["'list.1' is required"]);
 
-      // wrapper.find('button').simulate('click');
       fireEvent.click(container.querySelector('button')!);
-      // wrapper.update();
 
-      // expect(wrapper.find(Input)).toHaveLength(1);
       expect(container.querySelectorAll('input')).toHaveLength(1);
       expect(form.current?.getFieldError(['list', 0])).toEqual(["'list.1' is required"]);
     });
 
     it('when param of remove is array', async () => {
-      const [container, getList] = generateForm(
+      const [container] = generateForm(
         (fields, { remove }) => (
           <div>
             {fields.map(field => (
@@ -451,37 +418,29 @@ describe('Form.List', () => {
         },
       );
 
-      // expect(container.find(Input)).toHaveLength(3);
       expect(container.querySelectorAll('input')).toHaveLength(3);
-      // await changeValue(getField(getList(), 0), '');
       await changeValue(getInput(container, 0), ['bamboo', '']);
       expect(form.current?.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
 
-      // await changeValue(getField(getList(), 1), 'test');
       await changeValue(getInput(container, 1), 'test');
       expect(form.current?.getFieldError(['list', 1])).toEqual([
         "'list.1' must be at least 5 characters",
       ]);
 
-      // await changeValue(getField(getList(), 2), '');
       await changeValue(getInput(container, 2), ['bamboo', '']);
       expect(form.current?.getFieldError(['list', 2])).toEqual(["'list.2' is required"]);
 
-      // container.find('button').simulate('click');
       fireEvent.click(container.querySelector('button')!);
-      // container.update();
 
-      // expect(container.find(Input)).toHaveLength(1);
       expect(container.querySelectorAll('input')).toHaveLength(1);
       expect(form.current?.getFieldError(['list', 0])).toEqual([
         "'list.1' must be at least 5 characters",
       ]);
-      // expect(container.find('input').props().value).toEqual('test');
       expect(getInput(container).value).toEqual('test');
     });
 
     it('when add() second param is number', async () => {
-      const [container, getList] = generateForm(
+      const [container] = generateForm(
         (fields, { add }) => (
           <div>
             {fields.map(field => (
@@ -512,22 +471,16 @@ describe('Form.List', () => {
         },
       );
 
-      // expect(wrapper.find(Input)).toHaveLength(3);
       expect(container.querySelectorAll('input')).toHaveLength(3);
-      // await changeValue(getField(getList(), 0), '');
       await changeValue(getInput(container, 0), ['bamboo', '']);
       expect(form.current?.getFieldError(['list', 0])).toEqual(["'list.0' is required"]);
 
-      // wrapper.find('.button').simulate('click');
       fireEvent.click(container.querySelector('.button')!);
-      // wrapper.find('.button1').simulate('click');
       fireEvent.click(container.querySelector('.button1')!);
 
-      // expect(wrapper.find(Input)).toHaveLength(5);
       expect(container.querySelectorAll('input')).toHaveLength(5);
       expect(form.current?.getFieldError(['list', 1])).toEqual(["'list.0' is required"]);
 
-      // await changeValue(getField(getList(), 1), 'test');
       await changeValue(getInput(container, 1), 'test');
       expect(form.current?.getFieldError(['list', 1])).toEqual([
         "'list.1' must be at least 5 characters",
@@ -568,24 +521,18 @@ describe('Form.List', () => {
     act(() => {
       operation.add();
     });
-    // wrapper.update();
-    // expect(wrapper.find(Input)).toHaveLength(1);
     expect(container.querySelectorAll('input')).toHaveLength(1);
 
     // Remove
     act(() => {
       operation.remove(0);
     });
-    // wrapper.update();
-    // expect(wrapper.find(Input)).toHaveLength(0);
     expect(container.querySelectorAll('input')).toHaveLength(0);
 
     // Add
     act(() => {
       operation.add();
     });
-    // wrapper.update();
-    // expect(wrapper.find(Input)).toHaveLength(1);
     expect(container.querySelectorAll('input')).toHaveLength(1);
   });
 
@@ -617,7 +564,6 @@ describe('Form.List', () => {
     await act(async () => {
       operation.add();
       await timeout();
-      // wrapper.update();
     });
 
     expect(currentValue).toEqual([undefined]);
@@ -651,7 +597,6 @@ describe('Form.List', () => {
       },
     );
 
-    // wrapper.find('button').simulate('click');
     fireEvent.click(container.querySelector('button')!);
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
   });
@@ -695,12 +640,10 @@ describe('Form.List', () => {
         },
       },
     );
-    // wrapper.find('button').first().simulate('click');
     fireEvent.click(container.querySelector('.add-btn')!);
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), {
       list: [{ first: 'light' }, undefined],
     });
-    // wrapper.find('button').last().simulate('click');
     fireEvent.click(container.querySelector('.remove-btn')!);
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
   });
@@ -724,19 +667,8 @@ describe('Form.List', () => {
       expect(formRef.current?.isFieldsTouched(['user'], false)).toBeFalsy();
       expect(formRef.current?.isFieldsTouched(['user'], true)).toBeFalsy();
 
-      // console.log(wrapper.html());
-
       // Changed
-      // wrapper
-      //   .find('input')
-      //   .first()
-      //   .simulate('change', { target: { value: '' } });
       await changeValue(getInput(container, 0), ['bamboo', '']);
-
-      // wrapper.update();
-
-      // console.log(wrapper.html());
-      // expect(wrapper.html()).toMatchSnapshot();
 
       expect(formRef.current?.isFieldTouched('user')).toBeTruthy();
       expect(formRef.current?.isFieldsTouched(['user'], false)).toBeTruthy();
@@ -763,10 +695,6 @@ describe('Form.List', () => {
       expect(form.current?.isFieldsTouched(['list'], true)).toBeFalsy();
 
       // Change children value
-      // wrapper
-      //   .find('input')
-      //   .first()
-      //   .simulate('change', { target: { value: 'little' } });
       await changeValue(getInput(container, 0), 'little');
 
       expect(form.current?.isFieldTouched('list')).toBeTruthy();
@@ -797,7 +725,6 @@ describe('Form.List', () => {
       expect(form.current?.isFieldsTouched(['list'], true)).toBeFalsy();
 
       // Change children value
-      // wrapper.find('button').simulate('click');
       fireEvent.click(container.querySelector('button')!);
 
       expect(form.current?.isFieldTouched('list')).toBeTruthy();
@@ -858,15 +785,12 @@ describe('Form.List', () => {
       },
     );
 
-    // expect(wrapper.find('.internal-key').text()).toEqual('0');
     expect(container.querySelector('.internal-key')!.textContent).toEqual('0');
-    // expect(wrapper.find('.internal-rest').text()).toEqual('user');
     expect(container.querySelector('.internal-rest')!.textContent).toEqual('user');
-    // expect(wrapper.find('input').prop('value')).toEqual('bamboo');
     expect(getInput(container).value).toEqual('bamboo');
   });
 
-  it('list should not pass context',async () => {
+  it('list should not pass context', async () => {
     const onValuesChange = jest.fn();
 
     const InnerForm = () => (
@@ -886,10 +810,6 @@ describe('Form.List', () => {
       </Form>,
     );
 
-    // wrapper
-    //   .find('input')
-    //   .first()
-    //   .simulate('change', { target: { value: 'little' } });
     await changeValue(getInput(container, 0), 'little');
 
     expect(onValuesChange).toHaveBeenCalledWith({ name: 'little' }, { name: 'little', age: 2 });
@@ -918,8 +838,6 @@ describe('Form.List', () => {
         </Form>
       </div>,
     );
-
-    // expect(formRef.current.getFieldsValue()).toEqual(initialValues);
 
     // Strict only return field not list
     expect(formRef.current.getFieldsValue({ strict: true })).toEqual({
