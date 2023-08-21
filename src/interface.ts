@@ -249,9 +249,9 @@ export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
 
 export interface FormInstance<Values = any> {
   // Origin Form API
-  getFieldValue: (name: NamePath<Values>) => StoreValue;
+  getFieldValue: <Prop extends NamePath<Values>>(name: Prop) => Values[Prop];
   getFieldsValue: (() => Values) &
-    ((nameList: NamePath<Values>[] | true, filterFunc?: FilterFunc) => any) &
+    (<Prop extends NamePath<Values>>(nameList: Prop[] | true, filterFunc?: FilterFunc) => true extends Prop ? Values : Pick<Values, Prop>) &
     ((config: GetFieldsValueConfig) => any);
   getFieldError: (name: NamePath<Values>) => string[];
   getFieldsError: (nameList?: NamePath<Values>[]) => FieldError[];
@@ -263,7 +263,7 @@ export interface FormInstance<Values = any> {
   isFieldsValidating: (nameList?: NamePath<Values>[]) => boolean;
   resetFields: (fields?: NamePath<Values>[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldValue: (name: NamePath<Values>, value: any) => void;
+  setFieldValue: <Prop extends NamePath<Values>>(name: Prop, value: Values[Prop]) => void;
   setFieldsValue: (values: RecursivePartial<Values>) => void;
   validateFields: ValidateFields<Values>;
 
