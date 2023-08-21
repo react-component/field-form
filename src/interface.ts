@@ -249,21 +249,21 @@ export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
 
 export interface FormInstance<Values = any> {
   // Origin Form API
-  getFieldValue: (name: NamePath) => StoreValue;
+  getFieldValue: (name: NamePath<Values>) => StoreValue;
   getFieldsValue: (() => Values) &
-    ((nameList: NamePath[] | true, filterFunc?: FilterFunc) => any) &
+    ((nameList: NamePath<Values>[] | true, filterFunc?: FilterFunc) => any) &
     ((config: GetFieldsValueConfig) => any);
-  getFieldError: (name: NamePath) => string[];
-  getFieldsError: (nameList?: NamePath[]) => FieldError[];
-  getFieldWarning: (name: NamePath) => string[];
-  isFieldsTouched: ((nameList?: NamePath[], allFieldsTouched?: boolean) => boolean) &
+  getFieldError: (name: NamePath<Values>) => string[];
+  getFieldsError: (nameList?: NamePath<Values>[]) => FieldError[];
+  getFieldWarning: (name: NamePath<Values>) => string[];
+  isFieldsTouched: ((nameList?: NamePath<Values>[], allFieldsTouched?: boolean) => boolean) &
     ((allFieldsTouched?: boolean) => boolean);
-  isFieldTouched: (name: NamePath) => boolean;
-  isFieldValidating: (name: NamePath) => boolean;
-  isFieldsValidating: (nameList?: NamePath[]) => boolean;
-  resetFields: (fields?: NamePath[]) => void;
+  isFieldTouched: (name: NamePath<Values>) => boolean;
+  isFieldValidating: (name: NamePath<Values>) => boolean;
+  isFieldsValidating: (nameList?: NamePath<Values>[]) => boolean;
+  resetFields: (fields?: NamePath<Values>[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldValue: (name: NamePath, value: any) => void;
+  setFieldValue: (name: NamePath<Values>, value: any) => void;
   setFieldsValue: (values: RecursivePartial<Values>) => void;
   validateFields: ValidateFields<Values>;
 
