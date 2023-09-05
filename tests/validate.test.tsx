@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
 import { fireEvent, render } from '@testing-library/react';
+import React, { useEffect } from 'react';
 import { act } from 'react-dom/test-utils';
 import Form, { Field, useForm } from '../src';
-import InfoField, { Input } from './common/InfoField';
-import { changeValue, matchError, getInput } from './common';
-import timeout from './common/timeout';
 import type { FormInstance, ValidateMessages } from '../src/interface';
+import { changeValue, getInput, matchError } from './common';
+import InfoField, { Input } from './common/InfoField';
+import timeout from './common/timeout';
 
 describe('Form.Validate', () => {
   it('required', async () => {
@@ -963,5 +963,74 @@ describe('Form.Validate', () => {
     await formRef.current.validateFields().catch(e => e);
     await timeout();
     expect(container.querySelector('.errors').textContent).toEqual(`'test' is required`);
+  });
+
+  it('validateDebounce', async () => {
+    jest.useFakeTimers();
+
+    const validator = jest.fn(
+      () =>
+        new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Not Correct'));
+          }, 100);
+        }),
+    );
+
+    const formRef = React.createRef<FormInstance>();
+
+    const { container } = render(
+      <Form ref={formRef}>
+        <InfoField name="test" rules={[{ validator }]} validateDebounce={1000}>
+          <Input />
+        </InfoField>
+      </Form>,
+    );
+
+    fireEvent.change(container.querySelector('input'), {
+      target: {
+        value: 'light',
+      },
+    });
+
+    // Debounce should wait
+    await act(async () => {
+      await Promise.resolve();
+      jest.advanceTimersByTime(900);
+      await Promise.resolve();
+    });
+    expect(validator).not.toHaveBeenCalled();
+
+    // Debounce should work
+    await act(async () => {
+      await Promise.resolve();
+      jest.advanceTimersByTime(1000);
+      await Promise.resolve();
+    });
+    expect(validator).toHaveBeenCalled();
+
+    // `validateFields` should ignore `validateDebounce`
+    validator.mockReset();
+    formRef.current.validateFields();
+
+    await act(async () => {
+      await Promise.resolve();
+      jest.advanceTimersByTime(200);
+      await Promise.resolve();
+    });
+    expect(validator).toHaveBeenCalled();
+
+    // `submit` should ignore `validateDebounce`
+    validator.mockReset();
+    fireEvent.submit(container.querySelector('form'));
+
+    await act(async () => {
+      await Promise.resolve();
+      jest.advanceTimersByTime(200);
+      await Promise.resolve();
+    });
+    expect(validator).toHaveBeenCalled();
+
+    jest.useRealTimers();
   });
 });
