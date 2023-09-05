@@ -1,24 +1,24 @@
 import toChildrenArray from 'rc-util/lib/Children/toArray';
-import warning from 'rc-util/lib/warning';
 import isEqual from 'rc-util/lib/isEqual';
+import warning from 'rc-util/lib/warning';
 import * as React from 'react';
+import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
+  EventArgs,
   FieldEntity,
   FormInstance,
+  InternalFormInstance,
   InternalNamePath,
+  InternalValidateOptions,
   Meta,
   NamePath,
   NotifyInfo,
   Rule,
-  Store,
-  InternalValidateOptions,
-  InternalFormInstance,
-  RuleObject,
-  StoreValue,
-  EventArgs,
   RuleError,
+  RuleObject,
+  Store,
+  StoreValue,
 } from './interface';
-import FieldContext, { HOOK_MARK } from './FieldContext';
 import ListContext from './ListContext';
 import { toArray } from './utils/typeUtil';
 import { validateRules } from './utils/validateUtil';
@@ -74,6 +74,10 @@ export interface InternalFieldProps<Values = any> {
   shouldUpdate?: ShouldUpdate<Values>;
   trigger?: string;
   validateTrigger?: string | string[] | false;
+  /**
+   * Trigger will after configured milliseconds.
+   */
+  validateDebounce?: number;
   validateFirst?: boolean | 'parallel';
   valuePropName?: string;
   getValueProps?: (value: StoreValue) => Record<string, unknown>;
@@ -382,13 +386,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const { triggerName, validateOnly = false } = options || {};
 
     // Force change to async to avoid rule OOD under renderProps field
-    const rootPromise = Promise.resolve().then(() => {
+    const rootPromise = Promise.resolve().then(async (): Promise<any[]> => {
       if (!this.mounted) {
         return [];
       }
 
-      const { validateFirst = false, messageVariables } = this.props;
+      const { validateFirst = false, messageVariables, validateDebounce } = this.props;
 
+      // Start validate
       let filteredRules = this.getRules();
       if (triggerName) {
         filteredRules = filteredRules
@@ -401,6 +406,18 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
             const triggerList = toArray(validateTrigger);
             return triggerList.includes(triggerName);
           });
+      }
+
+      // Wait for debounce. Skip if no `triggerName` since its from `validateFields / submit`
+      if (validateDebounce && triggerName) {
+        await new Promise(resolve => {
+          setTimeout(resolve, validateDebounce);
+        });
+
+        // Skip since out of date
+        if (this.validatePromise !== rootPromise) {
+          return [];
+        }
       }
 
       const promise = validateRules(
