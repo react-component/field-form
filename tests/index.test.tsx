@@ -883,4 +883,38 @@ describe('Form.Basic', () => {
 
     expect(onMetaChange).toHaveBeenCalledTimes(0);
   });
+
+  describe('set to null value', () => {
+    function test(name: string, callback: (form: FormInstance) => void) {
+      it(name, async () => {
+        const form = React.createRef<FormInstance>();
+
+        const { container } = render(
+          <div>
+            <Form ref={form}>
+              <InfoField name={['user', 'name']} initialValue="bamboo" />
+            </Form>
+          </div>,
+        );
+
+        expect(container.querySelector('input').value).toBe('bamboo');
+        expect(form.current.getFieldsValue()).toEqual({ user: { name: 'bamboo' } });
+
+        // Set it
+        act(() => {
+          callback(form.current!);
+        });
+        expect(container.querySelector('input').value).toBe('');
+        expect(form.current.getFieldsValue()).toEqual({ user: null });
+      });
+    }
+
+    test('by setFieldsValue', form => {
+      form.setFieldsValue({ user: null });
+    });
+
+    test('by setFieldValue', form => {
+      form.setFieldValue('user', null);
+    });
+  });
 });
