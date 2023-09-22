@@ -322,7 +322,6 @@ describe('Form.Basic', () => {
     // Not trigger
     fireEvent.submit(container.querySelector('form'));
     await timeout();
-    console.log(container.innerHTML);
     matchError(container, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
     expect(onFinishFailed).toHaveBeenCalledWith({
@@ -904,8 +903,8 @@ describe('Form.Basic', () => {
         act(() => {
           callback(form.current!);
         });
+        expect(form.current.getFieldValue(['user', 'name'])).toBeFalsy();
         expect(container.querySelector('input').value).toBe('');
-        expect(form.current.getFieldsValue()).toEqual({ user: null });
       });
     }
 

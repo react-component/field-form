@@ -172,7 +172,6 @@ describe('Form.InitialValues', () => {
     console.log('Form Value:', refForm.getFieldsValue(true));
 
     fireEvent.click(container.querySelector('button'));
-    console.log(container.innerHTML);
 
     expect(container.querySelector<HTMLInputElement>('.first-name-input').value).toEqual('aaa');
   });

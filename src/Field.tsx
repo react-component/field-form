@@ -301,9 +301,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       case 'setField': {
+        const { data } = info;
         if (namePathMatch) {
-          const { data } = info;
-
           if ('touched' in data) {
             this.touched = data.touched;
           }
@@ -320,6 +319,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
           this.triggerMetaEvent();
 
+          this.reRender();
+          return;
+        } else if ('value' in data && containsNamePath(namePathList, namePath, true)) {
+          // Contains path with value should also check
           this.reRender();
           return;
         }

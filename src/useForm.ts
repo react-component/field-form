@@ -764,12 +764,9 @@ export class FormStore {
     const prevStore = this.store;
 
     if (store) {
-      console.log('Before:', this.store, store);
       const nextStore = merge(this.store, store);
-      console.log('After:', nextStore);
       this.updateStore(nextStore);
     }
-    console.log('After2:', this.store);
 
     this.notifyObservers(prevStore, null, {
       type: 'valueUpdate',
