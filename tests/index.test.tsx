@@ -322,7 +322,6 @@ describe('Form.Basic', () => {
     // Not trigger
     fireEvent.submit(container.querySelector('form'));
     await timeout();
-    console.log(container.innerHTML);
     matchError(container, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
     expect(onFinishFailed).toHaveBeenCalledWith({
@@ -882,5 +881,39 @@ describe('Form.Basic', () => {
     }
 
     expect(onMetaChange).toHaveBeenCalledTimes(0);
+  });
+
+  describe('set to null value', () => {
+    function test(name: string, callback: (form: FormInstance) => void) {
+      it(name, async () => {
+        const form = React.createRef<FormInstance>();
+
+        const { container } = render(
+          <div>
+            <Form ref={form}>
+              <InfoField name={['user', 'name']} initialValue="bamboo" />
+            </Form>
+          </div>,
+        );
+
+        expect(container.querySelector('input').value).toBe('bamboo');
+        expect(form.current.getFieldsValue()).toEqual({ user: { name: 'bamboo' } });
+
+        // Set it
+        act(() => {
+          callback(form.current!);
+        });
+        expect(form.current.getFieldValue(['user', 'name'])).toBeFalsy();
+        expect(container.querySelector('input').value).toBe('');
+      });
+    }
+
+    test('by setFieldsValue', form => {
+      form.setFieldsValue({ user: null });
+    });
+
+    test('by setFieldValue', form => {
+      form.setFieldValue('user', null);
+    });
   });
 });
