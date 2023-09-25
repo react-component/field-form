@@ -202,11 +202,29 @@ export type ValuedNotifyInfo = NotifyInfo & {
 export interface Callbacks<Values = any> {
   onValuesChange?: (changedValues: any, values: Values) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
-  onFinish?: (values: Values) => void;
+  /**
+   * Callback to submit form values
+   */
+  onFinish?: (values: Values) => void | Promise<void>;
+  /**
+   * Callback for when the form validation fails on submit
+   */
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
+  /**
+   * Callback to run prior to form submission and after values have been successfully validated
+   */
   onBeforeSubmit?: (values: Values) => void;
+  /**
+   * Callback for when the form submit succeeds
+   */
   onFinishSuccess?: (data: Values) => void;
+  /**
+   * Callback for when the form submit fails
+   */
   onFinishError?: (reason: any) => void;
+  /**
+   * Callback for when the form submit completes (regardless of success or failure)
+   */
   onFinishFinally?: () => void;
   onReset?: React.FormEventHandler<HTMLFormElement>;
 }

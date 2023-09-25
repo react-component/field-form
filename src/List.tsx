@@ -66,6 +66,7 @@ function List<Values = any>({
         return [keyManager.keys[pathName], namePath.slice(len + 1)];
       },
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [prefixName],
   );
 
