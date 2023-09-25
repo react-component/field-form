@@ -996,6 +996,7 @@ export class FormStore {
 
   // ============================ Submit ============================
   private submit = () => {
+    if(this.isSubmitting) return;
     this.warningUnhooked();
     this.isSubmitting = true;
     this.forceRootUpdate(this);
