@@ -277,7 +277,7 @@ export interface FormInstance<Values = any> {
   submit: () => void;
 
   // Custom
-  reset: (event: React.FormEvent<HTMLFormElement>) => void;
+  reset: (event?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * Indicates that the form was submitted succesfully (completed onFinish)
    */
