@@ -998,44 +998,60 @@ export class FormStore {
   private submit = () => {
     this.warningUnhooked();
     this.isSubmitting = true;
+    this.forceRootUpdate(this);
+
+    const { onFinishFailed, onBeforeSubmit, onFinishSuccess, onFinish, onFinishError } =
+      this.callbacks;
+
+    function timeout(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     this.validateFields()
-      .then(values => {
-        const { onBeforeSubmit } = this.callbacks;
-        if (onBeforeSubmit) {
-          onBeforeSubmit(values);
-        }
-        return values;
-      })
-      .then(values => {
-        const { onFinish } = this.callbacks;
-        if (onFinish) {
-          try {
-            onFinish(values);
-            this.isSubmitSuccessful = true;
-
-            const { onFinishSuccess } = this.callbacks;
+      // if validation passed, run submission logic
+      .then(async values => {
+        try {
+          if (onBeforeSubmit) {
+            onBeforeSubmit(values);
+          }
+          if (onFinish) {
+            await timeout(3000);
+            const result = onFinish(values);
+            // check if onFinish was an async function
+            if (result instanceof Promise) {
+              await result;
+            }
             if (onFinishSuccess) {
               onFinishSuccess(values);
             }
-          } catch (err) {
-            // Should print error if user `onFinish` callback failed
-            console.error(err);
+            this.isSubmitSuccessful = true;
+            this.finalizeSubmit();
           }
+        } catch (err) {
+          if (onFinishError) {
+            this.isUnclean = true;
+            onFinishError(err);
+          }
+          // Should print error if user `onFinish` callback failed
+          console.error(err);
+        } finally {
+          this.finalizeSubmit();
         }
       })
+      // if validation failed, run onFinishFailed
       .catch(e => {
-        const { onFinishFailed } = this.callbacks;
         if (onFinishFailed) {
           this.isUnclean = true;
           onFinishFailed(e);
+          this.finalizeSubmit();
         }
-      })
-      .finally(() => {
-        const { onFinishFinally } = this.callbacks;
-        if (onFinishFinally) onFinishFinally();
-        this.finalizeSubmit();
       });
+  };
+
+  private finalizeSubmit = () => {
+    this.isSubmitting = false;
+    this.submitCount += 1;
+    this.forceRootUpdate(this);
   };
 
   // ============================ CUSTOM ============================
@@ -1049,12 +1065,6 @@ export class FormStore {
   private get isSubmitted() {
     return this.submitCount > 0;
   }
-
-  private finalizeSubmit = () => {
-    this.isSubmitting = false;
-    this.submitCount += 1;
-    this.forceRootUpdate(this);
-  };
 
   private setReadOnly = (readOnly: boolean) => {
     this.readOnly = readOnly;
