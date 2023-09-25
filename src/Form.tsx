@@ -33,6 +33,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFinishFailed?: Callbacks<Values>['onFinishFailed'];
   onBeforeSubmit?: Callbacks<Values>['onBeforeSubmit'];
   onFinishSuccess?: Callbacks<Values>['onFinishSuccess'];
+  onFinishError?: Callbacks<Values>['onFinishError'];
   onFinishFinally?: Callbacks<Values>['onFinishFinally'];
   /**
   * Indicates that the form is in read only mode (not editable)
@@ -58,8 +59,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFieldsChange,
     onBeforeSubmit,
     onFinish,
-    onFinishSuccess,
     onFinishFailed,
+    onFinishSuccess,
+    onFinishError,
     onFinishFinally,
     readOnly,
     ...restProps
@@ -107,15 +109,15 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
         onFieldsChange(changedFields, ...rest);
       }
     },
-    onFinish: (values: Store) => {
+    onFinish: async (values: Store) => {
       formContext.triggerFormFinish(name, values);
-
       if (onFinish) {
-        onFinish(values);
+        await onFinish(values);
       }
     },
     onBeforeSubmit,
     onFinishFinally,
+    onFinishError,
     onFinishSuccess,
     onFinishFailed,
     onReset: restProps.onReset,
