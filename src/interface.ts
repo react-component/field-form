@@ -204,6 +204,11 @@ export interface Callbacks<Values = any> {
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
   onFinish?: (values: Values) => void;
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
+  onBeforeSubmit?: (values: Values) => void;
+  onFinishSuccess?: (data: Values) => void;
+  onFinishError?: (reason: any) => void;
+  onFinishFinally?: () => void;
+  onReset?: React.FormEventHandler<HTMLFormElement>;
 }
 
 export type WatchCallBack = (
@@ -225,6 +230,7 @@ export interface InternalHooks {
   setInitialValues: (values: Store, init: boolean) => void;
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
+  setReadOnly: (isReadOnly: boolean) => void;
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
@@ -269,6 +275,36 @@ export interface FormInstance<Values = any> {
 
   // New API
   submit: () => void;
+
+  // Custom
+  reset: (event: React.FormEvent<HTMLFormElement>) => void;
+  /**
+   * Indicates that the form was submitted succesfully (completed onFinish)
+   */
+  isSubmitSuccessful: boolean;
+  /**
+   * Indicates that the form submit has been attempted
+   * - This state is reset when the form is reset
+   */
+  isSubmitted: boolean;
+  /**
+   * Indicates that the form is currently submitting (running onFinish)
+   */
+  isSubmitting: boolean;
+  /**
+   * Indicates that the form validation has failed at least once
+   * - This state is reset when the form is reset
+   */
+  isTainted: boolean;
+  /**
+   * Indicates that the form is i read only mode (not editable)
+   */
+  readOnly: boolean;
+  /**
+   * Counts the number of times the form submit was attempted
+   * - This state is reset when the form is reset
+   */
+  submitCount: number;
 }
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
