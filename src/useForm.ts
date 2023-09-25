@@ -1,3 +1,4 @@
+import { merge } from 'rc-util/lib/utils/set';
 import warning from 'rc-util/lib/warning';
 import * as React from 'react';
 import { HOOK_MARK } from './FieldContext';
@@ -6,12 +7,15 @@ import type {
   FieldData,
   FieldEntity,
   FieldError,
+  FilterFunc,
   FormInstance,
+  GetFieldsValueConfig,
   InternalFieldData,
   InternalFormInstance,
   InternalHooks,
   InternalNamePath,
   InternalValidateFields,
+  InternalValidateOptions,
   Meta,
   NamePath,
   NotifyInfo,
@@ -20,16 +24,12 @@ import type {
   StoreValue,
   ValidateErrorEntity,
   ValidateMessages,
-  InternalValidateOptions,
   ValuedNotifyInfo,
   WatchCallBack,
-  FilterFunc,
-  GetFieldsValueConfig,
 } from './interface';
-import { allPromiseFinish } from './utils/asyncUtil';
-import { merge } from 'rc-util/lib/utils/set';
-import { defaultValidateMessages } from './utils/messages';
 import NameMap from './utils/NameMap';
+import { allPromiseFinish } from './utils/asyncUtil';
+import { defaultValidateMessages } from './utils/messages';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -96,8 +96,14 @@ export class FormStore {
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
     submit: this.submit,
+    isSubmitSuccessful: this.isSubmitSuccessful,
+    isSubmitted: this.isSubmitted,
+    isSubmitting: this.isSubmitting,
+    isTainted: this.isTainted,
+    submitCount: this.submitCount,
+    reset: this.reset,
+    readOnly: this.readOnly,
     _init: true,
-
     getInternalHooks: this.getInternalHooks,
   });
 
@@ -115,6 +121,7 @@ export class FormStore {
         destroyForm: this.destroyForm,
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
+        setReadOnly: this.setReadOnly,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
@@ -990,13 +997,26 @@ export class FormStore {
   // ============================ Submit ============================
   private submit = () => {
     this.warningUnhooked();
+    this.isSubmitting = true;
 
     this.validateFields()
+      .then(values => {
+        const { onBeforeSubmit } = this.callbacks;
+        if (onBeforeSubmit) {
+          onBeforeSubmit(values);
+        }
+        return values;
+      })
       .then(values => {
         const { onFinish } = this.callbacks;
         if (onFinish) {
           try {
             onFinish(values);
+
+            const { onFinishSuccess } = this.callbacks;
+            if (onFinishSuccess) {
+              onFinishSuccess(values);
+            }
           } catch (err) {
             // Should print error if user `onFinish` callback failed
             console.error(err);
@@ -1006,9 +1026,58 @@ export class FormStore {
       .catch(e => {
         const { onFinishFailed } = this.callbacks;
         if (onFinishFailed) {
+          this.isTainted = true;
           onFinishFailed(e);
         }
+      })
+      .finally(() => {
+        const { onFinishFinally } = this.callbacks;
+        if (onFinishFinally) onFinishFinally();
+        this.finalizeSubmit();
       });
+  };
+
+  // ============================ CUSTOM ============================
+
+  private isSubmitSuccessful: boolean = false;
+  private isSubmitting: boolean = false;
+  private isTainted: boolean = false;
+  private readOnly: boolean;
+  private submitCount: number = 0;
+
+  private get isSubmitted() {
+    return this.submitCount > 0;
+  }
+
+  private finalizeSubmit = () => {
+    this.isSubmitting = false;
+    this.isSubmitSuccessful = true;
+    this.submitCount += 1;
+  };
+
+  private setReadOnly = (readOnly: boolean) => {
+    this.readOnly = readOnly;
+  };
+
+  // ============================ Reset ============================
+  private reset = (event?: React.FormEvent<HTMLFormElement>) => {
+    this.warningUnhooked();
+
+    this.isTainted = false;
+    this.isSubmitSuccessful = false;
+    this.submitCount = 0;
+
+    this.resetFields();
+
+    const { onReset } = this.callbacks;
+    if (onReset) {
+      try {
+        onReset(event);
+      } catch (err) {
+        // Should print error if user `onFinish` callback failed
+        console.error(err);
+      }
+    }
   };
 }
 
