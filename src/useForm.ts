@@ -1003,10 +1003,6 @@ export class FormStore {
     const { onFinishFailed, onBeforeSubmit, onFinishSuccess, onFinish, onFinishError } =
       this.callbacks;
 
-    function timeout(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     this.validateFields()
       // if validation passed, run submission logic
       .then(async values => {
@@ -1015,7 +1011,6 @@ export class FormStore {
             onBeforeSubmit(values);
           }
           if (onFinish) {
-            await timeout(3000);
             const result = onFinish(values);
             // check if onFinish was an async function
             if (result instanceof Promise) {
