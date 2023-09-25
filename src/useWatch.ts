@@ -4,7 +4,7 @@ import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
   FormInstance,
   InternalFormInstance,
-  InternalNamePath,
+  // InternalNamePath,
   NamePath,
   Store,
   WatchOptions,
@@ -23,18 +23,18 @@ export function stringify(value: any) {
   }
 }
 
-const useWatchWarning =
-  process.env.NODE_ENV !== 'production'
-    ? (namePath: InternalNamePath) => {
-        const fullyStr = namePath.join('__RC_FIELD_FORM_SPLIT__');
-        const nameStrRef = useRef(fullyStr);
+// const useWatchWarning =
+//   process.env.NODE_ENV !== 'production'
+//     ? (namePath: InternalNamePath) => {
+//         const fullyStr = namePath.join('__RC_FIELD_FORM_SPLIT__');
+//         const nameStrRef = useRef(fullyStr);
 
-        warning(
-          nameStrRef.current === fullyStr,
-          '`useWatch` is not support dynamic `namePath`. Please provide static instead.',
-        );
-      }
-    : () => {};
+//         warning(
+//           nameStrRef.current === fullyStr,
+//           '`useWatch` is not support dynamic `namePath`. Please provide static instead.',
+//         );
+//       }
+//     : () => {};
 
 function useWatch<
   TDependencies1 extends keyof GetGeneric<TForm>,
