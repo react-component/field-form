@@ -113,7 +113,7 @@ function useWatch(...args: [NamePath, FormInstance | WatchOptions<FormInstance>]
   const namePathRef = useRef(namePath);
   namePathRef.current = namePath;
 
-  useWatchWarning(namePath);
+  // useWatchWarning(namePath);
 
   useEffect(
     () => {
