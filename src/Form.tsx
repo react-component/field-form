@@ -31,6 +31,14 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFieldsChange?: Callbacks<Values>['onFieldsChange'];
   onFinish?: Callbacks<Values>['onFinish'];
   onFinishFailed?: Callbacks<Values>['onFinishFailed'];
+  onBeforeSubmit?: Callbacks<Values>['onBeforeSubmit'];
+  onFinishSuccess?: Callbacks<Values>['onFinishSuccess'];
+  onFinishFinally?: Callbacks<Values>['onFinishFinally'];
+  /**
+  * Indicates that the form is in read only mode (not editable)
+  */
+  readOnly?: boolean;
+  warnOnUnsavedChanges?: boolean;
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
 }
@@ -48,8 +56,12 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     validateTrigger = 'onChange',
     onValuesChange,
     onFieldsChange,
+    onBeforeSubmit,
     onFinish,
+    onFinishSuccess,
     onFinishFailed,
+    onFinishFinally,
+    readOnly,
     ...restProps
   }: FormProps,
   ref,
@@ -62,6 +74,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   const {
     useSubscribe,
     setInitialValues,
+    setReadOnly,
     setCallbacks,
     setValidateMessages,
     setPreserve,
@@ -84,6 +97,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     ...formContext.validateMessages,
     ...validateMessages,
   });
+  setReadOnly(readOnly)
   setCallbacks({
     onValuesChange,
     onFieldsChange: (changedFields: FieldData[], ...rest) => {
@@ -100,7 +114,11 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
         onFinish(values);
       }
     },
+    onBeforeSubmit,
+    onFinishFinally,
+    onFinishSuccess,
     onFinishFailed,
+    onReset: restProps.onReset,
   });
   setPreserve(preserve);
 
@@ -110,6 +128,14 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   if (!mountRef.current) {
     mountRef.current = true;
   }
+
+  const previousReadOnly = React.useRef<boolean>();
+
+  React.useEffect(() => {
+    if (previousReadOnly.current !== readOnly && readOnly) {
+      formInstance.reset(undefined);
+    }
+  }, [formInstance, readOnly]);
 
   React.useEffect(
     () => destroyForm,
@@ -169,8 +195,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
       onReset={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        formInstance.resetFields();
-        restProps.onReset?.(event);
+        formInstance.reset(event);
       }}
     >
       {wrapperNode}
