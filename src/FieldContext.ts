@@ -28,7 +28,7 @@ const Context = React.createContext<InternalFormInstance>({
   isSubmitSuccessful: warningFunc,
   isSubmitting: warningFunc,
   isSubmitted: warningFunc,
-  isTainted: warningFunc,
+  isUnclean: warningFunc,
   reset: warningFunc,
   readOnly: warningFunc,
   submitCount: warningFunc,

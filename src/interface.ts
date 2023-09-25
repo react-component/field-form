@@ -295,7 +295,7 @@ export interface FormInstance<Values = any> {
    * Indicates that the form validation has failed at least once
    * - This state is reset when the form is reset
    */
-  isTainted: boolean;
+  isUnclean: boolean;
   /**
    * Indicates that the form is i read only mode (not editable)
    */

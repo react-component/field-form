@@ -58,7 +58,7 @@ export type ReducerAction = UpdateAction | ValidateAction;
 export class FormStore {
   private formHooked: boolean = false;
 
-  private forceRootUpdate: () => void;
+  private forceRootUpdate: (_formStore: FormStore) => void;
 
   private subscribable: boolean = true;
 
@@ -76,7 +76,7 @@ export class FormStore {
 
   private lastValidatePromise: Promise<FieldError[]> = null;
 
-  constructor(forceRootUpdate: () => void) {
+  constructor(forceRootUpdate: (_formStore: FormStore) => void) {
     this.forceRootUpdate = forceRootUpdate;
   }
 
@@ -99,7 +99,7 @@ export class FormStore {
     isSubmitSuccessful: this.isSubmitSuccessful,
     isSubmitted: this.isSubmitted,
     isSubmitting: this.isSubmitting,
-    isTainted: this.isTainted,
+    isUnclean: this.isUnclean,
     submitCount: this.submitCount,
     reset: this.reset,
     readOnly: this.readOnly,
@@ -717,7 +717,7 @@ export class FormStore {
         onStoreChange(prevStore, namePathList, mergedInfo);
       });
     } else {
-      this.forceRootUpdate();
+      this.forceRootUpdate(this);
     }
   };
 
@@ -1012,6 +1012,7 @@ export class FormStore {
         if (onFinish) {
           try {
             onFinish(values);
+            this.isSubmitSuccessful = true;
 
             const { onFinishSuccess } = this.callbacks;
             if (onFinishSuccess) {
@@ -1026,7 +1027,7 @@ export class FormStore {
       .catch(e => {
         const { onFinishFailed } = this.callbacks;
         if (onFinishFailed) {
-          this.isTainted = true;
+          this.isUnclean = true;
           onFinishFailed(e);
         }
       })
@@ -1041,7 +1042,7 @@ export class FormStore {
 
   private isSubmitSuccessful: boolean = false;
   private isSubmitting: boolean = false;
-  private isTainted: boolean = false;
+  private isUnclean: boolean = false;
   private readOnly: boolean;
   private submitCount: number = 0;
 
@@ -1051,8 +1052,8 @@ export class FormStore {
 
   private finalizeSubmit = () => {
     this.isSubmitting = false;
-    this.isSubmitSuccessful = true;
     this.submitCount += 1;
+    this.forceRootUpdate(this);
   };
 
   private setReadOnly = (readOnly: boolean) => {
@@ -1063,7 +1064,7 @@ export class FormStore {
   private reset = (event?: React.FormEvent<HTMLFormElement>) => {
     this.warningUnhooked();
 
-    this.isTainted = false;
+    this.isUnclean = false;
     this.isSubmitSuccessful = false;
     this.submitCount = 0;
 
@@ -1078,6 +1079,8 @@ export class FormStore {
         console.error(err);
       }
     }
+
+    this.forceRootUpdate(this);
   };
 }
 
@@ -1090,7 +1093,8 @@ function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Value
       formRef.current = form;
     } else {
       // Create a new FormStore if not provided
-      const forceReRender = () => {
+      const forceReRender = (_formStore: FormStore) => {
+        formRef.current = _formStore.getForm();
         forceUpdate({});
       };
 
