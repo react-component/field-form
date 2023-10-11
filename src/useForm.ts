@@ -545,7 +545,9 @@ export class FormStore {
     const prevStore = this.store;
     if (!nameList) {
       this.updateStore(merge(this.initialValues));
+      console.log('1 >', this.store);
       this.resetWithFieldInitialValue();
+      console.log('2 >', this.store);
       this.notifyObservers(prevStore, null, { type: 'reset' });
       this.notifyWatch();
       return;
