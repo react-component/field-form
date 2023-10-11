@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { resetWarned } from 'rc-util/lib/warning';
-import Form, { Field, useForm, List, type FormInstance } from '../src';
-import { Input } from './common/InfoField';
-import { changeValue, getInput } from './common';
 import { act, fireEvent, render } from '@testing-library/react';
+import { resetWarned } from 'rc-util/lib/warning';
+import React, { useState } from 'react';
+import Form, { Field, List, useForm, type FormInstance } from '../src';
+import { changeValue, getInput } from './common';
+import { Input } from './common/InfoField';
 
 describe('Form.InitialValues', () => {
   it('works', () => {
@@ -381,5 +381,36 @@ describe('Form.InitialValues', () => {
 
       unmount();
     });
+  });
+
+  it('should ignore in Form.List', () => {
+    const { container } = render(
+      <Form>
+        <Form.List name="list">
+          {(fields, { add }) => (
+            <>
+              <button
+                onClick={() => {
+                  add();
+                }}
+              />
+              {fields.map(field => (
+                <Field {...field} initialValue="bamboo" key={field.key}>
+                  <Input />
+                </Field>
+              ))}
+            </>
+          )}
+        </Form.List>
+      </Form>,
+    );
+
+    fireEvent.click(container.querySelector('button'));
+    fireEvent.change(getInput(container), { target: { value: 'light' } });
+    expect(getInput(container).value).toEqual('light');
+
+    // Reset
+    fireEvent.reset(container.querySelector('form'));
+    expect(container.querySelectorAll('input')).toHaveLength(0);
   });
 });
