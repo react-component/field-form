@@ -1,3 +1,4 @@
+import { merge } from 'rc-util/lib/utils/set';
 import warning from 'rc-util/lib/warning';
 import * as React from 'react';
 import { HOOK_MARK } from './FieldContext';
@@ -6,12 +7,15 @@ import type {
   FieldData,
   FieldEntity,
   FieldError,
+  FilterFunc,
   FormInstance,
+  GetFieldsValueConfig,
   InternalFieldData,
   InternalFormInstance,
   InternalHooks,
   InternalNamePath,
   InternalValidateFields,
+  InternalValidateOptions,
   Meta,
   NamePath,
   NotifyInfo,
@@ -20,14 +24,10 @@ import type {
   StoreValue,
   ValidateErrorEntity,
   ValidateMessages,
-  InternalValidateOptions,
   ValuedNotifyInfo,
   WatchCallBack,
-  FilterFunc,
-  GetFieldsValueConfig,
 } from './interface';
 import { allPromiseFinish } from './utils/asyncUtil';
-import { merge } from 'rc-util/lib/utils/set';
 import { defaultValidateMessages } from './utils/messages';
 import NameMap from './utils/NameMap';
 import {
@@ -510,8 +510,10 @@ export class FormStore {
               );
             } else if (records) {
               const originValue = this.getFieldValue(namePath);
+              const isListField = field.isListField();
+
               // Set `initialValue`
-              if (!info.skipExist || originValue === undefined) {
+              if (!isListField && (!info.skipExist || originValue === undefined)) {
                 this.updateStore(setValue(this.store, namePath, [...records][0].value));
               }
             }
@@ -545,9 +547,7 @@ export class FormStore {
     const prevStore = this.store;
     if (!nameList) {
       this.updateStore(merge(this.initialValues));
-      console.log('1 >', this.store);
       this.resetWithFieldInitialValue();
-      console.log('2 >', this.store);
       this.notifyObservers(prevStore, null, { type: 'reset' });
       this.notifyWatch();
       return;
