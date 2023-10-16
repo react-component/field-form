@@ -27,9 +27,9 @@ import type {
   ValuedNotifyInfo,
   WatchCallBack,
 } from './interface';
-import NameMap from './utils/NameMap';
 import { allPromiseFinish } from './utils/asyncUtil';
 import { defaultValidateMessages } from './utils/messages';
+import NameMap from './utils/NameMap';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -517,8 +517,10 @@ export class FormStore {
               );
             } else if (records) {
               const originValue = this.getFieldValue(namePath);
+              const isListField = field.isListField();
+
               // Set `initialValue`
-              if (!info.skipExist || originValue === undefined) {
+              if (!isListField && (!info.skipExist || originValue === undefined)) {
                 this.updateStore(setValue(this.store, namePath, [...records][0].value));
               }
             }
