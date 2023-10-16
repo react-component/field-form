@@ -24,7 +24,7 @@ open http://localhost:8000
 ## Feature
 
 - Support react.js and even react-native
-- Validate fields with [async-validator](https://github.com/yiminghe/async-validator/)
+- Validate fields with [@rc-component/async-validator](https://github.com/react-component/async-validator/)
 
 ## Install
 
