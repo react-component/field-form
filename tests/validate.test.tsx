@@ -5,7 +5,7 @@ import Form, { Field, useForm } from '../src';
 import type { FormInstance, ValidateMessages } from '../src/interface';
 import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
-import timeout from './common/timeout';
+import timeout, { waitFakeTime } from './common/timeout';
 
 describe('Form.Validate', () => {
   it('required', async () => {
@@ -1030,6 +1030,62 @@ describe('Form.Validate', () => {
       await Promise.resolve();
     });
     expect(validator).toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
+
+  it('dirty', async () => {
+    jest.useFakeTimers();
+
+    const formRef = React.createRef<FormInstance>();
+
+    const Demo = ({ touchMessage, validateMessage }) => (
+      <Form ref={formRef}>
+        <InfoField name="touch" rules={[{ required: true, message: touchMessage }]}>
+          <Input />
+        </InfoField>
+        <InfoField name="validate" rules={[{ required: true, message: validateMessage }]}>
+          <Input />
+        </InfoField>
+        <InfoField name="noop" rules={[{ required: true, message: 'noop' }]}>
+          <Input />
+        </InfoField>
+      </Form>
+    );
+
+    const { container, rerender } = render(
+      <Demo touchMessage="touch" validateMessage="validate" />,
+    );
+
+    fireEvent.change(container.querySelectorAll('input')[0], {
+      target: {
+        value: 'light',
+      },
+    });
+    fireEvent.change(container.querySelectorAll('input')[0], {
+      target: {
+        value: '',
+      },
+    });
+
+    formRef.current.validateFields(['validate']);
+
+    await waitFakeTime();
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[0], `touch`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[1], `validate`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
+
+
+    // Revalidate
+    rerender(
+      <Demo touchMessage="new_touch" validateMessage="new_validate" />,
+    );
+    formRef.current.validateFields({ dirty: true });
+
+    await waitFakeTime();
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[0], `new_touch`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[1], `new_validate`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
 
     jest.useRealTimers();
   });
