@@ -12,5 +12,6 @@
       "@@/*": ["src/.umi/*"],
       "rc-field-form": ["src/index.tsx"]
     }
-  }
+  },
+  "include": ["src/**/*"]
 }
