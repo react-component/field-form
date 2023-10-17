@@ -1,4 +1,4 @@
-import RawAsyncValidator from 'async-validator';
+import RawAsyncValidator from '@rc-component/async-validator';
 import * as React from 'react';
 import warning from 'rc-util/lib/warning';
 import type {
@@ -36,7 +36,7 @@ async function validateRule(
 ): Promise<string[]> {
   const cloneRule = { ...rule };
 
-  // Bug of `async-validator`
+  // Bug of `@rc-component/async-validator`
   // https://github.com/react-component/field-form/issues/316
   // https://github.com/react-component/field-form/issues/313
   delete (cloneRule as any).ruleIndex;
@@ -116,7 +116,7 @@ async function validateRule(
 }
 
 /**
- * We use `async-validator` to validate the value.
+ * We use `@rc-component/async-validator` to validate the value.
  * But only check one value in a time to avoid namePath validate issue.
  */
 export function validateRules(
