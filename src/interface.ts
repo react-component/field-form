@@ -137,6 +137,8 @@ export interface ValidateOptions {
    * e.g. [['a']] will validate ['a'] , ['a', 'b'] and ['a', 1].
    */
   recursive?: boolean;
+  /** Validate when a field is dirty (validated or touched) */
+  dirty?: boolean;
 }
 
 export type ValidateFields<Values = any> = {

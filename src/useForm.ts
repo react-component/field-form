@@ -894,7 +894,7 @@ export class FormStore {
     const TMP_SPLIT = String(Date.now());
     const validateNamePathList = new Set<string>();
 
-    const recursive = options?.recursive;
+    const { recursive, dirty } = options || {};
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
@@ -904,6 +904,11 @@ export class FormStore {
 
       // Skip if without rule
       if (!field.props.rules || !field.props.rules.length) {
+        return;
+      }
+
+      // Skip if only validate dirty field
+      if (dirty && !field.isFieldDirty()) {
         return;
       }
 
