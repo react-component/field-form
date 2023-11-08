@@ -44,10 +44,11 @@ describe('legacy.dynamic-binding', () => {
 
     rerender(<Test mode />);
 
-    expect(getInput(container, '#text')?.value).toBe('456');
-    expect(form.current?.getFieldValue('name')).toBe('456');
+    expect(getInput(container, '#text')?.value).toBe("456");
+    expect(form.current?.getFieldValue('name')).toBe(456);
     const values = await form.current?.validateFields();
-    expect(values.name).toBe('456');
+    expect(values.name).toBe(456);
+    expect(typeof values.name).toBe('number');
   });
 
   // [Legacy] We do not remove value in Field Form
@@ -141,9 +142,10 @@ describe('legacy.dynamic-binding', () => {
     rerender(<Test mode />);
 
     expect(getInput(container, '#text')?.value).toBe('456');
-    expect(form.current?.getFieldValue(['name', 'xxx'])).toBe('456');
+    expect(form.current?.getFieldValue(['name', 'xxx'])).toBe(456);
     const values = await form.current?.validateFields();
-    expect(values.name.xxx).toBe('456');
+    expect(values.name.xxx).toBe(456);
+    expect(typeof values.name.xxx).toBe('number');
   });
 
   it('input with different keys', async () => {
@@ -178,10 +180,11 @@ describe('legacy.dynamic-binding', () => {
     rerender(<Test mode />);
 
     expect(getInput(container, '#text')?.value).toBe('456');
-    expect(form.current?.getFieldValue('name')).toBe('456');
+    expect(form.current?.getFieldValue('name')).toBe(456);
 
     const values = await form.current?.validateFields();
-    expect(values.name).toBe('456');
+    expect(values.name).toBe(456);
+    expect(typeof values.name).toBe('number');
   });
 
   it('submit without removed fields', async () => {
