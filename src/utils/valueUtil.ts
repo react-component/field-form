@@ -94,57 +94,8 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
 
 export function defaultGetValueFromEvent(valuePropName: string, ...args: EventArgs) {
   const event = args[0];
-
-  /**
-   * `target` is the element that triggered the event (e.g., the user clicked on)
-   * `currentTarget` is the element that the event listener is attached to.
-   */
-  const nodeName = (event?.target?.nodeName ?? '').toLowerCase();
-
-  if (nodeName === 'input') {
-    const type = (event.target.type ?? 'text').toLowerCase();
-
-    if (['checkbox', 'radio'].includes(type)) {
-      return event.target.checked;
-    }
-
-    // `datetime` Obsolete
-    if (['number', 'range'].includes(type)) {
-      // https://caniuse.com/?search=valueAsNumber, support IE11+
-      return event.target.valueAsNumber ?? event.target.value;
-    }
-
-    /**
-     * Problems with backfilling the data collected, so it is not processed here
-     * @see https://devlog.willcodefor.beer/pages/use-valueasnumber-and-valueasdate-on-inputs/
-     * `datetime` Obsolete
-     */
-    // if (['date', 'datetime-local'].includes(type)) {
-    //   const _value = {
-    //     timestamp: event.target.valueAsNumber,
-    //     date: event.target.valueAsDate,
-    //     formatted: event.target.value,
-    //   }
-    // }
-
-    if (type === 'file') {
-      return event.target.files;
-    }
-
-    /**
-     * text password search email url week month tel color time
-     * [submit, reset, button, image, hidden] ?? i dont care :)
-     */
-    // return event.target.value; // valuePropName default is 'value'
-  }
-
-  // because `valuePropName` default is `value`
-  // if (['textarea', 'select'].includes(nodeName)) {
-  //   return event.target.value;
-  // }
-
-  if (typeof event?.target === 'object' && valuePropName in event.target) {
-    return event.target[valuePropName];
+  if (event && event.target && typeof event.target === 'object' && valuePropName in event.target) {
+    return (event.target as HTMLInputElement)[valuePropName];
   }
 
   return event;
