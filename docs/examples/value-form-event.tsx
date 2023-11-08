@@ -1,6 +1,7 @@
-import Form, { Field } from 'rc-field-form';
+import Form, { Field as OriginField } from 'rc-field-form';
 import React from 'react';
 import Input from './components/Input';
+import type { FieldProps } from '../../src/Field';
 
 const Divider = (props: React.PropsWithChildren) => (
   <div
@@ -57,6 +58,68 @@ type FormData = {
   custom?: CustomValue;
 };
 
+function commonGetValueFromEvent(...args: any[]) {
+  const event = args[0];
+
+  /**
+   * `target` is the element that triggered the event (e.g., the user clicked on)
+   * `currentTarget` is the element that the event listener is attached to.
+   */
+  const nodeName = (event?.target?.nodeName ?? '').toLowerCase();
+
+  if (nodeName === 'input') {
+    const type = (event.target.type ?? 'text').toLowerCase();
+
+    if (['checkbox', 'radio'].includes(type)) {
+      return event.target.checked;
+    }
+
+    // `datetime` Obsolete
+    if (['number', 'range'].includes(type)) {
+      // https://caniuse.com/?search=valueAsNumber, support IE11+
+      return event.target.valueAsNumber ?? event.target.value;
+    }
+
+    /**
+     * Problems with backfilling the data collected, so it is not processed here
+     * @see https://devlog.willcodefor.beer/pages/use-valueasnumber-and-valueasdate-on-inputs/
+     * `datetime` Obsolete
+     */
+    // if (['date', 'datetime-local'].includes(type)) {
+    //   const _value = {
+    //     timestamp: event.target.valueAsNumber,
+    //     date: event.target.valueAsDate,
+    //     formatted: event.target.value,
+    //   }
+    // }
+
+    if (type === 'file') {
+      return event.target.files;
+    }
+
+    /**
+     * text password search email url week month tel color time
+     * [submit, reset, button, image, hidden] ?? i dont care :)
+     */
+    return event.target.value; // valuePropName default is 'value'
+  }
+
+  if (['textarea', 'select'].includes(nodeName)) {
+    return event.target.value;
+  }
+
+  return event;
+}
+
+function Field<Values = any>(props: FieldProps<Values>) {
+  return (
+    <OriginField<Values>
+      getValueFromEvent={commonGetValueFromEvent}
+      {...props}
+    />
+  )
+}
+
 
 function App() {
   const [form] = Form.useForm();
@@ -81,7 +144,6 @@ function App() {
       <Field<FormData> name="text">
         <Input type="text" placeholder='Text' />
       </Field>
-
 
       <Divider>event.target.checked</Divider>
 
@@ -109,7 +171,7 @@ function App() {
         <Input type="file" placeholder='File' />
       </Field>
 
-      <Divider>event.target.value <span style={{ color: 'red' }}>default</span>!!!</Divider>
+      <Divider>event.target.value</Divider>
 
       <Field<FormData> name="password">
         <Input type="password" placeholder='Password' />
