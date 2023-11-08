@@ -93,9 +93,9 @@ function commonGetValueFromEvent(...args: any[]) {
     //   }
     // }
 
-    if (type === 'file') {
-      return event.target.files;
-    }
+    // if (type === 'file') {
+    //   return event.target.files;
+    // }
 
     /**
      * text password search email url week month tel color time
