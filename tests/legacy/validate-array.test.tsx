@@ -1,32 +1,26 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
-import { Input } from '../common/InfoField';
-import { changeValue, getField, matchArray } from '../common';
-import timeout from '../common/timeout';
+import { matchArray } from '../common';
 
 describe('legacy.validate-array', () => {
-  const MyInput = ({ value = [''], onChange, ...props }) => (
+  const MyInput: React.FC<any> = ({ value = [''], onChange, ...props }) => (
     <input
       {...props}
+      value={value.join(',')}
       onChange={e => {
         onChange(e.target.value.split(','));
       }}
-      value={value.join(',')}
     />
   );
 
   it('forceValidate works', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
-    mount(
+    render(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-          initialValues={{ url_array: ['test'] }}
-        >
+        <Form ref={form} initialValues={{ url_array: ['test'] }}>
           <Field
             name="url_array"
             rules={[
@@ -45,7 +39,7 @@ describe('legacy.validate-array', () => {
     );
 
     try {
-      await form.validateFields();
+      await form.current?.validateFields();
       throw new Error('Should not pass!');
     } catch ({ errorFields }) {
       matchArray(
@@ -58,32 +52,18 @@ describe('legacy.validate-array', () => {
 
   // https://github.com/ant-design/ant-design/issues/36436
   it('antd issue #36436', async () => {
-    let form;
-
-    mount(
+    const form = React.createRef<FormInstance>();
+    render(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
-          <Field
-            name="tags"
-            rules={[
-              {
-                type: 'array',
-                defaultField: { type: 'string' },
-              },
-            ]}
-          >
+        <Form ref={form}>
+          <Field name="tags" rules={[{ type: 'array', defaultField: { type: 'string' } }]}>
             <input />
           </Field>
         </Form>
       </div>,
     );
-
     expect(async () => {
-      await form.validateFields();
+      await form.current?.validateFields();
     }).not.toThrow();
   });
 });

@@ -1,19 +1,16 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
 
 describe('legacy.clean-field', () => {
   // https://github.com/ant-design/ant-design/issues/12560
   it('clean field if did update removed', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
 
-    const Test = ({ show }) => (
-      <Form
-        ref={instance => {
-          form = instance;
-        }}
-      >
+    const Test: React.FC<any> = ({ show }) => (
+      <Form ref={form}>
         {show ? (
           <Field name="age" rules={[{ required: true }]}>
             <Input />
@@ -26,20 +23,20 @@ describe('legacy.clean-field', () => {
       </Form>
     );
 
-    const wrapper = mount(<Test show />);
+    const { rerender } = render(<Test show />);
 
     try {
-      await form.validateFields();
+      await form.current?.validateFields();
       throw new Error('should not pass');
     } catch ({ errorFields }) {
       expect(errorFields.length).toBe(1);
       expect(errorFields[0].name).toEqual(['age']);
     }
 
-    wrapper.setProps({ show: false });
+    rerender(<Test show={false} />);
 
     try {
-      await form.validateFields();
+      await form.current?.validateFields();
       throw new Error('should not pass');
     } catch ({ errorFields }) {
       expect(errorFields.length).toBe(1);

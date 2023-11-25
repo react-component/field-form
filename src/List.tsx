@@ -19,8 +19,8 @@ export interface ListOperations {
   move: (from: number, to: number) => void;
 }
 
-export interface ListProps {
-  name: NamePath;
+export interface ListProps<Values = any> {
+  name: NamePath<Values>;
   rules?: ValidatorRule[];
   validateTrigger?: string | string[] | false;
   initialValue?: any[];
@@ -29,16 +29,21 @@ export interface ListProps {
     operations: ListOperations,
     meta: Meta,
   ) => JSX.Element | React.ReactNode;
+
+  /** @private Passed by Form.List props. Do not use since it will break by path check. */
+  isListField?: boolean;
 }
 
-const List: React.FunctionComponent<ListProps> = ({
+function List<Values = any>({
   name,
   initialValue,
   children,
   rules,
   validateTrigger,
-}) => {
+  isListField,
+}: ListProps<Values>) {
   const context = React.useContext(FieldContext);
+  const wrapperListContext = React.useContext(ListContext);
   const keyRef = React.useRef({
     keys: [],
     id: 0,
@@ -87,6 +92,7 @@ const List: React.FunctionComponent<ListProps> = ({
           validateTrigger={validateTrigger}
           initialValue={initialValue}
           isList
+          isListField={isListField ?? !!wrapperListContext}
         >
           {({ value = [], onChange }, meta) => {
             const { getFieldValue } = context;
@@ -191,6 +197,6 @@ const List: React.FunctionComponent<ListProps> = ({
       </FieldContext.Provider>
     </ListContext.Provider>
   );
-};
+}
 
 export default List;

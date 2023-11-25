@@ -19,9 +19,11 @@
 .DS_Store
 .vscode
 .idea
+~*
 
 # umi
 .umi
 .umi-production
 .umi-test
 .env.local
+.dumi/

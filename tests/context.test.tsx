@@ -1,13 +1,14 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import type { FormInstance } from '../src';
 import Form, { FormProvider } from '../src';
 import InfoField from './common/InfoField';
-import { changeValue, matchError, getField } from './common';
+import { changeValue, matchError, getInput } from './common';
 import timeout from './common/timeout';
 
 describe('Form.Context', () => {
   it('validateMessages', async () => {
-    const wrapper = mount(
+    const { container } = render(
       <FormProvider validateMessages={{ required: "I'm global" }}>
         <Form>
           <InfoField name="username" rules={[{ required: true }]} />
@@ -15,14 +16,14 @@ describe('Form.Context', () => {
       </FormProvider>,
     );
 
-    await changeValue(wrapper, '');
-    matchError(wrapper, "I'm global");
+    await changeValue(getInput(container), ['bamboo', '']);
+    matchError(container, "I'm global");
   });
 
   it('change event', async () => {
     const onFormChange = jest.fn();
 
-    const wrapper = mount(
+    const { container } = render(
       <FormProvider onFormChange={onFormChange}>
         <Form name="form1">
           <InfoField name="username" rules={[{ required: true }]} />
@@ -30,7 +31,7 @@ describe('Form.Context', () => {
       </FormProvider>,
     );
 
-    await changeValue(getField(wrapper), 'Light');
+    await changeValue(getInput(container), 'Light');
     expect(onFormChange).toHaveBeenCalledWith(
       'form1',
       expect.objectContaining({
@@ -42,6 +43,26 @@ describe('Form.Context', () => {
             touched: true,
             validating: false,
             value: 'Light',
+            validated: false,
+          },
+        ],
+        forms: {
+          form1: expect.objectContaining({}),
+        },
+      }),
+    );
+    expect(onFormChange).toHaveBeenCalledWith(
+      'form1',
+      expect.objectContaining({
+        changedFields: [
+          {
+            errors: [],
+            warnings: [],
+            name: ['username'],
+            touched: true,
+            validating: false,
+            value: 'Light',
+            validated: true,
           },
         ],
         forms: {
@@ -55,21 +76,21 @@ describe('Form.Context', () => {
     it('basic', async () => {
       const onFormChange = jest.fn();
 
-      const wrapper = mount(
+      const { container, rerender } = render(
         <FormProvider onFormChange={onFormChange}>
           <Form name="form1" />
         </FormProvider>,
       );
 
-      wrapper.setProps({
-        children: (
+      rerender(
+        <FormProvider onFormChange={onFormChange}>
           <Form name="form2">
             <InfoField name="test" />
           </Form>
-        ),
-      });
+        </FormProvider>,
+      );
 
-      await changeValue(getField(wrapper), 'Bamboo');
+      await changeValue(getInput(container), 'Bamboo');
       const { forms } = onFormChange.mock.calls[0][1];
       expect(Object.keys(forms)).toEqual(['form2']);
     });
@@ -77,7 +98,7 @@ describe('Form.Context', () => {
     it('multiple context', async () => {
       const onFormChange = jest.fn();
 
-      const Demo = changed => (
+      const Demo: React.FC<{ changed?: boolean }> = ({ changed }) => (
         <FormProvider onFormChange={onFormChange}>
           <FormProvider>
             {!changed ? (
@@ -91,13 +112,11 @@ describe('Form.Context', () => {
         </FormProvider>
       );
 
-      const wrapper = mount(<Demo />);
+      const { container, rerender } = render(<Demo />);
 
-      wrapper.setProps({
-        changed: true,
-      });
+      rerender(<Demo changed />);
 
-      await changeValue(getField(wrapper), 'Bamboo');
+      await changeValue(getInput(container), 'Bamboo');
       const { forms } = onFormChange.mock.calls[0][1];
       expect(Object.keys(forms)).toEqual(['form2']);
     });
@@ -105,17 +124,12 @@ describe('Form.Context', () => {
 
   it('submit', async () => {
     const onFormFinish = jest.fn();
-    let form1;
+    const form = React.createRef<FormInstance>();
 
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <FormProvider onFormFinish={onFormFinish}>
-          <Form
-            name="form1"
-            ref={instance => {
-              form1 = instance;
-            }}
-          >
+          <Form name="form1" ref={form}>
             <InfoField name="name" rules={[{ required: true }]} />
           </Form>
           <Form name="form2" />
@@ -123,13 +137,13 @@ describe('Form.Context', () => {
       </div>,
     );
 
-    await changeValue(getField(wrapper), '');
-    form1.submit();
+    await changeValue(getInput(container), ['bamboo', '']);
+    form.current?.submit();
     await timeout();
     expect(onFormFinish).not.toHaveBeenCalled();
 
-    await changeValue(getField(wrapper), 'Light');
-    form1.submit();
+    await changeValue(getInput(container), 'Light');
+    form.current?.submit();
     await timeout();
     expect(onFormFinish).toHaveBeenCalled();
 
@@ -140,14 +154,11 @@ describe('Form.Context', () => {
   });
 
   it('do nothing if no Provider in use', () => {
-    const wrapper = mount(
+    const { rerender } = render(
       <div>
         <Form name="no" />
       </div>,
     );
-
-    wrapper.setProps({
-      children: null,
-    });
+    rerender(<div>{null}</div>);
   });
 });
