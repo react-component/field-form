@@ -6,7 +6,11 @@ import Input from './components/Input';
 
 const { Field } = Form;
 
-const Error = ({ children }) => (
+interface ErrorProps {
+  children?: React.ReactNode[];
+}
+
+const Error: React.FC<ErrorProps> = ({ children }) => (
   <ul style={{ color: 'red' }}>
     {children.map((error, i) => (
       <li key={i}>{error}</li>
@@ -19,14 +23,7 @@ const FieldState = ({ form, name }) => {
   const validating = form.isFieldValidating(name);
 
   return (
-    <div
-      style={{
-        color: 'green',
-        position: 'absolute',
-        marginTop: -35,
-        left: 200,
-      }}
-    >
+    <div style={{ color: 'green', position: 'absolute', marginTop: -35, left: 200 }}>
       {touched ? <span>Touched!</span> : null}
       {validating ? <span>Validating!</span> : null}
     </div>

@@ -1,7 +1,3 @@
-import type { Config } from 'jest';
-
-const config: Config = {
+export default {
   setupFilesAfterEnv: ['<rootDir>/tests/setupAfterEnv.ts'],
 };
-
-export default config;

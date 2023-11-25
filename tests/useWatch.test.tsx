@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { mount } from 'enzyme';
+import { render, fireEvent } from '@testing-library/react';
 import type { FormInstance } from '../src';
 import { List } from '../src';
 import Form, { Field } from '../src';
@@ -7,15 +7,13 @@ import timeout from './common/timeout';
 import { act } from 'react-dom/test-utils';
 import { Input } from './common/InfoField';
 import { stringify } from '../src/useWatch';
+import { changeValue } from './common';
 
 describe('useWatch', () => {
-  let staticForm: FormInstance<any>;
-
   it('field initialValue', async () => {
-    const Demo = () => {
+    const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const nameValue = Form.useWatch<string>('name', form);
-
       return (
         <div>
           <Form form={form}>
@@ -27,18 +25,18 @@ describe('useWatch', () => {
         </div>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const wrapper = mount(<Demo />);
       await timeout();
-      expect(wrapper.find('.values').text()).toEqual('bamboo');
     });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
   });
 
   it('form initialValue', async () => {
-    const Demo = () => {
+    const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const nameValue = Form.useWatch<string>(['name'], form);
-
       return (
         <div>
           <Form form={form} initialValues={{ name: 'bamboo', other: 'other' }}>
@@ -50,26 +48,22 @@ describe('useWatch', () => {
         </div>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const wrapper = mount(<Demo />);
       await timeout();
-      expect(wrapper.find('.values').text()).toEqual('bamboo');
     });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
   });
 
   it('change value with form api', async () => {
-    const Demo = () => {
+    const staticForm = React.createRef<FormInstance>();
+    const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const nameValue = Form.useWatch<string>(['name'], form);
-
       return (
         <div>
-          <Form
-            form={form}
-            ref={instance => {
-              staticForm = instance;
-            }}
-          >
+          <Form form={form} ref={staticForm}>
             <Field name="name">
               <Input />
             </Field>
@@ -78,26 +72,33 @@ describe('useWatch', () => {
         </div>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const wrapper = mount(<Demo />);
       await timeout();
-      staticForm.setFields([{ name: 'name', value: 'little' }]);
-      expect(wrapper.find('.values').text()).toEqual('little');
-
-      staticForm.setFieldsValue({ name: 'light' });
-      expect(wrapper.find('.values').text()).toEqual('light');
-
-      staticForm.resetFields();
-      expect(wrapper.find('.values').text()).toEqual('');
     });
+
+    await act(async () => {
+      staticForm.current?.setFields([{ name: 'name', value: 'little' }]);
+    });
+    expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('little');
+
+    await act(async () => {
+      staticForm.current?.setFieldsValue({ name: 'light' });
+    });
+    expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('light');
+
+    await act(async () => {
+      staticForm.current?.resetFields();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('');
   });
 
   describe('unmount', () => {
     it('basic', async () => {
-      const Demo = ({ visible }: { visible: boolean }) => {
+      const Demo: React.FC<{ visible?: boolean }> = ({ visible }) => {
         const [form] = Form.useForm();
         const nameValue = Form.useWatch<string>(['name'], form);
-
         return (
           <div>
             <Form form={form} initialValues={{ name: 'bamboo' }}>
@@ -112,24 +113,24 @@ describe('useWatch', () => {
         );
       };
 
+      const { container, rerender } = render(<Demo visible />);
+
       await act(async () => {
-        const wrapper = mount(<Demo visible />);
         await timeout();
-
-        expect(wrapper.find('.values').text()).toEqual('bamboo');
-
-        wrapper.setProps({ visible: false });
-        expect(wrapper.find('.values').text()).toEqual('');
-
-        wrapper.setProps({ visible: true });
-        expect(wrapper.find('.values').text()).toEqual('bamboo');
       });
+
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
+
+      rerender(<Demo visible={false} />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
+
+      rerender(<Demo visible />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
 
     it('nest children component', async () => {
-      const DemoWatch = () => {
+      const DemoWatch: React.FC = () => {
         Form.useWatch(['name']);
-
         return (
           <Field name="name">
             <Input />
@@ -137,7 +138,7 @@ describe('useWatch', () => {
         );
       };
 
-      const Demo = ({ visible }: { visible: boolean }) => {
+      const Demo: React.FC<{ visible?: boolean }> = ({ visible }) => {
         const [form] = Form.useForm();
         const nameValue = Form.useWatch<string>(['name'], form);
 
@@ -151,26 +152,24 @@ describe('useWatch', () => {
         );
       };
 
+      const { container, rerender } = render(<Demo visible />);
       await act(async () => {
-        const wrapper = mount(<Demo visible />);
         await timeout();
-
-        expect(wrapper.find('.values').text()).toEqual('bamboo');
-
-        wrapper.setProps({ visible: false });
-        expect(wrapper.find('.values').text()).toEqual('');
-
-        wrapper.setProps({ visible: true });
-        expect(wrapper.find('.values').text()).toEqual('bamboo');
       });
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
+
+      rerender(<Demo visible={false} />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
+
+      rerender(<Demo visible />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
   });
 
   it('list', async () => {
-    const Demo = () => {
+    const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const users = Form.useWatch<string[]>(['users'], form) || [];
-
       return (
         <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
           <div className="values">{JSON.stringify(users)}</div>
@@ -195,26 +194,32 @@ describe('useWatch', () => {
         </Form>
       );
     };
-    await act(async () => {
-      const wrapper = mount(<Demo />);
-      await timeout();
-      expect(wrapper.find('.values').text()).toEqual(JSON.stringify(['bamboo', 'light']));
 
-      wrapper.find('.remove').at(0).simulate('click');
+    const { container } = render(<Demo />);
+    await act(async () => {
       await timeout();
-      expect(wrapper.find('.values').text()).toEqual(JSON.stringify(['light']));
     });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
+      JSON.stringify(['bamboo', 'light']),
+    );
+    fireEvent.click(container.querySelector<HTMLAnchorElement>('.remove'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
+      JSON.stringify(['light']),
+    );
   });
 
   it('warning if not provide form', () => {
-    const errorSpy = jest.spyOn(console, 'error');
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    const Demo = () => {
+    const Demo: React.FC = () => {
       Form.useWatch([]);
       return null;
     };
 
-    mount(<Demo />);
+    render(<Demo />);
 
     expect(errorSpy).toHaveBeenCalledWith(
       'Warning: useWatch requires a form instance since it can not auto detect from context.',
@@ -222,10 +227,10 @@ describe('useWatch', () => {
     errorSpy.mockRestore();
   });
 
-  it('no more render time', () => {
+  it('no more render time', async () => {
     let renderTime = 0;
 
-    const Demo = () => {
+    const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const name = Form.useWatch<string>('name', form);
 
@@ -244,37 +249,18 @@ describe('useWatch', () => {
       );
     };
 
-    const wrapper = mount(<Demo />);
+    const { container } = render(<Demo />);
     expect(renderTime).toEqual(1);
 
-    wrapper
-      .find('input')
-      .first()
-      .simulate('change', {
-        target: {
-          value: 'bamboo',
-        },
-      });
+    const input = container.querySelectorAll<HTMLInputElement>('input');
+
+    await changeValue(input[0], 'bamboo');
     expect(renderTime).toEqual(2);
 
-    wrapper
-      .find('input')
-      .last()
-      .simulate('change', {
-        target: {
-          value: '123',
-        },
-      });
+    await changeValue(input[1], '123');
     expect(renderTime).toEqual(2);
 
-    wrapper
-      .find('input')
-      .last()
-      .simulate('change', {
-        target: {
-          value: '123456',
-        },
-      });
+    await changeValue(input[1], '123456');
     expect(renderTime).toEqual(2);
   });
 
@@ -290,7 +276,7 @@ describe('useWatch', () => {
       demo1?: { demo2?: { demo3?: { demo4?: string } } };
     };
 
-    const Demo = () => {
+    const Demo: React.FC = () => {
       const [form] = Form.useForm<FieldType>();
       const values = Form.useWatch([], form);
       const main = Form.useWatch('main', form);
@@ -302,13 +288,12 @@ describe('useWatch', () => {
       const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
       const more = Form.useWatch(['age', 'name', 'gender'], form);
       const demo = Form.useWatch<string>(['demo']);
-
       return (
         <>{JSON.stringify({ values, main, age, demo1, demo2, demo3, demo4, demo5, more, demo })}</>
       );
     };
 
-    mount(<Demo />);
+    render(<Demo />);
   });
 
   // https://github.com/react-component/field-form/issues/431
@@ -316,18 +301,16 @@ describe('useWatch', () => {
     let updateA = 0;
     let updateB = 0;
 
-    const Demo = () => {
+    const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const userA = Form.useWatch(['a'], form);
       const userB = Form.useWatch(['b'], form);
 
       React.useEffect(() => {
         updateA += 1;
-        console.log('Update A', userA);
       }, [userA]);
       React.useEffect(() => {
         updateB += 1;
-        console.log('Update B', userB);
       }, [userB]);
 
       return (
@@ -342,19 +325,15 @@ describe('useWatch', () => {
       );
     };
 
-    const wrapper = mount(<Demo />);
-
-    console.log('Change!');
-    wrapper
-      .find('input')
-      .first()
-      .simulate('change', { target: { value: 'bamboo' } });
-
+    const { container } = render(<Demo />);
+    fireEvent.change(container.querySelector<HTMLInputElement>('input'), {
+      target: { value: 'bamboo' },
+    });
     expect(updateA > updateB).toBeTruthy();
   });
 
   it('mount while unmount', () => {
-    const Demo = () => {
+    const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const [type, setType] = useState(true);
       const name = Form.useWatch<string>('name', form);
@@ -378,14 +357,12 @@ describe('useWatch', () => {
         </Form>
       );
     };
-
-    const wrapper = mount(<Demo />);
-    wrapper
-      .find('input')
-      .first()
-      .simulate('change', { target: { value: 'bamboo' } });
-    wrapper.find('button').at(0).simulate('click');
-    expect(wrapper.find('.value').text()).toEqual('bamboo');
+    const { container } = render(<Demo />);
+    fireEvent.change(container.querySelector<HTMLInputElement>('input'), {
+      target: { value: 'bamboo' },
+    });
+    container.querySelector<HTMLButtonElement>('button').click();
+    expect(container.querySelector<HTMLDivElement>('.value')?.textContent).toEqual('bamboo');
   });
   it('stringify error', () => {
     const obj: any = {};
@@ -394,12 +371,11 @@ describe('useWatch', () => {
     expect(typeof str === 'number').toBeTruthy();
   });
   it('first undefined', () => {
-    const errorSpy = jest.spyOn(console, 'error');
-    const Demo = () => {
-      const formRef = useRef();
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const Demo: React.FC = () => {
+      const formRef = useRef<FormInstance>();
       const name = Form.useWatch('name', formRef.current);
       const [, setUpdate] = useState({});
-
       return (
         <>
           <div className="setUpdate" onClick={() => setUpdate({})} />
@@ -412,19 +388,73 @@ describe('useWatch', () => {
         </>
       );
     };
-
-    const wrapper = mount(<Demo />);
-    expect(wrapper.find('.value').text()).toEqual('');
-    wrapper.find('.setUpdate').at(0).simulate('click');
-    expect(wrapper.find('.value').text()).toEqual('default');
-    wrapper
-      .find('input')
-      .at(0)
-      .simulate('change', { target: { value: 'bamboo' } });
-    expect(wrapper.find('.value').text()).toEqual('bamboo');
+    const { container } = render(<Demo />);
+    expect(container.querySelector<HTMLDivElement>('.value')?.textContent).toEqual('');
+    fireEvent.click(container.querySelector<HTMLInputElement>('.setUpdate'));
+    expect(container.querySelector<HTMLDivElement>('.value')?.textContent).toEqual('default');
+    fireEvent.change(container.querySelector<HTMLInputElement>('input'), {
+      target: { value: 'bamboo' },
+    });
+    expect(container.querySelector<HTMLDivElement>('.value')?.textContent).toEqual('bamboo');
     expect(errorSpy).not.toHaveBeenCalledWith(
       'Warning: useWatch requires a form instance since it can not auto detect from context.',
     );
     errorSpy.mockRestore();
+  });
+
+  it('dynamic change warning', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm();
+      const [watchPath, setWatchPath] = React.useState('light');
+      Form.useWatch(watchPath, form);
+
+      React.useEffect(() => {
+        setWatchPath('bamboo');
+      }, []);
+
+      return <Form form={form} />;
+    };
+    render(<Demo />);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Warning: `useWatch` is not support dynamic `namePath`. Please provide static instead.',
+    );
+    errorSpy.mockRestore();
+  });
+
+  it('useWatch with preserve option', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm();
+      const nameValuePreserve = Form.useWatch<string>('name', {
+        form,
+        preserve: true,
+      });
+      const nameValue = Form.useWatch<string>('name', form);
+      React.useEffect(() => {
+        console.log(nameValuePreserve, nameValue);
+      }, [nameValuePreserve, nameValue]);
+      return (
+        <div>
+          <Form form={form} initialValues={{ name: 'bamboo' }} />
+          <div className="values">{nameValuePreserve}</div>
+          <button className="test-btn" onClick={() => form.setFieldValue('name', 'light')} />
+        </div>
+      );
+    };
+
+    const { container } = render(<Demo />);
+    await act(async () => {
+      await timeout();
+    });
+    expect(logSpy).toHaveBeenCalledWith('bamboo', undefined); // initialValue
+    fireEvent.click(container.querySelector('.test-btn'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(logSpy).toHaveBeenCalledWith('light', undefined); // after setFieldValue
+
+    logSpy.mockRestore();
   });
 });

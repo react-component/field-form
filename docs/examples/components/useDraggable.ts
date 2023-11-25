@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { DragObjectWithType, useDrag, useDrop } from 'react-dnd';
+import type { DragObjectWithType } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 
 type DragWithIndex = DragObjectWithType & {
   index: number;
