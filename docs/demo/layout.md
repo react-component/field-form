@@ -1,3 +1,3 @@
 ## layout
 
-<code src="../examples/layout.tsx" />
+<code src="../examples/layout.tsx"></code>
