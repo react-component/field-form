@@ -1,14 +1,14 @@
 import React from 'react';
-import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue } from './common';
+import { changeValue, getInput } from './common';
+import { render } from '@testing-library/react';
 
 describe('Form.ReactStrict', () => {
   it('should not register twice', async () => {
     const onFieldsChange = jest.fn();
 
-    const wrapper = mount(
+    const { container } = render(
       <React.StrictMode>
         <Form name="testForm" onFieldsChange={onFieldsChange}>
           <InfoField name="input">
@@ -18,7 +18,7 @@ describe('Form.ReactStrict', () => {
       </React.StrictMode>,
     );
 
-    await changeValue(wrapper, 'bamboo');
+    await changeValue(getInput(container), 'bamboo');
 
     expect(onFieldsChange).toHaveBeenCalledTimes(1);
     expect(onFieldsChange.mock.calls[0][1]).toHaveLength(1);

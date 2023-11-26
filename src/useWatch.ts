@@ -1,9 +1,15 @@
-import type { FormInstance } from '.';
-import { FieldContext } from '.';
 import warning from 'rc-util/lib/warning';
-import { HOOK_MARK } from './FieldContext';
-import type { InternalFormInstance, NamePath, Store } from './interface';
-import { useState, useContext, useEffect, useRef, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import FieldContext, { HOOK_MARK } from './FieldContext';
+import type {
+  FormInstance,
+  InternalFormInstance,
+  InternalNamePath,
+  NamePath,
+  Store,
+  WatchOptions,
+} from './interface';
+import { isFormInstance } from './utils/typeUtil';
 import { getNamePath, getValue } from './utils/valueUtil';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
@@ -17,6 +23,19 @@ export function stringify(value: any) {
   }
 }
 
+const useWatchWarning =
+  process.env.NODE_ENV !== 'production'
+    ? (namePath: InternalNamePath) => {
+        const fullyStr = namePath.join('__RC_FIELD_FORM_SPLIT__');
+        const nameStrRef = useRef(fullyStr);
+
+        warning(
+          nameStrRef.current === fullyStr,
+          '`useWatch` is not support dynamic `namePath`. Please provide static instead.',
+        );
+      }
+    : () => {};
+
 function useWatch<
   TDependencies1 extends keyof GetGeneric<TForm>,
   TForm extends FormInstance,
@@ -25,7 +44,7 @@ function useWatch<
   TDependencies4 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3],
 >(
   dependencies: [TDependencies1, TDependencies2, TDependencies3, TDependencies4],
-  form?: TForm,
+  form?: TForm | WatchOptions<TForm>,
 ): GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3][TDependencies4];
 
 function useWatch<
@@ -35,7 +54,7 @@ function useWatch<
   TDependencies3 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2],
 >(
   dependencies: [TDependencies1, TDependencies2, TDependencies3],
-  form?: TForm,
+  form?: TForm | WatchOptions<TForm>,
 ): GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3];
 
 function useWatch<
@@ -44,21 +63,34 @@ function useWatch<
   TDependencies2 extends keyof GetGeneric<TForm>[TDependencies1],
 >(
   dependencies: [TDependencies1, TDependencies2],
-  form?: TForm,
+  form?: TForm | WatchOptions<TForm>,
 ): GetGeneric<TForm>[TDependencies1][TDependencies2];
 
 function useWatch<TDependencies extends keyof GetGeneric<TForm>, TForm extends FormInstance>(
   dependencies: TDependencies | [TDependencies],
-  form?: TForm,
+  form?: TForm | WatchOptions<TForm>,
 ): GetGeneric<TForm>[TDependencies];
 
-function useWatch<TForm extends FormInstance>(dependencies: [], form?: TForm): GetGeneric<TForm>;
+function useWatch<TForm extends FormInstance>(
+  dependencies: [],
+  form?: TForm | WatchOptions<TForm>,
+): GetGeneric<TForm>;
 
-function useWatch<TForm extends FormInstance>(dependencies: NamePath, form?: TForm): any;
+function useWatch<TForm extends FormInstance>(
+  dependencies: NamePath,
+  form?: TForm | WatchOptions<TForm>,
+): any;
 
-function useWatch<ValueType = Store>(dependencies: NamePath, form?: FormInstance): ValueType;
+function useWatch<ValueType = Store>(
+  dependencies: NamePath,
+  form?: FormInstance | WatchOptions<FormInstance>,
+): ValueType;
 
-function useWatch(dependencies: NamePath = [], form?: FormInstance) {
+function useWatch(...args: [NamePath, FormInstance | WatchOptions<FormInstance>]) {
+  const [dependencies = [], _form = {}] = args;
+  const options = isFormInstance(_form) ? { form: _form } : _form;
+  const form = options.form;
+
   const [value, setValue] = useState<any>();
 
   const valueStr = useMemo(() => stringify(value), [value]);
@@ -72,7 +104,7 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
   // Warning if not exist form instance
   if (process.env.NODE_ENV !== 'production') {
     warning(
-      isValidForm,
+      args.length === 2 ? (form ? isValidForm : true) : isValidForm,
       'useWatch requires a form instance since it can not auto detect from context.',
     );
   }
@@ -80,6 +112,8 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
   const namePath = getNamePath(dependencies);
   const namePathRef = useRef(namePath);
   namePathRef.current = namePath;
+
+  useWatchWarning(namePath);
 
   useEffect(
     () => {
@@ -91,8 +125,8 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
       const { getFieldsValue, getInternalHooks } = formInstance;
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
-      const cancelRegister = registerWatch(store => {
-        const newValue = getValue(store, namePathRef.current);
+      const cancelRegister = registerWatch((values, allValues) => {
+        const newValue = getValue(options.preserve ? allValues : values, namePathRef.current);
         const nextValueStr = stringify(newValue);
 
         // Compare stringify in case it's nest object
@@ -103,15 +137,23 @@ function useWatch(dependencies: NamePath = [], form?: FormInstance) {
       });
 
       // TODO: We can improve this perf in future
-      const initialValue = getValue(getFieldsValue(), namePathRef.current);
-      setValue(initialValue);
+      const initialValue = getValue(
+        options.preserve ? getFieldsValue(true) : getFieldsValue(),
+        namePathRef.current,
+      );
+
+      // React 18 has the bug that will queue update twice even the value is not changed
+      // ref: https://github.com/facebook/react/issues/27213
+      if (value !== initialValue) {
+        setValue(initialValue);
+      }
 
       return cancelRegister;
     },
 
     // We do not need re-register since namePath content is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [isValidForm],
   );
 
   return value;
