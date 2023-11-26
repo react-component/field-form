@@ -13,6 +13,7 @@ type FieldType = {
   demo2?: string;
   id?: number;
   demo1?: { demo2?: { demo3?: { demo4?: string } } };
+  hidden?: string;
 };
 
 const Demo = React.memo(() => {
@@ -48,12 +49,13 @@ export default () => {
   const demo4 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4'], form);
   const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
   const more = Form.useWatch(['age', 'name', 'gender'], form);
-  console.log('main watch', values, demo1, demo2, main, age, demo3, demo4, demo5, more);
+  const hidden = Form.useWatch(['hidden'], { form, preserve: true });
+  console.log('main watch', values, demo1, demo2, main, age, demo3, demo4, demo5, more, hidden);
   return (
     <>
       <Form
         form={form}
-        initialValues={{ id: 1, age: '10', name: 'default' }}
+        initialValues={{ id: 1, age: '10', name: 'default', hidden: 'here' }}
         onFinish={v => console.log('submit values', v)}
       >
         no render
@@ -115,6 +117,7 @@ export default () => {
       <button onClick={() => setVisible(c => !c)}>isShow name</button>
       <button onClick={() => setVisible3(c => !c)}>isShow initialValue</button>
       <button onClick={() => setVisible2(c => !c)}>isShow demo2</button>
+      <button onClick={() => form.setFieldsValue({ hidden: `${form.getFieldsValue(true).hidden || ''}1` })}>change hidden field</button>
     </>
   );
 };
