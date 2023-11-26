@@ -1,19 +1,19 @@
 import React from 'react';
-import { mount } from 'enzyme';
 import Form, { Field } from '../../src';
 import { Input } from '../common/InfoField';
-import { changeValue, getField, matchArray } from '../common';
+import { changeValue, getInput, matchArray } from '../common';
+import { render } from '@testing-library/react';
 
 describe('legacy.basic-form', () => {
   describe('onFieldsChange', () => {
     it('trigger `onFieldsChange` when value change', async () => {
       const onFieldsChange = jest.fn();
 
-      const wrapper = mount(
+      const { container } = render(
         <div>
           <Form onFieldsChange={onFieldsChange}>
             <Field name={['user', 'name']}>
-              <Input />
+              <Input data-name="user.name" />
             </Field>
             <Field name={['user', 'age']}>
               <Input type="number" />
@@ -25,7 +25,7 @@ describe('legacy.basic-form', () => {
         </div>,
       );
 
-      await changeValue(getField(wrapper, ['user', 'name']), 'Light');
+      await changeValue(getInput(container, 'user.name'), 'Light');
       expect(onFieldsChange.mock.calls[0][0]).toMatchObject([
         { name: ['user', 'name'], value: 'Light' },
       ]);
@@ -46,7 +46,7 @@ describe('legacy.basic-form', () => {
       let form;
       const onFieldsChange = jest.fn();
 
-      mount(
+      render(
         <div>
           <Form
             ref={instance => {
@@ -71,10 +71,10 @@ describe('legacy.basic-form', () => {
     it('trigger `onValuesChange` when value change', async () => {
       const onValuesChange = jest.fn();
 
-      const wrapper = mount(
+      const { container } = render(
         <Form onValuesChange={onValuesChange}>
           <Field name={['user', 'name']}>
-            <Input />
+            <Input data-name="user.name" />
           </Field>
           <Field name={['user', 'age']}>
             <Input type="number" />
@@ -85,7 +85,7 @@ describe('legacy.basic-form', () => {
         </Form>,
       );
 
-      await changeValue(getField(wrapper, ['user', 'name']), 'Bamboo');
+      await changeValue(getInput(container, 'user.name'), 'Bamboo');
 
       expect(onValuesChange.mock.calls[0][0]).toMatchObject({ user: { name: 'Bamboo' } });
       expect(onValuesChange.mock.calls[0][1]).toMatchObject({
@@ -101,7 +101,7 @@ describe('legacy.basic-form', () => {
       let form;
       const onValuesChange = jest.fn();
 
-      mount(
+      render(
         <div>
           <Form
             ref={instance => {

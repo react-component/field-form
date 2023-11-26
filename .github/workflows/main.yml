@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '12'
+          node-version: '16'
 
       - name: cache package-lock.json
         uses: actions/cache@v2
@@ -41,7 +41,7 @@ jobs:
 
       - name: install
         if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm i
 
   lint:
     runs-on: ubuntu-latest

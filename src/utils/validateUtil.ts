@@ -3,13 +3,13 @@ import * as React from 'react';
 import warning from 'rc-util/lib/warning';
 import type {
   InternalNamePath,
-  ValidateOptions,
+  InternalValidateOptions,
   RuleObject,
   StoreValue,
   RuleError,
 } from '../interface';
 import { defaultValidateMessages } from './messages';
-import { setValues } from './valueUtil';
+import { merge } from 'rc-util/lib/utils/set';
 
 // Remove incorrect original ts define
 const AsyncValidator: any = RawAsyncValidator;
@@ -31,7 +31,7 @@ async function validateRule(
   name: string,
   value: StoreValue,
   rule: RuleObject,
-  options: ValidateOptions,
+  options: InternalValidateOptions,
   messageVariables?: Record<string, string>,
 ): Promise<string[]> {
   const cloneRule = { ...rule };
@@ -40,6 +40,9 @@ async function validateRule(
   // https://github.com/react-component/field-form/issues/316
   // https://github.com/react-component/field-form/issues/313
   delete (cloneRule as any).ruleIndex;
+
+  // https://github.com/ant-design/ant-design/issues/40497#issuecomment-1422282378
+  AsyncValidator.warning = () => void 0;
 
   if (cloneRule.validator) {
     const originValidator = cloneRule.validator;
@@ -64,7 +67,7 @@ async function validateRule(
     [name]: [cloneRule],
   });
 
-  const messages = setValues({}, defaultValidateMessages, options.validateMessages);
+  const messages = merge(defaultValidateMessages, options.validateMessages);
   validator.messages(messages);
 
   let result = [];
@@ -120,7 +123,7 @@ export function validateRules(
   namePath: InternalNamePath,
   value: StoreValue,
   rules: RuleObject[],
-  options: ValidateOptions,
+  options: InternalValidateOptions,
   validateFirst: boolean | 'parallel',
   messageVariables?: Record<string, string>,
 ) {
