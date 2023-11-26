@@ -12,12 +12,18 @@
 /docs-dist
 /es
 /lib
+.doc
+/coverage
 
 # misc
 .DS_Store
+.vscode
+.idea
+~*
 
 # umi
 .umi
 .umi-production
 .umi-test
 .env.local
+.dumi/

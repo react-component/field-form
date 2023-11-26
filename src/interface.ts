@@ -1,19 +1,20 @@
-import { ReactElement } from 'react';
-import { ReducerAction } from './useForm';
+import type { ReactElement } from 'react';
+import type { DeepNamePath } from './namePathType';
+import type { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
-export type NamePath = string | number | InternalNamePath;
+export type NamePath<T = any> = DeepNamePath<T>;
 
 export type StoreValue = any;
-export interface Store {
-  [name: string]: StoreValue;
-}
+export type Store = Record<string, StoreValue>;
 
 export interface Meta {
   touched: boolean;
   validating: boolean;
   errors: string[];
+  warnings: string[];
   name: InternalNamePath;
+  validated: boolean;
 }
 
 export interface InternalFieldData extends Meta {
@@ -51,11 +52,13 @@ type Validator = (
 export type RuleRender = (form: FormInstance) => RuleObject;
 
 export interface ValidatorRule {
+  warningOnly?: boolean;
   message?: string | ReactElement;
   validator: Validator;
 }
 
 interface BaseRule {
+  warningOnly?: boolean;
   enum?: StoreValue[];
   len?: number;
   max?: number;
@@ -99,10 +102,12 @@ export interface FieldEntity {
   isFieldValidating: () => boolean;
   isListField: () => boolean;
   isList: () => boolean;
-  validateRules: (options?: ValidateOptions) => Promise<string[]>;
+  isPreserve: () => boolean;
+  validateRules: (options?: InternalValidateOptions) => Promise<RuleError[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
   getErrors: () => string[];
+  getWarnings: () => string[];
   props: {
     name?: NamePath;
     rules?: Rule[];
@@ -114,18 +119,42 @@ export interface FieldEntity {
 export interface FieldError {
   name: InternalNamePath;
   errors: string[];
+  warnings: string[];
+}
+
+export interface RuleError {
+  errors: string[];
+  rule: RuleObject;
 }
 
 export interface ValidateOptions {
+  /**
+   * Validate only and not trigger UI and Field status update
+   */
+  validateOnly?: boolean;
+  /**
+   * Recursive validate. It will validate all the name path that contains the provided one.
+   * e.g. [['a']] will validate ['a'] , ['a', 'b'] and ['a', 1].
+   */
+  recursive?: boolean;
+  /** Validate when a field is dirty (validated or touched) */
+  dirty?: boolean;
+}
+
+export type ValidateFields<Values = any> = {
+  (opt?: ValidateOptions): Promise<Values>;
+  (nameList?: NamePath[], opt?: ValidateOptions): Promise<Values>;
+};
+
+export interface InternalValidateOptions extends ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
 }
 
-export type InternalValidateFields = (
-  nameList?: NamePath[],
-  options?: ValidateOptions,
-) => Promise<Store>;
-export type ValidateFields = (nameList?: NamePath[]) => Promise<Store>;
+export type InternalValidateFields<Values = any> = {
+  (options?: InternalValidateOptions): Promise<Values>;
+  (nameList?: NamePath[], options?: InternalValidateOptions): Promise<Values>;
+};
 
 // >>>>>> Info
 interface ValueUpdateInfo {
@@ -139,6 +168,10 @@ interface ValidateFinishInfo {
 
 interface ResetInfo {
   type: 'reset';
+}
+
+interface RemoveInfo {
+  type: 'remove';
 }
 
 interface SetFieldInfo {
@@ -160,6 +193,7 @@ export type NotifyInfo =
   | ValueUpdateInfo
   | ValidateFinishInfo
   | ResetInfo
+  | RemoveInfo
   | SetFieldInfo
   | DependenciesUpdateInfo;
 
@@ -174,44 +208,66 @@ export interface Callbacks<Values = any> {
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
+export type WatchCallBack = (
+  values: Store,
+  allValues: Store,
+  namePathList: InternalNamePath[],
+) => void;
+
+export interface WatchOptions<Form extends FormInstance = FormInstance> {
+  form?: Form;
+  preserve?: boolean;
+}
+
 export interface InternalHooks {
   dispatch: (action: ReducerAction) => void;
+  initEntityValue: (entity: FieldEntity) => void;
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
   setInitialValues: (values: Store, init: boolean) => void;
+  destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
+  registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
+  getInitialValue: (namePath: InternalNamePath) => StoreValue;
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> = T extends object
+type RecursivePartial<T> = NonNullable<T> extends object
   ? {
-      [P in keyof T]?: T[P] extends (infer U)[]
+      [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
         ? RecursivePartial<U>[]
-        : T[P] extends object
+        : NonNullable<T[P]> extends object
         ? RecursivePartial<T[P]>
         : T[P];
     }
-  : any;
+  : T;
+
+export type FilterFunc = (meta: Meta) => boolean;
+
+export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
 
 export interface FormInstance<Values = any> {
   // Origin Form API
   getFieldValue: (name: NamePath) => StoreValue;
-  getFieldsValue(): Values;
-  getFieldsValue(nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean): any;
+  getFieldsValue: (() => Values) &
+    ((nameList: NamePath[] | true, filterFunc?: FilterFunc) => any) &
+    ((config: GetFieldsValueConfig) => any);
   getFieldError: (name: NamePath) => string[];
   getFieldsError: (nameList?: NamePath[]) => FieldError[];
-  isFieldsTouched(nameList?: NamePath[], allFieldsTouched?: boolean): boolean;
-  isFieldsTouched(allFieldsTouched?: boolean): boolean;
+  getFieldWarning: (name: NamePath) => string[];
+  isFieldsTouched: ((nameList?: NamePath[], allFieldsTouched?: boolean) => boolean) &
+    ((allFieldsTouched?: boolean) => boolean);
   isFieldTouched: (name: NamePath) => boolean;
   isFieldValidating: (name: NamePath) => boolean;
-  isFieldsValidating: (nameList: NamePath[]) => boolean;
+  isFieldsValidating: (nameList?: NamePath[]) => boolean;
   resetFields: (fields?: NamePath[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldsValue: (value: RecursivePartial<Values>) => void;
-  validateFields: ValidateFields;
+  setFieldValue: (name: NamePath, value: any) => void;
+  setFieldsValue: (values: RecursivePartial<Values>) => void;
+  validateFields: ValidateFields<Values>;
 
   // New API
   submit: () => void;
@@ -232,6 +288,9 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
    * We pass the `HOOK_MARK` as key to avoid user call the function.
    */
   getInternalHooks: (secret: string) => InternalHooks | null;
+
+  /** @private Internal usage. Do not use it in your production */
+  _init?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

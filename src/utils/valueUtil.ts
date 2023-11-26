@@ -1,7 +1,9 @@
-import get from 'rc-util/lib/utils/get';
-import set from 'rc-util/lib/utils/set';
-import { InternalNamePath, NamePath, Store, StoreValue, EventArgs } from '../interface';
+import getValue from 'rc-util/lib/utils/get';
+import setValue from 'rc-util/lib/utils/set';
+import type { InternalNamePath, NamePath, Store, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
+
+export { getValue, setValue };
 
 /**
  * Convert name to internal supported format.
@@ -14,16 +16,6 @@ export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
-export function getValue(store: Store, namePath: InternalNamePath) {
-  const value = get(store, namePath);
-  return value;
-}
-
-export function setValue(store: Store, namePath: InternalNamePath, value: StoreValue): Store {
-  const newStore = set(store, namePath, value);
-  return newStore;
-}
-
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
   let newStore = {};
   namePathList.forEach(namePath => {
@@ -34,56 +26,44 @@ export function cloneByNamePathList(store: Store, namePathList: InternalNamePath
   return newStore;
 }
 
-export function containsNamePath(namePathList: InternalNamePath[], namePath: InternalNamePath) {
-  return namePathList && namePathList.some(path => matchNamePath(path, namePath));
-}
-
-function isObject(obj: StoreValue) {
-  return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
+/**
+ * Check if `namePathList` includes `namePath`.
+ * @param namePathList A list of `InternalNamePath[]`
+ * @param namePath Compare `InternalNamePath`
+ * @param partialMatch True will make `[a, b]` match `[a, b, c]`
+ */
+export function containsNamePath(
+  namePathList: InternalNamePath[],
+  namePath: InternalNamePath,
+  partialMatch = false,
+) {
+  return namePathList && namePathList.some(path => matchNamePath(namePath, path, partialMatch));
 }
 
 /**
- * Copy values into store and return a new values object
- * ({ a: 1, b: { c: 2 } }, { a: 4, b: { d: 5 } }) => { a: 4, b: { c: 2, d: 5 } }
+ * Check if `namePath` is super set or equal of `subNamePath`.
+ * @param namePath A list of `InternalNamePath[]`
+ * @param subNamePath Compare `InternalNamePath`
+ * @param partialMatch True will make `[a, b]` match `[a, b, c]`
  */
-function internalSetValues<T>(store: T, values: T): T {
-  const newStore: T = (Array.isArray(store) ? [...store] : { ...store }) as T;
-
-  if (!values) {
-    return newStore;
-  }
-
-  Object.keys(values).forEach(key => {
-    const prevValue = newStore[key];
-    const value = values[key];
-
-    // If both are object (but target is not array), we use recursion to set deep value
-    const recursive = isObject(prevValue) && isObject(value);
-    newStore[key] = recursive ? internalSetValues(prevValue, value || {}) : value;
-  });
-
-  return newStore;
-}
-
-export function setValues<T>(store: T, ...restValues: T[]): T {
-  return restValues.reduce(
-    (current: T, newStore: T): T => internalSetValues<T>(current, newStore),
-    store,
-  );
-}
-
 export function matchNamePath(
   namePath: InternalNamePath,
-  changedNamePath: InternalNamePath | null,
+  subNamePath: InternalNamePath | null,
+  partialMatch = false,
 ) {
-  if (!namePath || !changedNamePath || namePath.length !== changedNamePath.length) {
+  if (!namePath || !subNamePath) {
     return false;
   }
-  return namePath.every((nameUnit, i) => changedNamePath[i] === nameUnit);
+
+  if (!partialMatch && namePath.length !== subNamePath.length) {
+    return false;
+  }
+
+  return subNamePath.every((nameUnit, i) => namePath[i] === nameUnit);
 }
 
 // Like `shallowEqual`, but we not check the data which may cause re-render
-type SimilarObject = string | number | {};
+type SimilarObject = string | number | object;
 export function isSimilar(source: SimilarObject, target: SimilarObject) {
   if (source === target) {
     return true;
@@ -114,7 +94,7 @@ export function isSimilar(source: SimilarObject, target: SimilarObject) {
 
 export function defaultGetValueFromEvent(valuePropName: string, ...args: EventArgs) {
   const event = args[0];
-  if (event && event.target && valuePropName in event.target) {
+  if (event && event.target && typeof event.target === 'object' && valuePropName in event.target) {
     return (event.target as HTMLInputElement)[valuePropName];
   }
 

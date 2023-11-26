@@ -1,32 +1,36 @@
-import { InternalNamePath } from '../interface';
-import { matchNamePath } from './valueUtil';
+import type { InternalNamePath } from '../interface';
 
 interface KV<T> {
   key: InternalNamePath;
   value: T;
 }
 
+const SPLIT = '__@field_split__';
+
+/**
+ * Convert name path into string to fast the fetch speed of Map.
+ */
+function normalize(namePath: InternalNamePath): string {
+  return (
+    namePath
+      .map(cell => `${typeof cell}:${cell}`)
+      // Magic split
+      .join(SPLIT)
+  );
+}
+
 /**
  * NameMap like a `Map` but accepts `string[]` as key.
  */
 class NameMap<T> {
-  private list: KV<T>[] = [];
+  private kvs = new Map<string, T>();
 
   public set(key: InternalNamePath, value: T) {
-    const index = this.list.findIndex(item => matchNamePath(item.key, key));
-    if (index !== -1) {
-      this.list[index].value = value;
-    } else {
-      this.list.push({
-        key,
-        value,
-      });
-    }
+    this.kvs.set(normalize(key), value);
   }
 
   public get(key: InternalNamePath) {
-    const result = this.list.find(item => matchNamePath(item.key, key));
-    return result && result.value;
+    return this.kvs.get(normalize(key));
   }
 
   public update(key: InternalNamePath, updater: (origin: T) => T | null) {
@@ -41,15 +45,26 @@ class NameMap<T> {
   }
 
   public delete(key: InternalNamePath) {
-    this.list = this.list.filter(item => !matchNamePath(item.key, key));
+    this.kvs.delete(normalize(key));
   }
 
+  // Since we only use this in test, let simply realize this
   public map<U>(callback: (kv: KV<T>) => U) {
-    return this.list.map(callback);
+    return [...this.kvs.entries()].map(([key, value]) => {
+      const cells = key.split(SPLIT);
+
+      return callback({
+        key: cells.map(cell => {
+          const [, type, unit] = cell.match(/^([^:]*):(.*)$/);
+          return type === 'number' ? Number(unit) : unit;
+        }),
+        value,
+      });
+    });
   }
 
-  public toJSON(): { [name: string]: T } {
-    const json: { [name: string]: T } = {};
+  public toJSON(): Record<string, T> {
+    const json: Record<string, T> = {};
     this.map(({ key, value }) => {
       json[key.join('.')] = value;
       return null;

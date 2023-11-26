@@ -15,5 +15,9 @@ module.exports = {
     'jsx-a11y/label-has-associated-control': 0,
     'import/no-extraneous-dependencies': 0,
     'import/no-unresolved': 0,
+    '@typescript-eslint/no-redeclare': 0,
+    '@typescript-eslint/method-signature-style': 0,
+    'no-async-promise-executor': 0,
+    '@typescript-eslint/consistent-type-definitions': 0,
   },
 };

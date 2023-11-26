@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {
+import type {
   Store,
   FormInstance,
   FieldData,
@@ -9,10 +9,12 @@ import {
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
-import FormContext, { FormContextProps } from './FormContext';
+import type { FormContextProps } from './FormContext';
+import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
+import ListContext from './ListContext';
 
-type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>;
+type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
@@ -63,6 +65,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setCallbacks,
     setValidateMessages,
     setPreserve,
+    destroyForm,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
@@ -108,12 +111,20 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     mountRef.current = true;
   }
 
+  React.useEffect(
+    () => destroyForm,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   // Prepare children by `children` type
-  let childrenNode = children;
+  let childrenNode: React.ReactNode;
   const childrenRenderProps = typeof children === 'function';
   if (childrenRenderProps) {
     const values = formInstance.getFieldsValue(true);
     childrenNode = (children as RenderProps)(values, formInstance);
+  } else {
+    childrenNode = children;
   }
 
   // Not use subscribe when using render props
@@ -137,7 +148,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   );
 
   const wrapperNode = (
-    <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
+    <ListContext.Provider value={null}>
+      <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
+    </ListContext.Provider>
   );
 
   if (Component === false) {
@@ -152,6 +165,12 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
         event.stopPropagation();
 
         formInstance.submit();
+      }}
+      onReset={(event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        formInstance.resetFields();
+        restProps.onReset?.(event);
       }}
     >
       {wrapperNode}

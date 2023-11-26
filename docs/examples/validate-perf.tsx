@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types, @typescript-eslint/consistent-type-imports */
 
 import React from 'react';
 import Form, { Field, FormInstance } from 'rc-field-form';
@@ -34,6 +34,10 @@ export default class Demo extends React.Component {
     console.log('Failed:', errorInfo);
   };
 
+  public onPasswordError = ({ errors }: { errors: string[] }) => {
+    console.log('🐞 Password Error:', errors);
+  };
+
   public render() {
     return (
       <div>
@@ -49,12 +53,24 @@ export default class Demo extends React.Component {
           <LabelField
             name="password"
             messageVariables={{ displayName: '密码' }}
-            rules={[{ required: true }]}
+            rules={[
+              { required: true },
+              {
+                warningOnly: true,
+                validator: async (_, value: string = '') => {
+                  if (value.length < 6) {
+                    throw new Error('你的 ${displayName} 太短了……');
+                  }
+                },
+              },
+            ]}
+            onMetaChange={this.onPasswordError}
           >
             <Input placeholder="password" />
           </LabelField>
 
           <LabelField
+            initialValue="123"
             name="password2"
             dependencies={['password']}
             messageVariables={{ displayName: '密码2' }}
@@ -118,6 +134,7 @@ export default class Demo extends React.Component {
           >
             Reset
           </button>
+          <button type="reset">Reset Native</button>
         </Form>
       </div>
     );
