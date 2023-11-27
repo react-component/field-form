@@ -67,7 +67,7 @@
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-unicorn": "^49.0.0",
     "father": "^4.0.0",
-    "gh-pages": "^5.0.0",
+    "gh-pages": "^6.1.0",
     "jest": "^29.0.0",
     "np": "^5.0.3",
     "prettier": "^3.1.0",
