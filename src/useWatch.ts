@@ -76,6 +76,11 @@ function useWatch<TForm extends FormInstance>(
   form?: TForm | WatchOptions<TForm>,
 ): GetGeneric<TForm>;
 
+function useWatch<TForm extends FormInstance, TSelected = unknown>(
+  selector: (values: GetGeneric<TForm>) => TSelected,
+  form?: TForm | WatchOptions<TForm>,
+): TSelected;
+
 function useWatch<TForm extends FormInstance>(
   dependencies: NamePath,
   form?: TForm | WatchOptions<TForm>,
@@ -86,8 +91,10 @@ function useWatch<ValueType = Store>(
   form?: FormInstance | WatchOptions<FormInstance>,
 ): ValueType;
 
-function useWatch(...args: [NamePath, FormInstance | WatchOptions<FormInstance>]) {
-  const [dependencies = [], _form = {}] = args;
+function useWatch(
+  ...args: [NamePath | ((values: Store) => any), FormInstance | WatchOptions<FormInstance>]
+) {
+  const [dependencies, _form = {}] = args;
   const options = isFormInstance(_form) ? { form: _form } : _form;
   const form = options.form;
 
@@ -126,7 +133,11 @@ function useWatch(...args: [NamePath, FormInstance | WatchOptions<FormInstance>]
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
       const cancelRegister = registerWatch((values, allValues) => {
-        const newValue = getValue(options.preserve ? allValues : values, namePathRef.current);
+        const _values = options.preserve ? allValues : values;
+        const newValue =
+          typeof dependencies === 'function'
+            ? dependencies(_values)
+            : getValue(_values, namePathRef.current);
         const nextValueStr = stringify(newValue);
 
         // Compare stringify in case it's nest object
