@@ -457,4 +457,29 @@ describe('useWatch', () => {
 
     logSpy.mockRestore();
   });
+  it('selector', async () => {
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm<{ name?: string }>();
+      const nameValue = Form.useWatch(values => values.name, form);
+      return (
+        <div>
+          <Form form={form}>
+            <Field name="name" initialValue="bamboo">
+              <Input />
+            </Field>
+          </Form>
+          <div className="values">{nameValue}</div>
+        </div>
+      );
+    };
+
+    const { container } = render(<Demo />);
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
+    const input = container.querySelectorAll<HTMLInputElement>('input');
+    await changeValue(input[0], 'bamboo2');
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo2');
+  });
 });

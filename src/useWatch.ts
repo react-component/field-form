@@ -147,11 +147,12 @@ function useWatch(
         }
       });
 
+      const _values = options.preserve ? getFieldsValue(true) : getFieldsValue();
       // TODO: We can improve this perf in future
-      const initialValue = getValue(
-        options.preserve ? getFieldsValue(true) : getFieldsValue(),
-        namePathRef.current,
-      );
+      const initialValue =
+        typeof dependencies === 'function'
+          ? dependencies(_values)
+          : getValue(_values, namePathRef.current);
 
       // React 18 has the bug that will queue update twice even the value is not changed
       // ref: https://github.com/facebook/react/issues/27213

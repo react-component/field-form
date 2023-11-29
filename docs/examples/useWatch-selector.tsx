@@ -9,11 +9,11 @@ type FieldType = {
 
 export default () => {
   const [form] = Form.useForm<FieldType>();
-  const values = Form.useWatch(values => ({ newName: values.name }), form);
+  const values = Form.useWatch(values => ({ newName: values.name, newAge: values.age }), form);
   console.log('values', values);
   return (
     <>
-      <Form form={form}>
+      <Form form={form} initialValues={{ name: 'aaa' }}>
         name
         <Field name="name">
           <Input />
@@ -22,6 +22,7 @@ export default () => {
         <Field name="age">
           <Input />
         </Field>
+        values:{JSON.stringify(values)}
       </Form>
     </>
   );
