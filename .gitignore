@@ -27,3 +27,4 @@
 .umi-test
 .env.local
 .dumi/
+package-lock.json
