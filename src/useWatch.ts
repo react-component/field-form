@@ -132,12 +132,15 @@ function useWatch(
       const { getFieldsValue, getInternalHooks } = formInstance;
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
-      const cancelRegister = registerWatch((values, allValues) => {
+      const getNewValue = (values: any, allValues: any) => {
         const _values = options.preserve ? allValues : values;
-        const newValue =
-          typeof dependencies === 'function'
-            ? dependencies(_values)
-            : getValue(_values, namePathRef.current);
+        return typeof dependencies === 'function'
+          ? dependencies(_values)
+          : getValue(_values, namePathRef.current);
+      };
+
+      const cancelRegister = registerWatch((values, allValues) => {
+        const newValue = getNewValue(values, allValues);
         const nextValueStr = stringify(newValue);
 
         // Compare stringify in case it's nest object
@@ -147,12 +150,8 @@ function useWatch(
         }
       });
 
-      const _values = options.preserve ? getFieldsValue(true) : getFieldsValue();
       // TODO: We can improve this perf in future
-      const initialValue =
-        typeof dependencies === 'function'
-          ? dependencies(_values)
-          : getValue(_values, namePathRef.current);
+      const initialValue = getNewValue(getFieldsValue(), getFieldsValue(true));
 
       // React 18 has the bug that will queue update twice even the value is not changed
       // ref: https://github.com/facebook/react/issues/27213
