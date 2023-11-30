@@ -140,10 +140,10 @@ function useWatch(
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
       const getNewValue = (values: any, allValues: any) => {
-        const _values = options.preserve ? allValues : values;
+        const newValues = options.preserve ? allValues : values;
         return typeof dependencies === 'function'
-          ? dependencies(_values)
-          : getValue(_values, namePathRef.current);
+          ? dependencies(newValues)
+          : getValue(newValues, namePathRef.current);
       };
 
       const cancelRegister = registerWatch((values, allValues) => {
