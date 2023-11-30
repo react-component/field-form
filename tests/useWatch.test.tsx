@@ -288,8 +288,29 @@ describe('useWatch', () => {
       const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
       const more = Form.useWatch(['age', 'name', 'gender'], form);
       const demo = Form.useWatch<string>(['demo']);
+
+      const values2 = Form.useWatch(values => ({ newName: values.name, newAge: values.age }), form);
+      const values3 = Form.useWatch<FieldType, { newName?: string }>(values => ({
+        newName: values.name,
+      }));
+
       return (
-        <>{JSON.stringify({ values, main, age, demo1, demo2, demo3, demo4, demo5, more, demo })}</>
+        <>
+          {JSON.stringify({
+            values,
+            main,
+            age,
+            demo1,
+            demo2,
+            demo3,
+            demo4,
+            demo5,
+            more,
+            demo,
+            values2,
+            values3,
+          })}
+        </>
       );
     };
 

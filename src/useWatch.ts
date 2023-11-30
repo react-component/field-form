@@ -76,10 +76,17 @@ function useWatch<TForm extends FormInstance>(
   form?: TForm | WatchOptions<TForm>,
 ): GetGeneric<TForm>;
 
+// ------- selector type -------
 function useWatch<TForm extends FormInstance, TSelected = unknown>(
   selector: (values: GetGeneric<TForm>) => TSelected,
   form?: TForm | WatchOptions<TForm>,
 ): TSelected;
+
+function useWatch<ValueType = Store, TSelected = unknown>(
+  selector: (values: ValueType) => TSelected,
+  form?: FormInstance | WatchOptions<FormInstance>,
+): TSelected;
+// ------- selector type end -------
 
 function useWatch<TForm extends FormInstance>(
   dependencies: NamePath,
