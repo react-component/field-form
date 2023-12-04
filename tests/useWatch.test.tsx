@@ -288,8 +288,29 @@ describe('useWatch', () => {
       const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
       const more = Form.useWatch(['age', 'name', 'gender'], form);
       const demo = Form.useWatch<string>(['demo']);
+
+      const values2 = Form.useWatch(values => ({ newName: values.name, newAge: values.age }), form);
+      const values3 = Form.useWatch<FieldType, { newName?: string }>(values => ({
+        newName: values.name,
+      }));
+
       return (
-        <>{JSON.stringify({ values, main, age, demo1, demo2, demo3, demo4, demo5, more, demo })}</>
+        <>
+          {JSON.stringify({
+            values,
+            main,
+            age,
+            demo1,
+            demo2,
+            demo3,
+            demo4,
+            demo5,
+            more,
+            demo,
+            values2,
+            values3,
+          })}
+        </>
       );
     };
 
@@ -456,5 +477,30 @@ describe('useWatch', () => {
     expect(logSpy).toHaveBeenCalledWith('light', undefined); // after setFieldValue
 
     logSpy.mockRestore();
+  });
+  it('selector', async () => {
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm<{ name?: string }>();
+      const nameValue = Form.useWatch(values => values.name, form);
+      return (
+        <div>
+          <Form form={form}>
+            <Field name="name" initialValue="bamboo">
+              <Input />
+            </Field>
+          </Form>
+          <div className="values">{nameValue}</div>
+        </div>
+      );
+    };
+
+    const { container } = render(<Demo />);
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
+    const input = container.querySelectorAll<HTMLInputElement>('input');
+    await changeValue(input[0], 'bamboo2');
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo2');
   });
 });
