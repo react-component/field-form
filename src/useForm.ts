@@ -27,9 +27,9 @@ import type {
   ValuedNotifyInfo,
   WatchCallBack,
 } from './interface';
+import NameMap from './utils/NameMap';
 import { allPromiseFinish } from './utils/asyncUtil';
 import { defaultValidateMessages } from './utils/messages';
-import NameMap from './utils/NameMap';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -58,6 +58,9 @@ export type ReducerAction = UpdateAction | ValidateAction;
 export class FormStore {
   private formHooked: boolean = false;
 
+  /**
+   * Used to refresh teh context data
+   */
   private forceRootUpdate: (_formStore: FormStore) => void;
 
   private subscribable: boolean = true;
@@ -103,6 +106,7 @@ export class FormStore {
     submitCount: this.submitCount,
     reset: this.reset,
     readOnly: this.readOnly,
+    loading: this.loading,
     _init: true,
     getInternalHooks: this.getInternalHooks,
   });
@@ -122,6 +126,7 @@ export class FormStore {
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
         setReadOnly: this.setReadOnly,
+        setLoading: this.setLoading,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
@@ -1003,7 +1008,7 @@ export class FormStore {
 
   // ============================ Submit ============================
   private submit = () => {
-    if(this.isSubmitting) return;
+    if (this.isSubmitting) return;
     this.warningUnhooked();
     this.isSubmitting = true;
     this.forceRootUpdate(this);
@@ -1062,7 +1067,8 @@ export class FormStore {
   private isSubmitSuccessful: boolean = false;
   private isSubmitting: boolean = false;
   private isUnclean: boolean = false;
-  private readOnly: boolean;
+  private readOnly: boolean = false;
+  private loading: boolean = false;
   private submitCount: number = 0;
 
   private get isSubmitted() {
@@ -1070,7 +1076,15 @@ export class FormStore {
   }
 
   private setReadOnly = (readOnly: boolean) => {
+    if(this.readOnly === readOnly) return;
     this.readOnly = readOnly;
+    this.forceRootUpdate(this)
+  };
+
+  private setLoading = (loading: boolean) => {
+    if(this.loading === loading) return;
+    this.loading = loading;
+    this.forceRootUpdate(this)
   };
 
   // ============================ Reset ============================

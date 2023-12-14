@@ -19,7 +19,7 @@ type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
 export interface FormProps<Values = any> extends BaseFormProps {
-  initialValues?: Store;
+  initialValues?: Store | null;
   form?: FormInstance<Values>;
   children?: RenderProps | React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,6 +39,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   * Indicates that the form is in read only mode (not editable)
   */
   readOnly?: boolean;
+  loading?: boolean;
   warnOnUnsavedChanges?: boolean;
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
@@ -64,6 +65,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFinishError,
     onFinishFinally,
     readOnly,
+    loading,
     ...restProps
   }: FormProps,
   ref,
@@ -76,10 +78,11 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   const {
     useSubscribe,
     setInitialValues,
-    setReadOnly,
     setCallbacks,
     setValidateMessages,
     setPreserve,
+    setLoading,
+    setReadOnly,
     destroyForm,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
@@ -100,6 +103,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     ...validateMessages,
   });
   setReadOnly(readOnly)
+  setLoading(loading)
   setCallbacks({
     onValuesChange,
     onFieldsChange: (changedFields: FieldData[], ...rest) => {
@@ -130,14 +134,6 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   if (!mountRef.current) {
     mountRef.current = true;
   }
-
-  const previousReadOnly = React.useRef<boolean>();
-
-  React.useEffect(() => {
-    if (previousReadOnly.current !== readOnly && readOnly) {
-      formInstance.reset(undefined);
-    }
-  }, [formInstance, readOnly]);
 
   React.useEffect(
     () => destroyForm,
