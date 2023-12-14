@@ -251,6 +251,7 @@ export interface InternalHooks {
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
   setReadOnly: (isReadOnly: boolean) => void;
+  setLoading: (isLoading: boolean) => void;
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
@@ -320,6 +321,10 @@ export interface FormInstance<Values = any> {
    * Indicates that the form is i read only mode (not editable)
    */
   readOnly: boolean;
+  /**
+   * Indicates that the form is currently in th loading state
+   */
+  loading: boolean;
   /**
    * Counts the number of times the form submit was attempted
    * - This state is reset when the form is reset
