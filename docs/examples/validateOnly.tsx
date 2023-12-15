@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types, @typescript-eslint/consistent-type-imports */
 
-import type { FormInstance } from 'rc-field-form';
-import Form from 'rc-field-form';
 import React from 'react';
+import Form from 'rc-field-form';
+import type { FormInstance } from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 

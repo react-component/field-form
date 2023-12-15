@@ -1,5 +1,5 @@
-import Form, { Field } from 'rc-field-form';
 import React, { useState } from 'react';
+import Form, { Field } from 'rc-field-form';
 import Input from './components/Input';
 
 let x = 0;
@@ -117,13 +117,7 @@ export default () => {
       <button onClick={() => setVisible(c => !c)}>isShow name</button>
       <button onClick={() => setVisible3(c => !c)}>isShow initialValue</button>
       <button onClick={() => setVisible2(c => !c)}>isShow demo2</button>
-      <button
-        onClick={() =>
-          form.setFieldsValue({ hidden: `${form.getFieldsValue(true).hidden || ''}1` })
-        }
-      >
-        change hidden field
-      </button>
+      <button onClick={() => form.setFieldsValue({ hidden: `${form.getFieldsValue(true).hidden || ''}1` })}>change hidden field</button>
     </>
   );
 };

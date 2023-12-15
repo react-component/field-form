@@ -1,7 +1,8 @@
-import { render } from '@testing-library/react';
+import React from 'react';
 import Form, { Field } from '../../src';
-import { changeValue, getInput, matchArray } from '../common';
 import { Input } from '../common/InfoField';
+import { changeValue, getInput, matchArray } from '../common';
+import { render } from '@testing-library/react';
 
 describe('legacy.basic-form', () => {
   describe('onFieldsChange', () => {

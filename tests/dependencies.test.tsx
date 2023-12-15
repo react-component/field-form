@@ -1,10 +1,10 @@
-import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
 import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
-import { changeValue, getInput, matchError } from './common';
-import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
+import InfoField, { Input } from './common/InfoField';
+import { changeValue, matchError, getInput } from './common';
+import { fireEvent, render } from '@testing-library/react';
 
 describe('Form.Dependencies', () => {
   it('touched', async () => {

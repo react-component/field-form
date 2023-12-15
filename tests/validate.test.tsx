@@ -1075,8 +1075,11 @@ describe('Form.Validate', () => {
     matchError(container.querySelectorAll<HTMLDivElement>('.field')[1], `validate`);
     matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
 
+
     // Revalidate
-    rerender(<Demo touchMessage="new_touch" validateMessage="new_validate" />);
+    rerender(
+      <Demo touchMessage="new_touch" validateMessage="new_validate" />,
+    );
     formRef.current.validateFields({ dirty: true });
 
     await waitFakeTime();

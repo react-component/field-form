@@ -1,9 +1,9 @@
-import { render } from '@testing-library/react';
 import React from 'react';
+import { render } from '@testing-library/react';
 import type { FormInstance } from '../src';
 import Form, { FormProvider } from '../src';
-import { changeValue, getInput, matchError } from './common';
 import InfoField from './common/InfoField';
+import { changeValue, matchError, getInput } from './common';
 import timeout from './common/timeout';
 
 describe('Form.Context', () => {

@@ -1,15 +1,15 @@
 import RawAsyncValidator from 'async-validator';
-import { merge } from 'rc-util/lib/utils/set';
-import warning from 'rc-util/lib/warning';
 import * as React from 'react';
+import warning from 'rc-util/lib/warning';
 import type {
   InternalNamePath,
   InternalValidateOptions,
-  RuleError,
   RuleObject,
   StoreValue,
+  RuleError,
 } from '../interface';
 import { defaultValidateMessages } from './messages';
+import { merge } from 'rc-util/lib/utils/set';
 
 // Remove incorrect original ts define
 const AsyncValidator: any = RawAsyncValidator;

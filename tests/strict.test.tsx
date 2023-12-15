@@ -1,8 +1,8 @@
-import { render } from '@testing-library/react';
 import React from 'react';
 import Form from '../src';
-import { changeValue, getInput } from './common';
 import InfoField, { Input } from './common/InfoField';
+import { changeValue, getInput } from './common';
+import { render } from '@testing-library/react';
 
 describe('Form.ReactStrict', () => {
   it('should not register twice', async () => {

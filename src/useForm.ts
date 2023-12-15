@@ -164,7 +164,6 @@ export class FormStore {
     if (initialValues === null) {
       // if timer is null, start timer, else, do nothing
       if (this.initialValuesTimeout === null) {
-        this.setInitialValuesLoading(true);
         this.initialValuesTimeout = setTimeout(
           // function to call when timer ends
           () => {
@@ -173,10 +172,12 @@ export class FormStore {
           },
           this.loadingTimeout,
         );
+        this.setInitialValuesLoading(true);
       }
     }
     // else, clear any timers and set data
     else {
+      clearTimeout(this.initialValuesTimeout);
       this.initializeValues(initialValues);
       // set init to true to prevent future calls
       return true;
@@ -199,7 +200,7 @@ export class FormStore {
     this.prevWithoutPreserves = null;
 
     this.updateStore(nextStore);
-    clearTimeout(this.initialValuesTimeout);
+
     this.setInitialValuesLoading(false);
     this.init = true;
   };
@@ -1134,7 +1135,6 @@ export class FormStore {
 
   private calculateLoading = () => {
     const val = this.propsLoading || this.initialValuesLoading;
-    console.log(val, this.loading);
     if (this.loading === val) return;
     this.loading = val;
     this.forceRootUpdate(this);
