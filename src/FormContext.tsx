@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ValidateMessages, FormInstance, FieldData, Store } from './interface';
+import type { FieldData, FormInstance, Store, ValidateMessages } from './interface';
 
 export type Forms = Record<string, FormInstance>;
 

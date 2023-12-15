@@ -1,7 +1,6 @@
-import React from 'react';
-import Form, { Field } from '../src';
-import type { FormInstance } from '../src';
 import { render } from '@testing-library/react';
+import type { FormInstance } from '../src';
+import Form, { Field } from '../src';
 
 describe('Form.Field', () => {
   it('field remount should trigger constructor again', () => {

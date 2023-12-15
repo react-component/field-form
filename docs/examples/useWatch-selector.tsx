@@ -1,4 +1,3 @@
-import React from 'react';
 import Form, { Field } from 'rc-field-form';
 import Input from './components/Input';
 

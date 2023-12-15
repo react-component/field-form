@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types, @typescript-eslint/consistent-type-imports */
 
-import React from 'react';
+import { ValidateMessages } from '@/interface';
 import Form, { Field, FormInstance } from 'rc-field-form';
+import React from 'react';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
-import { ValidateMessages } from '@/interface';
 
 const myMessages: ValidateMessages = {
   default: '${name} 看起来怪怪的……',

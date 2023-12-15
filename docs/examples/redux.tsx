@@ -1,9 +1,8 @@
 /* eslint-disable react/prop-types */
 
-import React from 'react';
+import Form from 'rc-field-form';
 import { connect, Provider } from 'react-redux';
 import { createStore } from 'redux';
-import Form from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
 

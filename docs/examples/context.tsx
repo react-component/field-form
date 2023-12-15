@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 
-import React from 'react';
+import { ValidateMessages } from '@/interface';
 import Form, { FormProvider } from 'rc-field-form';
+import React from 'react';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
-import { ValidateMessages } from '@/interface';
 
 const myMessages: ValidateMessages = {
   required: '${name} 是必需品',

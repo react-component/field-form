@@ -3,6 +3,7 @@ import isEqual from 'rc-util/lib/isEqual';
 import warning from 'rc-util/lib/warning';
 import * as React from 'react';
 import FieldContext, { HOOK_MARK } from './FieldContext';
+import ListContext from './ListContext';
 import type {
   EventArgs,
   FieldEntity,
@@ -19,7 +20,6 @@ import type {
   Store,
   StoreValue,
 } from './interface';
-import ListContext from './ListContext';
 import { toArray } from './utils/typeUtil';
 import { validateRules } from './utils/validateUtil';
 import {

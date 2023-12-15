@@ -1,3 +1,4 @@
+import type { Meta } from '@/interface';
 import { act, fireEvent, render } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
 import React from 'react';
@@ -6,7 +7,6 @@ import Form, { Field, useForm } from '../src';
 import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
-import type { Meta } from '@/interface';
 
 describe('Form.Basic', () => {
   describe('create form', () => {

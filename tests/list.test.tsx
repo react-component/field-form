@@ -1,14 +1,14 @@
-import React from 'react';
-import { act } from 'react-dom/test-utils';
 import { fireEvent, render } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
-import Form, { Field, List } from '../src';
+import React from 'react';
+import { act } from 'react-dom/test-utils';
 import type { FormProps } from '../src';
+import Form, { Field, List } from '../src';
 import type { ListField, ListOperations, ListProps } from '../src/List';
-import type { FormInstance, Meta } from '../src/interface';
 import ListContext from '../src/ListContext';
-import { Input } from './common/InfoField';
+import type { FormInstance, Meta } from '../src/interface';
 import { changeValue, getInput } from './common';
+import { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
 describe('Form.List', () => {

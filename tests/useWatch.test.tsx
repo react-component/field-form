@@ -1,13 +1,12 @@
+import { fireEvent, render } from '@testing-library/react';
 import React, { useRef, useState } from 'react';
-import { render, fireEvent } from '@testing-library/react';
-import type { FormInstance } from '../src';
-import { List } from '../src';
-import Form, { Field } from '../src';
-import timeout from './common/timeout';
 import { act } from 'react-dom/test-utils';
-import { Input } from './common/InfoField';
+import type { FormInstance } from '../src';
+import Form, { Field, List } from '../src';
 import { stringify } from '../src/useWatch';
 import { changeValue } from './common';
+import { Input } from './common/InfoField';
+import timeout from './common/timeout';
 
 describe('useWatch', () => {
   it('field initialValue', async () => {

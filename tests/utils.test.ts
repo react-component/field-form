@@ -1,5 +1,5 @@
-import { move, isSimilar } from '../src/utils/valueUtil';
 import NameMap from '../src/utils/NameMap';
+import { isSimilar, move } from '../src/utils/valueUtil';
 
 describe('utils', () => {
   describe('arrayMove', () => {

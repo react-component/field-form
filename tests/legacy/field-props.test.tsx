@@ -1,9 +1,9 @@
+import { render } from '@testing-library/react';
 import React from 'react';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
-import { Input } from '../common/InfoField';
 import { changeValue, getInput, matchArray } from '../common';
-import { render } from '@testing-library/react';
+import { Input } from '../common/InfoField';
 
 describe('legacy.field-props', () => {
   // https://github.com/ant-design/ant-design/issues/8985

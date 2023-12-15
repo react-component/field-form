@@ -1,6 +1,6 @@
 import getValue from 'rc-util/lib/utils/get';
 import setValue from 'rc-util/lib/utils/set';
-import type { InternalNamePath, NamePath, Store, EventArgs } from '../interface';
+import type { EventArgs, InternalNamePath, NamePath, Store } from '../interface';
 import { toArray } from './typeUtil';
 
 export { getValue, setValue };

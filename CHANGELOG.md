@@ -23,6 +23,7 @@
 `2020.11.20`
 
 - feat: support validate recursive. [#226](https://github.com/react-component/field-form/pull/226)
+
 ## 1.16.0
 
 `2020.11.19`

@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
-import Form, { Field } from '../../src';
 import type { FormInstance } from '../../src';
+import Form, { Field } from '../../src';
 import { changeValue, getInput } from '../common';
 import { Input } from '../common/InfoField';
 import timeout from '../common/timeout';

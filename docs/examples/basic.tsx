@@ -11,14 +11,36 @@ type FormData = {
 export default () => {
   const [form] = Form.useForm();
 
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [initialValues, setInitialValues] = React.useState<FormData | null>(null);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setInitialValues({
+        name: '1',
+        password: '2',
+        password2: '3',
+      });
+    }, 2000);
+  }, []);
+
   return (
     <Form
+      loading={loading}
+      initialValues={initialValues}
       form={form}
       preserve={false}
       onFieldsChange={fields => {
         console.error('fields:', fields);
       }}
     >
+      <Input
+        value={loading}
+        onChange={() => {
+          setLoading(!loading);
+        }}
+      />
+      {form.loading ? <div>loading...</div> : null}
       <Field<FormData> name="name">
         <Input placeholder="Username" />
       </Field>
@@ -46,6 +68,14 @@ export default () => {
       </Field>
 
       <button type="submit">Submit</button>
+      <button
+        onClick={() => {
+          form.reset();
+        }}
+      >
+        Reset
+      </button>
+      <div>{JSON.stringify(form, null, 2)}</div>
     </Form>
   );
 };

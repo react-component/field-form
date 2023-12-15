@@ -1,9 +1,9 @@
+import { render } from '@testing-library/react';
 import React from 'react';
 import Form from '../src';
-import InfoField, { Input } from './common/InfoField';
-import { changeValue, getInput, matchError } from './common';
 import type { FormInstance, Rule } from '../src/interface';
-import { render } from '@testing-library/react';
+import { changeValue, getInput, matchError } from './common';
+import InfoField, { Input } from './common/InfoField';
 
 describe('Form.WarningValidate', () => {
   it('required', async () => {

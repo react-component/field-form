@@ -1,14 +1,14 @@
 /* eslint-disable react/prop-types */
 
-import React, { useState } from 'react';
 import Form from 'rc-field-form';
+import { useState } from 'react';
 import Input from './components/Input';
 
 const { Field, List } = Form;
 
 const formValue = {
-  test: "test",
-  users: [{ first: "aaa", last: "bbb" }]
+  test: 'test',
+  users: [{ first: 'aaa', last: 'bbb' }],
 };
 
 export default () => {
@@ -17,7 +17,7 @@ export default () => {
 
   return (
     <>
-      <button onClick={() => setShow((prev) => !prev)}>switch show</button>
+      <button onClick={() => setShow(prev => !prev)}>switch show</button>
       {show && (
         <Form
           form={form}
@@ -30,28 +30,26 @@ export default () => {
           <Field shouldUpdate>
             {() => (
               <Field name="test" preserve={false}>
-                <Input/>
+                <Input />
               </Field>
             )}
           </Field>
           <List name="users">
-            {(fields) => (
+            {fields => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
                   <>
                     <Field
                       {...restField}
-                      name={[name, "first"]}
-                      rules={[
-                        { required: true, message: "Missing first name" }
-                      ]}
+                      name={[name, 'first']}
+                      rules={[{ required: true, message: 'Missing first name' }]}
                     >
                       <Input placeholder="First Name" />
                     </Field>
                     <Field
                       {...restField}
-                      name={[name, "last"]}
-                      rules={[{ required: true, message: "Missing last name" }]}
+                      name={[name, 'last']}
+                      rules={[{ required: true, message: 'Missing last name' }]}
                     >
                       <Input placeholder="Last Name" />
                     </Field>

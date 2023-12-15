@@ -1,8 +1,8 @@
+import { render } from '@testing-library/react';
 import React from 'react';
 import Form from '../src';
-import InfoField from './common/InfoField';
 import { changeValue, getInput, matchError } from './common';
-import { render } from '@testing-library/react';
+import InfoField from './common/InfoField';
 
 describe('Form.Control', () => {
   it('fields', () => {

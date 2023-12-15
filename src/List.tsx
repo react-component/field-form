@@ -1,11 +1,11 @@
-import * as React from 'react';
 import warning from 'rc-util/lib/warning';
-import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
-import FieldContext from './FieldContext';
+import * as React from 'react';
 import Field from './Field';
-import { move, getNamePath } from './utils/valueUtil';
+import FieldContext from './FieldContext';
 import type { ListContextProps } from './ListContext';
 import ListContext from './ListContext';
+import type { InternalNamePath, Meta, NamePath, StoreValue, ValidatorRule } from './interface';
+import { getNamePath, move } from './utils/valueUtil';
 
 export interface ListField {
   name: number;
