@@ -19,6 +19,16 @@ type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
 export interface FormProps<Values = any> extends BaseFormProps {
+  /**
+   * Values to be loaded into the form when started
+   * if `undefined`, the form will be shown empty
+   *
+   *  If the initial value is `null`, the form will go into `loading` mode
+   * expecting data. If no data is received after `loadingTimeout` milliseconds
+   * the form will be shown empty
+   *
+   * If any other object is passed, the object will be used to fill in the form
+   */
   initialValues?: Store | null;
   form?: FormInstance<Values>;
   children?: RenderProps | React.ReactNode;
@@ -36,10 +46,19 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFinishError?: Callbacks<Values>['onFinishError'];
   onFinishFinally?: Callbacks<Values>['onFinishFinally'];
   /**
-  * Indicates that the form is in read only mode (not editable)
+  * Set the form to read only mode (not editable)
   */
   readOnly?: boolean;
+  /**
+  * Force the form in to loading mode
+  */
   loading?: boolean;
+  /**
+   * Timeout in milliseconds before the form is comes out of loading mode
+   * This is used when initial values are expected to be loaded from a remote source
+   * @default 3000
+   * */
+  loadingTimeout?: number;
   warnOnUnsavedChanges?: boolean;
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
@@ -66,6 +85,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFinishFinally,
     readOnly,
     loading,
+    loadingTimeout = 3000,
     ...restProps
   }: FormProps,
   ref,
@@ -81,8 +101,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setCallbacks,
     setValidateMessages,
     setPreserve,
-    setLoading,
     setReadOnly,
+    setLoading,
+    setLoadingTimeout,
     destroyForm,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
@@ -104,6 +125,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   });
   setReadOnly(readOnly)
   setLoading(loading)
+  setLoadingTimeout(loadingTimeout)
   setCallbacks({
     onValuesChange,
     onFieldsChange: (changedFields: FieldData[], ...rest) => {
@@ -130,9 +152,8 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
 
   // Set initial value, init store value when first mount
   const mountRef = React.useRef(null);
-  setInitialValues(initialValues, !mountRef.current);
   if (!mountRef.current) {
-    mountRef.current = true;
+    mountRef.current = setInitialValues(initialValues, mountRef.current);
   }
 
   React.useEffect(

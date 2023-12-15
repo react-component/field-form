@@ -127,6 +127,7 @@ export class FormStore {
         setValidateMessages: this.setValidateMessages,
         setReadOnly: this.setReadOnly,
         setLoading: this.setLoading,
+        setLoadingTimeout: this.setLoadingTimeout,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
@@ -148,24 +149,60 @@ export class FormStore {
    */
   private prevWithoutPreserves: NameMap<boolean> | null = null;
 
+  private initialValuesTimeout: NodeJS.Timeout = null;
+  private init = false;
+
   /**
    * First time `setInitialValues` should update store with initial value
    */
-  private setInitialValues = (initialValues: Store, init: boolean) => {
+  private setInitialValues = (initialValues: Store, init: boolean): boolean => {
+    // if external or internal init is true, skip process
+    if (init || this.init) return true;
     this.initialValues = initialValues || {};
-    if (init) {
-      let nextStore = merge(initialValues, this.store);
 
-      // We will take consider prev form unmount fields.
-      // When the field is not `preserve`, we need fill this with initialValues instead of store.
-      // eslint-disable-next-line array-callback-return
-      this.prevWithoutPreserves?.map(({ key: namePath }) => {
-        nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
-      });
-      this.prevWithoutPreserves = null;
-
-      this.updateStore(nextStore);
+    // if initialValues is null, it means we are expecting data
+    if (initialValues === null) {
+      // if timer is null, start timer, else, do nothing
+      if (this.initialValuesTimeout === null) {
+        this.initialValuesTimeout = setTimeout(
+          // function to call when timer ends
+          () => {
+            // when timer ends, set data no matter what the data is
+            this.initializeValues(initialValues);
+          },
+          this.loadingTimeout,
+        );
+        this.setInitialValuesLoading(true);
+      }
     }
+    // else, clear any timers and set data
+    else {
+      clearTimeout(this.initialValuesTimeout);
+      this.initializeValues(initialValues);
+      // set init to true to prevent future calls
+      return true;
+    }
+    // return false to notify init values are still not initialized
+    return false;
+  };
+
+  private initializeValues = (initialValues: Store) => {
+    this.initialValuesTimeout = null;
+
+    let nextStore = merge(initialValues, this.store);
+
+    // We will take consider prev form unmount fields.
+    // When the field is not `preserve`, we need fill this with initialValues instead of store.
+    // eslint-disable-next-line array-callback-return
+    this.prevWithoutPreserves?.map(({ key: namePath }) => {
+      nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
+    });
+    this.prevWithoutPreserves = null;
+
+    this.updateStore(nextStore);
+
+    this.setInitialValuesLoading(false);
+    this.init = true;
   };
 
   private destroyForm = () => {
@@ -1068,23 +1105,44 @@ export class FormStore {
   private isSubmitting: boolean = false;
   private isUnclean: boolean = false;
   private readOnly: boolean = false;
+  private propsLoading: boolean = false;
+  private initialValuesLoading: boolean = false;
   private loading: boolean = false;
+  private loadingTimeout: number = 3000;
   private submitCount: number = 0;
 
   private get isSubmitted() {
     return this.submitCount > 0;
   }
 
-  private setReadOnly = (readOnly: boolean) => {
-    if(this.readOnly === readOnly) return;
-    this.readOnly = readOnly;
-    this.forceRootUpdate(this)
+  private setReadOnly = (val: boolean | undefined) => {
+    if (this.readOnly === !!val) return;
+    this.readOnly = !!val;
+    this.forceRootUpdate(this);
   };
 
-  private setLoading = (loading: boolean) => {
-    if(this.loading === loading) return;
-    this.loading = loading;
-    this.forceRootUpdate(this)
+  private setLoading = (val: boolean | undefined) => {
+    if (this.propsLoading === !!val) return;
+    this.propsLoading = !!val;
+    this.calculateLoading();
+  };
+
+  private setInitialValuesLoading = (val: boolean) => {
+    if (this.initialValuesLoading === !!val) return;
+    this.initialValuesLoading = !!val;
+    this.calculateLoading();
+  };
+
+  private calculateLoading = () => {
+    const val = this.propsLoading || this.initialValuesLoading;
+    if (this.loading === val) return;
+    this.loading = val;
+    this.forceRootUpdate(this);
+  };
+
+  private setLoadingTimeout = (loadingTimeout: number) => {
+    if (this.loadingTimeout === loadingTimeout) return;
+    this.loadingTimeout = loadingTimeout;
   };
 
   // ============================ Reset ============================
