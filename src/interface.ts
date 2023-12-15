@@ -250,8 +250,9 @@ export interface InternalHooks {
   setInitialValues: (values: Store, init: boolean) => void;
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
-  setReadOnly: (isReadOnly: boolean) => void;
-  setLoading: (isLoading: boolean) => void;
+  setReadOnly: (isReadOnly: boolean | undefined) => void;
+  setLoading: (isLoading: boolean | undefined) => void;
+  setLoadingTimeout: (loadingTimeout: number) => void;
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;

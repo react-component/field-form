@@ -46,6 +46,7 @@ const Context = React.createContext<InternalFormInstance>({
       destroyForm: warningFunc,
       setReadOnly: warningFunc,
       setLoading: warningFunc,
+      setLoadingTimeout: warningFunc,
       setCallbacks: warningFunc,
       registerWatch: warningFunc,
       getFields: warningFunc,
