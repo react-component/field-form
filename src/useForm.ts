@@ -202,7 +202,10 @@ export class FormStore {
 
     this.setInitialValuesLoading(false);
     this.init = true;
-    clearTimeout(this.initialValuesTimeout);
+
+    const prevStore = this.store;
+    this.notifyObservers(prevStore, null, { type: 'reset' });
+    this.notifyWatch();
   };
 
   private destroyForm = () => {
