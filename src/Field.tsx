@@ -578,9 +578,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
+    const valueProps = mergedGetValueProps(value);
+
+    // warning when prop value is function
+    Object.keys(valueProps).forEach(key => {
+      warning(typeof valueProps[key] !== 'function', `cannot return prop value is function in getValueProps (prop name: "${key}")`)
+    })
+
     const control = {
       ...childProps,
-      ...mergedGetValueProps(value),
+      ...valueProps,
     };
 
     // Add trigger
