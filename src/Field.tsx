@@ -583,7 +583,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production') {
       Object.keys(valueProps).forEach(key => {
-        warning(typeof valueProps[key] !== 'function', "It's not recommended to generate dynamic function prop by getValueProps. Please pass it to child component directly")
+        warning(typeof valueProps[key] !== 'function', `It's not recommended to generate dynamic function prop by getValueProps. Please pass it to child component directly (prop: ${key})`)
       })
     }
 
