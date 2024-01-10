@@ -1060,39 +1060,23 @@ export class FormStore {
       // if validation passed, run submission logic
       .then(async values => {
         try {
-          if (onBeforeSubmit) {
-            onBeforeSubmit(values);
-          }
-          if (onFinish) {
-            const result = onFinish(values);
-            // check if onFinish was an async function
-            if (result instanceof Promise) {
-              await result;
-            }
-            if (onFinishSuccess) {
-              onFinishSuccess(values);
-            }
-            this.isSubmitSuccessful = true;
-            this.finalizeSubmit();
-          }
+          onBeforeSubmit?.(values);
+          await onFinish?.(values)
+          onFinishSuccess?.(values);
+          this.finalizeSubmit();
+          this.isSubmitSuccessful = true;
         } catch (err) {
-          if (onFinishError) {
-            this.isUnclean = true;
-            onFinishError(err);
-          }
+          onFinishError?.(err);
+          this.isUnclean = true;
           // Should print error if user `onFinish` callback failed
           console.error(err);
-        } finally {
-          this.finalizeSubmit();
         }
       })
       // if validation failed, run onFinishFailed
       .catch(e => {
-        if (onFinishFailed) {
-          this.isUnclean = true;
-          onFinishFailed(e);
-          this.finalizeSubmit();
-        }
+        this.isUnclean = true;
+        onFinishFailed?.(e);
+        this.finalizeSubmit();
       });
   };
 

@@ -207,7 +207,7 @@ export interface Callbacks<Values = any> {
   /**
    * Callback to submit form values
    */
-  onFinish?: (values: Values) => void | Promise<void>;
+  onFinish?: ((values: Values) => void) | ((values: Values) => Promise<void>)
   /**
    * Callback for when the form validation fails on submit
    */

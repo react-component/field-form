@@ -148,9 +148,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
       },
       onFinish: async (values: Store) => {
         formContext.triggerFormFinish(name, values);
-        if (onFinish) {
-          await onFinish(values);
-        }
+        return onFinish?.(values);
       },
       onBeforeSubmit,
       onFinishFinally,
