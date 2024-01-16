@@ -79,10 +79,14 @@ async function validateRule(
       result = errObj.errors.map(({ message }, index: number) => {
         const mergedMessage = message === CODE_LOGIC_ERROR ? messages.default : message;
 
-        return React.isValidElement(mergedMessage)
-          ? // Wrap ReactNode with `key`
-            React.cloneElement(mergedMessage, { key: `error_${index}` })
-          : mergedMessage;
+        if (React.isValidElement(mergedMessage)) {
+          // Wrap ReactNode with `key`
+          // Annotation makes conflict with rollup
+          // ref https://github.com/react-component/field-form/issues/631
+          const key = `error_${index}`;
+          React.cloneElement(mergedMessage, { key });
+        }
+        return mergedMessage;
       });
     }
   }
