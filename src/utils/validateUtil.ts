@@ -84,7 +84,7 @@ async function validateRule(
           // Annotation makes conflict with rollup
           // ref https://github.com/react-component/field-form/issues/631
           const key = `error_${index}`;
-          React.cloneElement(mergedMessage, { key });
+          return React.cloneElement(mergedMessage, { key });
         }
         return mergedMessage;
       });
