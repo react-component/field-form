@@ -100,7 +100,6 @@ export class FormStore {
     validateFields: this.validateFields,
     submit: this.submit,
     // Custom
-    initialValues: this.initialValues,
     reset: this.reset,
     isSubmitSuccessful: this.isSubmitSuccessful,
     isSubmitted: this.isSubmitted,
