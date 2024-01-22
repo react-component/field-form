@@ -76,8 +76,8 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^8.0.3",
     "react-dom": "^18.0.0",
-    "react-redux": "^8.1.2",
-    "redux": "^4.2.1",
+    "react-redux": "^9.0.4",
+    "redux": "^5.0.0",
     "typescript": "^5.1.6"
   }
 }
