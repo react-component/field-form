@@ -299,6 +299,8 @@ export interface FormInstance<Values = any> {
   submit: () => void;
 
   // Custom
+  initialValues: Store;
+  getInitialValue:  (namePath: InternalNamePath) => StoreValue;
   reset: (event?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * Indicates that the form was submitted succesfully (completed onFinish)

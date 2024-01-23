@@ -7,6 +7,7 @@ import type {
   Callbacks,
   InternalFormInstance,
 } from './interface';
+import isEqual from 'rc-util/lib/isEqual';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type { FormContextProps } from './FormContext';
@@ -231,6 +232,8 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   if (Component === false) {
     return wrapperNode;
   }
+
+  if(!isEqual(initialValues, form.initialValues)) return null;
 
   return (
     <Component

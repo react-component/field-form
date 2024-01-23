@@ -100,6 +100,8 @@ export class FormStore {
     validateFields: this.validateFields,
     submit: this.submit,
     // Custom
+    initialValues: this.initialValues,
+    getInitialValue: this.getInitialValue,
     reset: this.reset,
     isSubmitSuccessful: this.isSubmitSuccessful,
     isSubmitted: this.isSubmitted,
@@ -207,6 +209,7 @@ export class FormStore {
     const prevStore = this.store;
     this.notifyObservers(prevStore, null, { type: 'reset' });
     this.notifyWatch();
+    this.forceRootUpdate(this)
   };
 
   private destroyForm = () => {
