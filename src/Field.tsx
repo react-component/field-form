@@ -30,6 +30,7 @@ import {
 } from './utils/valueUtil';
 
 const EMPTY_ERRORS: any[] = [];
+const EMPTY_WARNINGS: any[] = [];
 
 export type ShouldUpdate<Values = any> =
   | boolean
@@ -146,7 +147,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   private prevValidating: boolean;
 
   private errors: string[] = EMPTY_ERRORS;
-  private warnings: string[] = EMPTY_ERRORS;
+  private warnings: string[] = EMPTY_WARNINGS;
 
   // ============================== Subscriptions ==============================
   constructor(props: InternalFieldProps) {
@@ -264,7 +265,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       this.dirty = true;
       this.validatePromise = null;
       this.errors = EMPTY_ERRORS;
-      this.warnings = EMPTY_ERRORS;
+      this.warnings = EMPTY_WARNINGS;
       this.triggerMetaEvent();
     }
 
@@ -276,7 +277,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           this.dirty = false;
           this.validatePromise = undefined;
           this.errors = EMPTY_ERRORS;
-          this.warnings = EMPTY_ERRORS;
+          this.warnings = EMPTY_WARNINGS;
           this.triggerMetaEvent();
 
           onReset?.();
@@ -313,7 +314,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
             this.errors = data.errors || EMPTY_ERRORS;
           }
           if ('warnings' in data) {
-            this.warnings = data.warnings || EMPTY_ERRORS;
+            this.warnings = data.warnings || EMPTY_WARNINGS;
           }
           this.dirty = true;
 
@@ -467,7 +468,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     this.validatePromise = rootPromise;
     this.dirty = true;
     this.errors = EMPTY_ERRORS;
-    this.warnings = EMPTY_ERRORS;
+    this.warnings = EMPTY_WARNINGS;
     this.triggerMetaEvent();
 
     // Force trigger re-render since we need sync renderProps with new meta
