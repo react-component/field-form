@@ -39,7 +39,9 @@ import {
   setValue,
 } from './utils/valueUtil';
 
-type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
+interface InvalidateFieldEntity {
+  INVALIDATE_NAME_PATH: InternalNamePath;
+}
 
 interface UpdateAction {
   type: 'updateValue';
@@ -998,23 +1000,25 @@ export class FormStore {
   private submit = () => {
     this.warningUnhooked();
 
-    this.validateFields()
+    return this.validateFields()
       .then(values => {
         const { onFinish } = this.callbacks;
         if (onFinish) {
           try {
-            onFinish(values);
+            return onFinish(values);
           } catch (err) {
             // Should print error if user `onFinish` callback failed
             console.error(err);
           }
         }
+        return undefined;
       })
       .catch(e => {
         const { onFinishFailed } = this.callbacks;
         if (onFinishFailed) {
-          onFinishFailed(e);
+          return onFinishFailed(e);
         }
+        return undefined;
       });
   };
 }

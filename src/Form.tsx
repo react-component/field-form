@@ -97,8 +97,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
       formContext.triggerFormFinish(name, values);
 
       if (onFinish) {
-        onFinish(values);
+        return onFinish(values);
       }
+      return undefined;
     },
     onFinishFailed,
   });
