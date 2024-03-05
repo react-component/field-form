@@ -59,8 +59,8 @@ export type MetaEvent = Meta & { destroy?: boolean };
 
 export interface InternalFieldProps<Values = any> {
   children?:
-  | React.ReactElement
-  | ((control: ChildProps, meta: Meta, form: FormInstance<Values>) => React.ReactNode);
+    | React.ReactElement
+    | ((control: ChildProps, meta: Meta, form: FormInstance<Values>) => React.ReactNode);
   /**
    * Set up `dependencies` field.
    * When dependencies field update and current field is touched,
@@ -581,10 +581,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const valueProps = mergedGetValueProps(value);
 
     // warning when prop value is function
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production' && valueProps) {
       Object.keys(valueProps).forEach(key => {
-        warning(typeof valueProps[key] !== 'function', `It's not recommended to generate dynamic function prop by \`getValueProps\`. Please pass it to child component directly (prop: ${key})`)
-      })
+        warning(
+          typeof valueProps[key] !== 'function',
+          `It's not recommended to generate dynamic function prop by \`getValueProps\`. Please pass it to child component directly (prop: ${key})`,
+        );
+      });
     }
 
     const control = {
