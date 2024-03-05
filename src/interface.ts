@@ -72,6 +72,9 @@ interface BaseRule {
 
   /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
   validateTrigger?: string | string[];
+
+  // extra for BaseRule
+  [key: string]: any;
 }
 
 type AggregationRule = BaseRule & Partial<ValidatorRule>;
