@@ -395,8 +395,21 @@ describe('Form.Basic', () => {
       </div>,
     );
 
-    // expect((container.querySelector('.anything').props() as any).light).toEqual('bamboo');
     expect(container.querySelector('.anything')).toHaveAttribute('data-light', 'bamboo');
+  });
+
+  it('getValueProps should not throw if return empty', async () => {
+    const { container } = render(
+      <div>
+        <Form initialValues={{ test: 'bamboo' }}>
+          <Field name="test" getValueProps={() => null}>
+            <span className="anything" />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    expect(container.querySelector('.anything')).toBeTruthy();
   });
 
   describe('shouldUpdate', () => {
