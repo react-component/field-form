@@ -259,7 +259,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
     // `setFieldsValue` is a quick access to update related status
-    if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
+    if (
+      info.type === 'valueUpdate' &&
+      info.source === 'external' &&
+      !isEqual(prevValue, curValue)
+    ) {
       this.touched = true;
       this.dirty = true;
       this.validatePromise = null;
