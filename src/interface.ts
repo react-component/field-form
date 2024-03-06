@@ -247,7 +247,7 @@ export interface InternalHooks {
   initEntityValue: (entity: FieldEntity) => void;
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
-  setInitialValues: (values: Store, init: boolean) => void;
+  setInitialValues: (values: Store, init: boolean) => boolean;
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
   setReadOnly: (isReadOnly: boolean | undefined) => void;

@@ -180,7 +180,7 @@ export class FormStore {
     }
     // else, clear any timers and set data
     else {
-      this.initializeValues(initialValues);
+      this.initializeValues(initialValues || {});
       // set init to true to prevent future calls
       return true;
     }
@@ -1163,6 +1163,7 @@ export class FormStore {
 function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState({});
+
 
   if (!formRef.current) {
     if (form) {

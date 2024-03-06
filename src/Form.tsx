@@ -177,7 +177,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   }, [preserve, setPreserve]);
 
   // Set initial value, init store value when first mount
-  const mountRef = React.useRef(null);
+  const mountRef = React.useRef(false);
   React.useEffect(() => {
     if (!mountRef.current) {
       mountRef.current = setInitialValues(initialValues, mountRef.current);
@@ -233,7 +233,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     return wrapperNode;
   }
 
-  if(!isEqual(initialValues, form.initialValues)) return null;
+  if(!mountRef.current && !isEqual(initialValues, form.initialValues)) return null;
 
   return (
     <Component
