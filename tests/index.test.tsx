@@ -395,8 +395,21 @@ describe('Form.Basic', () => {
       </div>,
     );
 
-    // expect((container.querySelector('.anything').props() as any).light).toEqual('bamboo');
     expect(container.querySelector('.anything')).toHaveAttribute('data-light', 'bamboo');
+  });
+
+  it('getValueProps should not throw if return empty', async () => {
+    const { container } = render(
+      <div>
+        <Form initialValues={{ test: 'bamboo' }}>
+          <Field name="test" getValueProps={() => null}>
+            <span className="anything" />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    expect(container.querySelector('.anything')).toBeTruthy();
   });
 
   describe('shouldUpdate', () => {
@@ -915,5 +928,50 @@ describe('Form.Basic', () => {
     test('by setFieldValue', form => {
       form.setFieldValue('user', null);
     });
+  });
+
+  it('setFieldValue should always set touched', async () => {
+    const EMPTY_VALUES = { light: '', bamboo: [] };
+    const formRef = React.createRef<FormInstance>();
+
+    const Demo: React.FC = () => (
+      <Form ref={formRef} initialValues={EMPTY_VALUES}>
+        <Field name="light" rules={[{ required: true }]}>
+          <Input />
+        </Field>
+        <Field name="bamboo" rules={[{ required: true, type: 'array' }]}>
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    render(<Demo />);
+
+    await act(async () => {
+      await formRef.current?.validateFields().catch(() => {});
+    });
+    expect(formRef.current?.isFieldTouched('light')).toBeFalsy();
+    expect(formRef.current?.isFieldTouched('bamboo')).toBeFalsy();
+    expect(formRef.current?.getFieldError('light')).toHaveLength(1);
+    expect(formRef.current?.getFieldError('bamboo')).toHaveLength(1);
+
+    act(() => {
+      formRef.current?.setFieldsValue(EMPTY_VALUES);
+    });
+    expect(formRef.current?.isFieldTouched('light')).toBeFalsy();
+    expect(formRef.current?.isFieldTouched('bamboo')).toBeFalsy();
+    expect(formRef.current?.getFieldError('light')).toHaveLength(1);
+    expect(formRef.current?.getFieldError('bamboo')).toHaveLength(1);
+
+    act(() => {
+      formRef.current?.setFieldsValue({
+        light: 'Bamboo',
+        bamboo: ['Light'],
+      });
+    });
+    expect(formRef.current?.isFieldTouched('light')).toBeTruthy();
+    expect(formRef.current?.isFieldTouched('bamboo')).toBeTruthy();
+    expect(formRef.current?.getFieldError('light')).toHaveLength(0);
+    expect(formRef.current?.getFieldError('bamboo')).toHaveLength(0);
   });
 });
