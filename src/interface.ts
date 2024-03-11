@@ -245,7 +245,7 @@ type RecursivePartial<T> = NonNullable<T> extends object
     }
   : T;
 
-export type FilterFunc = (meta: Meta) => boolean;
+export type FilterFunc = (meta: Meta | null) => boolean;
 
 export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
 
