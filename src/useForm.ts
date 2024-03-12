@@ -586,7 +586,7 @@ export class FormStore {
         data: fieldData,
       });
     });
-
+    this.validateFields(namePathList)
     this.notifyWatch(namePathList);
   };
 
@@ -764,16 +764,17 @@ export class FormStore {
     this.warningUnhooked();
 
     const prevStore = this.store;
-
+    const namesLists  = Object.keys(store);
     if (store) {
       const nextStore = merge(this.store, store);
       this.updateStore(nextStore);
-    }
 
+    }
     this.notifyObservers(prevStore, null, {
       type: 'valueUpdate',
       source: 'external',
     });
+    this.validateFields(namesLists)
     this.notifyWatch();
   };
 
