@@ -586,6 +586,7 @@ export class FormStore {
         data: fieldData,
       });
     });
+    //validation of the fields to be rerun when someone sets the value using setFields/setFieldValue
     this.validateFields(namePathList)
     this.notifyWatch(namePathList);
   };
@@ -774,6 +775,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'external',
     });
+    //validation of the fields to be rerun when someone sets the value using setFieldsValue
     this.validateFields(namesLists)
     this.notifyWatch();
   };
