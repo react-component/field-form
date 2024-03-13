@@ -38,7 +38,6 @@ export default () => {
   return (
     <div style={{ position: 'relative' }}>
       <h3>Validate Form</h3>
-      
       <Form style={{ padding: 16 }} onFinish={onFinish}>
         {(values, form) => {
           const usernameError = form.getFieldError('username');
@@ -51,24 +50,6 @@ export default () => {
 
           return (
             <React.Fragment>
-              <button
-              type="button"
-              onClick={() => {
-                // form.setFieldValue(
-                //   "username", 'light'
-                // );
-                // form.setFieldValue(
-                //   "password", 'bamboo'
-                // );
-
-                form.setFieldsValue({
-                  username: 'light',
-                  password: 'bamboo',
-                });
-              }}
-            >
-              Fill Values
-            </button>
               <Field name="username" rules={[{ required: true }]}>
                 <Input
                   placeholder="Username"
