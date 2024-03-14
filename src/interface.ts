@@ -105,8 +105,7 @@ export interface FieldEntity {
   isPreserve: () => boolean;
   validateRules: (options?: InternalValidateOptions) => Promise<RuleError[]>;
   getMeta: () => Meta;
-  getNamePath: (name?: InternalNamePath) => InternalNamePath;
-  getNamesPath: () => InternalNamePath | InternalNamePath[];
+  getNamePath: () => InternalNamePath;
   getErrors: () => string[];
   getWarnings: () => string[];
   props: {
@@ -241,8 +240,8 @@ type RecursivePartial<T> = NonNullable<T> extends object
       [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
         ? RecursivePartial<U>[]
         : NonNullable<T[P]> extends object
-          ? RecursivePartial<T[P]>
-          : T[P];
+        ? RecursivePartial<T[P]>
+        : T[P];
     }
   : T;
 
