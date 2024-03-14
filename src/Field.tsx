@@ -196,24 +196,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // ================================== Utils ==================================
-  public getNamePath = (name?: InternalNamePath): InternalNamePath => {
-    const { name: propsName, fieldContext } = this.props;
-    const _name = name ?? propsName;
-
+  public getNamePath = (): InternalNamePath => {
+    const { name, fieldContext } = this.props;
     const { prefixName = [] }: InternalFormInstance = fieldContext;
 
-    return _name !== undefined ? [...prefixName, ..._name] : [];
-  };
-
-  public getNamesPath = (): InternalNamePath | InternalNamePath[] => {
-    const { name, names, fieldContext } = this.props;
-
-    const { prefixName = [] }: InternalFormInstance = fieldContext;
-    if (name) {
-      return name !== undefined ? [...prefixName, ...name] : [];
-    }
-
-    return names !== undefined ? names.map(name => [...prefixName, ...name]) : [];
+    return name !== undefined ? [...prefixName, ...name] : [];
   };
 
   public getRules = (): RuleObject[] => {
@@ -569,15 +556,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ============================== Field Control ==============================
   public getValue = (store?: Store) => {
-    const { names } = this.props;
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
-    if (names) {
-      const namesValue = names.map(name => {
-        return getValue(store || getFieldsValue(true), this.getNamePath(name));
-      });
-      return namesValue;
-    }
-    return getValue(store || getFieldsValue(true), this.getNamePath());
+    const namePath = this.getNamePath();
+    return getValue(store || getFieldsValue(true), namePath);
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
@@ -594,7 +575,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const mergedValidateTrigger =
       validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
 
-    const namesPath = this.getNamesPath();
+    const namePath = this.getNamePath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
@@ -614,6 +595,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         );
       });
     }
+
     const control = {
       ...childProps,
       ...valueProps,
@@ -637,12 +619,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       if (normalize) {
         newValue = normalize(newValue, value, getFieldsValue(true));
       }
-      namesPath.forEach((name, index) => {
-        dispatch({
-          type: 'updateValue',
-          namePath: this.getNamePath(name),
-          value: newValue[index],
-        });
+
+      dispatch({
+        type: 'updateValue',
+        namePath,
+        value: newValue,
       });
 
       if (originTriggerFunc) {
@@ -666,12 +647,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          namesPath.forEach(name => {
-            dispatch({
-              type: 'validateField',
-              namePath: this.getNamePath(name),
-              triggerName,
-            });
+          dispatch({
+            type: 'validateField',
+            namePath,
+            triggerName,
           });
         }
       };
