@@ -26,10 +26,23 @@ export default () => {
     <>
       <Form
         form={form}
-        initialValues={{ one: '11', two: '22' }}
+        // initialValues={{ one: '11', two: '22' }}
         onFinish={v => console.log('submit values', v)}
       >
-        <Field<FieldType> names={['one', 'two']}>
+        <Field<FieldType>
+          names={['one', 'two']}
+          getValueProps={value => {
+            if (value) {
+              const two = form.getFieldValue('two');
+              return { value: [value, two] };
+            }
+            return { value: undefined };
+          }}
+          getValueFromEvent={values => {
+            form.setFields([{ name: 'two', value: values[1] }]);
+            return values[0];
+          }}
+        >
           <RangeInput />
         </Field>
         {/* <Field<FieldType> name="two">

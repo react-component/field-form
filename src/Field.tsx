@@ -683,15 +683,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 }
 
-function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Values>) {
+function WrapperField<Values = any>({ name, names, children, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
   const namePath = name !== undefined ? getNamePath(name) : undefined;
-  const namesPath = names !== undefined ? names.map(name => getNamePath(name)) : undefined;
 
   let key: string = 'keep';
   if (!restProps.isListField) {
-    key = `_${(namePath || namesPath || []).join('_')}`;
+    key = `_${(namePath || []).join('_')}`;
   }
 
   // Warning if it's a directly list field.
@@ -700,20 +699,36 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
     process.env.NODE_ENV !== 'production' &&
     restProps.preserve === false &&
     restProps.isListField &&
-    (namePath.length <= 1 || namesPath.length <= 1)
+    namePath.length <= 1
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
-
   return (
     <Field
       key={key}
       name={namePath}
       isListField={!!listContext}
+      children={children}
       {...restProps}
       fieldContext={fieldContext}
     />
   );
 }
+function WrapperField2<Values = any>(props: FieldProps<Values>) {
+  const { name, names, children, ...restProps } = props;
 
-export default WrapperField;
+  if (names) {
+    return names.map((name, index) => {
+      return (
+        <WrapperField
+          key={index}
+          {...restProps}
+          name={name}
+          children={index === 0 ? children : <div />}
+        />
+      );
+    });
+  }
+  return <WrapperField {...props} />;
+}
+export default WrapperField2;
