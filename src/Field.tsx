@@ -69,6 +69,7 @@ export interface InternalFieldProps<Values = any> {
   dependencies?: NamePath[];
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
   name?: InternalNamePath;
+  names?: InternalNamePath[];
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
   shouldUpdate?: ShouldUpdate<Values>;
@@ -99,8 +100,9 @@ export interface InternalFieldProps<Values = any> {
 }
 
 export interface FieldProps<Values = any>
-  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
+  extends Omit<InternalFieldProps<Values>, 'name' | 'names' | 'fieldContext'> {
   name?: NamePath<Values>;
+  names?: NamePath<Values>[];
 }
 
 export interface FieldState {
@@ -194,11 +196,24 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // ================================== Utils ==================================
-  public getNamePath = (): InternalNamePath => {
-    const { name, fieldContext } = this.props;
+  public getNamePath = (name?: InternalNamePath): InternalNamePath => {
+    const { name: propsName, fieldContext } = this.props;
+    const _name = name ?? propsName;
+
     const { prefixName = [] }: InternalFormInstance = fieldContext;
 
-    return name !== undefined ? [...prefixName, ...name] : [];
+    return _name !== undefined ? [...prefixName, ..._name] : [];
+  };
+
+  public getNamesPath = (): InternalNamePath | InternalNamePath[] => {
+    const { name, names, fieldContext } = this.props;
+
+    const { prefixName = [] }: InternalFormInstance = fieldContext;
+    if (name) {
+      return name !== undefined ? [...prefixName, ...name] : [];
+    }
+
+    return names !== undefined ? names.map(name => [...prefixName, ...name]) : [];
   };
 
   public getRules = (): RuleObject[] => {
@@ -554,9 +569,15 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ============================== Field Control ==============================
   public getValue = (store?: Store) => {
+    const { names } = this.props;
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
-    const namePath = this.getNamePath();
-    return getValue(store || getFieldsValue(true), namePath);
+    if (names) {
+      const namesValue = names.map(name => {
+        return getValue(store || getFieldsValue(true), this.getNamePath(name));
+      });
+      return namesValue;
+    }
+    return getValue(store || getFieldsValue(true), this.getNamePath());
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
@@ -573,7 +594,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const mergedValidateTrigger =
       validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
 
-    const namePath = this.getNamePath();
+    const namesPath = this.getNamesPath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
@@ -593,7 +614,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         );
       });
     }
-
     const control = {
       ...childProps,
       ...valueProps,
@@ -617,11 +637,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       if (normalize) {
         newValue = normalize(newValue, value, getFieldsValue(true));
       }
-
-      dispatch({
-        type: 'updateValue',
-        namePath,
-        value: newValue,
+      namesPath.forEach((name, index) => {
+        dispatch({
+          type: 'updateValue',
+          namePath: this.getNamePath(name),
+          value: newValue[index],
+        });
       });
 
       if (originTriggerFunc) {
@@ -645,10 +666,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          dispatch({
-            type: 'validateField',
-            namePath,
-            triggerName,
+          namesPath.forEach(name => {
+            dispatch({
+              type: 'validateField',
+              namePath: this.getNamePath(name),
+              triggerName,
+            });
           });
         }
       };
@@ -681,14 +704,15 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 }
 
-function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
+function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
   const namePath = name !== undefined ? getNamePath(name) : undefined;
+  const namesPath = names !== undefined ? names.map(name => getNamePath(name)) : undefined;
 
   let key: string = 'keep';
   if (!restProps.isListField) {
-    key = `_${(namePath || []).join('_')}`;
+    key = `_${(namePath || namesPath || []).join('_')}`;
   }
 
   // Warning if it's a directly list field.
@@ -697,7 +721,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     process.env.NODE_ENV !== 'production' &&
     restProps.preserve === false &&
     restProps.isListField &&
-    namePath.length <= 1
+    (namePath.length <= 1 || namesPath.length <= 1)
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
@@ -706,6 +730,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     <Field
       key={key}
       name={namePath}
+      names={namesPath}
       isListField={!!listContext}
       {...restProps}
       fieldContext={fieldContext}

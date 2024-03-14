@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { InputHTMLAttributes } from 'react';
 
 const Input = (props: any) => {
   return <input {...props} />;
 };
 
-const CustomizeInput = ({ value = '', ...props }: any) => (
-  <div style={{ padding: 10 }}>
+const CustomizeInput = ({
+  value = '',
+  style,
+  ...props
+}: { value?: string } & InputHTMLAttributes<HTMLInputElement>) => (
+  <div style={{ padding: 10, ...style }}>
     <Input style={{ outline: 'none' }} value={value} {...props} />
   </div>
 );
