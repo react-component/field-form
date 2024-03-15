@@ -47,13 +47,25 @@ interface UpdateAction {
   value: StoreValue;
 }
 
+interface UpdatesAction {
+  type: 'updateValues';
+  namesPath: InternalNamePath[];
+  values: StoreValue[];
+}
+
 interface ValidateAction {
   type: 'validateField';
   namePath: InternalNamePath;
   triggerName: string;
 }
 
-export type ReducerAction = UpdateAction | ValidateAction;
+interface ValidatesAction {
+  type: 'validateFields';
+  namesPath: InternalNamePath[];
+  triggerName: string;
+}
+
+export type ReducerAction = UpdateAction | UpdatesAction | ValidateAction | ValidatesAction;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -242,7 +254,7 @@ export class FormStore {
       return this.fieldEntities;
     }
 
-    return this.fieldEntities.filter(field => field.getNamePath().length);
+    return this.fieldEntities.filter(field => field.getNamesPath().length);
   };
 
   private getFieldsMap = (pure: boolean = false) => {
@@ -688,9 +700,24 @@ export class FormStore {
         this.updateValue(namePath, value);
         break;
       }
+      case 'updateValues': {
+        const { namesPath, values } = action;
+        namesPath.forEach((name, index) => {
+          this.updateValue(name, values[index]);
+        });
+        break;
+      }
       case 'validateField': {
         const { namePath, triggerName } = action;
+        console.log('triggerName', triggerName);
         this.validateFields([namePath], { triggerName });
+        break;
+      }
+      case 'validateFields': {
+        const { namesPath, triggerName } = action;
+        namesPath.forEach(namePath => {
+          this.validateFields([namePath], { triggerName });
+        });
         break;
       }
       default:
