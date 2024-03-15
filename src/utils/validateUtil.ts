@@ -120,8 +120,8 @@ async function validateRule(
  * But only check one value in a time to avoid namePath validate issue.
  */
 export function validateRules(
-  namePath: InternalNamePath,
-  value: StoreValue,
+  namePath: InternalNamePath[],
+  values: StoreValue[],
   rules: RuleObject[],
   options: InternalValidateOptions,
   validateFirst: boolean | 'parallel',
@@ -209,7 +209,7 @@ export function validateRules(
       /* eslint-disable no-await-in-loop */
       for (let i = 0; i < filledRules.length; i += 1) {
         const rule = filledRules[i];
-        const errors = await validateRule(name, value, rule, options, messageVariables);
+        const errors = await validateRule(name, values, rule, options, messageVariables);
         if (errors.length) {
           reject([{ errors, rule }]);
           return;
@@ -222,7 +222,10 @@ export function validateRules(
   } else {
     // >>>>> Validate by parallel
     const rulePromises: Promise<RuleError>[] = filledRules.map(rule =>
-      validateRule(name, value, rule, options, messageVariables).then(errors => ({ errors, rule })),
+      validateRule(name, values, rule, options, messageVariables).then(errors => ({
+        errors,
+        rule,
+      })),
     );
 
     summaryPromise = (

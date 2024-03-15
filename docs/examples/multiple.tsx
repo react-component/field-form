@@ -34,7 +34,15 @@ export default () => {
         <Field<FieldType>
           names={['one', 'two']}
           // name={['one']}
-          rules={[{ required: true }]}
+          // rules={[{ required: true }]}
+          rules={[
+            {
+              validator(rule, value, callback) {
+                console.log('value', value);
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <RangeInput />
         </Field>
