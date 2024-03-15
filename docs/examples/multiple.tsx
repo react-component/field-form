@@ -19,7 +19,7 @@ const RangeInput = ({
     </div>
   );
 };
-type FieldType = { one?: string; two?: string };
+type FieldType = { one?: string; two?: string; name?: string };
 
 export default () => {
   const [form] = Form.useForm();
@@ -46,9 +46,9 @@ export default () => {
         >
           <RangeInput />
         </Field>
-        {/* <Field<FieldType> name="two">
+        <Field<FieldType> name="name">
           <Input />
-        </Field> */}
+        </Field>
         <button type="submit">submit</button>
       </Form>
       <button
