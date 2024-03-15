@@ -9,15 +9,13 @@ const RangeInput = ({
   value?: string[];
   onChange?: (value: string[]) => void;
 }) => {
-  if (!Array.isArray(value)) {
-    return <div>{JSON.stringify(value)}</div>;
-  }
-  const [one, two] = value;
+  const [one, two] = Array.isArray(value) ? value : [];
 
   return (
     <div style={{ display: 'flex' }}>
       <Input style={{ padding: 0 }} value={one} onChange={e => onChange([e.target.value, two])} />
       <Input style={{ padding: 0 }} value={two} onChange={e => onChange([one, e.target.value])} />
+      {JSON.stringify(value)}
     </div>
   );
 };
@@ -29,7 +27,7 @@ export default () => {
     <>
       <Form
         form={form}
-        // initialValues={{ one: '11', two: '22' }}
+        initialValues={{ one: '11', two: '22' }}
         onFinish={v => console.log('submit values', v)}
         onFinishFailed={v => console.log('submit values', v)}
       >

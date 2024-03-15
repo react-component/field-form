@@ -39,14 +39,14 @@ function requireUpdate(
   shouldUpdate: ShouldUpdate,
   prev: StoreValue,
   next: StoreValue,
-  prevValue: StoreValue,
-  nextValue: StoreValue,
+  prevValues: StoreValue,
+  nextValues: StoreValue,
   info: NotifyInfo,
 ): boolean {
   if (typeof shouldUpdate === 'function') {
     return shouldUpdate(prev, next, 'source' in info ? { source: info.source } : {});
   }
-  return prevValue !== nextValue;
+  return !isEqual(prevValues, nextValues);
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
@@ -202,6 +202,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     return name !== undefined ? [...prefixName, ...name] : [];
   };
+  public getNamesPath = (): InternalNamePath[] => {
+    const { name, names, fieldContext } = this.props;
+    const { prefixName = [] }: InternalFormInstance = fieldContext;
+    if (names) {
+      return names.map(name => (name !== undefined ? [...prefixName, ...name] : []));
+    }
+    return [name !== undefined ? [...prefixName, ...name] : []];
+  };
 
   public getRules = (): RuleObject[] => {
     const { rules = [], fieldContext } = this.props;
@@ -255,8 +263,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const { shouldUpdate, dependencies = [], onReset } = this.props;
     const { store } = info;
     const namePath = this.getNamePath();
-    const prevValue = this.getValue(prevStore);
-    const curValue = this.getValue(store);
+    const prevValues = this.getValues(prevStore);
+    const curValues = this.getValues(store);
 
     const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
@@ -264,7 +272,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     if (
       info.type === 'valueUpdate' &&
       info.source === 'external' &&
-      !isEqual(prevValue, curValue)
+      !isEqual(prevValues, curValues)
     ) {
       this.touched = true;
       this.dirty = true;
@@ -337,7 +345,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (
           shouldUpdate &&
           !namePath.length &&
-          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+          requireUpdate(shouldUpdate, prevStore, store, prevValues, curValues, info)
         ) {
           this.reRender();
           return;
@@ -374,7 +382,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (
           namePathMatch ||
           ((!dependencies.length || namePath.length || shouldUpdate) &&
-            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
+            requireUpdate(shouldUpdate, prevStore, store, prevValues, curValues, info))
         ) {
           this.reRender();
           return;
@@ -560,6 +568,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePath = this.getNamePath();
     return getValue(store || getFieldsValue(true), namePath);
   };
+  public getValues = (store?: Store) => {
+    const { getFieldsValue }: FormInstance = this.props.fieldContext;
+    const namesPath = this.getNamesPath();
+    return namesPath.map(namePath => getValue(store || getFieldsValue(true), namePath));
+  };
 
   public getControlled = (childProps: ChildProps = {}) => {
     const {
@@ -575,16 +588,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const mergedValidateTrigger =
       validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
 
-    const namePath = this.getNamePath();
+    const namesPath = this.getNamesPath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
-    const value = this.getValue();
+    const values = this.getValues();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
-    const valueProps = mergedGetValueProps(value);
+    const valueProps = mergedGetValueProps(values);
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
@@ -617,13 +630,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       if (normalize) {
-        newValue = normalize(newValue, value, getFieldsValue(true));
+        newValue = normalize(newValue, values, getFieldsValue(true));
       }
 
       dispatch({
-        type: 'updateValue',
-        namePath,
-        value: newValue,
+        type: 'updateValues',
+        namesPath,
+        values: newValue,
       });
 
       if (originTriggerFunc) {
@@ -648,8 +661,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
           // We dispatch validate to root,
           // since it will update related data with other field with same name
           dispatch({
-            type: 'validateField',
-            namePath,
+            type: 'validateFields',
+            namesPath,
             triggerName,
           });
         }
