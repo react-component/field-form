@@ -9,6 +9,9 @@ const RangeInput = ({
   value?: string[];
   onChange?: (value: string[]) => void;
 }) => {
+  if (!Array.isArray(value)) {
+    return <div>{JSON.stringify(value)}</div>;
+  }
   const [one, two] = value;
 
   return (
@@ -26,10 +29,15 @@ export default () => {
     <>
       <Form
         form={form}
-        initialValues={{ one: '11', two: '22' }}
+        // initialValues={{ one: '11', two: '22' }}
         onFinish={v => console.log('submit values', v)}
+        onFinishFailed={v => console.log('submit values', v)}
       >
-        <Field<FieldType> names={['one', 'two']}>
+        <Field<FieldType>
+          names={['one', 'two']}
+          // name={['one']}
+          rules={[{ required: true }]}
+        >
           <RangeInput />
         </Field>
         {/* <Field<FieldType> name="two">

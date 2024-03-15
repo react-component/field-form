@@ -704,7 +704,6 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
-
   return (
     <Field
       key={key}
