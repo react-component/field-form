@@ -412,6 +412,22 @@ describe('Form.Basic', () => {
     expect(container.querySelector('.anything')).toBeTruthy();
   });
 
+  it('getValueProps should not be executed when name does not exist', async () => {
+    const getValueProps = jest.fn();
+
+    render(
+      <div>
+        <Form initialValues={{ test: 'bamboo' }}>
+          <Field getValueProps={getValueProps}>
+            <span className="anything" />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    expect(getValueProps).not.toHaveBeenCalled();
+  });
+
   describe('shouldUpdate', () => {
     it('work', async () => {
       let isAllTouched: boolean;
