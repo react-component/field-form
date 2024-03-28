@@ -25,6 +25,16 @@ const Context = React.createContext<InternalFormInstance>({
   setFieldsValue: warningFunc,
   validateFields: warningFunc,
   submit: warningFunc,
+  initialValues: warningFunc,
+  getInitialValue: warningFunc,
+  isSubmitSuccessful: warningFunc,
+  isSubmitting: warningFunc,
+  isSubmitted: warningFunc,
+  isUnclean: warningFunc,
+  reset: warningFunc,
+  readOnly: warningFunc,
+  loading: warningFunc,
+  submitCount: warningFunc,
 
   getInternalHooks: () => {
     warningFunc();
@@ -36,6 +46,9 @@ const Context = React.createContext<InternalFormInstance>({
       useSubscribe: warningFunc,
       setInitialValues: warningFunc,
       destroyForm: warningFunc,
+      setReadOnly: warningFunc,
+      setLoading: warningFunc,
+      setLoadingTimeout: warningFunc,
       setCallbacks: warningFunc,
       registerWatch: warningFunc,
       getFields: warningFunc,

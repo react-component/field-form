@@ -27,9 +27,9 @@ import type {
   ValuedNotifyInfo,
   WatchCallBack,
 } from './interface';
+import NameMap from './utils/NameMap';
 import { allPromiseFinish } from './utils/asyncUtil';
 import { defaultValidateMessages } from './utils/messages';
-import NameMap from './utils/NameMap';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -58,7 +58,10 @@ export type ReducerAction = UpdateAction | ValidateAction;
 export class FormStore {
   private formHooked: boolean = false;
 
-  private forceRootUpdate: () => void;
+  /**
+   * Used to refresh teh context data
+   */
+  private forceRootUpdate: (_formStore: FormStore) => void;
 
   private subscribable: boolean = true;
 
@@ -76,7 +79,7 @@ export class FormStore {
 
   private lastValidatePromise: Promise<FieldError[]> = null;
 
-  constructor(forceRootUpdate: () => void) {
+  constructor(forceRootUpdate: (_formStore: FormStore) => void) {
     this.forceRootUpdate = forceRootUpdate;
   }
 
@@ -96,8 +99,18 @@ export class FormStore {
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
     submit: this.submit,
+    // Custom
+    initialValues: this.initialValues,
+    getInitialValue: this.getInitialValue,
+    reset: this.reset,
+    isSubmitSuccessful: this.isSubmitSuccessful,
+    isSubmitted: this.isSubmitted,
+    isSubmitting: this.isSubmitting,
+    isUnclean: this.isUnclean,
+    submitCount: this.submitCount,
+    readOnly: this.readOnly,
+    loading: this.loading,
     _init: true,
-
     getInternalHooks: this.getInternalHooks,
   });
 
@@ -115,6 +128,9 @@ export class FormStore {
         destroyForm: this.destroyForm,
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
+        setReadOnly: this.setReadOnly,
+        setLoading: this.setLoading,
+        setLoadingTimeout: this.setLoadingTimeout,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
@@ -136,24 +152,64 @@ export class FormStore {
    */
   private prevWithoutPreserves: NameMap<boolean> | null = null;
 
+  private initialValuesTimeout: NodeJS.Timeout = null;
+  private init = false;
+
   /**
    * First time `setInitialValues` should update store with initial value
    */
-  private setInitialValues = (initialValues: Store, init: boolean) => {
+  private setInitialValues = (initialValues: Store, init: boolean): boolean => {
+    // if external or internal init is true, skip process
+    if (init || this.init) return true;
     this.initialValues = initialValues || {};
-    if (init) {
-      let nextStore = merge(initialValues, this.store);
 
-      // We will take consider prev form unmount fields.
-      // When the field is not `preserve`, we need fill this with initialValues instead of store.
-      // eslint-disable-next-line array-callback-return
-      this.prevWithoutPreserves?.map(({ key: namePath }) => {
-        nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
-      });
-      this.prevWithoutPreserves = null;
-
-      this.updateStore(nextStore);
+    // if initialValues is null, it means we are expecting data
+    if (initialValues === null) {
+      // if timer is null, start timer, else, do nothing
+      if (this.initialValuesTimeout === null) {
+        this.setInitialValuesLoading(true);
+        this.initialValuesTimeout = setTimeout(
+          // function to call when timer ends
+          () => {
+            // when timer ends, set data no matter what the data is
+            this.initializeValues(initialValues);
+          },
+          this.loadingTimeout,
+        );
+      }
     }
+    // else, clear any timers and set data
+    else {
+      this.initializeValues(initialValues || {});
+      // set init to true to prevent future calls
+      return true;
+    }
+    // return false to notify init values are still not initialized
+    return false;
+  };
+
+  private initializeValues = (initialValues: Store) => {
+    this.initialValuesTimeout = null;
+
+    let nextStore = merge(initialValues, this.store);
+
+    // We will take consider prev form unmount fields.
+    // When the field is not `preserve`, we need fill this with initialValues instead of store.
+    // eslint-disable-next-line array-callback-return
+    this.prevWithoutPreserves?.map(({ key: namePath }) => {
+      nextStore = setValue(nextStore, namePath, getValue(initialValues, namePath));
+    });
+    this.prevWithoutPreserves = null;
+
+    this.updateStore(nextStore);
+
+    this.setInitialValuesLoading(false);
+    this.init = true;
+
+    const prevStore = this.store;
+    this.notifyObservers(prevStore, null, { type: 'reset' });
+    this.notifyWatch();
+    this.forceRootUpdate(this)
   };
 
   private destroyForm = () => {
@@ -712,7 +768,7 @@ export class FormStore {
         onStoreChange(prevStore, namePathList, mergedInfo);
       });
     } else {
-      this.forceRootUpdate();
+      this.forceRootUpdate(this);
     }
   };
 
@@ -996,26 +1052,111 @@ export class FormStore {
 
   // ============================ Submit ============================
   private submit = () => {
+    if (this.isSubmitting) return;
     this.warningUnhooked();
+    this.isSubmitting = true;
+    this.forceRootUpdate(this);
+
+    const { onFinishFailed, onBeforeSubmit, onFinishSuccess, onFinish, onFinishError } =
+      this.callbacks;
 
     this.validateFields()
-      .then(values => {
-        const { onFinish } = this.callbacks;
-        if (onFinish) {
-          try {
-            onFinish(values);
-          } catch (err) {
-            // Should print error if user `onFinish` callback failed
-            console.error(err);
-          }
+      // if validation passed, run submission logic
+      .then(async values => {
+        try {
+          onBeforeSubmit?.(values);
+          await onFinish?.(values)
+          onFinishSuccess?.(values);
+          this.finalizeSubmit();
+          this.isSubmitSuccessful = true;
+        } catch (err) {
+          onFinishError?.(err);
+          this.isUnclean = true;
+          // Should print error if user `onFinish` callback failed
+          console.error(err);
         }
       })
+      // if validation failed, run onFinishFailed
       .catch(e => {
-        const { onFinishFailed } = this.callbacks;
-        if (onFinishFailed) {
-          onFinishFailed(e);
-        }
+        this.isUnclean = true;
+        onFinishFailed?.(e);
+        this.finalizeSubmit();
       });
+  };
+
+  private finalizeSubmit = () => {
+    this.isSubmitting = false;
+    this.submitCount += 1;
+    this.forceRootUpdate(this);
+  };
+
+  // ============================ CUSTOM ============================
+
+  private isSubmitSuccessful: boolean = false;
+  private isSubmitting: boolean = false;
+  private isUnclean: boolean = false;
+  private readOnly: boolean = false;
+  private propsLoading: boolean = false;
+  private initialValuesLoading: boolean = false;
+  private loading: boolean = false;
+  private loadingTimeout: number = 3000;
+  private submitCount: number = 0;
+
+  private get isSubmitted() {
+    return this.submitCount > 0;
+  }
+
+  private setReadOnly = (val: boolean | undefined) => {
+    if (this.readOnly === !!val) return;
+    this.readOnly = !!val;
+    this.forceRootUpdate(this);
+  };
+
+  private setLoading = (val: boolean | undefined) => {
+    if (this.propsLoading === !!val) return;
+    this.propsLoading = !!val;
+    this.calculateLoading();
+  };
+
+  private setInitialValuesLoading = (val: boolean) => {
+    if (this.initialValuesLoading === !!val) return;
+    this.initialValuesLoading = !!val;
+    this.calculateLoading();
+  };
+
+  private calculateLoading = () => {
+    const val = this.propsLoading || this.initialValuesLoading;
+    if (this.loading === val) return;
+    this.loading = val;
+    this.forceRootUpdate(this);
+  };
+
+  private setLoadingTimeout = (loadingTimeout: number) => {
+    if (this.loadingTimeout === loadingTimeout) return;
+    this.loadingTimeout = loadingTimeout;
+  };
+
+  // ============================ Reset ============================
+  private reset = (event?: React.FormEvent<HTMLFormElement>) => {
+    this.warningUnhooked();
+
+    this.isUnclean = false;
+    this.isSubmitSuccessful = false;
+    this.submitCount = 0;
+
+    this.resetFields();
+
+    const { onReset } = this.callbacks;
+    if (onReset) {
+      try {
+        onReset(event);
+      } catch (err) {
+        // Should print error if user `onFinish` callback failed
+        console.error(err);
+      }
+    }
+
+    this.forceRootUpdate(this);
   };
 }
 
@@ -1023,12 +1164,14 @@ function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Value
   const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState({});
 
+
   if (!formRef.current) {
     if (form) {
       formRef.current = form;
     } else {
       // Create a new FormStore if not provided
-      const forceReRender = () => {
+      const forceReRender = (_formStore: FormStore) => {
+        formRef.current = _formStore.getForm();
         forceUpdate({});
       };
 

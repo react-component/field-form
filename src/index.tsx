@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FormInstance } from './interface';
+import type { FormInstance } from './interface';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';

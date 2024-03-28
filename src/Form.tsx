@@ -7,6 +7,7 @@ import type {
   Callbacks,
   InternalFormInstance,
 } from './interface';
+import isEqual from 'rc-util/lib/isEqual';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type { FormContextProps } from './FormContext';
@@ -19,7 +20,17 @@ type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' 
 type RenderProps = (values: Store, form: FormInstance) => JSX.Element | React.ReactNode;
 
 export interface FormProps<Values = any> extends BaseFormProps {
-  initialValues?: Store;
+  /**
+   * Values to be loaded into the form when started
+   * if `undefined`, the form will be shown empty
+   *
+   *  If the initial value is `null`, the form will go into `loading` mode
+   * expecting data. If no data is received after `loadingTimeout` milliseconds
+   * the form will be shown empty
+   *
+   * If any other object is passed, the object will be used to fill in the form
+   */
+  initialValues?: Store | null;
   form?: FormInstance<Values>;
   children?: RenderProps | React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,6 +42,25 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFieldsChange?: Callbacks<Values>['onFieldsChange'];
   onFinish?: Callbacks<Values>['onFinish'];
   onFinishFailed?: Callbacks<Values>['onFinishFailed'];
+  onBeforeSubmit?: Callbacks<Values>['onBeforeSubmit'];
+  onFinishSuccess?: Callbacks<Values>['onFinishSuccess'];
+  onFinishError?: Callbacks<Values>['onFinishError'];
+  onFinishFinally?: Callbacks<Values>['onFinishFinally'];
+  /**
+   * Set the form to read only mode (not editable)
+   */
+  readOnly?: boolean;
+  /**
+   * Force the form in to loading mode
+   */
+  loading?: boolean;
+  /**
+   * Timeout in milliseconds before the form is comes out of loading mode
+   * This is used when initial values are expected to be loaded from a remote source
+   * @default 3000
+   * */
+  loadingTimeout?: number;
+  warnOnUnsavedChanges?: boolean;
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
 }
@@ -48,8 +78,15 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     validateTrigger = 'onChange',
     onValuesChange,
     onFieldsChange,
+    onBeforeSubmit,
     onFinish,
     onFinishFailed,
+    onFinishSuccess,
+    onFinishError,
+    onFinishFinally,
+    readOnly,
+    loading,
+    loadingTimeout = 3000,
     ...restProps
   }: FormProps,
   ref,
@@ -65,6 +102,9 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setCallbacks,
     setValidateMessages,
     setPreserve,
+    setReadOnly,
+    setLoading,
+    setLoadingTimeout,
     destroyForm,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
@@ -79,53 +119,89 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     };
   }, [formContext, formInstance, name]);
 
-  // Pass props to store
-  setValidateMessages({
-    ...formContext.validateMessages,
-    ...validateMessages,
-  });
-  setCallbacks({
-    onValuesChange,
-    onFieldsChange: (changedFields: FieldData[], ...rest) => {
-      formContext.triggerFormChange(name, changedFields);
+/**
+ * Pass props to store
+ */
+  React.useEffect(() => {
+    setValidateMessages({
+      ...formContext.validateMessages,
+      ...validateMessages,
+    });
+  }, [formContext.validateMessages, setValidateMessages, validateMessages]);
+  React.useEffect(() => {
+    setReadOnly(readOnly);
+  }, [readOnly, setReadOnly]);
+  React.useEffect(() => {
+    setLoading(loading);
+  }, [loading, setLoading]);
+  React.useEffect(() => {
+    setLoadingTimeout(loadingTimeout);
+  }, [loadingTimeout, setLoadingTimeout]);
+  React.useEffect(() => {
+    setCallbacks({
+      onValuesChange,
+      onFieldsChange: (changedFields: FieldData[], ...rest) => {
+        formContext.triggerFormChange(name, changedFields);
 
-      if (onFieldsChange) {
-        onFieldsChange(changedFields, ...rest);
-      }
-    },
-    onFinish: (values: Store) => {
-      formContext.triggerFormFinish(name, values);
-
-      if (onFinish) {
-        onFinish(values);
-      }
-    },
+        if (onFieldsChange) {
+          onFieldsChange(changedFields, ...rest);
+        }
+      },
+      onFinish: async (values: Store) => {
+        formContext.triggerFormFinish(name, values);
+        return onFinish?.(values);
+      },
+      onBeforeSubmit,
+      onFinishFinally,
+      onFinishError,
+      onFinishSuccess,
+      onFinishFailed,
+      onReset: restProps.onReset,
+    });
+  }, [
+    formContext,
+    name,
+    onBeforeSubmit,
+    onFieldsChange,
+    onFinish,
+    onFinishError,
     onFinishFailed,
-  });
-  setPreserve(preserve);
+    onFinishFinally,
+    onFinishSuccess,
+    onValuesChange,
+    restProps.onReset,
+    setCallbacks,
+  ]);
+  React.useEffect(() => {
+    setPreserve(preserve);
+  }, [preserve, setPreserve]);
 
   // Set initial value, init store value when first mount
-  const mountRef = React.useRef(null);
-  setInitialValues(initialValues, !mountRef.current);
-  if (!mountRef.current) {
-    mountRef.current = true;
-  }
+  const mountRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!mountRef.current) {
+      mountRef.current = setInitialValues(initialValues, mountRef.current);
+    }
+  }, [initialValues, setInitialValues]);
 
+  // Destroy form on unmount
   React.useEffect(
     () => destroyForm,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
-  // Prepare children by `children` type
-  let childrenNode: React.ReactNode;
   const childrenRenderProps = typeof children === 'function';
-  if (childrenRenderProps) {
-    const values = formInstance.getFieldsValue(true);
-    childrenNode = (children as RenderProps)(values, formInstance);
-  } else {
-    childrenNode = children;
-  }
+
+  // Prepare children by `children` type
+  const childrenNode: React.ReactNode = React.useMemo(() => {
+    if (childrenRenderProps) {
+      const values = formInstance.getFieldsValue(true);
+      return (children as RenderProps)(values, formInstance);
+    } else {
+      return children;
+    }
+  }, [children, childrenRenderProps, formInstance]);
 
   // Not use subscribe when using render props
   useSubscribe(!childrenRenderProps);
@@ -157,6 +233,8 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     return wrapperNode;
   }
 
+  if(!mountRef.current && !isEqual(initialValues, form.initialValues)) return null;
+
   return (
     <Component
       {...restProps}
@@ -169,8 +247,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
       onReset={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        formInstance.resetFields();
-        restProps.onReset?.(event);
+        formInstance.reset(event);
       }}
     >
       {wrapperNode}

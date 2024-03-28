@@ -13,17 +13,39 @@ const formValue = {
 
 export default () => {
   const [form] = Form.useForm();
-  const [show, setShow] = useState<boolean>(false);
+  const [show, setShow] = useState<boolean>(true);
 
   return (
     <>
       <button onClick={() => setShow((prev) => !prev)}>switch show</button>
+      <button  onClick={() => form.submit()}>submit</button>
+      <div>
+       {form.isSubmitting ? <h2>Loading...</h2> : null}
+      </div>
       {show && (
         <Form
           form={form}
           initialValues={formValue}
           preserve={false}
-          onFinish={values => {
+          onFinish={ async (values) => {
+            console.log(3);
+            await new Promise((resolve) =>
+              setTimeout(() => {
+                resolve(values);
+              }, 1000),
+            );
+            console.log(2);
+            await new Promise((resolve) =>
+              setTimeout(() => {
+                resolve(values);
+              }, 1000),
+            );
+            console.log(1);
+            await new Promise((resolve) =>
+              setTimeout(() => {
+                resolve(values);
+              }, 1000),
+            );
             console.log('Submit:', values);
           }}
         >
@@ -37,8 +59,8 @@ export default () => {
           <List name="users">
             {(fields) => (
               <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <>
+                {fields.map(({ key, name, ...restField },idx) => (
+                  <div key={idx}>
                     <Field
                       {...restField}
                       name={[name, "first"]}
@@ -55,7 +77,7 @@ export default () => {
                     >
                       <Input placeholder="Last Name" />
                     </Field>
-                  </>
+                  </div>
                 ))}
               </>
             )}

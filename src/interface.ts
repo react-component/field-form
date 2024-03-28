@@ -204,8 +204,31 @@ export type ValuedNotifyInfo = NotifyInfo & {
 export interface Callbacks<Values = any> {
   onValuesChange?: (changedValues: any, values: Values) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
-  onFinish?: (values: Values) => void;
+  /**
+   * Callback to submit form values
+   */
+  onFinish?: ((values: Values) => void) | ((values: Values) => Promise<void>)
+  /**
+   * Callback for when the form validation fails on submit
+   */
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
+  /**
+   * Callback to run prior to form submission and after values have been successfully validated
+   */
+  onBeforeSubmit?: (values: Values) => void;
+  /**
+   * Callback for when the form submit succeeds
+   */
+  onFinishSuccess?: (data: Values) => void;
+  /**
+   * Callback for when the form submit fails
+   */
+  onFinishError?: (reason: any) => void;
+  /**
+   * Callback for when the form submit completes (regardless of success or failure)
+   */
+  onFinishFinally?: () => void;
+  onReset?: React.FormEventHandler<HTMLFormElement>;
 }
 
 export type WatchCallBack = (
@@ -224,9 +247,12 @@ export interface InternalHooks {
   initEntityValue: (entity: FieldEntity) => void;
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
-  setInitialValues: (values: Store, init: boolean) => void;
+  setInitialValues: (values: Store, init: boolean) => boolean;
   destroyForm: () => void;
   setCallbacks: (callbacks: Callbacks) => void;
+  setReadOnly: (isReadOnly: boolean | undefined) => void;
+  setLoading: (isLoading: boolean | undefined) => void;
+  setLoadingTimeout: (loadingTimeout: number) => void;
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
@@ -271,6 +297,42 @@ export interface FormInstance<Values = any> {
 
   // New API
   submit: () => void;
+
+  // Custom
+  initialValues: Store;
+  getInitialValue:  (namePath: InternalNamePath) => StoreValue;
+  reset: (event?: React.FormEvent<HTMLFormElement>) => void;
+  /**
+   * Indicates that the form was submitted succesfully (completed onFinish)
+   */
+  isSubmitSuccessful: boolean;
+  /**
+   * Indicates that the form submit has been attempted
+   * - This state is reset when the form is reset
+   */
+  isSubmitted: boolean;
+  /**
+   * Indicates that the form is currently submitting (running onFinish)
+   */
+  isSubmitting: boolean;
+  /**
+   * Indicates that the form validation has failed at least once
+   * - This state is reset when the form is reset
+   */
+  isUnclean: boolean;
+  /**
+   * Indicates that the form is i read only mode (not editable)
+   */
+  readOnly: boolean;
+  /**
+   * Indicates that the form is currently in th loading state
+   */
+  loading: boolean;
+  /**
+   * Counts the number of times the form submit was attempted
+   * - This state is reset when the form is reset
+   */
+  submitCount: number;
 }
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
