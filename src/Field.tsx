@@ -437,6 +437,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       );
 
       promise
+        .catch(e => e)
         .then((ruleErrors: RuleError[] = EMPTY_ERRORS) => {
           if (this.validatePromise === rootPromise) {
             this.validatePromise = null;
@@ -458,8 +459,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
             this.reRender();
           }
-        })
-        .catch(e => e);
+        });
 
       return promise;
     });
