@@ -96,6 +96,7 @@ export class FormStore {
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
     submit: this.submit,
+    getScopeName: () => undefined,
     _init: true,
 
     getInternalHooks: this.getInternalHooks,
@@ -119,6 +120,8 @@ export class FormStore {
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
         registerWatch: this.registerWatch,
+        getFieldEntities: this.getFieldEntities,
+        getFormStore: () => this,
       };
     }
 

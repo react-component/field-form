@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { DeepNamePath } from './namePathType';
-import type { ReducerAction } from './useForm';
+import type { FormStore, ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath<T = any> = DeepNamePath<T>;
@@ -217,6 +217,12 @@ export type WatchCallBack = (
 export interface WatchOptions<Form extends FormInstance = FormInstance> {
   form?: Form;
   preserve?: boolean;
+  scope?: boolean;
+}
+
+export interface FormInstanceOptions<Form extends FormInstance = FormInstance> {
+  form?: Form;
+  scope?: boolean;
 }
 
 export interface InternalHooks {
@@ -232,6 +238,8 @@ export interface InternalHooks {
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
+  getFieldEntities: (prue: boolean) => FieldEntity[];
+  getFormStore: () => FormStore;
 }
 
 /** Only return partial when type is not any */
@@ -271,6 +279,7 @@ export interface FormInstance<Values = any> {
 
   // New API
   submit: () => void;
+  getScopeName: () => InternalNamePath | undefined;
 }
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
@@ -282,6 +291,8 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
   prefixName?: InternalNamePath;
 
   validateTrigger?: string | string[] | false;
+
+  formInstance?: FormInstance;
 
   /**
    * Form component should register some content into store.
