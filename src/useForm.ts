@@ -587,6 +587,9 @@ export class FormStore {
       });
     });
 
+    // Dependencies update
+    this.triggerDependenciesUpdate(prevStore, namePathList);
+
     this.notifyWatch(namePathList);
   };
 
@@ -647,6 +650,9 @@ export class FormStore {
         type: 'valueUpdate',
         source: 'internal',
       });
+
+      // Dependencies update
+      this.triggerDependenciesUpdate(prevStore, [namePath]);
     }
 
     // un-register field callback
@@ -673,7 +679,7 @@ export class FormStore {
           this.notifyObservers(prevStore, [namePath], { type: 'remove' });
 
           // Dependencies update
-          this.triggerDependenciesUpdate(prevStore, namePath);
+          this.triggerDependenciesUpdate(prevStore, [namePath]);
         }
       }
 
@@ -719,8 +725,9 @@ export class FormStore {
   /**
    * Notify dependencies children with parent update
    * We need delay to trigger validate in case Field is under render props
+   * Pass namePath array to calculate childrenFields together to avoid repeatedly trigger notifyObservers
    */
-  private triggerDependenciesUpdate = (prevStore: Store, namePath: InternalNamePath) => {
+  private triggerDependenciesUpdate = (prevStore: Store, namePath: InternalNamePath[]) => {
     const childrenFields = this.getDependencyChildrenFields(namePath);
     if (childrenFields.length) {
       this.validateFields(childrenFields);
@@ -728,7 +735,7 @@ export class FormStore {
 
     this.notifyObservers(prevStore, childrenFields, {
       type: 'dependenciesUpdate',
-      relatedFields: [namePath, ...childrenFields],
+      relatedFields: [...namePath, ...childrenFields],
     });
 
     return childrenFields;
@@ -746,7 +753,7 @@ export class FormStore {
     this.notifyWatch([namePath]);
 
     // Dependencies update
-    const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
+    const childrenFields = this.triggerDependenciesUpdate(prevStore, [namePath]);
 
     // trigger callback function
     const { onValuesChange } = this.callbacks;
@@ -786,7 +793,7 @@ export class FormStore {
     ]);
   };
 
-  private getDependencyChildrenFields = (rootNamePath: InternalNamePath): InternalNamePath[] => {
+  private getDependencyChildrenFields = (rootNamePath: InternalNamePath[]): InternalNamePath[] => {
     const children: Set<FieldEntity> = new Set();
     const childrenFields: InternalNamePath[] = [];
 
@@ -822,7 +829,7 @@ export class FormStore {
       });
     };
 
-    fillChildren(rootNamePath);
+    rootNamePath.forEach(namePath => fillChildren(namePath));
 
     return childrenFields;
   };
