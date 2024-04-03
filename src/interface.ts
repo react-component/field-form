@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import type { DeepNamePath } from './namePathType';
 import type { ReducerAction } from './useForm';
+import type { ValidatePriority } from './Field';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath<T = any> = DeepNamePath<T>;
@@ -113,6 +114,7 @@ export interface FieldEntity {
     rules?: Rule[];
     dependencies?: NamePath[];
     initialValue?: any;
+    validatePriority?: ValidatePriority;
   };
 }
 
@@ -230,20 +232,22 @@ export interface InternalHooks {
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
   setValidateMessages: (validateMessages: ValidateMessages) => void;
+  setSuspendOnFirstError: (suspendOnFirstError?: boolean) => void;
   setPreserve: (preserve?: boolean) => void;
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> = NonNullable<T> extends object
-  ? {
-      [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
-        ? RecursivePartial<U>[]
-        : NonNullable<T[P]> extends object
-        ? RecursivePartial<T[P]>
-        : T[P];
-    }
-  : T;
+type RecursivePartial<T> =
+  NonNullable<T> extends object
+    ? {
+        [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
+          ? RecursivePartial<U>[]
+          : NonNullable<T[P]> extends object
+            ? RecursivePartial<T[P]>
+            : T[P];
+      }
+    : T;
 
 export type FilterFunc = (meta: Meta) => boolean;
 

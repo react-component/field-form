@@ -74,6 +74,7 @@ export interface InternalFieldProps<Values = any> {
   shouldUpdate?: ShouldUpdate<Values>;
   trigger?: string;
   validateTrigger?: string | string[] | false;
+  validatePriority?: ValidatePriority;
   /**
    * Trigger will after configured milliseconds.
    */
@@ -107,6 +108,14 @@ export interface FieldState {
   resetCount: number;
 }
 
+export enum ValidatePriority {
+  Higher = 0,
+  High = 1,
+  Normal = 2,
+  Low = 3,
+  Lower = 4
+}
+
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
 class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
@@ -114,6 +123,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public static defaultProps = {
     trigger: 'onChange',
     valuePropName: 'value',
+    validatePriority: ValidatePriority.Normal
   };
 
   public state = {

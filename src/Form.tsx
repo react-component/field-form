@@ -27,6 +27,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
+  suspendOnFirstError?: boolean;
   onValuesChange?: Callbacks<Values>['onValuesChange'];
   onFieldsChange?: Callbacks<Values>['onFieldsChange'];
   onFinish?: Callbacks<Values>['onFinish'];
@@ -45,6 +46,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     children,
     component: Component = 'form',
     validateMessages,
+    suspendOnFirstError,
     validateTrigger = 'onChange',
     onValuesChange,
     onFieldsChange,
@@ -64,6 +66,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setInitialValues,
     setCallbacks,
     setValidateMessages,
+    setSuspendOnFirstError,
     setPreserve,
     destroyForm,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
@@ -84,6 +87,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     ...formContext.validateMessages,
     ...validateMessages,
   });
+  setSuspendOnFirstError(suspendOnFirstError)
   setCallbacks({
     onValuesChange,
     onFieldsChange: (changedFields: FieldData[], ...rest) => {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FormInstance } from './interface';
-import Field from './Field';
+import Field, { ValidatePriority } from './Field';
 import List from './List';
 import useForm from './useForm';
 import type { FormProps } from './Form';
@@ -31,7 +31,16 @@ RefForm.List = List;
 RefForm.useForm = useForm;
 RefForm.useWatch = useWatch;
 
-export { Field, List, useForm, FormProvider, FieldContext, ListContext, useWatch };
+export {
+  Field,
+  List,
+  useForm,
+  FormProvider,
+  FieldContext,
+  ListContext,
+  useWatch,
+  ValidatePriority,
+};
 
 export type { FormProps, FormInstance };
 

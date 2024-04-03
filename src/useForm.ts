@@ -72,6 +72,8 @@ export class FormStore {
 
   private validateMessages: ValidateMessages = null;
 
+  private suspendOnFirstError: boolean = false;
+
   private preserve?: boolean = null;
 
   private lastValidatePromise: Promise<FieldError[]> = null;
@@ -115,6 +117,7 @@ export class FormStore {
         destroyForm: this.destroyForm,
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
+        setSuspendOnFirstError: this.setSuspendOnFirstError,
         getFields: this.getFields,
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
@@ -180,6 +183,10 @@ export class FormStore {
 
   private setValidateMessages = (validateMessages: ValidateMessages) => {
     this.validateMessages = validateMessages;
+  };
+
+  private setSuspendOnFirstError = (suspendOnFirstError?: boolean) => {
+    this.suspendOnFirstError = !!suspendOnFirstError;
   };
 
   private setPreserve = (preserve?: boolean) => {
@@ -862,7 +869,7 @@ export class FormStore {
   };
 
   // =========================== Validate ===========================
-  private validateFields: InternalValidateFields = (arg1?: any, arg2?: any) => {
+  private validateFields: InternalValidateFields = async (arg1?: any, arg2?: any) => {
     this.warningUnhooked();
 
     let nameList: NamePath[];
@@ -889,69 +896,144 @@ export class FormStore {
 
     const { recursive, dirty } = options || {};
 
-    this.getFieldEntities(true).forEach((field: FieldEntity) => {
-      // Add field if not provide `nameList`
-      if (!provideNameList) {
-        namePathList.push(field.getNamePath());
-      }
+    const fieldEntities = this.getFieldEntities(true)
+      // Support priority of validateFields
+      .sort((a, b) => a.props.validatePriority - b.props.validatePriority);
 
-      // Skip if without rule
-      if (!field.props.rules || !field.props.rules.length) {
-        return;
-      }
+    // if enable suspendOnFirstError => serial
+    if (this.suspendOnFirstError) {
+      for (const field of fieldEntities) {
+        // Add field if not provide `nameList`
+        if (!provideNameList) {
+          namePathList.push(field.getNamePath());
+        }
 
-      // Skip if only validate dirty field
-      if (dirty && !field.isFieldDirty()) {
-        return;
-      }
+        // Skip if without rule
+        // Skip if only validate dirty field
+        if (
+          !(!field.props.rules || !field.props.rules.length) &&
+          !(dirty && !field.isFieldDirty())
+        ) {
+          const fieldNamePath = field.getNamePath();
+          validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
 
-      const fieldNamePath = field.getNamePath();
-      validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
+          // Add field validate rule in to promise list
+          if (!provideNameList || containsNamePath(namePathList, fieldNamePath, recursive)) {
+            const res = await field
+              .validateRules({
+                validateMessages: {
+                  ...defaultValidateMessages,
+                  ...this.validateMessages,
+                },
+                ...options,
+              })
+              .then<any, RuleError>(() => ({ name: fieldNamePath, errors: [], warnings: [] }))
+              .catch((ruleErrors: RuleError[]) => {
+                const mergedErrors: string[] = [];
+                const mergedWarnings: string[] = [];
 
-      // Add field validate rule in to promise list
-      if (!provideNameList || containsNamePath(namePathList, fieldNamePath, recursive)) {
-        const promise = field.validateRules({
-          validateMessages: {
-            ...defaultValidateMessages,
-            ...this.validateMessages,
-          },
-          ...options,
-        });
+                ruleErrors.forEach?.(({ rule: { warningOnly }, errors }) => {
+                  if (warningOnly) {
+                    mergedWarnings.push(...errors);
+                  } else {
+                    mergedErrors.push(...errors);
+                  }
+                });
 
-        // Wrap promise with field
-        promiseList.push(
-          promise
-            .then<any, RuleError>(() => ({ name: fieldNamePath, errors: [], warnings: [] }))
-            .catch((ruleErrors: RuleError[]) => {
-              const mergedErrors: string[] = [];
-              const mergedWarnings: string[] = [];
-
-              ruleErrors.forEach?.(({ rule: { warningOnly }, errors }) => {
-                if (warningOnly) {
-                  mergedWarnings.push(...errors);
-                } else {
-                  mergedErrors.push(...errors);
+                if (mergedErrors.length) {
+                  return Promise.reject({
+                    name: fieldNamePath,
+                    errors: mergedErrors,
+                    warnings: mergedWarnings,
+                  });
                 }
-              });
 
-              if (mergedErrors.length) {
-                return Promise.reject({
+                return {
                   name: fieldNamePath,
                   errors: mergedErrors,
                   warnings: mergedWarnings,
-                });
-              }
+                };
+              })
+              .catch(e => {
+                return e;
+              });
 
-              return {
-                name: fieldNamePath,
-                errors: mergedErrors,
-                warnings: mergedWarnings,
-              };
-            }),
-        );
+            // Wrap promise with field
+            promiseList.push(Promise.resolve(res));
+
+            // firstError break
+            if (res.errors.length) {
+              break;
+            }
+          }
+        }
       }
-    });
+    }
+    // else => parallel
+    else {
+      fieldEntities.forEach((field: FieldEntity) => {
+        // Add field if not provide `nameList`
+        if (!provideNameList) {
+          namePathList.push(field.getNamePath());
+        }
 
+        // Skip if without rule
+        if (!field.props.rules || !field.props.rules.length) {
+          return;
+        }
+
+        // Skip if only validate dirty field
+        if (dirty && !field.isFieldDirty()) {
+          return;
+        }
+
+        const fieldNamePath = field.getNamePath();
+        validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
+
+        // Add field validate rule in to promise list
+        if (!provideNameList || containsNamePath(namePathList, fieldNamePath, recursive)) {
+          const promise = field.validateRules({
+            validateMessages: {
+              ...defaultValidateMessages,
+              ...this.validateMessages,
+            },
+            ...options,
+          });
+
+          // Wrap promise with field
+          promiseList.push(
+            promise
+              .then<any, RuleError>(() => ({ name: fieldNamePath, errors: [], warnings: [] }))
+              .catch((ruleErrors: RuleError[]) => {
+                const mergedErrors: string[] = [];
+                const mergedWarnings: string[] = [];
+
+                ruleErrors.forEach?.(({ rule: { warningOnly }, errors }) => {
+                  if (warningOnly) {
+                    mergedWarnings.push(...errors);
+                  } else {
+                    mergedErrors.push(...errors);
+                  }
+                });
+
+                if (mergedErrors.length) {
+                  return Promise.reject({
+                    name: fieldNamePath,
+                    errors: mergedErrors,
+                    warnings: mergedWarnings,
+                  });
+                }
+
+                return {
+                  name: fieldNamePath,
+                  errors: mergedErrors,
+                  warnings: mergedWarnings,
+                };
+              }),
+          );
+        }
+      });
+    }
     const summaryPromise = allPromiseFinish(promiseList);
     this.lastValidatePromise = summaryPromise;
 
