@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import toChildrenArray from 'rc-util/lib/Children/toArray';
 import isEqual from 'rc-util/lib/isEqual';
 import warning from 'rc-util/lib/warning';
@@ -598,7 +599,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
-    const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
+    const valueProps = name !== undefined ? mergedGetValueProps(values) : {};
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
