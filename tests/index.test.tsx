@@ -412,6 +412,27 @@ describe('Form.Basic', () => {
     expect(container.querySelector('.anything')).toBeTruthy();
   });
 
+  it('getValueProps should not be executed when name does not exist', async () => {
+    const getValueProps1 = jest.fn();
+    const getValueProps2 = jest.fn();
+
+    render(
+      <div>
+        <Form initialValues={{ test: 'bamboo' }}>
+          <Field getValueProps={getValueProps1}>
+            <span className="anything" />
+          </Field>
+          <Field getValueProps={getValueProps2}>
+            {() => <span className="anything" />}
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    expect(getValueProps1).not.toHaveBeenCalled();
+    expect(getValueProps2).not.toHaveBeenCalled();
+  });
+
   describe('shouldUpdate', () => {
     it('work', async () => {
       let isAllTouched: boolean;
