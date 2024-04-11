@@ -16,6 +16,11 @@ export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
+export function getNamesPath(pathList?: NamePath[]): InternalNamePath[] {
+  if (pathList == undefined) return pathList;
+  return pathList.map(path => toArray(path));
+}
+
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
   let newStore = {};
   namePathList.forEach(namePath => {
@@ -38,6 +43,30 @@ export function containsNamePath(
   partialMatch = false,
 ) {
   return namePathList && namePathList.some(path => matchNamePath(namePath, path, partialMatch));
+}
+
+export function matchNamesPath(
+  namesPath: InternalNamePath[],
+  subNamePath: InternalNamePath | null,
+  partialMatch = false,
+) {
+  if (!namesPath || !subNamePath) {
+    return false;
+  }
+
+  if (!partialMatch && namesPath.length !== subNamePath.length) {
+    return false;
+  }
+
+  return subNamePath.every((nameUnit, i) => namesPath.find(namePath => namePath[i] === nameUnit));
+}
+
+export function containsNamesPath(
+  namePathList: InternalNamePath[],
+  namesPath: InternalNamePath[],
+  partialMatch = false,
+) {
+  return namePathList && namePathList.some(path => matchNamesPath(namesPath, path, partialMatch));
 }
 
 /**

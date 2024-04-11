@@ -22,12 +22,15 @@ const RangeInput = ({
 
 export default () => {
   const [form] = Form.useForm();
+  // form.setFields([{ name: 'aa', value: 'aa' }]);
   return (
     <Form
       form={form}
-      // onValuesChange={values => {
-      //   console.log(JSON.stringify(values, null, 2));
-      // }}
+      onValuesChange={values => {
+        console.log('1');
+        console.log(JSON.stringify(values, null, 2));
+        console.log('2');
+      }}
       initialValues={{ start: '1', end: '2' }}
     >
       <Field

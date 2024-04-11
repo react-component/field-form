@@ -120,14 +120,14 @@ async function validateRule(
  * But only check one value in a time to avoid namePath validate issue.
  */
 export function validateRules(
-  namePath: InternalNamePath,
+  namesPath: InternalNamePath[],
   value: StoreValue,
   rules: RuleObject[],
   options: InternalValidateOptions,
   validateFirst: boolean | 'parallel',
   messageVariables?: Record<string, string>,
 ) {
-  const name = namePath.join('.');
+  const name = namesPath.join('.');
 
   // Fill rule with context
   const filledRules: RuleObject[] = rules
