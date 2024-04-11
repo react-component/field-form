@@ -25,7 +25,6 @@ import { validateRules } from './utils/validateUtil';
 import {
   containsNamesPath,
   defaultGetValueFromEvent,
-  getNamePath,
   getNamesPath,
   getValue,
 } from './utils/valueUtil';
@@ -126,7 +125,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   private cancelRegisterFunc: (
     isListField?: boolean,
     preserve?: boolean,
-    namePath?: InternalNamePath,
+    namePath?: InternalNamePath[],
   ) => void | null = null;
 
   private mounted = false;
@@ -188,10 +187,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 
   public cancelRegister = () => {
-    const { preserve, isListField, name } = this.props;
+    const { preserve, isListField, names } = this.props;
 
     if (this.cancelRegisterFunc) {
-      this.cancelRegisterFunc(isListField, preserve, getNamePath(name));
+      this.cancelRegisterFunc(isListField, preserve, getNamesPath(names));
     }
     this.cancelRegisterFunc = null;
   };
@@ -577,7 +576,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public getControlled = (childProps: ChildProps = {}) => {
     const {
-      name,
+      names,
       trigger,
       validateTrigger,
       getValueFromEvent,
@@ -599,7 +598,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
-    const valueProps = name !== undefined ? mergedGetValueProps(values) : {};
+    const valueProps = names !== undefined ? mergedGetValueProps(values) : {};
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
