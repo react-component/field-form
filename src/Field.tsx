@@ -577,7 +577,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public getControlled = (childProps: ChildProps = {}) => {
     const {
-      name,
+      names,
       trigger,
       validateTrigger,
       getValueFromEvent,
@@ -599,7 +599,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
-    const valueProps = name !== undefined ? mergedGetValueProps(values) : {};
+    const valueProps = names !== undefined ? mergedGetValueProps(values) : {};
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
