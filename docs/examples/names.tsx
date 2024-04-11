@@ -31,10 +31,11 @@ export default () => {
       initialValues={{ start: '1', end: '2' }}
     >
       <Field
-        name="start"
-        getValueProps={value => {
-          return { value: [value] };
-        }}
+        // name="start"
+        names={['start', 'end']}
+        // getValueProps={value => {
+        //   return { value: [value] };
+        // }}
         // getValueFromEvent={value => {
         //   return value;
         // }}

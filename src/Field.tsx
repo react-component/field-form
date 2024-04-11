@@ -69,6 +69,7 @@ export interface InternalFieldProps<Values = any> {
   dependencies?: NamePath[];
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
   name?: InternalNamePath;
+  names?: InternalNamePath[];
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
   shouldUpdate?: ShouldUpdate<Values>;
@@ -99,8 +100,9 @@ export interface InternalFieldProps<Values = any> {
 }
 
 export interface FieldProps<Values = any>
-  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
+  extends Omit<InternalFieldProps<Values>, 'name' | 'names' | 'fieldContext'> {
   name?: NamePath<Values>;
+  names?: NamePath<Values>[];
 }
 
 export interface FieldState {
@@ -682,7 +684,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   }
 }
 
-function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
+function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
   const namePath = name !== undefined ? getNamePath(name) : undefined;
@@ -702,6 +704,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
+  console.log('names', names);
 
   return (
     <Field
