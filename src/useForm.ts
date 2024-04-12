@@ -41,34 +41,19 @@ import {
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
-interface UpdateAction {
-  type: 'updateValue';
-  namePath: InternalNamePath;
-  value: StoreValue;
-}
-
 interface UpdateValuesAction {
   type: 'updateValues';
   namesPath: InternalNamePath[];
   values: StoreValue[];
 }
 
-interface ValidateAction {
-  type: 'validateField';
-  namePath: InternalNamePath;
-  triggerName: string;
-}
 interface ValidateNamesAction {
   type: 'validateFields';
   namesPath: InternalNamePath[];
   triggerName: string;
 }
 
-export type ReducerAction =
-  | UpdateAction
-  | ValidateAction
-  | UpdateValuesAction
-  | ValidateNamesAction;
+export type ReducerAction = UpdateValuesAction | ValidateNamesAction;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -702,19 +687,9 @@ export class FormStore {
 
   private dispatch = (action: ReducerAction) => {
     switch (action.type) {
-      case 'updateValue': {
-        const { namePath, value } = action;
-        this.updateValue(namePath, value);
-        break;
-      }
       case 'updateValues': {
         const { namesPath, values } = action;
         this.updateValues(namesPath, values);
-        break;
-      }
-      case 'validateField': {
-        const { namePath, triggerName } = action;
-        this.validateFields([namePath], { triggerName });
         break;
       }
       case 'validateFields': {
@@ -761,31 +736,6 @@ export class FormStore {
     });
 
     return childrenFields;
-  };
-
-  private updateValue = (name: NamePath, value: StoreValue) => {
-    const namePath = getNamePath(name);
-    const prevStore = this.store;
-    this.updateStore(setValue(this.store, namePath, value));
-
-    this.notifyObservers(prevStore, [namePath], {
-      type: 'valueUpdate',
-      source: 'internal',
-    });
-    this.notifyWatch([namePath]);
-
-    // Dependencies update
-    const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
-
-    // trigger callback function
-    const { onValuesChange } = this.callbacks;
-
-    if (onValuesChange) {
-      const changedValues = cloneByNamePathList(this.store, [namePath]);
-      onValuesChange(changedValues, this.getFieldsValue());
-    }
-
-    this.triggerOnFieldsChange([namePath, ...childrenFields]);
   };
 
   private updateValues = (names: InternalNamePath[], values: StoreValue[]) => {

@@ -71,6 +71,7 @@ export interface InternalFieldProps<Values = any> {
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
   name?: InternalNamePath;
   names?: InternalNamePath[];
+  isNames?: boolean;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
   shouldUpdate?: ShouldUpdate<Values>;
@@ -204,7 +205,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     return name !== undefined ? [...prefixName, ...name] : [];
   };
   public getNamesPath = (): InternalNamePath[] => {
-    const { names, fieldContext } = this.props;
+    const { names = [], fieldContext } = this.props;
     const { prefixName = [] }: InternalFormInstance = fieldContext;
 
     return names.map(name => (name !== undefined ? [...prefixName, ...name] : []));
@@ -576,7 +577,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public getControlled = (childProps: ChildProps = {}) => {
     const {
-      name,
+      isNames,
       trigger,
       validateTrigger,
       getValueFromEvent,
@@ -634,7 +635,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         newValue = normalize(newValue, values, getFieldsValue(true));
       }
 
-      dispatch({ type: 'updateValues', namesPath, values: newValue });
+      dispatch({ type: 'updateValues', namesPath, values: isNames ? newValue : [newValue] });
 
       if (originTriggerFunc) {
         originTriggerFunc(...args);
@@ -715,6 +716,7 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
       key={key}
       name={namesPath?.[0]}
       names={namesPath}
+      isNames={!!names}
       isListField={!!listContext}
       {...restProps}
       fieldContext={fieldContext}
