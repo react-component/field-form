@@ -47,13 +47,19 @@ interface UpdateAction {
   value: StoreValue;
 }
 
+interface UpdateValuesAction {
+  type: 'updateValues';
+  namesPath: InternalNamePath[];
+  values: StoreValue[];
+}
+
 interface ValidateAction {
   type: 'validateField';
   namePath: InternalNamePath;
   triggerName: string;
 }
 
-export type ReducerAction = UpdateAction | ValidateAction;
+export type ReducerAction = UpdateAction | ValidateAction | UpdateValuesAction;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -686,6 +692,13 @@ export class FormStore {
       case 'updateValue': {
         const { namePath, value } = action;
         this.updateValue(namePath, value);
+        break;
+      }
+      case 'updateValues': {
+        const { namesPath, values } = action;
+        namesPath.forEach((namePath, index) => {
+          this.updateValue(namePath, values[index]);
+        });
         break;
       }
       case 'validateField': {

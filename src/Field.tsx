@@ -568,6 +568,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     return getValue(store || getFieldsValue(true), namePath);
   };
 
+  public getValues = (store?: Store) => {
+    const { getFieldsValue }: FormInstance = this.props.fieldContext;
+    const namesPath = this.getNamesPath();
+    return namesPath.map(namePath => getValue(store || getFieldsValue(true), namePath));
+  };
+
   public getControlled = (childProps: ChildProps = {}) => {
     const {
       name,
@@ -583,16 +589,17 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const mergedValidateTrigger =
       validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
 
-    const namePath = this.getNamePath();
+    const namesPath = this.getNamesPath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
-    const value = this.getValue();
+    const values = this.getValues();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
-    const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
+    const valueProps = name !== undefined ? mergedGetValueProps(values) : {};
+    console.log('valueProps', valueProps);
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
@@ -625,14 +632,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       if (normalize) {
-        newValue = normalize(newValue, value, getFieldsValue(true));
+        newValue = normalize(newValue, values, getFieldsValue(true));
       }
 
-      dispatch({
-        type: 'updateValue',
-        namePath,
-        value: newValue,
-      });
+      dispatch({ type: 'updateValues', namesPath, values: newValue });
 
       if (originTriggerFunc) {
         originTriggerFunc(...args);
@@ -655,10 +658,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          dispatch({
-            type: 'validateField',
-            namePath,
-            triggerName,
+          namesPath.forEach(namePath => {
+            dispatch({ type: 'validateField', namePath, triggerName });
           });
         }
       };
