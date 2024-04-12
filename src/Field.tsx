@@ -599,7 +599,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const originTriggerFunc: any = childProps[trigger];
 
     const valueProps = name !== undefined ? mergedGetValueProps(values) : {};
-    console.log('valueProps', valueProps);
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {

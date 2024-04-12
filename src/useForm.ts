@@ -905,7 +905,9 @@ export class FormStore {
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
       if (!provideNameList) {
-        namePathList.push(field.getNamePath());
+        field.getNamesPath().forEach(namePath => {
+          namePathList.push(namePath);
+        });
       }
 
       // Skip if without rule
