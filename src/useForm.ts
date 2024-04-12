@@ -636,10 +636,8 @@ export class FormStore {
 
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
-    const namesPath = entity.getNamesPath();
-    namesPath.forEach(namePath => {
-      this.notifyWatch([namePath]);
-    });
+    const namePath = entity.getNamePath();
+    this.notifyWatch([namePath]);
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
@@ -653,35 +651,33 @@ export class FormStore {
 
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
-      namesPath.forEach(namePath => {
-        this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
+      this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
 
-        // Clean up store value if not preserve
-        if (!this.isMergedPreserve(preserve) && (!isListField || subNamePath.length > 1)) {
-          const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
+      // Clean up store value if not preserve
+      if (!this.isMergedPreserve(preserve) && (!isListField || subNamePath.length > 1)) {
+        const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
 
-          if (
-            namePath.length &&
-            this.getFieldValue(namePath) !== defaultValue &&
-            this.fieldEntities.every(
-              field =>
-                // Only reset when no namePath exist
-                !matchNamePath(field.getNamePath(), namePath),
-            )
-          ) {
-            const prevStore = this.store;
-            this.updateStore(setValue(prevStore, namePath, defaultValue, true));
+        if (
+          namePath.length &&
+          this.getFieldValue(namePath) !== defaultValue &&
+          this.fieldEntities.every(
+            field =>
+              // Only reset when no namePath exist
+              !matchNamePath(field.getNamePath(), namePath),
+          )
+        ) {
+          const prevStore = this.store;
+          this.updateStore(setValue(prevStore, namePath, defaultValue, true));
 
-            // Notify that field is unmount
-            this.notifyObservers(prevStore, [namePath], { type: 'remove' });
+          // Notify that field is unmount
+          this.notifyObservers(prevStore, [namePath], { type: 'remove' });
 
-            // Dependencies update
-            this.triggerDependenciesUpdate(prevStore, namePath);
-          }
+          // Dependencies update
+          this.triggerDependenciesUpdate(prevStore, namePath);
         }
+      }
 
-        this.notifyWatch([namePath]);
-      });
+      this.notifyWatch([namePath]);
     };
   };
 

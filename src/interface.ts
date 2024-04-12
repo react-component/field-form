@@ -14,7 +14,6 @@ export interface Meta {
   errors: string[];
   warnings: string[];
   name: InternalNamePath;
-  names: InternalNamePath[];
   validated: boolean;
 }
 

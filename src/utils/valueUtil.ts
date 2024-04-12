@@ -45,30 +45,6 @@ export function containsNamePath(
   return namePathList && namePathList.some(path => matchNamePath(namePath, path, partialMatch));
 }
 
-export function matchNamesPath(
-  namesPath: InternalNamePath[],
-  subNamePath: InternalNamePath | null,
-  partialMatch = false,
-) {
-  if (!namesPath || !subNamePath) {
-    return false;
-  }
-
-  if (!partialMatch && namesPath.length !== subNamePath.length) {
-    return false;
-  }
-
-  return subNamePath.every((nameUnit, i) => namesPath.find(namePath => namePath[i] === nameUnit));
-}
-
-export function containsNamesPath(
-  namePathList: InternalNamePath[],
-  namesPath: InternalNamePath[],
-  partialMatch = false,
-) {
-  return namePathList && namePathList.some(path => matchNamesPath(namesPath, path, partialMatch));
-}
-
 /**
  * Check if `namePath` is super set or equal of `subNamePath`.
  * @param namePath A list of `InternalNamePath[]`
