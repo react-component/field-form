@@ -37,6 +37,14 @@ export default () => {
       <Field
         // name="start"
         names={['start', 'end']}
+        rules={[
+          {
+            validator(rule, value) {
+              console.log('validator', value);
+              return Promise.resolve();
+            },
+          },
+        ]}
         // getValueProps={value => {
         //   return { value: [value] };
         // }}

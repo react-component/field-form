@@ -58,8 +58,17 @@ interface ValidateAction {
   namePath: InternalNamePath;
   triggerName: string;
 }
+interface ValidateNamesAction {
+  type: 'validateFields';
+  namesPath: InternalNamePath[];
+  triggerName: string;
+}
 
-export type ReducerAction = UpdateAction | ValidateAction | UpdateValuesAction;
+export type ReducerAction =
+  | UpdateAction
+  | ValidateAction
+  | UpdateValuesAction
+  | ValidateNamesAction;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -447,8 +456,8 @@ export class FormStore {
 
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
     return fieldEntities.some(testField => {
-      const fieldNamePath = testField.getNamePath();
-      return containsNamePath(namePathList, fieldNamePath) && testField.isFieldValidating();
+      const fieldNamesPath = testField.getNamesPath();
+      return containsNamePath(namePathList, fieldNamesPath) && testField.isFieldValidating();
     });
   };
 
@@ -706,6 +715,11 @@ export class FormStore {
         this.validateFields([namePath], { triggerName });
         break;
       }
+      case 'validateFields': {
+        const { namesPath, triggerName } = action;
+        this.validateFields(namesPath, { triggerName });
+        break;
+      }
       default:
       // Currently we don't have other action. Do nothing.
     }
@@ -865,7 +879,7 @@ export class FormStore {
       }
 
       const changedFields = fields.filter(({ name: fieldName }) =>
-        containsNamePath(namePathList, fieldName as InternalNamePath),
+        containsNamePath(namePathList, [fieldName as InternalNamePath]),
       );
 
       if (changedFields.length) {
@@ -920,11 +934,12 @@ export class FormStore {
         return;
       }
 
-      const fieldNamePath = field.getNamePath();
-      validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
+      // const fieldNamePath = field.getNamePath();
+      const fieldNamesPath = field.getNamesPath();
+      validateNamePathList.add(fieldNamesPath.join(TMP_SPLIT));
 
       // Add field validate rule in to promise list
-      if (!provideNameList || containsNamePath(namePathList, fieldNamePath, recursive)) {
+      if (!provideNameList || containsNamePath(namePathList, fieldNamesPath, recursive)) {
         const promise = field.validateRules({
           validateMessages: {
             ...defaultValidateMessages,
@@ -932,11 +947,10 @@ export class FormStore {
           },
           ...options,
         });
-
         // Wrap promise with field
         promiseList.push(
           promise
-            .then<any, RuleError>(() => ({ name: fieldNamePath, errors: [], warnings: [] }))
+            .then<any, RuleError>(() => ({ name: fieldNamesPath, errors: [], warnings: [] }))
             .catch((ruleErrors: RuleError[]) => {
               const mergedErrors: string[] = [];
               const mergedWarnings: string[] = [];
@@ -951,14 +965,14 @@ export class FormStore {
 
               if (mergedErrors.length) {
                 return Promise.reject({
-                  name: fieldNamePath,
+                  name: fieldNamesPath,
                   errors: mergedErrors,
                   warnings: mergedWarnings,
                 });
               }
 
               return {
-                name: fieldNamePath,
+                name: fieldNamesPath,
                 errors: mergedErrors,
                 warnings: mergedWarnings,
               };

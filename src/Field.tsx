@@ -258,20 +258,20 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
-  public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathList, info) => {
+  public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathsList, info) => {
     const { shouldUpdate, dependencies = [], onReset } = this.props;
     const { store } = info;
-    const namePath = this.getNamePath();
-    const prevValue = this.getValue(prevStore);
-    const curValue = this.getValue(store);
+    const namesPath = this.getNamesPath();
+    const prevValues = this.getValues(prevStore);
+    const curValues = this.getValues(store);
 
-    const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
+    const namePathMatch = namePathsList && containsNamePath(namePathsList, namesPath);
 
     // `setFieldsValue` is a quick access to update related status
     if (
       info.type === 'valueUpdate' &&
       info.source === 'external' &&
-      !isEqual(prevValue, curValue)
+      !isEqual(prevValues, curValues)
     ) {
       this.touched = true;
       this.dirty = true;
@@ -283,7 +283,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     switch (info.type) {
       case 'reset':
-        if (!namePathList || namePathMatch) {
+        if (!namePathsList || namePathMatch) {
           // Clean up state
           this.touched = false;
           this.dirty = false;
@@ -334,7 +334,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
           this.reRender();
           return;
-        } else if ('value' in data && containsNamePath(namePathList, namePath, true)) {
+        } else if ('value' in data && containsNamePath(namePathsList, namesPath, true)) {
           // Contains path with value should also check
           this.reRender();
           return;
@@ -343,8 +343,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         // Handle update by `setField` with `shouldUpdate`
         if (
           shouldUpdate &&
-          !namePath.length &&
-          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+          !namesPath.length &&
+          requireUpdate(shouldUpdate, prevStore, store, prevValues, curValues, info)
         ) {
           this.reRender();
           return;
@@ -360,7 +360,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         // No need for `namePathMath` check and `shouldUpdate` check, since `valueUpdate` will be
         // emitted earlier and they will work there
         // If set it may cause unnecessary twice rerendering
-        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))) {
+        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, [dependency]))) {
           this.reRender();
           return;
         }
@@ -380,8 +380,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         //       else to check if value changed
         if (
           namePathMatch ||
-          ((!dependencies.length || namePath.length || shouldUpdate) &&
-            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
+          ((!dependencies.length || namesPath.length || shouldUpdate) &&
+            requireUpdate(shouldUpdate, prevStore, store, prevValues, curValues, info))
         ) {
           this.reRender();
           return;
@@ -396,8 +396,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public validateRules = (options?: InternalValidateOptions): Promise<RuleError[]> => {
     // We should fixed namePath & value to avoid developer change then by form function
-    const namePath = this.getNamePath();
-    const currentValue = this.getValue();
+    const namesPath = this.getNamesPath();
+    const currentValues = this.getValues();
 
     const { triggerName, validateOnly = false } = options || {};
 
@@ -437,8 +437,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       const promise = validateRules(
-        namePath,
-        currentValue,
+        namesPath,
+        currentValues,
         filteredRules,
         options,
         validateFirst,
@@ -657,9 +657,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          namesPath.forEach(namePath => {
-            dispatch({ type: 'validateField', namePath, triggerName });
-          });
+          dispatch({ type: 'validateFields', namesPath, triggerName });
         }
       };
     });

@@ -39,10 +39,15 @@ export function cloneByNamePathList(store: Store, namePathList: InternalNamePath
  */
 export function containsNamePath(
   namePathList: InternalNamePath[],
-  namePath: InternalNamePath,
+  namesPath: InternalNamePath[],
   partialMatch = false,
 ) {
-  return namePathList && namePathList.some(path => matchNamePath(namePath, path, partialMatch));
+  return (
+    namePathList &&
+    namePathList.some(path =>
+      namesPath.find(namePath => matchNamePath(namePath, path, partialMatch)),
+    )
+  );
 }
 
 /**
