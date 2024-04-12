@@ -311,8 +311,8 @@ export class FormStore {
 
     const filteredNameList: NamePath[] = [];
     fieldEntities.forEach((entity: FieldEntity | InvalidateFieldEntity) => {
-      const namePath =
-        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
+      const namesPath =
+        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamesPath();
 
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
@@ -325,11 +325,15 @@ export class FormStore {
       }
 
       if (!mergedFilterFunc) {
-        filteredNameList.push(namePath);
+        namesPath.forEach(namePath => {
+          filteredNameList.push(namePath);
+        });
       } else {
         const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
         if (mergedFilterFunc(meta)) {
-          filteredNameList.push(namePath);
+          namesPath.forEach(namePath => {
+            filteredNameList.push(namePath);
+          });
         }
       }
     });
@@ -705,9 +709,7 @@ export class FormStore {
       }
       case 'updateValues': {
         const { namesPath, values } = action;
-        namesPath.forEach((namePath, index) => {
-          this.updateValue(namePath, values[index]);
-        });
+        this.updateValues(namesPath, values);
         break;
       }
       case 'validateField': {
@@ -784,6 +786,35 @@ export class FormStore {
     }
 
     this.triggerOnFieldsChange([namePath, ...childrenFields]);
+  };
+
+  private updateValues = (names: InternalNamePath[], values: StoreValue[]) => {
+    const namesPath = names;
+    const prevStore = this.store;
+    namesPath.forEach((namePath, index) => {
+      this.updateStore(setValue(this.store, namePath, values[index]));
+    });
+
+    this.notifyObservers(prevStore, namesPath, {
+      type: 'valueUpdate',
+      source: 'internal',
+    });
+    this.notifyWatch(namesPath);
+
+    // trigger callback function
+    const { onValuesChange } = this.callbacks;
+
+    if (onValuesChange) {
+      const changedValues = cloneByNamePathList(this.store, namesPath);
+      onValuesChange(changedValues, this.getFieldsValue());
+    }
+
+    namesPath.forEach(namePath => {
+      // Dependencies update
+      const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
+
+      this.triggerOnFieldsChange([...namesPath, ...childrenFields]);
+    });
   };
 
   // Let all child Field get update.

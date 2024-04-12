@@ -26,16 +26,19 @@ export default () => {
   return (
     <Form
       form={form}
-      // onValuesChange={values => {
-      //   console.log(JSON.stringify(values, null, 2));
-      // }}
+      onValuesChange={(value, values) => {
+        console.log(JSON.stringify(value, null, 2));
+        console.log('values', values);
+      }}
       initialValues={{ start: '1', end: '2' }}
       onFinish={values => {
-        console.log('v', values);
+        console.log('values', values);
+      }}
+      onFinishFailed={error => {
+        console.log('error', error);
       }}
     >
       <Field
-        // name="start"
         names={['start', 'end']}
         rules={[
           {
@@ -45,16 +48,6 @@ export default () => {
             },
           },
         ]}
-        // getValueProps={value => {
-        //   return { value: [value] };
-        // }}
-        // getValueFromEvent={value => {
-        //   return value;
-        // }}
-        // getValuesFromEvent={value => {
-        //   const [start, end] = value || [];
-        //   return { start, end };
-        // }}
       >
         <RangeInput />
       </Field>
