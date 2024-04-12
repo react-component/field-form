@@ -120,14 +120,14 @@ async function validateRule(
  * But only check one value in a time to avoid namePath validate issue.
  */
 export function validateRules(
-  namesPath: InternalNamePath[],
-  values: StoreValue[],
+  namePath: InternalNamePath,
+  value: StoreValue,
   rules: RuleObject[],
   options: InternalValidateOptions,
   validateFirst: boolean | 'parallel',
   messageVariables?: Record<string, string>,
 ) {
-  const name = namesPath.join('.');
+  const name = namePath.join('.');
 
   // Fill rule with context
   const filledRules: RuleObject[] = rules
@@ -209,13 +209,11 @@ export function validateRules(
       /* eslint-disable no-await-in-loop */
       for (let i = 0; i < filledRules.length; i += 1) {
         const rule = filledRules[i];
-        values.forEach(async value => {
-          const errors = await validateRule(name, value, rule, options, messageVariables);
-          if (errors.length) {
-            reject([{ errors, rule }]);
-            return;
-          }
-        });
+        const errors = await validateRule(name, value, rule, options, messageVariables);
+        if (errors.length) {
+          reject([{ errors, rule }]);
+          return;
+        }
       }
       /* eslint-enable */
 
@@ -223,17 +221,9 @@ export function validateRules(
     });
   } else {
     // >>>>> Validate by parallel
-    const rulePromises: Promise<RuleError>[] = [];
-    filledRules.forEach(rule => {
-      values.map(value =>
-        rulePromises.push(
-          validateRule(name, value, rule, options, messageVariables).then(errors => ({
-            errors,
-            rule,
-          })),
-        ),
-      );
-    });
+    const rulePromises: Promise<RuleError>[] = filledRules.map(rule =>
+      validateRule(name, value, rule, options, messageVariables).then(errors => ({ errors, rule })),
+    );
 
     summaryPromise = (
       validateFirst ? finishOnFirstFailed(rulePromises) : finishOnAllFailed(rulePromises)

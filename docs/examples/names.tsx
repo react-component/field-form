@@ -39,15 +39,16 @@ export default () => {
       }}
     >
       <Field
+        // name={[]}
         names={['start', 'end']}
-        rules={[
-          {
-            validator(rule, value) {
-              console.log('validator', value);
-              return Promise.resolve();
-            },
-          },
-        ]}
+        getValueProps={value => {
+          const { start, end } = value;
+          return { value: [start, end] };
+        }}
+        getValueFromEvent={value => {
+          const [start, end] = value;
+          return { start, end };
+        }}
       >
         <RangeInput />
       </Field>

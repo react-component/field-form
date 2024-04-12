@@ -41,19 +41,19 @@ import {
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
-interface UpdateValuesAction {
-  type: 'updateValues';
-  namesPath: InternalNamePath[];
-  values: StoreValue[];
+interface UpdateAction {
+  type: 'updateValue';
+  namePath: InternalNamePath;
+  value: StoreValue;
 }
 
-interface ValidateNamesAction {
-  type: 'validateFields';
-  namesPath: InternalNamePath[];
+interface ValidateAction {
+  type: 'validateField';
+  namePath: InternalNamePath;
   triggerName: string;
 }
 
-export type ReducerAction = UpdateValuesAction | ValidateNamesAction;
+export type ReducerAction = UpdateAction | ValidateAction;
 
 export class FormStore {
   private formHooked: boolean = false;
@@ -296,8 +296,8 @@ export class FormStore {
 
     const filteredNameList: NamePath[] = [];
     fieldEntities.forEach((entity: FieldEntity | InvalidateFieldEntity) => {
-      const namesPath =
-        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamesPath();
+      const namePath =
+        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
 
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
@@ -310,15 +310,11 @@ export class FormStore {
       }
 
       if (!mergedFilterFunc) {
-        namesPath.forEach(namePath => {
-          filteredNameList.push(namePath);
-        });
+        filteredNameList.push(namePath);
       } else {
         const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
         if (mergedFilterFunc(meta)) {
-          namesPath.forEach(namePath => {
-            filteredNameList.push(namePath);
-          });
+          filteredNameList.push(namePath);
         }
       }
     });
@@ -445,8 +441,8 @@ export class FormStore {
 
     const namePathList: InternalNamePath[] = nameList.map(getNamePath);
     return fieldEntities.some(testField => {
-      const fieldNamesPath = testField.getNamesPath();
-      return containsNamePath(namePathList, fieldNamesPath) && testField.isFieldValidating();
+      const fieldNamePath = testField.getNamePath();
+      return containsNamePath(namePathList, fieldNamePath) && testField.isFieldValidating();
     });
   };
 
@@ -687,14 +683,14 @@ export class FormStore {
 
   private dispatch = (action: ReducerAction) => {
     switch (action.type) {
-      case 'updateValues': {
-        const { namesPath, values } = action;
-        this.updateValues(namesPath, values);
+      case 'updateValue': {
+        const { namePath, value } = action;
+        this.updateValue(namePath, value);
         break;
       }
-      case 'validateFields': {
-        const { namesPath, triggerName } = action;
-        this.validateFields(namesPath, { triggerName });
+      case 'validateField': {
+        const { namePath, triggerName } = action;
+        this.validateFields([namePath], { triggerName });
         break;
       }
       default:
@@ -738,33 +734,29 @@ export class FormStore {
     return childrenFields;
   };
 
-  private updateValues = (names: InternalNamePath[], values: StoreValue[]) => {
-    const namesPath = names;
+  private updateValue = (name: NamePath, value: StoreValue) => {
+    const namePath = getNamePath(name);
     const prevStore = this.store;
-    namesPath.forEach((namePath, index) => {
-      this.updateStore(setValue(this.store, namePath, values[index]));
-    });
+    this.updateStore(setValue(this.store, namePath, value));
 
-    this.notifyObservers(prevStore, namesPath, {
+    this.notifyObservers(prevStore, [namePath], {
       type: 'valueUpdate',
       source: 'internal',
     });
-    this.notifyWatch(namesPath);
+    this.notifyWatch([namePath]);
+
+    // Dependencies update
+    const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
 
     // trigger callback function
     const { onValuesChange } = this.callbacks;
 
     if (onValuesChange) {
-      const changedValues = cloneByNamePathList(this.store, namesPath);
+      const changedValues = cloneByNamePathList(this.store, [namePath]);
       onValuesChange(changedValues, this.getFieldsValue());
     }
 
-    namesPath.forEach(namePath => {
-      // Dependencies update
-      const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
-
-      this.triggerOnFieldsChange([...namesPath, ...childrenFields]);
-    });
+    this.triggerOnFieldsChange([namePath, ...childrenFields]);
   };
 
   // Let all child Field get update.
@@ -860,7 +852,7 @@ export class FormStore {
       }
 
       const changedFields = fields.filter(({ name: fieldName }) =>
-        containsNamePath(namePathList, [fieldName as InternalNamePath]),
+        containsNamePath(namePathList, fieldName as InternalNamePath),
       );
 
       if (changedFields.length) {
@@ -900,9 +892,7 @@ export class FormStore {
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
       if (!provideNameList) {
-        field.getNamesPath().forEach(namePath => {
-          namePathList.push(namePath);
-        });
+        namePathList.push(field.getNamePath());
       }
 
       // Skip if without rule
@@ -915,12 +905,11 @@ export class FormStore {
         return;
       }
 
-      // const fieldNamePath = field.getNamePath();
-      const fieldNamesPath = field.getNamesPath();
-      validateNamePathList.add(fieldNamesPath.join(TMP_SPLIT));
+      const fieldNamePath = field.getNamePath();
+      validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
 
       // Add field validate rule in to promise list
-      if (!provideNameList || containsNamePath(namePathList, fieldNamesPath, recursive)) {
+      if (!provideNameList || containsNamePath(namePathList, fieldNamePath, recursive)) {
         const promise = field.validateRules({
           validateMessages: {
             ...defaultValidateMessages,
@@ -928,10 +917,11 @@ export class FormStore {
           },
           ...options,
         });
+
         // Wrap promise with field
         promiseList.push(
           promise
-            .then<any, RuleError>(() => ({ name: fieldNamesPath, errors: [], warnings: [] }))
+            .then<any, RuleError>(() => ({ name: fieldNamePath, errors: [], warnings: [] }))
             .catch((ruleErrors: RuleError[]) => {
               const mergedErrors: string[] = [];
               const mergedWarnings: string[] = [];
@@ -946,14 +936,14 @@ export class FormStore {
 
               if (mergedErrors.length) {
                 return Promise.reject({
-                  name: fieldNamesPath,
+                  name: fieldNamePath,
                   errors: mergedErrors,
                   warnings: mergedWarnings,
                 });
               }
 
               return {
-                name: fieldNamesPath,
+                name: fieldNamePath,
                 errors: mergedErrors,
                 warnings: mergedWarnings,
               };

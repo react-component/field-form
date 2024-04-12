@@ -71,7 +71,6 @@ export interface InternalFieldProps<Values = any> {
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
   name?: InternalNamePath;
   names?: InternalNamePath[];
-  isNames?: boolean;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
   shouldUpdate?: ShouldUpdate<Values>;
@@ -204,12 +203,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     return name !== undefined ? [...prefixName, ...name] : [];
   };
-  public getNamesPath = (): InternalNamePath[] => {
-    const { names = [], fieldContext } = this.props;
-    const { prefixName = [] }: InternalFormInstance = fieldContext;
-
-    return names.map(name => (name !== undefined ? [...prefixName, ...name] : []));
-  };
 
   public getRules = (): RuleObject[] => {
     const { rules = [], fieldContext } = this.props;
@@ -259,20 +252,20 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ========================= Field Entity Interfaces =========================
   // Trigger by store update. Check if need update the component
-  public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathsList, info) => {
+  public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathList, info) => {
     const { shouldUpdate, dependencies = [], onReset } = this.props;
     const { store } = info;
-    const namesPath = this.getNamesPath();
-    const prevValues = this.getValue(prevStore);
-    const curValues = this.getValue(store);
+    const namePath = this.getNamePath();
+    const prevValue = this.getValue(prevStore);
+    const curValue = this.getValue(store);
 
-    const namePathMatch = namePathsList && containsNamePath(namePathsList, namesPath);
+    const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
     // `setFieldsValue` is a quick access to update related status
     if (
       info.type === 'valueUpdate' &&
       info.source === 'external' &&
-      !isEqual(prevValues, curValues)
+      !isEqual(prevValue, curValue)
     ) {
       this.touched = true;
       this.dirty = true;
@@ -284,7 +277,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
     switch (info.type) {
       case 'reset':
-        if (!namePathsList || namePathMatch) {
+        if (!namePathList || namePathMatch) {
           // Clean up state
           this.touched = false;
           this.dirty = false;
@@ -335,7 +328,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
           this.reRender();
           return;
-        } else if ('value' in data && containsNamePath(namePathsList, namesPath, true)) {
+        } else if ('value' in data && containsNamePath(namePathList, namePath, true)) {
           // Contains path with value should also check
           this.reRender();
           return;
@@ -344,8 +337,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         // Handle update by `setField` with `shouldUpdate`
         if (
           shouldUpdate &&
-          !namesPath.length &&
-          requireUpdate(shouldUpdate, prevStore, store, prevValues, curValues, info)
+          !namePath.length &&
+          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
         ) {
           this.reRender();
           return;
@@ -361,7 +354,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         // No need for `namePathMath` check and `shouldUpdate` check, since `valueUpdate` will be
         // emitted earlier and they will work there
         // If set it may cause unnecessary twice rerendering
-        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, [dependency]))) {
+        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))) {
           this.reRender();
           return;
         }
@@ -381,8 +374,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         //       else to check if value changed
         if (
           namePathMatch ||
-          ((!dependencies.length || namesPath.length || shouldUpdate) &&
-            requireUpdate(shouldUpdate, prevStore, store, prevValues, curValues, info))
+          ((!dependencies.length || namePath.length || shouldUpdate) &&
+            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
         ) {
           this.reRender();
           return;
@@ -397,7 +390,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public validateRules = (options?: InternalValidateOptions): Promise<RuleError[]> => {
     // We should fixed namePath & value to avoid developer change then by form function
-    const namesPath = this.getNamesPath();
+    const namePath = this.getNamePath();
     const currentValue = this.getValue();
 
     const { triggerName, validateOnly = false } = options || {};
@@ -438,7 +431,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       const promise = validateRules(
-        namesPath,
+        namePath,
         currentValue,
         filteredRules,
         options,
@@ -564,19 +557,14 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   // ============================== Field Control ==============================
   public getValue = (store?: Store) => {
-    const { isNames } = this.props;
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
-    if (isNames) {
-      const namesPath = this.getNamesPath();
-      return namesPath.map(namePath => getValue(store || getFieldsValue(true), namePath));
-    }
     const namePath = this.getNamePath();
     return getValue(store || getFieldsValue(true), namePath);
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
     const {
-      isNames,
+      name,
       trigger,
       validateTrigger,
       getValueFromEvent,
@@ -589,7 +577,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const mergedValidateTrigger =
       validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
 
-    const namesPath = this.getNamesPath();
+    const namePath = this.getNamePath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
@@ -634,7 +622,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         newValue = normalize(newValue, value, getFieldsValue(true));
       }
 
-      dispatch({ type: 'updateValues', namesPath, values: isNames ? newValue : [newValue] });
+      dispatch({
+        type: 'updateValue',
+        namePath,
+        value: newValue,
+      });
 
       if (originTriggerFunc) {
         originTriggerFunc(...args);
@@ -657,7 +649,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
         if (rules && rules.length) {
           // We dispatch validate to root,
           // since it will update related data with other field with same name
-          dispatch({ type: 'validateFields', namesPath, triggerName });
+          dispatch({
+            type: 'validateField',
+            namePath,
+            triggerName,
+          });
         }
       };
     });
@@ -692,11 +688,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Values>) {
   const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
-  const namesPath = getNamesPath(name ? [name] : names);
+  const namePath = name !== undefined ? getNamePath(name) : undefined;
+  const namesPath = getNamesPath(names);
 
   let key: string = 'keep';
   if (!restProps.isListField) {
-    key = `_${(namesPath || []).join('_')}`;
+    key = `_${(namePath || []).join('_')}`;
   }
 
   // Warning if it's a directly list field.
@@ -705,21 +702,33 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
     process.env.NODE_ENV !== 'production' &&
     restProps.preserve === false &&
     restProps.isListField &&
-    namesPath.length <= 1
+    namePath.length <= 1
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
   return (
-    <Field
-      key={key}
-      name={namesPath?.[0]}
-      names={namesPath}
-      isNames={!!names}
-      isListField={!!listContext}
-      {...restProps}
-      fieldContext={fieldContext}
-    />
+    <>
+      <Field
+        key={key}
+        name={names ? [] : namePath}
+        isListField={!!listContext}
+        {...restProps}
+        fieldContext={fieldContext}
+      />
+      {namesPath &&
+        namesPath.map(item => (
+          <Field
+            key={key + item.toString()}
+            name={item}
+            isListField={!!listContext}
+            {...restProps}
+            fieldContext={fieldContext}
+          >
+            {() => undefined}
+          </Field>
+        ))}
+    </>
   );
 }
 
