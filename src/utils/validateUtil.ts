@@ -209,11 +209,13 @@ export function validateRules(
       /* eslint-disable no-await-in-loop */
       for (let i = 0; i < filledRules.length; i += 1) {
         const rule = filledRules[i];
-        const errors = await validateRule(name, values, rule, options, messageVariables);
-        if (errors.length) {
-          reject([{ errors, rule }]);
-          return;
-        }
+        values.forEach(async value => {
+          const errors = await validateRule(name, value, rule, options, messageVariables);
+          if (errors.length) {
+            reject([{ errors, rule }]);
+            return;
+          }
+        });
       }
       /* eslint-enable */
 
@@ -221,12 +223,17 @@ export function validateRules(
     });
   } else {
     // >>>>> Validate by parallel
-    const rulePromises: Promise<RuleError>[] = filledRules.map(rule =>
-      validateRule(name, values, rule, options, messageVariables).then(errors => ({
-        errors,
-        rule,
-      })),
-    );
+    const rulePromises: Promise<RuleError>[] = [];
+    filledRules.forEach(rule => {
+      values.map(value =>
+        rulePromises.push(
+          validateRule(name, value, rule, options, messageVariables).then(errors => ({
+            errors,
+            rule,
+          })),
+        ),
+      );
+    });
 
     summaryPromise = (
       validateFirst ? finishOnFirstFailed(rulePromises) : finishOnAllFailed(rulePromises)
