@@ -38,18 +38,7 @@ export default () => {
         console.log('error', error);
       }}
     >
-      <Field
-        // name={[]}
-        names={['start', 'end']}
-        getValueProps={value => {
-          const { start, end } = value;
-          return { value: [start, end] };
-        }}
-        getValueFromEvent={value => {
-          const [start, end] = value;
-          return { start, end };
-        }}
-      >
+      <Field names={['start', 'end']}>
         <RangeInput />
       </Field>
       <button type="submit">Submit</button>

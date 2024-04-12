@@ -28,6 +28,7 @@ import {
   getNamePath,
   getNamesPath,
   getValue,
+  setValue,
 } from './utils/valueUtil';
 
 const EMPTY_ERRORS: any[] = [];
@@ -706,6 +707,29 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
+  let filedProps: InternalFieldProps = {};
+  if (namesPath) {
+    filedProps = {
+      getValueProps: value => {
+        const list = [];
+        if (value) {
+          namesPath.forEach(itemName => {
+            list.push(getValue(value, itemName));
+          });
+        }
+        return { value: list };
+      },
+      getValueFromEvent: value => {
+        let obj = {};
+        if (value) {
+          namesPath.forEach((itemName, index) => {
+            obj = setValue(obj, itemName, value[index]);
+          });
+        }
+        return obj;
+      },
+    };
+  }
 
   return (
     <>
@@ -715,6 +739,7 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
         isListField={!!listContext}
         {...restProps}
         fieldContext={fieldContext}
+        {...filedProps}
       />
       {namesPath &&
         namesPath.map(item => (
