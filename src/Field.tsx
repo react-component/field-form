@@ -715,7 +715,7 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
   return (
     <Field
       key={key}
-      name={namesPath[0]}
+      name={namesPath?.[0]}
       names={namesPath}
       isListField={!!listContext}
       {...restProps}
