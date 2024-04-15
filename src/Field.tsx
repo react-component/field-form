@@ -556,11 +556,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // ============================== Field Control ==============================
-  public getValue = (store?: Store, isNames = false) => {
+  public getValue = (store?: Store, isGetNamesValue = false) => {
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
     const { names } = this.props;
-    if (isNames && names) {
+    if (isGetNamesValue) {
       return names.map(name => getValue(store || getFieldsValue(true), name));
     }
     return getValue(store || getFieldsValue(true), namePath);
@@ -585,14 +585,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePath = this.getNamePath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
-    const value = this.getValue();
-    const values = this.getValue(undefined, true);
+    const value = names ? this.getValue(undefined, true) : this.getValue();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
-
-    const valueProps = name !== undefined ? mergedGetValueProps(names ? values : value) : {};
+    const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
@@ -625,7 +623,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       if (normalize) {
-        newValue = normalize(newValue, names ? values : value, getFieldsValue(true));
+        newValue = normalize(newValue, value, getFieldsValue(true));
       }
       if (names) {
         // eslint-disable-next-line @typescript-eslint/no-shadow
