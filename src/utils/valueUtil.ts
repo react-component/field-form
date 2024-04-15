@@ -16,10 +16,6 @@ export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
-export function getNamesPath(pathList: NamePath[] = []): InternalNamePath[] {
-  return pathList.map(path => toArray(path));
-}
-
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
   let newStore = {};
   namePathList.forEach(namePath => {

@@ -39,15 +39,15 @@ export default () => {
       }}
     >
       <Field
-        names={['start', 'end']}
-        // getValueProps={value => {
-        //   console.log('11', value);
-        //   return { value: value };
-        // }}
-        // getValueFromEvent={value => {
-        //   console.log('2', value);
-        //   return value;
-        // }}
+      // names={['start', 'end']}
+      // getValueProps={value => {
+      //   console.log('11', value);
+      //   return { value: value };
+      // }}
+      // getValueFromEvent={value => {
+      //   console.log('2', value);
+      //   return value;
+      // }}
       >
         <RangeInput />
       </Field>
