@@ -556,11 +556,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // ============================== Field Control ==============================
-  public getValue = (store?: Store, allNameValue = false) => {
+  public getValue = (store?: Store, isNames = false) => {
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
     const { names } = this.props;
-    if (allNameValue && names) {
+    if (isNames && names) {
       return names.map(name => getValue(store || getFieldsValue(true), name));
     }
     return getValue(store || getFieldsValue(true), namePath);
