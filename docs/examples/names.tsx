@@ -26,7 +26,7 @@ export const MyField = (
 ) => {
   const fieldContext = React.useContext(FieldContext);
 
-  const { names, getValueProps, getValueFromEvent, ...rest } = props;
+  const { names, getValueProps, getValueFromEvent, rules = [], ...rest } = props;
   const [firstNames, ...resetNames] = names;
   return (
     <>
@@ -47,10 +47,24 @@ export const MyField = (
           fieldContext.setFields(names.map((name, index) => ({ name, value: values[index] })));
           return values[0];
         }}
-        getValidateValue={() => {
-          const values = names.map(name => fieldContext.getFieldValue(name));
-          return values;
-        }}
+        // getValidateValue={() => {
+        //   const values = names.map(name => fieldContext.getFieldValue(name));
+        //   return values;
+        // }}
+        rules={rules.map(thisRule => {
+          if (typeof thisRule === 'object') {
+            if (thisRule.validator) {
+              return {
+                ...thisRule,
+                validator(rule, value, callback) {
+                  const values = names.map(name => fieldContext.getFieldValue(name));
+                  return thisRule.validator(rule, values, callback);
+                },
+              };
+            }
+          }
+          return { ...thisRule };
+        })}
         {...rest}
       />
       {resetNames.map(name => (
