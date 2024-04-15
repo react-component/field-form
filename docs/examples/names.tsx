@@ -1,6 +1,7 @@
-import Form, { Field } from 'rc-field-form';
+import Form, { Field, FieldContext } from 'rc-field-form';
 import React from 'react';
 import Input from './components/Input';
+import type { FieldProps } from '@/Field';
 
 const RangeInput = ({
   value = [],
@@ -20,16 +21,50 @@ const RangeInput = ({
   );
 };
 
+export const MyField = (
+  props: FieldProps & { names?: FieldProps<Record<string, any>>['name'][] },
+) => {
+  const fieldContext = React.useContext(FieldContext);
+
+  const { names, getValueProps, getValueFromEvent, ...rest } = props;
+  const [firstNames, ...resetNames] = names;
+  return (
+    <>
+      <Field
+        name={firstNames}
+        getValueProps={() => {
+          const values = names.map(name => fieldContext.getFieldValue(name));
+          if (getValueProps) {
+            return getValueProps(values);
+          }
+          return { value: values };
+        }}
+        getValueFromEvent={value => {
+          let values = value;
+          if (getValueFromEvent) {
+            values = getValueFromEvent(value);
+          }
+          names.forEach((name, index) => {
+            fieldContext.setFields([{ name, value: values[index] }]);
+          });
+          return value[0];
+        }}
+        {...rest}
+      />
+      {resetNames.map(name => (
+        <Field key={name.toString()} name={name}>
+          {() => undefined}
+        </Field>
+      ))}
+    </>
+  );
+};
+
 export default () => {
   const [form] = Form.useForm();
-  // form.setFields([{ name: 'aa', value: 'aa' }]);
   return (
     <Form
       form={form}
-      // onValuesChange={(value, values) => {
-      //   console.log(JSON.stringify(value, null, 2));
-      //   console.log('values', values);
-      // }}
       initialValues={{ start: '1', end: '2' }}
       onFinish={values => {
         console.log('values', values);
@@ -38,19 +73,17 @@ export default () => {
         console.log('error', error);
       }}
     >
-      <Field
-      // names={['start', 'end']}
-      // getValueProps={value => {
-      //   console.log('11', value);
-      //   return { value: value };
-      // }}
-      // getValueFromEvent={value => {
-      //   console.log('2', value);
-      //   return value;
-      // }}
+      <MyField
+        names={['start', 'end']}
+        getValueProps={value => {
+          return { value: value };
+        }}
+        getValueFromEvent={value => {
+          return value;
+        }}
       >
         <RangeInput />
-      </Field>
+      </MyField>
       <button type="submit">Submit</button>
     </Form>
   );
