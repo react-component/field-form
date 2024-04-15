@@ -28,7 +28,6 @@ import {
   getNamePath,
   getNamesPath,
   getValue,
-  setValue,
 } from './utils/valueUtil';
 
 const EMPTY_ERRORS: any[] = [];
@@ -557,15 +556,20 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // ============================== Field Control ==============================
-  public getValue = (store?: Store) => {
+  public getValue = (store?: Store, allNameValue = false) => {
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
+    const { names } = this.props;
+    if (allNameValue && names) {
+      return [namePath, ...names].map(name => getValue(store || getFieldsValue(true), name));
+    }
     return getValue(store || getFieldsValue(true), namePath);
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
     const {
       name,
+      names,
       trigger,
       validateTrigger,
       getValueFromEvent,
@@ -582,12 +586,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
+    const values = this.getValue(undefined, true);
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
-    const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
+    const valueProps = name !== undefined ? mergedGetValueProps(names ? values : value) : {};
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
@@ -620,14 +625,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       if (normalize) {
-        newValue = normalize(newValue, value, getFieldsValue(true));
+        newValue = normalize(newValue, names ? values : value, getFieldsValue(true));
       }
-
-      dispatch({
-        type: 'updateValue',
-        namePath,
-        value: newValue,
-      });
+      if (names) {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        [namePath, ...names].forEach((namePath, index) => {
+          dispatch({ type: 'updateValue', namePath, value: newValue[index] });
+        });
+      } else {
+        dispatch({ type: 'updateValue', namePath, value: newValue });
+      }
 
       if (originTriggerFunc) {
         originTriggerFunc(...args);
@@ -707,52 +714,30 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
-  let filedProps: InternalFieldProps = {};
-  if (namesPath) {
-    filedProps = {
-      getValueProps: value => {
-        const list = [];
-        if (value) {
-          namesPath.forEach(itemName => {
-            list.push(getValue(value, itemName));
-          });
-        }
-        return { value: list };
-      },
-      getValueFromEvent: value => {
-        let obj = {};
-        if (value) {
-          namesPath.forEach((itemName, index) => {
-            obj = setValue(obj, itemName, value[index]);
-          });
-        }
-        return obj;
-      },
-    };
-  }
+
+  const [firstNames, ...resetNames] = namesPath;
 
   return (
     <>
       <Field
         key={key}
-        name={names ? [] : namePath}
+        name={names ? firstNames : namePath}
+        names={resetNames}
         isListField={!!listContext}
         {...restProps}
         fieldContext={fieldContext}
-        {...filedProps}
       />
-      {namesPath &&
-        namesPath.map(item => (
-          <Field
-            key={key + item.toString()}
-            name={item}
-            isListField={!!listContext}
-            {...restProps}
-            fieldContext={fieldContext}
-          >
-            {() => undefined}
-          </Field>
-        ))}
+      {resetNames.map(item => (
+        <Field
+          key={key + item.toString()}
+          name={item}
+          isListField={!!listContext}
+          {...restProps}
+          fieldContext={fieldContext}
+        >
+          {() => undefined}
+        </Field>
+      ))}
     </>
   );
 }

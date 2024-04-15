@@ -16,8 +16,7 @@ export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
-export function getNamesPath(pathList?: NamePath[]): InternalNamePath[] {
-  if (pathList == undefined) return pathList;
+export function getNamesPath(pathList: NamePath[] = []): InternalNamePath[] {
   return pathList.map(path => toArray(path));
 }
 

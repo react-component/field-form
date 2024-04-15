@@ -26,10 +26,10 @@ export default () => {
   return (
     <Form
       form={form}
-      onValuesChange={(value, values) => {
-        console.log(JSON.stringify(value, null, 2));
-        console.log('values', values);
-      }}
+      // onValuesChange={(value, values) => {
+      //   console.log(JSON.stringify(value, null, 2));
+      //   console.log('values', values);
+      // }}
       initialValues={{ start: '1', end: '2' }}
       onFinish={values => {
         console.log('values', values);
