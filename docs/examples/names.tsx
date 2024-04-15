@@ -38,7 +38,17 @@ export default () => {
         console.log('error', error);
       }}
     >
-      <Field names={['start', 'end']}>
+      <Field
+        names={['start', 'end']}
+        // getValueProps={value => {
+        //   console.log('11', value);
+        //   return { value: value };
+        // }}
+        // getValueFromEvent={value => {
+        //   console.log('2', value);
+        //   return value;
+        // }}
+      >
         <RangeInput />
       </Field>
       <button type="submit">Submit</button>

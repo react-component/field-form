@@ -71,6 +71,7 @@ export interface InternalFieldProps<Values = any> {
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
   name?: InternalNamePath;
   names?: InternalNamePath[];
+  noField?: boolean;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
   shouldUpdate?: ShouldUpdate<Values>;
@@ -572,6 +573,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const {
       name,
       names,
+      noField,
       trigger,
       validateTrigger,
       getValueFromEvent,
@@ -580,6 +582,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       getValueProps,
       fieldContext,
     } = this.props;
+    if (noField) return;
 
     const mergedValidateTrigger =
       validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
@@ -730,6 +733,7 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
         <Field
           key={key + item.toString()}
           name={item}
+          noField
           isListField={!!listContext}
           {...restProps}
           fieldContext={fieldContext}
