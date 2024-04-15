@@ -68,6 +68,7 @@ export interface InternalFieldProps<Values = any> {
    */
   dependencies?: NamePath[];
   getValueFromEvent?: (...args: EventArgs) => StoreValue;
+  getValidateValue?: () => StoreValue;
   name?: InternalNamePath;
   normalize?: (value: StoreValue, prevValue: StoreValue, allValues: Store) => StoreValue;
   rules?: Rule[];
@@ -386,6 +387,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   public validateRules = (options?: InternalValidateOptions): Promise<RuleError[]> => {
+    const { getValidateValue } = this.props;
     // We should fixed namePath & value to avoid developer change then by form function
     const namePath = this.getNamePath();
     const currentValue = this.getValue();
@@ -429,7 +431,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       const promise = validateRules(
         namePath,
-        currentValue,
+        getValidateValue ? getValidateValue() : currentValue,
         filteredRules,
         options,
         validateFirst,
