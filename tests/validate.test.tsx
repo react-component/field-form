@@ -1092,7 +1092,7 @@ describe('Form.Validate', () => {
       <Form>
         <InfoField
           name="username"
-          getValidateValue={() => 'test'}
+          getValidateValue={values => values.username + '-test'}
           rules={[
             {
               validator: (_, value) => {
@@ -1106,6 +1106,6 @@ describe('Form.Validate', () => {
     );
 
     await changeValue(getInput(container), 'light');
-    expect(v).toBe('test');
+    expect(v).toBe('light-test');
   });
 });
