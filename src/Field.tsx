@@ -561,7 +561,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePath = this.getNamePath();
     const { names } = this.props;
     if (allNameValue && names) {
-      return [namePath, ...names].map(name => getValue(store || getFieldsValue(true), name));
+      return names.map(name => getValue(store || getFieldsValue(true), name));
     }
     return getValue(store || getFieldsValue(true), namePath);
   };
@@ -629,7 +629,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
       if (names) {
         // eslint-disable-next-line @typescript-eslint/no-shadow
-        [namePath, ...names].forEach((namePath, index) => {
+        names.forEach((namePath, index) => {
           dispatch({ type: 'updateValue', namePath, value: newValue[index] });
         });
       } else {
@@ -722,7 +722,7 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
       <Field
         key={key}
         name={names ? firstNames : namePath}
-        names={resetNames}
+        names={namesPath}
         isListField={!!listContext}
         {...restProps}
         fieldContext={fieldContext}
