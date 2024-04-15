@@ -560,7 +560,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
     const { names } = this.props;
-    if (allNameValue && names.length) {
+    if (allNameValue && names) {
       return names.map(name => getValue(store || getFieldsValue(true), name));
     }
     return getValue(store || getFieldsValue(true), namePath);
@@ -592,7 +592,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc: any = childProps[trigger];
 
-    const valueProps = name !== undefined ? mergedGetValueProps(names.length ? values : value) : {};
+    const valueProps = name !== undefined ? mergedGetValueProps(names ? values : value) : {};
 
     // warning when prop value is function
     if (process.env.NODE_ENV !== 'production' && valueProps) {
@@ -625,9 +625,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       if (normalize) {
-        newValue = normalize(newValue, names.length ? values : value, getFieldsValue(true));
+        newValue = normalize(newValue, names ? values : value, getFieldsValue(true));
       }
-      if (names.length) {
+      if (names) {
         // eslint-disable-next-line @typescript-eslint/no-shadow
         names.forEach((namePath, index) => {
           dispatch({ type: 'updateValue', namePath, value: newValue[index] });
@@ -716,13 +716,12 @@ function WrapperField<Values = any>({ name, names, ...restProps }: FieldProps<Va
   }
 
   const [firstNames, ...resetNames] = namesPath;
-
   return (
     <>
       <Field
         key={key}
         name={names ? firstNames : namePath}
-        names={namesPath}
+        names={names ? namesPath : undefined}
         isListField={!!listContext}
         {...restProps}
         fieldContext={fieldContext}
