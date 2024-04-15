@@ -45,7 +45,7 @@ export const MyField = (
             values = getValueFromEvent(value);
           }
           fieldContext.setFields(names.map((name, index) => ({ name, value: values[index] })));
-          return value[0];
+          return values[0];
         }}
         getValidateValue={() => {
           const values = names.map(name => fieldContext.getFieldValue(name));
