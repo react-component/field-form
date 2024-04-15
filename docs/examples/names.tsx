@@ -44,9 +44,7 @@ export const MyField = (
           if (getValueFromEvent) {
             values = getValueFromEvent(value);
           }
-          names.forEach((name, index) => {
-            fieldContext.setFields([{ name, value: values[index] }]);
-          });
+          fieldContext.setFields(names.map((name, index) => ({ name, value: values[index] })));
           return value[0];
         }}
         {...rest}
