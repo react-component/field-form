@@ -556,14 +556,16 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   };
 
   // ============================== Field Control ==============================
-  public getValue = (store?: Store, isGetNamesValue = false) => {
+  public getValue = (store?: Store) => {
     const { getFieldsValue }: FormInstance = this.props.fieldContext;
     const namePath = this.getNamePath();
-    const { names } = this.props;
-    if (isGetNamesValue) {
-      return names.map(name => getValue(store || getFieldsValue(true), name));
-    }
     return getValue(store || getFieldsValue(true), namePath);
+  };
+
+  public getValues = (store?: Store) => {
+    const { getFieldsValue }: FormInstance = this.props.fieldContext;
+    const { names } = this.props;
+    return names.map(name => getValue(store || getFieldsValue(true), name));
   };
 
   public getControlled = (childProps: ChildProps = {}) => {
@@ -585,7 +587,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePath = this.getNamePath();
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
-    const value = names ? this.getValue(undefined, true) : this.getValue();
+    const value = names ? this.getValues() : this.getValue();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
