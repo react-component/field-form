@@ -47,6 +47,10 @@ export const MyField = (
           fieldContext.setFields(names.map((name, index) => ({ name, value: values[index] })));
           return value[0];
         }}
+        getValidateValue={() => {
+          const values = names.map(name => fieldContext.getFieldValue(name));
+          return values;
+        }}
         {...rest}
       />
       {resetNames.map(name => (
@@ -79,6 +83,14 @@ export default () => {
         getValueFromEvent={value => {
           return value;
         }}
+        rules={[
+          {
+            validator(rule, value) {
+              console.log('v', value);
+              return Promise.resolve();
+            },
+          },
+        ]}
       >
         <RangeInput />
       </MyField>
