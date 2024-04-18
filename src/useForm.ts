@@ -1062,10 +1062,8 @@ export class FormStore {
           errorFields: errorList,
           outOfDate: this.lastValidatePromise !== summaryPromise,
         });
-      });
-
-    // Do not throw in console
-    returnPromise.catch<ValidateErrorEntity>(e => e);
+      })
+      .catch<ValidateErrorEntity>(e => e);
 
     // `validating` changed. Trigger `onFieldsChange`
     const triggerNamePathList = namePathList.filter(namePath =>
