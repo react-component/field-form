@@ -7,9 +7,9 @@ export default () => {
   const [count, setCount] = useState(0);
 
   const [form] = Form.useForm(undefined, {
+    // useForm 增加 onLoad 还是 Form 增加 onLoad
     onFormLoad: () => {
-      console.log('load');
-      form.resetFields();
+      // form.resetFields();
     },
   });
 
@@ -26,7 +26,12 @@ export default () => {
         load
       </button>
       {load && (
-        <Form form={form} initialValues={{ count }}>
+        <Form
+          form={form}
+          // 或者 Form 增加 onLoad？
+          onLoad={() => form.resetFields()}
+          initialValues={{ count }}
+        >
           <Field name="count">
             <Input placeholder="count" />
           </Field>

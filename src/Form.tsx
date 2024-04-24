@@ -33,6 +33,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFinishFailed?: Callbacks<Values>['onFinishFailed'];
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
+  onLoad?: () => void;
 }
 
 const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
@@ -50,6 +51,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFieldsChange,
     onFinish,
     onFinishFailed,
+    onLoad,
     ...restProps
   }: FormProps,
   ref,
@@ -75,6 +77,10 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   React.useEffect(() => {
     onFormLoad();
   }, [onFormLoad]);
+
+  React.useEffect(() => {
+    onLoad();
+  }, [onLoad]);
 
   // Register form into Context
   React.useEffect(() => {
