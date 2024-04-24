@@ -91,7 +91,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   });
   setCallbacks({
     onValuesChange,
-    onFieldsChange: (changedFields: FieldData[], ...rest) => {
+    onFieldsChange: (changedFields, ...rest) => {
       formContext.triggerFormChange(name, changedFields);
 
       if (onFieldsChange) {
