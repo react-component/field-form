@@ -25,6 +25,15 @@ export default () => {
       >
         load
       </button>
+
+      <button
+        onClick={() => {
+          form.resetFields();
+          console.log(form.getFieldsValue(true));
+        }}
+      >
+        values
+      </button>
       {load && (
         <Form
           form={form}
