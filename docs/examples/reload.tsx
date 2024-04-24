@@ -7,7 +7,8 @@ export default () => {
   const [count, setCount] = useState(0);
 
   const [form] = Form.useForm(undefined, {
-    onLoad: () => {
+    onFormLoad: () => {
+      console.log('load');
       form.resetFields();
     },
   });

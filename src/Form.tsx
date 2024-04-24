@@ -66,16 +66,16 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     setValidateMessages,
     setPreserve,
     destroyForm,
-    onLoad,
+    onFormLoad,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
   React.useImperativeHandle(ref, () => formInstance);
 
   React.useEffect(() => {
-    onLoad();
+    onFormLoad();
     return () => {};
-  }, [onLoad]);
+  }, [onFormLoad]);
 
   // Register form into Context
   React.useEffect(() => {

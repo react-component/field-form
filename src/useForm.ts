@@ -55,12 +55,14 @@ interface ValidateAction {
 
 export type ReducerAction = UpdateAction | ValidateAction;
 
+export type ConfigType = { onFormLoad?: () => void };
+
 export class FormStore {
   private formHooked: boolean = false;
 
   private forceRootUpdate: () => void;
 
-  private config: { onLoad?: () => void };
+  private config: ConfigType;
 
   private subscribable: boolean = true;
 
@@ -78,7 +80,7 @@ export class FormStore {
 
   private lastValidatePromise: Promise<FieldError[]> = null;
 
-  constructor(forceRootUpdate: () => void, config?: { onLoad?: () => void }) {
+  constructor(forceRootUpdate: () => void, config?: ConfigType) {
     this.forceRootUpdate = forceRootUpdate;
     this.config = config;
   }
@@ -122,7 +124,7 @@ export class FormStore {
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
         registerWatch: this.registerWatch,
-        onLoad: this.onLoad,
+        onFormLoad: this.onFormLoad,
       };
     }
 
@@ -200,8 +202,8 @@ export class FormStore {
       this.watchList = this.watchList.filter(fn => fn !== callback);
     };
   };
-  private onLoad: InternalHooks['onLoad'] = () => {
-    this.config.onLoad();
+  private onFormLoad: InternalHooks['onFormLoad'] = () => {
+    this.config.onFormLoad();
   };
 
   private notifyWatch = (namePath: InternalNamePath[] = []) => {
@@ -1028,7 +1030,7 @@ export class FormStore {
 
 function useForm<Values = any>(
   form?: FormInstance<Values>,
-  config?: { onLoad?: () => void },
+  config?: ConfigType,
 ): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState({});
