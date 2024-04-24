@@ -62,8 +62,6 @@ export class FormStore {
 
   private forceRootUpdate: () => void;
 
-  private config: ConfigType;
-
   private subscribable: boolean = true;
 
   private store: Store = {};
@@ -79,6 +77,8 @@ export class FormStore {
   private preserve?: boolean = null;
 
   private lastValidatePromise: Promise<FieldError[]> = null;
+
+  private config?: ConfigType;
 
   constructor(forceRootUpdate: () => void, config?: ConfigType) {
     this.forceRootUpdate = forceRootUpdate;
@@ -203,7 +203,7 @@ export class FormStore {
     };
   };
   private onFormLoad: InternalHooks['onFormLoad'] = () => {
-    this.config.onFormLoad();
+    this.config?.onFormLoad();
   };
 
   private notifyWatch = (namePath: InternalNamePath[] = []) => {

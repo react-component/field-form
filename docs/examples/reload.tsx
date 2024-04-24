@@ -15,7 +15,7 @@ export default () => {
 
   return (
     <>
-      <a
+      <button
         onClick={() => {
           if (load) {
             setCount(c => c + 1);
@@ -24,7 +24,7 @@ export default () => {
         }}
       >
         load
-      </a>
+      </button>
       {load && (
         <Form form={form} initialValues={{ count }}>
           <Field name="count">
