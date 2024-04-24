@@ -60,6 +60,8 @@ export class FormStore {
 
   private forceRootUpdate: () => void;
 
+  private config: { onLoad?: () => void };
+
   private subscribable: boolean = true;
 
   private store: Store = {};
@@ -76,8 +78,9 @@ export class FormStore {
 
   private lastValidatePromise: Promise<FieldError[]> = null;
 
-  constructor(forceRootUpdate: () => void) {
+  constructor(forceRootUpdate: () => void, config?: { onLoad?: () => void }) {
     this.forceRootUpdate = forceRootUpdate;
+    this.config = config;
   }
 
   public getForm = (): InternalFormInstance => ({
@@ -119,6 +122,7 @@ export class FormStore {
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
         registerWatch: this.registerWatch,
+        onLoad: this.onLoad,
       };
     }
 
@@ -195,6 +199,9 @@ export class FormStore {
     return () => {
       this.watchList = this.watchList.filter(fn => fn !== callback);
     };
+  };
+  private onLoad: InternalHooks['onLoad'] = () => {
+    this.config.onLoad();
   };
 
   private notifyWatch = (namePath: InternalNamePath[] = []) => {
@@ -1019,7 +1026,10 @@ export class FormStore {
   };
 }
 
-function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Values>] {
+function useForm<Values = any>(
+  form?: FormInstance<Values>,
+  config?: { onLoad?: () => void },
+): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState({});
 
@@ -1032,11 +1042,13 @@ function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Value
         forceUpdate({});
       };
 
-      const formStore: FormStore = new FormStore(forceReRender);
+      const formStore: FormStore = new FormStore(forceReRender, config);
 
       formRef.current = formStore.getForm();
+      console.log('formRef.current', formRef.current);
     }
   }
+  console.log('config', config);
 
   return [formRef.current];
 }

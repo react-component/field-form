@@ -232,6 +232,7 @@ export interface InternalHooks {
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
+  onLoad: () => void;
 }
 
 /** Only return partial when type is not any */
@@ -240,8 +241,8 @@ type RecursivePartial<T> = NonNullable<T> extends object
       [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
         ? RecursivePartial<U>[]
         : NonNullable<T[P]> extends object
-        ? RecursivePartial<T[P]>
-        : T[P];
+          ? RecursivePartial<T[P]>
+          : T[P];
     }
   : T;
 
