@@ -1045,10 +1045,8 @@ function useForm<Values = any>(
       const formStore: FormStore = new FormStore(forceReRender, config);
 
       formRef.current = formStore.getForm();
-      console.log('formRef.current', formRef.current);
     }
   }
-  console.log('config', config);
 
   return [formRef.current];
 }
