@@ -203,7 +203,7 @@ export class FormStore {
     };
   };
   private onFormLoad: InternalHooks['onFormLoad'] = () => {
-    this.config?.onFormLoad();
+    this.config?.onFormLoad?.();
   };
 
   private notifyWatch = (namePath: InternalNamePath[] = []) => {
