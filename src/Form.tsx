@@ -74,7 +74,6 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
 
   React.useEffect(() => {
     onFormLoad();
-    return () => {};
   }, [onFormLoad]);
 
   // Register form into Context
