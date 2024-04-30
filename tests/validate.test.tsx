@@ -1075,11 +1075,8 @@ describe('Form.Validate', () => {
     matchError(container.querySelectorAll<HTMLDivElement>('.field')[1], `validate`);
     matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
 
-
     // Revalidate
-    rerender(
-      <Demo touchMessage="new_touch" validateMessage="new_validate" />,
-    );
+    rerender(<Demo touchMessage="new_touch" validateMessage="new_validate" />);
     formRef.current.validateFields({ dirty: true });
 
     await waitFakeTime();
@@ -1090,3 +1087,26 @@ describe('Form.Validate', () => {
     jest.useRealTimers();
   });
 });
+
+const useDefaultProps = <T,>(originalProps: T, defaultProps: Record<PropertyKey, any>): T => {
+  const mergedProps = React.useMemo<T>(() => {
+    const props = Object.assign({}, originalProps);
+    Object.keys(defaultProps).forEach(key => {
+      // https://github.com/facebook/react/blob/main/packages/react/src/jsx/ReactJSXElement.js#L388-L394
+      if (props[key] === undefined) {
+        props[key] = defaultProps[key];
+      }
+    });
+    return props;
+  }, [originalProps, defaultProps]);
+  return mergedProps;
+};
+
+export default useDefaultProps;
+
+const props = (originalProps, defaultProps);
+
+const App: React.FC<xxx> = originalProps => {
+  const props = useDefaultProps(originalProps, defaultProps);
+  return <div>xxx</div>;
+};
