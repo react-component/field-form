@@ -575,7 +575,6 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const value = this.getValue();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originTriggerFunc = childProps[trigger];
 
     const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
