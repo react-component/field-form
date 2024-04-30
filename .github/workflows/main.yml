@@ -108,6 +108,11 @@ jobs:
           key: node_modules-${{ hashFiles('**/package-temp-dir/package-lock.json') }}
 
       - name: coverage
-        run: npm test -- --coverage && bash <(curl -s https://codecov.io/bash)
+        run: npm test -- --coverage
+
+      - uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true # optional (default = false)
+          token: ${{ secrets.CODECOV_TOKEN }} # required
 
     needs: setup
