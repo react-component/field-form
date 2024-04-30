@@ -562,11 +562,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public getControlled = (childProps: ChildProps = {}) => {
     const {
       name,
-      trigger,
+      trigger = 'onChange',
       validateTrigger,
       getValueFromEvent,
       normalize,
-      valuePropName,
+      valuePropName = 'value',
       getValueProps,
       fieldContext,
     } = this.props;
@@ -581,7 +581,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originTriggerFunc: any = childProps[trigger];
+    const originTriggerFunc = childProps[trigger];
 
     const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
 
