@@ -1,6 +1,5 @@
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, act } from '@testing-library/react';
 import React, { useEffect } from 'react';
-import { act } from 'react-dom/test-utils';
 import Form, { Field, useForm } from '../src';
 import type { FormInstance, ValidateMessages } from '../src/interface';
 import { changeValue, getInput, matchError } from './common';
@@ -9,14 +8,10 @@ import timeout, { waitFakeTime } from './common/timeout';
 
 describe('Form.Validate', () => {
   it('required', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
     const { container } = render(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <InfoField name="username" rules={[{ required: true }]} />
         </Form>
       </div>,
@@ -24,8 +19,8 @@ describe('Form.Validate', () => {
 
     await changeValue(getInput(container), ['bamboo', '']);
     matchError(container, true);
-    expect(form.getFieldError('username')).toEqual(["'username' is required"]);
-    expect(form.getFieldsError()).toEqual([
+    expect(form.current?.getFieldError('username')).toEqual(["'username' is required"]);
+    expect(form.current?.getFieldsError()).toEqual([
       {
         name: ['username'],
         errors: ["'username' is required"],
@@ -34,7 +29,7 @@ describe('Form.Validate', () => {
     ]);
 
     // Contains not exists
-    expect(form.getFieldsError(['username', 'not-exist'])).toEqual([
+    expect(form.current?.getFieldsError(['username', 'not-exist'])).toEqual([
       {
         name: ['username'],
         errors: ["'username' is required"],
@@ -1075,11 +1070,8 @@ describe('Form.Validate', () => {
     matchError(container.querySelectorAll<HTMLDivElement>('.field')[1], `validate`);
     matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
 
-
     // Revalidate
-    rerender(
-      <Demo touchMessage="new_touch" validateMessage="new_validate" />,
-    );
+    rerender(<Demo touchMessage="new_touch" validateMessage="new_validate" />);
     formRef.current.validateFields({ dirty: true });
 
     await waitFakeTime();

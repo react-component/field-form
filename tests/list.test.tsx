@@ -1,6 +1,5 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, act } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List } from '../src';
 import type { FormProps } from '../src';
@@ -863,25 +862,23 @@ describe('Form.List', () => {
         <Form.List name="list">
           {(fields, { add }) => (
             <>
-              {
-                fields.map((field) => {
-                  return (
-                    <React.Fragment key={field.key}>
-                      <Form.Field name={[field.name, 'field1']}>
-                        <input placeholder="field1" />
-                      </Form.Field>
-                      <Form.Field name={[field.name, 'field2']}>
-                        <input placeholder="field2" />
-                      </Form.Field>
-                    </React.Fragment>
-                  );
-                })
-              }
+              {fields.map(field => {
+                return (
+                  <React.Fragment key={field.key}>
+                    <Form.Field name={[field.name, 'field1']}>
+                      <input placeholder="field1" />
+                    </Form.Field>
+                    <Form.Field name={[field.name, 'field2']}>
+                      <input placeholder="field2" />
+                    </Form.Field>
+                  </React.Fragment>
+                );
+              })}
               <button onClick={() => add()}>add</button>
             </>
           )}
         </Form.List>
-      </Form>
+      </Form>,
     );
 
     expect(formRef.current.isFieldsTouched(true)).toBeFalsy();
