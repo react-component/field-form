@@ -111,11 +111,6 @@ export interface FieldState {
 class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
 
-  public static defaultProps = {
-    trigger: 'onChange',
-    valuePropName: 'value',
-  };
-
   public state = {
     resetCount: 0,
   };
