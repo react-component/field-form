@@ -1,7 +1,7 @@
 import { act, fireEvent, render } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
-import React, { useState } from 'react';
-import Form, { Field, List, useForm, type FormInstance } from '../src';
+import React, { useContext, useState } from 'react';
+import Form, { Field, List, useForm, type FormInstance, FieldContext } from '../src';
 import { changeValue, getInput } from './common';
 import { Input } from './common/InfoField';
 
@@ -412,5 +412,28 @@ describe('Form.InitialValues', () => {
     // Reset
     fireEvent.reset(container.querySelector('form'));
     expect(container.querySelectorAll('input')).toHaveLength(0);
+  });
+
+  it('getInitialValues', () => {
+    const Demo = () => {
+      const form = useContext(FieldContext);
+
+      return (
+        <div style={{ display: 'flex', gap: 4 }}>
+          origin name:{form.getInitialValues().name}
+          <Field name="name">
+            <Input placeholder="Username" />
+          </Field>
+        </div>
+      );
+    };
+
+    const { queryByText } = render(
+      <Form initialValues={{ name: 'test' }}>
+        <Demo />
+      </Form>,
+    );
+
+    expect(queryByText('origin name:test')).toBeTruthy();
   });
 });

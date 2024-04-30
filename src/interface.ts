@@ -240,8 +240,8 @@ type RecursivePartial<T> = NonNullable<T> extends object
       [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
         ? RecursivePartial<U>[]
         : NonNullable<T[P]> extends object
-        ? RecursivePartial<T[P]>
-        : T[P];
+          ? RecursivePartial<T[P]>
+          : T[P];
     }
   : T;
 
@@ -271,6 +271,7 @@ export interface FormInstance<Values = any> {
 
   // New API
   submit: () => void;
+  getInitialValues: () => StoreValue;
 }
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {

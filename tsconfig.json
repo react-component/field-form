@@ -10,7 +10,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@@/*": ["src/.umi/*"],
-      "rc-field-form": ["src/index.tsx"]
+      "rc-field-form": ["src/index.tsx"],
+      "rc-field-form/es/*": ["src/*"]
     }
   }
 }

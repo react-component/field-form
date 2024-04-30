@@ -82,6 +82,7 @@ export class FormStore {
 
   public getForm = (): InternalFormInstance => ({
     getFieldValue: this.getFieldValue,
+    getInitialValues: this.getInitialValues,
     getFieldsValue: this.getFieldsValue,
     getFieldError: this.getFieldError,
     getFieldWarning: this.getFieldWarning,
@@ -327,6 +328,11 @@ export class FormStore {
 
     const namePath: InternalNamePath = getNamePath(name);
     return getValue(this.store, namePath);
+  };
+
+  private getInitialValues = () => {
+    this.warningUnhooked();
+    return this.initialValues;
   };
 
   private getFieldsError = (nameList?: NamePath[]) => {
