@@ -140,10 +140,10 @@ function useWatch(
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
       const getWatchValue = (values: any, allValues: any) => {
-        const watchValue = options.preserve ? allValues : values;
         if (dependencies === undefined) {
           return undefined;
         }
+        const watchValue = options.preserve ? allValues : values;
         return typeof dependencies === 'function'
           ? dependencies(watchValue)
           : getValue(watchValue, namePathRef.current);
