@@ -71,7 +71,12 @@ describe('useWatch', () => {
       );
     };
 
-    const { container } = render(<Demo />);
+    const { container, rerender } = render(<Demo />);
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
+    rerender(<Demo name="" />);
     await act(async () => {
       await timeout();
     });
