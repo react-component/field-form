@@ -1,6 +1,6 @@
 import warning from 'rc-util/lib/warning';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import FieldContext, { HOOK_MARK } from './FieldContext';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { HOOK_MARK } from './FieldContext';
 import type {
   FormInstance,
   InternalFormInstance,
@@ -11,6 +11,7 @@ import type {
 } from './interface';
 import { isFormInstance } from './utils/typeUtil';
 import { getNamePath, getValue } from './utils/valueUtil';
+import useFormInstance from './useFormInstance';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
@@ -111,8 +112,10 @@ function useWatch(
   const valueStrRef = useRef(valueStr);
   valueStrRef.current = valueStr;
 
-  const fieldContext = useContext(FieldContext);
-  const formInstance = (form as InternalFormInstance) || fieldContext;
+  const formInstance = useFormInstance({
+    form,
+    scope: options.scope,
+  }) as InternalFormInstance;
   const isValidForm = formInstance && formInstance._init;
 
   // Warning if not exist form instance
@@ -136,7 +139,7 @@ function useWatch(
         return;
       }
 
-      const { getFieldsValue, getInternalHooks } = formInstance;
+      const { getFieldsValue, getInternalHooks, getScopeName } = formInstance;
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
       const getWatchValue = (values: any, allValues: any) => {
@@ -147,7 +150,11 @@ function useWatch(
       };
 
       const cancelRegister = registerWatch((values, allValues) => {
-        const newValue = getWatchValue(values, allValues);
+        const scopeName = getScopeName() ?? [];
+        const newValue = getWatchValue(
+          getValue(values, scopeName),
+          getValue(allValues, scopeName),
+        );
         const nextValueStr = stringify(newValue);
 
         // Compare stringify in case it's nest object

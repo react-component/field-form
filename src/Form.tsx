@@ -142,6 +142,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   const formContextValue = React.useMemo(
     () => ({
       ...(formInstance as InternalFormInstance),
+      formInstance,
       validateTrigger,
     }),
     [formInstance, validateTrigger],
