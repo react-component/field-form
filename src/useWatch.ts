@@ -141,6 +141,9 @@ function useWatch(
 
       const getWatchValue = (values: any, allValues: any) => {
         const watchValue = options.preserve ? allValues : values;
+        if (dependencies === undefined || dependencies === '') {
+          return undefined;
+        }
         return typeof dependencies === 'function'
           ? dependencies(watchValue)
           : getValue(watchValue, namePathRef.current);

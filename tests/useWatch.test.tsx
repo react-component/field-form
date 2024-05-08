@@ -55,6 +55,34 @@ describe('useWatch', () => {
     expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
   });
 
+  it('undefined', async () => {
+    const Demo = ({ name }: { name?: string }) => {
+      const [form] = Form.useForm();
+      const nameValue = Form.useWatch(name, form);
+      return (
+        <div>
+          <Form form={form} initialValues={{ name: 'bamboo', other: 'other' }}>
+            <Field name="name">
+              <Input />
+            </Field>
+          </Form>
+          <div className="values">{nameValue}</div>
+        </div>
+      );
+    };
+
+    const { container, rerender } = render(<Demo />);
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
+    rerender(<Demo name="" />);
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
+  });
+
   it('change value with form api', async () => {
     const staticForm = React.createRef<FormInstance>();
     const Demo: React.FC = () => {
