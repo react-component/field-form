@@ -165,6 +165,8 @@ export class FormStore {
     });
 
     this.prevWithoutPreserves = prevWithoutPreserves;
+    // reset store
+    this.updateStore({});
   };
 
   private getInitialValue = (namePath: InternalNamePath) => {
