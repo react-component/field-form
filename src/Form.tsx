@@ -54,6 +54,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   }: FormProps,
   ref,
 ) => {
+  const nativeFormRef = React.useRef<HTMLFormElement | null>(null);
   const formContext: FormContextProps = React.useContext(FormContext);
 
   // We customize handle event since Context will makes all the consumer re-render:
@@ -69,7 +70,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
-  React.useImperativeHandle(ref, () => formInstance);
+  React.useImperativeHandle(ref, () => Object.assign(formInstance, { nativeForm: nativeFormRef.current }) );
 
   // Register form into Context
   React.useEffect(() => {
@@ -160,6 +161,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   return (
     <Component
       {...restProps}
+      ref={nativeFormRef}
       onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
