@@ -113,7 +113,7 @@ describe('Form.Basic', () => {
     expect(form.current?.isFieldsTouched(['username', 'password'], true)).toBeTruthy();
 
     // nativeForm
-    expect(form.current?.nativeForm).toBeTruthy();
+    expect(form.current?.nativeElement).toBeTruthy();
   });
 
   describe('reset form', () => {

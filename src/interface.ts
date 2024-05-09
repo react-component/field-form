@@ -273,7 +273,7 @@ export interface FormInstance<Values = any> {
   submit: () => void;
 }
 
-export type FormComRef<Values = any> = FormInstance<Values> & { nativeForm?: HTMLFormElement };
+export type FormComRef<Values = any> = FormInstance<Values> & { nativeElement?: HTMLFormElement };
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
   validateFields: InternalValidateFields;
