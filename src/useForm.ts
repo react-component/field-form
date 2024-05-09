@@ -156,7 +156,7 @@ export class FormStore {
     }
   };
 
-  private destroyForm = clearStoreOnDestroy => {
+  private destroyForm = clearOnDestroy => {
     const prevWithoutPreserves = new NameMap<boolean>();
     this.getFieldEntities(true).forEach(entity => {
       if (!this.isMergedPreserve(entity.isPreserve())) {
@@ -165,7 +165,7 @@ export class FormStore {
     });
 
     this.prevWithoutPreserves = prevWithoutPreserves;
-    if (clearStoreOnDestroy) {
+    if (clearOnDestroy) {
       // destroy form reset store
       this.updateStore({});
     }

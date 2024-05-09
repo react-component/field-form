@@ -225,7 +225,7 @@ export interface InternalHooks {
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
   setInitialValues: (values: Store, init: boolean) => void;
-  destroyForm: (clearStoreOnDestroy?: boolean) => void;
+  destroyForm: (clearOnDestroy?: boolean) => void;
   setCallbacks: (callbacks: Callbacks) => void;
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
