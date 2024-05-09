@@ -167,6 +167,8 @@ export class FormStore {
     this.prevWithoutPreserves = prevWithoutPreserves;
     // reset store
     this.updateStore({});
+    // reset hook
+    this.formHooked = false;
   };
 
   private getInitialValue = (namePath: InternalNamePath) => {
