@@ -225,7 +225,7 @@ export interface InternalHooks {
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
   setInitialValues: (values: Store, init: boolean) => void;
-  destroyForm: () => void;
+  destroyForm: (clearStoreOnDestroy?: boolean) => void;
   setCallbacks: (callbacks: Callbacks) => void;
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
@@ -240,8 +240,8 @@ type RecursivePartial<T> = NonNullable<T> extends object
       [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
         ? RecursivePartial<U>[]
         : NonNullable<T[P]> extends object
-        ? RecursivePartial<T[P]>
-        : T[P];
+          ? RecursivePartial<T[P]>
+          : T[P];
     }
   : T;
 

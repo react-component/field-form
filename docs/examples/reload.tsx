@@ -27,7 +27,7 @@ export default () => {
         values
       </button>
       {load && (
-        <Form form={form} initialValues={{ count }}>
+        <Form form={form} initialValues={{ count }} clearStoreOnDestroy>
           <Field name="count">
             <Input placeholder="count" />
           </Field>

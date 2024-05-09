@@ -156,7 +156,7 @@ export class FormStore {
     }
   };
 
-  private destroyForm = () => {
+  private destroyForm = clearStoreOnDestroy => {
     const prevWithoutPreserves = new NameMap<boolean>();
     this.getFieldEntities(true).forEach(entity => {
       if (!this.isMergedPreserve(entity.isPreserve())) {
@@ -165,10 +165,10 @@ export class FormStore {
     });
 
     this.prevWithoutPreserves = prevWithoutPreserves;
-    // reset store
-    this.updateStore({});
-    // reset hook
-    this.formHooked = false;
+    if (clearStoreOnDestroy) {
+      // destroy form reset store
+      this.updateStore({});
+    }
   };
 
   private getInitialValue = (namePath: InternalNamePath) => {
