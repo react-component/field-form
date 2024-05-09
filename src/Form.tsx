@@ -159,11 +159,7 @@ const Form: React.ForwardRefRenderFunction<FormComRef, FormProps> = (
     <Component
       {...restProps}
       ref={node => {
-
-        console.log('[ node ] ===>', node)
-
         if (!ref) return;
-
         // Pass ref with form instance
         const fromRef = Object.assign(formInstance, { nativeElement: node });
 
