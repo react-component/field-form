@@ -7,14 +7,14 @@ import { Input } from './common/InfoField';
 describe('Form.clearOnDestroy', () => {
   it('works', async () => {
     let formCache: FormInstance | undefined;
-    const Demo = ({ load, count }: { load?: boolean; count?: string }) => {
+    const Demo = ({ load }: { load?: boolean }) => {
       const [form] = Form.useForm();
       formCache = form;
 
       return (
         <>
           {load && (
-            <Form form={form} initialValues={{ count }} clearOnDestroy>
+            <Form form={form} initialValues={{ count: '1' }} clearOnDestroy>
               <Field name="count">
                 <Input />
               </Field>
@@ -23,9 +23,9 @@ describe('Form.clearOnDestroy', () => {
         </>
       );
     };
-    const { rerender } = render(<Demo load count={'1'} />);
+    const { rerender } = render(<Demo load />);
     expect(formCache.getFieldsValue(true)).toEqual({ count: '1' });
-    rerender(<Demo count={'1'} />);
+    rerender(<Demo />);
     expect(formCache.getFieldsValue(true)).toEqual({});
   });
   it('change value', async () => {
