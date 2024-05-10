@@ -8,7 +8,7 @@ describe('Form.clearOnDestroy', () => {
   it('works', async () => {
     let formCache: FormInstance | undefined;
     const Demo = ({ load, count }: { load?: boolean; count?: string }) => {
-      const [form] = Form.useForm(undefined);
+      const [form] = Form.useForm();
       formCache = form;
 
       return (
@@ -33,7 +33,7 @@ describe('Form.clearOnDestroy', () => {
     const Demo = () => {
       const [load, setLoad] = useState(true);
 
-      const [form] = Form.useForm(undefined);
+      const [form] = Form.useForm();
       formCache = form;
 
       return (
