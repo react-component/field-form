@@ -116,7 +116,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   React.useEffect(
     () => () => destroyForm(clearOnDestroy),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [clearOnDestroy],
+    [],
   );
 
   // Prepare children by `children` type
