@@ -54,5 +54,7 @@ describe('Form.clearOnDestroy', () => {
     expect(formCache.getFieldsValue(true)).toEqual({ count: 'bamboo' });
     fireEvent.click(queryByText('load'));
     expect(formCache.getFieldsValue(true)).toEqual({});
+    formCache.setFields([{ name: 'count', value: '1' }]);
+    expect(formCache.getFieldsValue(true)).toEqual({ count: '1' });
   });
 });
