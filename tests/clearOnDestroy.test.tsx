@@ -27,7 +27,12 @@ describe('Form.clearOnDestroy', () => {
     expect(formCache.getFieldsValue(true)).toEqual({ count: '1' });
     rerender(<Demo />);
     expect(formCache.getFieldsValue(true)).toEqual({});
+
+    // Rerender back should filled again
+    rerender(<Demo load />);
+    expect(formCache.getFieldsValue(true)).toEqual({ count: '1' });
   });
+
   it('change value', async () => {
     let formCache: FormInstance | undefined;
     const Demo = () => {
