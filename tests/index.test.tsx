@@ -6,7 +6,7 @@ import Form, { Field, useForm } from '../src';
 import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
-import type { FormComRef, Meta } from '@/interface';
+import type { FormRef , Meta } from '@/interface';
 
 describe('Form.Basic', () => {
   describe('create form', () => {
@@ -85,7 +85,7 @@ describe('Form.Basic', () => {
   });
 
   it('fields touched', async () => {
-    const form = React.createRef<FormComRef>();
+    const form = React.createRef<FormRef >();
 
     const { container } = render(
       <div>
@@ -112,14 +112,14 @@ describe('Form.Basic', () => {
     expect(form.current?.isFieldsTouched(true)).toBeTruthy();
     expect(form.current?.isFieldsTouched(['username', 'password'], true)).toBeTruthy();
 
-    // nativeForm
+    // nativeElementRef
     expect(form.current?.nativeElement).toBeTruthy();
   });
 
   describe('reset form', () => {
     function resetTest(name: string, ...args) {
       it(name, async () => {
-        const form = React.createRef<FormComRef>();
+        const form = React.createRef<FormRef >();
         const onReset = jest.fn();
         const onMeta = jest.fn();
 
@@ -190,7 +190,7 @@ describe('Form.Basic', () => {
     resetTest('without field name');
 
     it('not affect others', async () => {
-      const form = React.createRef<FormComRef>();
+      const form = React.createRef<FormRef >();
 
       const { container } = render(
         <div>
@@ -348,7 +348,7 @@ describe('Form.Basic', () => {
   it('getInternalHooks should not usable by user', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    const form = React.createRef<FormComRef>();
+    const form = React.createRef<FormRef >();
     render(
       <div>
         <Form ref={form} />
@@ -365,7 +365,7 @@ describe('Form.Basic', () => {
   });
 
   it('valuePropName', async () => {
-    const form = React.createRef<FormComRef>();
+    const form = React.createRef<FormRef >();
     const { container } = render(
       <div>
         <Form ref={form}>
@@ -514,7 +514,7 @@ describe('Form.Basic', () => {
 
   describe('setFields', () => {
     it('should work', () => {
-      const form = React.createRef<FormComRef>();
+      const form = React.createRef<FormRef >();
       const { container } = render(
         <div>
           <Form ref={form}>
@@ -538,7 +538,7 @@ describe('Form.Basic', () => {
 
     it('should trigger by setField', () => {
       const triggerUpdate = jest.fn();
-      const formRef = React.createRef<FormComRef>();
+      const formRef = React.createRef<FormRef >();
 
       render(
         <div>
@@ -599,7 +599,7 @@ describe('Form.Basic', () => {
   });
 
   it('setFieldsValue should clean up status', async () => {
-    const form = React.createRef<FormComRef>();
+    const form = React.createRef<FormRef >();
     let currentMeta: Meta = null;
 
     const { container } = render(
@@ -693,7 +693,7 @@ describe('Form.Basic', () => {
   });
 
   it('filtering fields by meta', async () => {
-    const form = React.createRef<FormComRef>();
+    const form = React.createRef<FormRef >();
 
     const { container } = render(
       <div>
@@ -860,7 +860,7 @@ describe('Form.Basic', () => {
   });
 
   it('setFieldValue', () => {
-    const formRef = React.createRef<FormComRef>();
+    const formRef = React.createRef<FormRef >();
 
     const Demo: React.FC = () => (
       <Form ref={formRef} initialValues={{ list: ['bamboo', 'little', 'light'] }}>
@@ -897,7 +897,7 @@ describe('Form.Basic', () => {
 
   it('onMetaChange should only trigger when meta changed', () => {
     const onMetaChange = jest.fn();
-    const formRef = React.createRef<FormComRef>();
+    const formRef = React.createRef<FormRef >();
 
     const Demo: React.FC = () => (
       <Form ref={formRef}>
@@ -923,7 +923,7 @@ describe('Form.Basic', () => {
   describe('set to null value', () => {
     function test(name: string, callback: (form: FormInstance) => void) {
       it(name, async () => {
-        const form = React.createRef<FormComRef>();
+        const form = React.createRef<FormRef >();
 
         const { container } = render(
           <div>
@@ -956,7 +956,7 @@ describe('Form.Basic', () => {
 
   it('setFieldValue should always set touched', async () => {
     const EMPTY_VALUES = { light: '', bamboo: [] };
-    const formRef = React.createRef<FormComRef>();
+    const formRef = React.createRef<FormRef >();
 
     const Demo: React.FC = () => (
       <Form ref={formRef} initialValues={EMPTY_VALUES}>
