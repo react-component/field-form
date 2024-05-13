@@ -156,15 +156,20 @@ export class FormStore {
     }
   };
 
-  private destroyForm = () => {
-    const prevWithoutPreserves = new NameMap<boolean>();
-    this.getFieldEntities(true).forEach(entity => {
-      if (!this.isMergedPreserve(entity.isPreserve())) {
-        prevWithoutPreserves.set(entity.getNamePath(), true);
-      }
-    });
-
-    this.prevWithoutPreserves = prevWithoutPreserves;
+  private destroyForm = (clearOnDestroy?: boolean) => {
+    if (clearOnDestroy) {
+      // destroy form reset store
+      this.updateStore({});
+    } else {
+      // Fill preserve fields
+      const prevWithoutPreserves = new NameMap<boolean>();
+      this.getFieldEntities(true).forEach(entity => {
+        if (!this.isMergedPreserve(entity.isPreserve())) {
+          prevWithoutPreserves.set(entity.getNamePath(), true);
+        }
+      });
+      this.prevWithoutPreserves = prevWithoutPreserves;
+    }
   };
 
   private getInitialValue = (namePath: InternalNamePath) => {

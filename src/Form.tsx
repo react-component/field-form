@@ -33,6 +33,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFinishFailed?: Callbacks<Values>['onFinishFailed'];
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
+  clearOnDestroy?: boolean;
 }
 
 const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
@@ -50,6 +51,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFieldsChange,
     onFinish,
     onFinishFailed,
+    clearOnDestroy,
     ...restProps
   }: FormProps,
   ref,
@@ -112,7 +114,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   }
 
   React.useEffect(
-    () => destroyForm,
+    () => () => destroyForm(clearOnDestroy),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
