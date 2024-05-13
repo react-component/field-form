@@ -6,7 +6,7 @@ import type {
   ValidateMessages,
   Callbacks,
   InternalFormInstance,
-  FormRef ,
+  FormRef,
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
@@ -36,7 +36,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   preserve?: boolean;
 }
 
-const Form: React.ForwardRefRenderFunction<FormRef , FormProps> = (
+const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
   {
     name,
     initialValues,
@@ -71,7 +71,10 @@ const Form: React.ForwardRefRenderFunction<FormRef , FormProps> = (
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
-  React.useImperativeHandle(ref, () => Object.assign(formInstance, { nativeElement: nativeElementRef.current }) );
+  React.useImperativeHandle(ref, () => ({
+    ...formInstance,
+    nativeElement: nativeElementRef.current,
+  }));
 
   // Register form into Context
   React.useEffect(() => {
