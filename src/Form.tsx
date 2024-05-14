@@ -6,6 +6,7 @@ import type {
   ValidateMessages,
   Callbacks,
   InternalFormInstance,
+  FormRef,
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
@@ -36,7 +37,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   clearOnDestroy?: boolean;
 }
 
-const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
+const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
   {
     name,
     initialValues,
@@ -56,6 +57,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   }: FormProps,
   ref,
 ) => {
+  const nativeElementRef = React.useRef<HTMLFormElement>(null);
   const formContext: FormContextProps = React.useContext(FormContext);
 
   // We customize handle event since Context will makes all the consumer re-render:
@@ -71,7 +73,10 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
-  React.useImperativeHandle(ref, () => formInstance);
+  React.useImperativeHandle(ref, () => ({
+    ...formInstance,
+    nativeElement: nativeElementRef.current,
+  }));
 
   // Register form into Context
   React.useEffect(() => {
@@ -162,6 +167,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   return (
     <Component
       {...restProps}
+      ref={nativeElementRef}
       onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
