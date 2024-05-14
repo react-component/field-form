@@ -1031,27 +1031,25 @@ export class FormStore {
 
 function useForm<Values = any>(): [FormInstance<Values>];
 function useForm<Values = any>(form: FormInstance<Values>): [FormInstance<Values>]
-function useForm<Values = any>(options: {
+function useForm<Values = any>(options: Partial<{
   form: FormInstance<Values>,
-  initialValues?: Store;
-}): [FormInstance<Values>];
-function useForm<Values = any>(options?: FormInstance<Values> | {
+  initialValues: Store;
+}>): [FormInstance<Values>];
+function useForm<Values = any>(options?: FormInstance<Values> | Partial<{
   form: FormInstance<Values>,
-  initialValues?: Store,
-}): [FormInstance<Values>] {
+  initialValues: Store;
+}>): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState({});
 
   if (!formRef.current) {
     const useOptions = 'form' in options;
 
-    const form = useOptions ? options.form : options;
+    const form = useOptions ? options.form : options as FormInstance<Values>;
     if (form) {
-
       if(useOptions && typeof options.initialValues !== 'undefined') {
         (form as InternalFormInstance).getInternalHooks(HOOK_MARK).setInitialValues(options.initialValues, true);
       }
-
       formRef.current = form;
     } else {
       // Create a new FormStore if not provided
