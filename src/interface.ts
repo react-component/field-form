@@ -24,8 +24,8 @@ export interface InternalFieldData extends Meta {
 /**
  * Used by `setFields` config
  */
-export interface FieldData extends Partial<Omit<InternalFieldData, 'name'>> {
-  name: NamePath;
+export interface FieldData<Values = any> extends Partial<Omit<InternalFieldData, 'name'>> {
+  name: NamePath<Values>;
 }
 
 export type RuleType =
@@ -235,15 +235,16 @@ export interface InternalHooks {
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> = NonNullable<T> extends object
-  ? {
-      [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
-        ? RecursivePartial<U>[]
-        : NonNullable<T[P]> extends object
-          ? RecursivePartial<T[P]>
-          : T[P];
-    }
-  : T;
+type RecursivePartial<T> =
+  NonNullable<T> extends object
+    ? {
+        [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
+          ? RecursivePartial<U>[]
+          : NonNullable<T[P]> extends object
+            ? RecursivePartial<T[P]>
+            : T[P];
+      }
+    : T;
 
 export type FilterFunc = (meta: Meta) => boolean;
 
@@ -251,21 +252,21 @@ export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
 
 export interface FormInstance<Values = any> {
   // Origin Form API
-  getFieldValue: (name: NamePath) => StoreValue;
+  getFieldValue: (name: NamePath<Values>) => StoreValue;
   getFieldsValue: (() => Values) &
-    ((nameList: NamePath[] | true, filterFunc?: FilterFunc) => any) &
+    ((nameList: NamePath<Values>[] | true, filterFunc?: FilterFunc) => any) &
     ((config: GetFieldsValueConfig) => any);
-  getFieldError: (name: NamePath) => string[];
-  getFieldsError: (nameList?: NamePath[]) => FieldError[];
-  getFieldWarning: (name: NamePath) => string[];
-  isFieldsTouched: ((nameList?: NamePath[], allFieldsTouched?: boolean) => boolean) &
+  getFieldError: (name: NamePath<Values>) => string[];
+  getFieldsError: (nameList?: NamePath<Values>[]) => FieldError[];
+  getFieldWarning: (name: NamePath<Values>) => string[];
+  isFieldsTouched: ((nameList?: NamePath<Values>[], allFieldsTouched?: boolean) => boolean) &
     ((allFieldsTouched?: boolean) => boolean);
-  isFieldTouched: (name: NamePath) => boolean;
-  isFieldValidating: (name: NamePath) => boolean;
-  isFieldsValidating: (nameList?: NamePath[]) => boolean;
-  resetFields: (fields?: NamePath[]) => void;
-  setFields: (fields: FieldData[]) => void;
-  setFieldValue: (name: NamePath, value: any) => void;
+  isFieldTouched: (name: NamePath<Values>) => boolean;
+  isFieldValidating: (name: NamePath<Values>) => boolean;
+  isFieldsValidating: (nameList?: NamePath<Values>[]) => boolean;
+  resetFields: (fields?: NamePath<Values>[]) => void;
+  setFields: (fields: FieldData<Values>[]) => void;
+  setFieldValue: (name: NamePath<Values>, value: any) => void;
   setFieldsValue: (values: RecursivePartial<Values>) => void;
   validateFields: ValidateFields<Values>;
 
