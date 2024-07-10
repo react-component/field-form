@@ -29,7 +29,7 @@ import {
   getValue,
 } from './utils/valueUtil';
 
-const EMPTY_ERRORS: any[] = [];
+export const EMPTY_ERRORS: any[] = [];
 
 export type ShouldUpdate<Values = any> =
   | boolean

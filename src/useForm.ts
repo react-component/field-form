@@ -38,6 +38,7 @@ import {
   matchNamePath,
   setValue,
 } from './utils/valueUtil';
+import { EMPTY_ERRORS } from './Field';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -787,6 +788,8 @@ export class FormStore {
       {
         name,
         value,
+        errors: EMPTY_ERRORS,
+        warnings: EMPTY_ERRORS
       },
     ]);
   };
