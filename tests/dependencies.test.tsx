@@ -226,4 +226,33 @@ describe('Form.Dependencies', () => {
     // sync end
     expect(spy).toHaveBeenCalledTimes(3);
   });
+
+  it('shouldUpdate false should not update', () => {
+    let counter = 0;
+    const formRef = React.createRef<FormInstance>();
+
+    const renderDemo = (showField: boolean) => (
+      <Form ref={formRef}>
+        {showField && (
+          <Field name="little" preserve={false} initialValue="bamboo">
+            <Input />
+          </Field>
+        )}
+        <Field shouldUpdate={() => false}>
+          {() => {
+            counter += 1;
+            return null;
+          }}
+        </Field>
+      </Form>
+    );
+
+    const { container, rerender } = render(renderDemo(true));
+    expect(counter).toEqual(1);
+    expect(container.querySelector('input')).toHaveValue('bamboo');
+
+    // hide should not re-render
+    rerender(renderDemo(false));
+    expect(counter).toEqual(1);
+  });
 });
