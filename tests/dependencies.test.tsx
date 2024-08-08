@@ -231,28 +231,38 @@ describe('Form.Dependencies', () => {
     let counter = 0;
     const formRef = React.createRef<FormInstance>();
 
-    const renderDemo = (showField: boolean) => (
+    const { container } = render(
       <Form ref={formRef}>
-        {showField && (
-          <Field name="little" preserve={false} initialValue="bamboo">
-            <Input />
-          </Field>
-        )}
+        <Field name="little" preserve={false}>
+          <Input />
+        </Field>
+
+        <Field shouldUpdate={(prev, next) => prev.little !== next.little}>
+          {(_, __, form) => {
+            // Fill to hide
+            if (!form.getFieldValue('little')) {
+              return <InfoField name="bamboo" preserve={false} />;
+            }
+
+            return null;
+          }}
+        </Field>
+
         <Field shouldUpdate={() => false}>
           {() => {
+            console.log('render!');
             counter += 1;
             return null;
           }}
         </Field>
-      </Form>
+      </Form>,
     );
-
-    const { container, rerender } = render(renderDemo(true));
     expect(counter).toEqual(1);
-    expect(container.querySelector('input')).toHaveValue('bamboo');
+    expect(container.querySelectorAll('input')).toHaveLength(2);
 
     // hide should not re-render
-    rerender(renderDemo(false));
+    fireEvent.change(getInput(container, 0), { target: { value: '1' } });
+    expect(container.querySelectorAll('input')).toHaveLength(1);
     expect(counter).toEqual(1);
   });
 });
