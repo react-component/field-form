@@ -297,7 +297,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
        * - Reset A, need clean B, C
        */
       case 'remove': {
-        if (shouldUpdate) {
+        if (
+          shouldUpdate &&
+          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+        ) {
           this.reRender();
           return;
         }
