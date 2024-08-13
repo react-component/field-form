@@ -1,17 +1,13 @@
 name: CI
 
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+on: ['push', 'pull_request']
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -24,7 +20,7 @@ jobs:
           key: lock-${{ github.sha }}
 
       - name: create package-lock.json
-        run: npm i --package-lock-only --legacy-peer-deps
+        run: npm i --package-lock-only --ignore-scripts
 
       - name: hack for singe file
         run: |
@@ -32,6 +28,7 @@ jobs:
             mkdir package-temp-dir
           fi
           cp package-lock.json package-temp-dir
+
       - name: cache node_modules
         id: node_modules_cache_id
         uses: actions/cache@v4
@@ -41,7 +38,7 @@ jobs:
 
       - name: install
         if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
-        run: npm i
+        run: npm ci
 
   lint:
     runs-on: ubuntu-latest
@@ -110,9 +107,9 @@ jobs:
       - name: coverage
         run: npm test -- --coverage
 
-      - uses: codecov/codecov-action@v4
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          fail_ci_if_error: true # optional (default = false)
-          token: ${{ secrets.CODECOV_TOKEN }} # required
+          token: ${{ secrets.CODECOV_TOKEN }}
 
     needs: setup
