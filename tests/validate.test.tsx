@@ -1081,4 +1081,28 @@ describe('Form.Validate', () => {
 
     jest.useRealTimers();
   });
+
+  it('should handle escaped and unescaped variables correctly', async () => {
+    const { container } = render(
+      <Form>
+        <InfoField
+          messageVariables={{
+            name: 'bamboo',
+          }}
+          name="test"
+          rules={[
+            {
+              validator: () => Promise.reject(new Error('\\${name} should be ${name}!')),
+            },
+          ]}
+        >
+          <Input />
+        </InfoField>
+      </Form>,
+    );
+
+    // Wrong value
+    await changeValue(getInput(container), 'light');
+    matchError(container, '${name} should be bamboo!');
+  });
 });
