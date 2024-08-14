@@ -1045,7 +1045,7 @@ describe('Form.Validate', () => {
         <InfoField name="noop" rules={[{ required: true, message: 'noop' }]}>
           <Input />
         </InfoField>
-      </Form>
+      </Form>,
     );
 
     const { container, rerender } = render(
@@ -1080,5 +1080,42 @@ describe('Form.Validate', () => {
     matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
 
     jest.useRealTimers();
+  });
+
+  it('should handle escaped and unescaped variables correctly', async () => {
+    const { container } = render(
+      <Form>
+        <InfoField
+          name="test"
+          rules={[
+            {
+              validator: async (_, value) => {
+                if (value !== 'bamboo') {
+                  return Promise.reject(new Error('should be ${name}!'));
+                }
+                return '';
+              },
+              messageVariables: {
+                name: 'bamboo',
+              },
+            },
+          ]}
+        >
+          <Input />
+        </InfoField>
+      </Form>,
+    );
+
+    // Wrong value
+    await changeValue(getInput(container), 'light');
+    matchError(container, 'should be bamboo!');
+
+    // Correct value
+    await changeValue(getInput(container), 'bamboo');
+    matchError(container, false);
+
+    // Escaped variable
+    await changeValue(getInput(container), 'should be ${name}!');
+    matchError(container, 'should be ${name}!');
   });
 });

@@ -19,7 +19,10 @@ const AsyncValidator: any = RawAsyncValidator;
  *   `I'm ${name}` + { name: 'bamboo' } = I'm bamboo
  */
 function replaceMessage(template: string, kv: Record<string, string>): string {
-  return template.replace(/\$\{\w+\}/g, (str: string) => {
+  return template.replace(/\\?\$\{\w+\}/g, (str: string) => {
+    if (str.startsWith('\\')) {
+      return str.slice(1);
+    }
     const key = str.slice(2, -1);
     return kv[key];
   });
@@ -79,7 +82,7 @@ async function validateRule(
       result = errObj.errors.map(({ message }, index: number) => {
         const mergedMessage = message === CODE_LOGIC_ERROR ? messages.default : message;
 
-        return React.isValidElement(mergedMessage)
+        return React.isValidElement(ergedMessage)
           ? // Wrap ReactNode with `key`
             React.cloneElement(mergedMessage, { key: `error_${index}` })
           : mergedMessage;
