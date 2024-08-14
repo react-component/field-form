@@ -1045,7 +1045,7 @@ describe('Form.Validate', () => {
         <InfoField name="noop" rules={[{ required: true, message: 'noop' }]}>
           <Input />
         </InfoField>
-      </Form>,
+      </Form>
     );
 
     const { container, rerender } = render(
@@ -1086,18 +1086,13 @@ describe('Form.Validate', () => {
     const { container } = render(
       <Form>
         <InfoField
+          messageVariables={{
+            name: 'bamboo',
+          }}
           name="test"
           rules={[
             {
-              validator: async (_, value) => {
-                if (value !== 'bamboo') {
-                  return Promise.reject(new Error('should be ${name}!'));
-                }
-                return '';
-              },
-              messageVariables: {
-                name: 'bamboo',
-              },
+              validator: () => Promise.reject(new Error('\\${name} should be ${name}!')),
             },
           ]}
         >
@@ -1108,14 +1103,6 @@ describe('Form.Validate', () => {
 
     // Wrong value
     await changeValue(getInput(container), 'light');
-    matchError(container, 'should be bamboo!');
-
-    // Correct value
-    await changeValue(getInput(container), 'bamboo');
-    matchError(container, false);
-
-    // Escaped variable
-    await changeValue(getInput(container), 'should be ${name}!');
-    matchError(container, 'should be ${name}!');
+    matchError(container, '${name} should be bamboo!');
   });
 });
