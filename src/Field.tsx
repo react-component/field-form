@@ -259,7 +259,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
 
     // `setFieldsValue` is a quick access to update related status
-    if (info.type === 'valueUpdate' && info.source === 'external' && prevValue !== curValue) {
+    if (
+      info.type === 'valueUpdate' &&
+      info.source === 'external' &&
+      !isEqual(prevValue, curValue)
+    ) {
       this.touched = true;
       this.dirty = true;
       this.validatePromise = null;
@@ -293,7 +297,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
        * - Reset A, need clean B, C
        */
       case 'remove': {
-        if (shouldUpdate) {
+        if (
+          shouldUpdate &&
+          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+        ) {
           this.reRender();
           return;
         }
@@ -557,6 +564,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
   public getControlled = (childProps: ChildProps = {}) => {
     const {
+      name,
       trigger,
       validateTrigger,
       getValueFromEvent,
@@ -575,12 +583,23 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const value = this.getValue();
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originTriggerFunc: any = childProps[trigger];
+    const originTriggerFunc = childProps[trigger];
+
+    const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
+
+    // warning when prop value is function
+    if (process.env.NODE_ENV !== 'production' && valueProps) {
+      Object.keys(valueProps).forEach(key => {
+        warning(
+          typeof valueProps[key] !== 'function',
+          `It's not recommended to generate dynamic function prop by \`getValueProps\`. Please pass it to child component directly (prop: ${key})`,
+        );
+      });
+    }
 
     const control = {
       ...childProps,
-      ...mergedGetValueProps(value),
+      ...valueProps,
     };
 
     // Add trigger

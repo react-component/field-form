@@ -6,7 +6,7 @@ import Form, { Field, useForm } from '../src';
 import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
 import timeout from './common/timeout';
-import type { Meta } from '@/interface';
+import type { FormRef, Meta } from '@/interface';
 
 describe('Form.Basic', () => {
   describe('create form', () => {
@@ -85,7 +85,7 @@ describe('Form.Basic', () => {
   });
 
   it('fields touched', async () => {
-    const form = React.createRef<FormInstance>();
+    const form = React.createRef<FormRef>();
 
     const { container } = render(
       <div>
@@ -111,12 +111,15 @@ describe('Form.Basic', () => {
     expect(form.current?.isFieldsTouched(['username', 'password'])).toBeTruthy();
     expect(form.current?.isFieldsTouched(true)).toBeTruthy();
     expect(form.current?.isFieldsTouched(['username', 'password'], true)).toBeTruthy();
+
+    // nativeElementRef
+    expect(form.current?.nativeElement).toBeTruthy();
   });
 
   describe('reset form', () => {
     function resetTest(name: string, ...args) {
       it(name, async () => {
-        const form = React.createRef<FormInstance>();
+        const form = React.createRef<FormRef>();
         const onReset = jest.fn();
         const onMeta = jest.fn();
 
@@ -187,7 +190,7 @@ describe('Form.Basic', () => {
     resetTest('without field name');
 
     it('not affect others', async () => {
-      const form = React.createRef<FormInstance>();
+      const form = React.createRef<FormRef>();
 
       const { container } = render(
         <div>
@@ -345,7 +348,7 @@ describe('Form.Basic', () => {
   it('getInternalHooks should not usable by user', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    const form = React.createRef<FormInstance>();
+    const form = React.createRef<FormRef>();
     render(
       <div>
         <Form ref={form} />
@@ -362,7 +365,7 @@ describe('Form.Basic', () => {
   });
 
   it('valuePropName', async () => {
-    const form = React.createRef<FormInstance>();
+    const form = React.createRef<FormRef>();
     const { container } = render(
       <div>
         <Form ref={form}>
@@ -395,8 +398,40 @@ describe('Form.Basic', () => {
       </div>,
     );
 
-    // expect((container.querySelector('.anything').props() as any).light).toEqual('bamboo');
     expect(container.querySelector('.anything')).toHaveAttribute('data-light', 'bamboo');
+  });
+
+  it('getValueProps should not throw if return empty', async () => {
+    const { container } = render(
+      <div>
+        <Form initialValues={{ test: 'bamboo' }}>
+          <Field name="test" getValueProps={() => null}>
+            <span className="anything" />
+          </Field>
+        </Form>
+      </div>,
+    );
+
+    expect(container.querySelector('.anything')).toBeTruthy();
+  });
+
+  it('getValueProps should not be executed when name does not exist', async () => {
+    const getValueProps1 = jest.fn();
+    const getValueProps2 = jest.fn();
+
+    render(
+      <div>
+        <Form initialValues={{ test: 'bamboo' }}>
+          <Field getValueProps={getValueProps1}>
+            <span className="anything" />
+          </Field>
+          <Field getValueProps={getValueProps2}>{() => <span className="anything" />}</Field>
+        </Form>
+      </div>,
+    );
+
+    expect(getValueProps1).not.toHaveBeenCalled();
+    expect(getValueProps2).not.toHaveBeenCalled();
   });
 
   describe('shouldUpdate', () => {
@@ -477,7 +512,7 @@ describe('Form.Basic', () => {
 
   describe('setFields', () => {
     it('should work', () => {
-      const form = React.createRef<FormInstance>();
+      const form = React.createRef<FormRef>();
       const { container } = render(
         <div>
           <Form ref={form}>
@@ -501,7 +536,7 @@ describe('Form.Basic', () => {
 
     it('should trigger by setField', () => {
       const triggerUpdate = jest.fn();
-      const formRef = React.createRef<FormInstance>();
+      const formRef = React.createRef<FormRef>();
 
       render(
         <div>
@@ -562,7 +597,7 @@ describe('Form.Basic', () => {
   });
 
   it('setFieldsValue should clean up status', async () => {
-    const form = React.createRef<FormInstance>();
+    const form = React.createRef<FormRef>();
     let currentMeta: Meta = null;
 
     const { container } = render(
@@ -656,7 +691,7 @@ describe('Form.Basic', () => {
   });
 
   it('filtering fields by meta', async () => {
-    const form = React.createRef<FormInstance>();
+    const form = React.createRef<FormRef>();
 
     const { container } = render(
       <div>
@@ -823,7 +858,7 @@ describe('Form.Basic', () => {
   });
 
   it('setFieldValue', () => {
-    const formRef = React.createRef<FormInstance>();
+    const formRef = React.createRef<FormRef>();
 
     const Demo: React.FC = () => (
       <Form ref={formRef} initialValues={{ list: ['bamboo', 'little', 'light'] }}>
@@ -860,7 +895,7 @@ describe('Form.Basic', () => {
 
   it('onMetaChange should only trigger when meta changed', () => {
     const onMetaChange = jest.fn();
-    const formRef = React.createRef<FormInstance>();
+    const formRef = React.createRef<FormRef>();
 
     const Demo: React.FC = () => (
       <Form ref={formRef}>
@@ -886,7 +921,7 @@ describe('Form.Basic', () => {
   describe('set to null value', () => {
     function test(name: string, callback: (form: FormInstance) => void) {
       it(name, async () => {
-        const form = React.createRef<FormInstance>();
+        const form = React.createRef<FormRef>();
 
         const { container } = render(
           <div>
@@ -915,5 +950,50 @@ describe('Form.Basic', () => {
     test('by setFieldValue', form => {
       form.setFieldValue('user', null);
     });
+  });
+
+  it('setFieldValue should always set touched', async () => {
+    const EMPTY_VALUES = { light: '', bamboo: [] };
+    const formRef = React.createRef<FormRef>();
+
+    const Demo: React.FC = () => (
+      <Form ref={formRef} initialValues={EMPTY_VALUES}>
+        <Field name="light" rules={[{ required: true }]}>
+          <Input />
+        </Field>
+        <Field name="bamboo" rules={[{ required: true, type: 'array' }]}>
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    render(<Demo />);
+
+    await act(async () => {
+      await formRef.current?.validateFields().catch(() => {});
+    });
+    expect(formRef.current?.isFieldTouched('light')).toBeFalsy();
+    expect(formRef.current?.isFieldTouched('bamboo')).toBeFalsy();
+    expect(formRef.current?.getFieldError('light')).toHaveLength(1);
+    expect(formRef.current?.getFieldError('bamboo')).toHaveLength(1);
+
+    act(() => {
+      formRef.current?.setFieldsValue(EMPTY_VALUES);
+    });
+    expect(formRef.current?.isFieldTouched('light')).toBeFalsy();
+    expect(formRef.current?.isFieldTouched('bamboo')).toBeFalsy();
+    expect(formRef.current?.getFieldError('light')).toHaveLength(1);
+    expect(formRef.current?.getFieldError('bamboo')).toHaveLength(1);
+
+    act(() => {
+      formRef.current?.setFieldsValue({
+        light: 'Bamboo',
+        bamboo: ['Light'],
+      });
+    });
+    expect(formRef.current?.isFieldTouched('light')).toBeTruthy();
+    expect(formRef.current?.isFieldTouched('bamboo')).toBeTruthy();
+    expect(formRef.current?.getFieldError('light')).toHaveLength(0);
+    expect(formRef.current?.getFieldError('bamboo')).toHaveLength(0);
   });
 });

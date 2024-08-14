@@ -156,15 +156,20 @@ export class FormStore {
     }
   };
 
-  private destroyForm = () => {
-    const prevWithoutPreserves = new NameMap<boolean>();
-    this.getFieldEntities(true).forEach(entity => {
-      if (!this.isMergedPreserve(entity.isPreserve())) {
-        prevWithoutPreserves.set(entity.getNamePath(), true);
-      }
-    });
-
-    this.prevWithoutPreserves = prevWithoutPreserves;
+  private destroyForm = (clearOnDestroy?: boolean) => {
+    if (clearOnDestroy) {
+      // destroy form reset store
+      this.updateStore({});
+    } else {
+      // Fill preserve fields
+      const prevWithoutPreserves = new NameMap<boolean>();
+      this.getFieldEntities(true).forEach(entity => {
+        if (!this.isMergedPreserve(entity.isPreserve())) {
+          prevWithoutPreserves.set(entity.getNamePath(), true);
+        }
+      });
+      this.prevWithoutPreserves = prevWithoutPreserves;
+    }
   };
 
   private getInitialValue = (namePath: InternalNamePath) => {
@@ -395,7 +400,7 @@ export class FormStore {
     // ===== Will get fully compare when not config namePathList =====
     if (!namePathList) {
       return isAllFieldsTouched
-        ? fieldEntities.every(isFieldTouched)
+        ? fieldEntities.every(entity => isFieldTouched(entity) || entity.isList())
         : fieldEntities.some(isFieldTouched);
     }
 
@@ -887,7 +892,7 @@ export class FormStore {
     const TMP_SPLIT = String(Date.now());
     const validateNamePathList = new Set<string>();
 
-    const recursive = options?.recursive;
+    const { recursive, dirty } = options || {};
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
@@ -897,6 +902,11 @@ export class FormStore {
 
       // Skip if without rule
       if (!field.props.rules || !field.props.rules.length) {
+        return;
+      }
+
+      // Skip if only validate dirty field
+      if (dirty && !field.isFieldDirty()) {
         return;
       }
 

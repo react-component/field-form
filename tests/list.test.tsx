@@ -1,6 +1,5 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, act } from '@testing-library/react';
 import { resetWarned } from 'rc-util/lib/warning';
 import Form, { Field, List } from '../src';
 import type { FormProps } from '../src';
@@ -844,5 +843,53 @@ describe('Form.List', () => {
       list: [{ bamboo: 1 }],
       little: 9,
     });
+  });
+
+  it('isFieldsTouched with params true', async () => {
+    const formRef = React.createRef<FormInstance>();
+
+    const { container } = render(
+      <Form
+        ref={formRef}
+        initialValues={{
+          usename: '',
+          list: [{}],
+        }}
+      >
+        <Form.Field name="username">
+          <input />
+        </Form.Field>
+        <Form.List name="list">
+          {(fields, { add }) => (
+            <>
+              {fields.map(field => {
+                return (
+                  <React.Fragment key={field.key}>
+                    <Form.Field name={[field.name, 'field1']}>
+                      <input placeholder="field1" />
+                    </Form.Field>
+                    <Form.Field name={[field.name, 'field2']}>
+                      <input placeholder="field2" />
+                    </Form.Field>
+                  </React.Fragment>
+                );
+              })}
+              <button onClick={() => add()}>add</button>
+            </>
+          )}
+        </Form.List>
+      </Form>,
+    );
+
+    expect(formRef.current.isFieldsTouched(true)).toBeFalsy();
+
+    await changeValue(getInput(container, 0), 'changed1');
+    expect(formRef.current.isFieldsTouched(true)).toBeFalsy();
+
+    await changeValue(getInput(container, 1), 'changed2');
+    expect(formRef.current.isFieldsTouched(true)).toBeFalsy();
+
+    await changeValue(getInput(container, 2), 'changed3');
+    expect(formRef.current.isFieldsTouched(true)).toBeTruthy();
   });
 });

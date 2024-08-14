@@ -1,22 +1,17 @@
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, act } from '@testing-library/react';
 import React, { useEffect } from 'react';
-import { act } from 'react-dom/test-utils';
 import Form, { Field, useForm } from '../src';
 import type { FormInstance, ValidateMessages } from '../src/interface';
 import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
-import timeout from './common/timeout';
+import timeout, { waitFakeTime } from './common/timeout';
 
 describe('Form.Validate', () => {
   it('required', async () => {
-    let form;
+    const form = React.createRef<FormInstance>();
     const { container } = render(
       <div>
-        <Form
-          ref={instance => {
-            form = instance;
-          }}
-        >
+        <Form ref={form}>
           <InfoField name="username" rules={[{ required: true }]} />
         </Form>
       </div>,
@@ -24,8 +19,8 @@ describe('Form.Validate', () => {
 
     await changeValue(getInput(container), ['bamboo', '']);
     matchError(container, true);
-    expect(form.getFieldError('username')).toEqual(["'username' is required"]);
-    expect(form.getFieldsError()).toEqual([
+    expect(form.current?.getFieldError('username')).toEqual(["'username' is required"]);
+    expect(form.current?.getFieldsError()).toEqual([
       {
         name: ['username'],
         errors: ["'username' is required"],
@@ -34,7 +29,7 @@ describe('Form.Validate', () => {
     ]);
 
     // Contains not exists
-    expect(form.getFieldsError(['username', 'not-exist'])).toEqual([
+    expect(form.current?.getFieldsError(['username', 'not-exist'])).toEqual([
       {
         name: ['username'],
         errors: ["'username' is required"],
@@ -1032,5 +1027,82 @@ describe('Form.Validate', () => {
     expect(validator).toHaveBeenCalled();
 
     jest.useRealTimers();
+  });
+
+  it('dirty', async () => {
+    jest.useFakeTimers();
+
+    const formRef = React.createRef<FormInstance>();
+
+    const Demo = ({ touchMessage, validateMessage }) => (
+      <Form ref={formRef}>
+        <InfoField name="touch" rules={[{ required: true, message: touchMessage }]}>
+          <Input />
+        </InfoField>
+        <InfoField name="validate" rules={[{ required: true, message: validateMessage }]}>
+          <Input />
+        </InfoField>
+        <InfoField name="noop" rules={[{ required: true, message: 'noop' }]}>
+          <Input />
+        </InfoField>
+      </Form>
+    );
+
+    const { container, rerender } = render(
+      <Demo touchMessage="touch" validateMessage="validate" />,
+    );
+
+    fireEvent.change(container.querySelectorAll('input')[0], {
+      target: {
+        value: 'light',
+      },
+    });
+    fireEvent.change(container.querySelectorAll('input')[0], {
+      target: {
+        value: '',
+      },
+    });
+
+    formRef.current.validateFields(['validate']);
+
+    await waitFakeTime();
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[0], `touch`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[1], `validate`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
+
+    // Revalidate
+    rerender(<Demo touchMessage="new_touch" validateMessage="new_validate" />);
+    formRef.current.validateFields({ dirty: true });
+
+    await waitFakeTime();
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[0], `new_touch`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[1], `new_validate`);
+    matchError(container.querySelectorAll<HTMLDivElement>('.field')[2], false);
+
+    jest.useRealTimers();
+  });
+
+  it('should handle escaped and unescaped variables correctly', async () => {
+    const { container } = render(
+      <Form>
+        <InfoField
+          messageVariables={{
+            name: 'bamboo',
+          }}
+          name="test"
+          rules={[
+            {
+              validator: () => Promise.reject(new Error('\\${name} should be ${name}!')),
+            },
+          ]}
+        >
+          <Input />
+        </InfoField>
+      </Form>,
+    );
+
+    // Wrong value
+    await changeValue(getInput(container), 'light');
+    matchError(container, '${name} should be bamboo!');
   });
 });
