@@ -82,7 +82,7 @@ async function validateRule(
       result = errObj.errors.map(({ message }, index: number) => {
         const mergedMessage = message === CODE_LOGIC_ERROR ? messages.default : message;
 
-        return React.isValidElement(ergedMessage)
+        return React.isValidElement(mergedMessage)
           ? // Wrap ReactNode with `key`
             React.cloneElement(mergedMessage, { key: `error_${index}` })
           : mergedMessage;
