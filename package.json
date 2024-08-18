@@ -75,7 +75,7 @@
     "rc-test": "^7.0.15",
     "react": "^18.0.0",
     "react-dnd": "^16.0.1",
-    "react-dnd-html5-backend": "^8.0.3",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.0.0",
     "react-redux": "^9.0.4",
     "redux": "^5.0.0",
