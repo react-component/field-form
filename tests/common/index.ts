@@ -68,7 +68,7 @@ export function matchError(
   return;
 }
 
-export function matchArray(source: any[], target: any[], matchKey: React.Key) {
+export function matchArray(source: any[], target: any[], matchKey: string | number) {
   expect(matchKey).toBeTruthy();
 
   try {
