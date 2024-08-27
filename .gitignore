@@ -28,3 +28,5 @@
 .env.local
 .dumi/
 package-lock.json
+
+bun.lockb
