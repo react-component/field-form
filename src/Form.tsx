@@ -62,10 +62,12 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
 
   // We customize handle event since Context will makes all the consumer re-render:
   // https://reactjs.org/docs/context.html#contextprovider
-  const [formInstance] = useForm(form);
+  const [formInstance] = useForm({
+    form,
+    initialValues,
+  });
   const {
     useSubscribe,
-    setInitialValues,
     setCallbacks,
     setValidateMessages,
     setPreserve,
@@ -110,13 +112,6 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
     onFinishFailed,
   });
   setPreserve(preserve);
-
-  // Set initial value, init store value when first mount
-  const mountRef = React.useRef(null);
-  setInitialValues(initialValues, !mountRef.current);
-  if (!mountRef.current) {
-    mountRef.current = true;
-  }
 
   React.useEffect(
     () => () => destroyForm(clearOnDestroy),

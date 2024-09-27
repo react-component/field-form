@@ -50,6 +50,54 @@ describe('Form.InitialValues', () => {
     expect(getInput(container, 'username').value).toEqual('Light');
     expect(getInput(container, 'path1.path2').value).toEqual('Bamboo');
   });
+  it('works with useForm', () => {
+    let form;
+    const Demo = () => {
+      const [form] = useForm({
+        initialValues: { username: 'Light', path1: { path2: 'Bamboo' } },
+      });
+
+      return (
+        <Form
+          form={form}
+        >
+          <Field name="username">
+            <Input data-name="username" />
+          </Field>
+          <Field name={['path1', 'path2']}>
+            <Input data-name="path1.path2" />
+          </Field>
+        </Form>
+      );
+    };
+
+    const { container } = render(
+      <Demo />,
+    );
+
+    expect(form.getFieldsValue()).toEqual({
+      username: 'Light',
+      path1: {
+        path2: 'Bamboo',
+      },
+    });
+    expect(form.getFieldsValue(['username'])).toEqual({
+      username: 'Light',
+    });
+    expect(form.getFieldsValue(['path1'])).toEqual({
+      path1: {
+        path2: 'Bamboo',
+      },
+    });
+    expect(form.getFieldsValue(['username', ['path1', 'path2']])).toEqual({
+      username: 'Light',
+      path1: {
+        path2: 'Bamboo',
+      },
+    });
+    expect(getInput(container, 'username').value).toEqual('Light');
+    expect(getInput(container, 'path1.path2').value).toEqual('Bamboo');
+  });
 
   it('update and reset should use new initialValues', () => {
     let form: FormInstance;
