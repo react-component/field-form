@@ -159,6 +159,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       initEntityValue(this);
     }
   }
+  
+  public componentDidUpdate({ rules: prevRules }) {
+    if (!isEqual(prevRules,this.props.rules)) {
+      this.validateRules();
+    }
+  }
 
   public componentDidMount() {
     const { shouldUpdate, fieldContext } = this.props;
