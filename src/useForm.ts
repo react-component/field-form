@@ -900,8 +900,8 @@ export class FormStore {
         namePathList.push(field.getNamePath());
       }
 
-      // Skip if without rule
-      if (!field.props.rules || !field.props.rules.length) {
+      // Skip if without rule , warnings and errors
+      if ((!field.props.rules || !field.props.rules.length)&&field.getErrors().length === 0 && field.getWarnings().length === 0) {
         return;
       }
 
