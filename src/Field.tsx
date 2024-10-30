@@ -620,13 +620,13 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       if (normalize) {
         newValue = normalize(newValue, value, getFieldsValue(true));
       }
-
-      dispatch({
-        type: 'updateValue',
-        namePath,
-        value: newValue,
-      });
-
+      if (!isEqual(newValue, value)) {
+        dispatch({
+          type: 'updateValue',
+          namePath,
+          value: newValue,
+        });
+      }
       if (originTriggerFunc) {
         originTriggerFunc(...args);
       }
