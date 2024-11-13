@@ -40,18 +40,4 @@ describe('Form.Control', () => {
     await changeValue(getInput(container), ['bamboo', '']);
     matchError(container, "'test' is required");
   });
-
-  it('value no change', async () => {
-    const fn = jest.fn();
-    const { container } = render(
-      <Form onFieldsChange={fn}>
-        <InfoField name="test" normalize={value => value?.replace(/\D/g, '') || undefined} />
-      </Form>,
-    );
-
-    await changeValue(getInput(container), 'bamboo');
-    expect(fn).toHaveBeenCalledTimes(0);
-    await changeValue(getInput(container), '1');
-    expect(fn).toHaveBeenCalledTimes(1);
-  });
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { FormInstance } from '../../src';
 import Form, { Field } from '../../src';
-import { Input } from '../common/InfoField';
+import InfoField, { Input } from '../common/InfoField';
 import { changeValue, getInput, matchArray } from '../common';
 import { render } from '@testing-library/react';
 
@@ -55,22 +55,38 @@ describe('legacy.field-props', () => {
     expect(form.current?.getFieldValue('normal')).toBe('21');
   });
 
-  it('normalize', async () => {
-    const form = React.createRef<FormInstance>();
-    const { container } = render(
-      <div>
-        <Form ref={form}>
-          <Field name="normal" normalize={v => v && v.toUpperCase()}>
-            <Input />
-          </Field>
-        </Form>
-      </div>,
-    );
+  describe('normalize', () => {
+    it('basic', async () => {
+      const form = React.createRef<FormInstance>();
+      const { container } = render(
+        <div>
+          <Form ref={form}>
+            <Field name="normal" normalize={v => v && v.toUpperCase()}>
+              <Input />
+            </Field>
+          </Form>
+        </div>,
+      );
 
-    await changeValue(getInput(container), 'a');
+      await changeValue(getInput(container), 'a');
 
-    expect(form.current?.getFieldValue('normal')).toBe('A');
-    expect(getInput(container).value).toBe('A');
+      expect(form.current?.getFieldValue('normal')).toBe('A');
+      expect(getInput(container).value).toBe('A');
+    });
+
+    it('value no change', async () => {
+      const fn = jest.fn();
+      const { container } = render(
+        <Form onFieldsChange={fn}>
+          <InfoField name="test" normalize={value => value?.replace(/\D/g, '') || undefined} />
+        </Form>,
+      );
+
+      await changeValue(getInput(container), 'bamboo');
+      expect(fn).toHaveBeenCalledTimes(0);
+      await changeValue(getInput(container), '1');
+      expect(fn).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('support jsx message', async () => {
