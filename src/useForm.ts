@@ -76,8 +76,12 @@ export class FormStore {
 
   private lastValidatePromise: Promise<FieldError[]> = null;
 
-  constructor(forceRootUpdate: () => void) {
-    this.forceRootUpdate = forceRootUpdate;
+  constructor(options: {
+    forceRootUpdate: () => void,
+    initialValues?: Store,
+  }) {
+    this.forceRootUpdate = options.forceRootUpdate;
+    this.initialValues = options.initialValues || {};
   }
 
   public getForm = (): InternalFormInstance => ({
@@ -1024,20 +1028,46 @@ export class FormStore {
   };
 }
 
-function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Values>] {
+
+function useForm<Values = any>(): [FormInstance<Values>];
+function useForm<Values = any>(form: FormInstance<Values>): [FormInstance<Values>]
+function useForm<Values = any>(options: Partial<{
+  form: FormInstance<Values>,
+  initialValues: Store;
+}>): [FormInstance<Values>];
+function useForm<Values = any>(options?: FormInstance<Values> | Partial<{
+  form: FormInstance<Values>,
+  initialValues: Store;
+}>): [FormInstance<Values>] {
   const formRef = React.useRef<FormInstance>();
   const [, forceUpdate] = React.useState({});
 
   if (!formRef.current) {
+    const useOptions = 'form' in options;
+
+    const form = useOptions ? options.form : options as FormInstance<Values>;
     if (form) {
+      if(useOptions && typeof options.initialValues !== 'undefined') {
+        (form as InternalFormInstance).getInternalHooks(HOOK_MARK).setInitialValues(options.initialValues, true);
+      }
       formRef.current = form;
     } else {
       // Create a new FormStore if not provided
       const forceReRender = () => {
         forceUpdate({});
       };
+      const createStoreOptions = {
+        forceRootUpdate: forceReRender,
+      } as {
+        forceRootUpdate: () => void;
+        initialValues?: Store;
+      }
 
-      const formStore: FormStore = new FormStore(forceReRender);
+      if(useOptions && typeof options.initialValues !== 'undefined') {
+        createStoreOptions.initialValues = options.initialValues;
+      }
+
+      const formStore: FormStore = new FormStore(createStoreOptions);
 
       formRef.current = formStore.getForm();
     }
