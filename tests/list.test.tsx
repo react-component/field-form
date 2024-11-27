@@ -935,6 +935,6 @@ describe('Form.List', () => {
       await timeout();
     });
 
-    console.log(formRef.current!.getFieldValue('list'));
+    expect(formRef.current!.getFieldValue('list')).toEqual([{ user: '1' }, { user: '3' }]);
   });
 });
