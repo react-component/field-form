@@ -689,7 +689,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
   const listContext = React.useContext(ListContext);
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
-  const isMergedListField = !!listContext || restProps.isList;
+  const isMergedListField = restProps.isListField ?? !!listContext;
 
   let key: string = 'keep';
   if (!isMergedListField) {
@@ -701,7 +701,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
   if (
     process.env.NODE_ENV !== 'production' &&
     restProps.preserve === false &&
-    isMergedListField &&
+    restProps.isListField &&
     namePath.length <= 1
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
