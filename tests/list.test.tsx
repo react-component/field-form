@@ -6,7 +6,7 @@ import type { FormProps } from '../src';
 import type { ListField, ListOperations, ListProps } from '../src/List';
 import type { FormInstance, Meta } from '../src/interface';
 import ListContext from '../src/ListContext';
-import { Input } from './common/InfoField';
+import InfoField, { Input } from './common/InfoField';
 import { changeValue, getInput } from './common';
 import timeout from './common/timeout';
 
@@ -891,5 +891,50 @@ describe('Form.List', () => {
 
     await changeValue(getInput(container, 2), 'changed3');
     expect(formRef.current.isFieldsTouched(true)).toBeTruthy();
+  });
+
+  // https://github.com/ant-design/ant-design/issues/51702
+  it('list nest field should ignore preserve', async () => {
+    const formRef = React.createRef<FormInstance>();
+
+    const { container } = render(
+      <Form ref={formRef} preserve={false}>
+        <Form.List name="list">
+          {(fields, { remove }) => {
+            return (
+              <>
+                {fields.map(field => (
+                  <InfoField key={field.key} name={[field.name, 'user']} />
+                ))}
+                <button onClick={() => remove(1)}>remove</button>
+              </>
+            );
+          }}
+        </Form.List>
+      </Form>,
+    );
+
+    formRef.current!.setFieldValue('list', [
+      { user: '1' },
+      { user: '2' },
+      {
+        user: '3',
+      },
+    ]);
+
+    await act(async () => {
+      await timeout();
+    });
+
+    expect(container.querySelectorAll('input')).toHaveLength(3);
+
+    // Remove 1 should keep correct value
+    fireEvent.click(container.querySelector('button')!);
+
+    await act(async () => {
+      await timeout();
+    });
+
+    console.log(formRef.current!.getFieldValue('list'));
   });
 });
