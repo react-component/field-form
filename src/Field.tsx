@@ -701,7 +701,7 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
   if (
     process.env.NODE_ENV !== 'production' &&
     restProps.preserve === false &&
-    restProps.isListField &&
+    isMergedListField &&
     namePath.length <= 1
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
