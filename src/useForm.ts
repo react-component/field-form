@@ -787,6 +787,8 @@ export class FormStore {
       {
         name,
         value,
+        errors: [],
+        warnings: [],
       },
     ]);
   };
