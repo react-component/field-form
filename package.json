@@ -60,7 +60,7 @@
     "@types/jest": "^29.2.5",
     "@types/lodash": "^4.14.135",
     "@types/node": "^22.0.2",
-    "@types/react": "^18.0.0",
+    "@types/react": "^19.0.1",
     "@types/react-dom": "^18.0.0",
     "@umijs/fabric": "^4.0.1",
     "dumi": "^2.0.0",
