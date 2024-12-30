@@ -1,22 +1,22 @@
 import React from 'react';
-import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue, matchError } from './common';
+import { changeValue, getInput, matchError } from './common';
 import type { FormInstance, Rule } from '../src/interface';
+import { render } from '@testing-library/react';
 
 describe('Form.WarningValidate', () => {
   it('required', async () => {
     const form = React.createRef<FormInstance>();
-    const wrapper = mount(
+    const { container } = render(
       <Form ref={form}>
         <InfoField name="name" rules={[{ required: true, warningOnly: true }]}>
           <Input />
         </InfoField>
       </Form>,
     );
-    await changeValue(wrapper, '');
-    matchError(wrapper, false, "'name' is required");
+    await changeValue(getInput(container), ['bamboo', '']);
+    matchError(container, false, "'name' is required");
     expect(form.current?.getFieldWarning('name')).toEqual(["'name' is required"]);
   });
 
@@ -34,15 +34,15 @@ describe('Form.WarningValidate', () => {
           { type: 'url' },
           { type: 'string', len: 20, warningOnly: true },
         ];
-        const wrapper = mount(
+        const { container } = render(
           <Form>
             <InfoField name="name" validateFirst={validateFirst} rules={rules.filter(Boolean)}>
               <Input />
             </InfoField>
           </Form>,
         );
-        await changeValue(wrapper, 'bamboo');
-        matchError(wrapper, errorMessage || "'name' is not a valid url", false);
+        await changeValue(getInput(container), 'bamboo');
+        matchError(container, errorMessage || "'name' is not a valid url", false);
       });
     };
     testValidateFirst('default', true);

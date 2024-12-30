@@ -26,18 +26,40 @@ export function cloneByNamePathList(store: Store, namePathList: InternalNamePath
   return newStore;
 }
 
-export function containsNamePath(namePathList: InternalNamePath[], namePath: InternalNamePath) {
-  return namePathList && namePathList.some(path => matchNamePath(path, namePath));
+/**
+ * Check if `namePathList` includes `namePath`.
+ * @param namePathList A list of `InternalNamePath[]`
+ * @param namePath Compare `InternalNamePath`
+ * @param partialMatch True will make `[a, b]` match `[a, b, c]`
+ */
+export function containsNamePath(
+  namePathList: InternalNamePath[],
+  namePath: InternalNamePath,
+  partialMatch = false,
+) {
+  return namePathList && namePathList.some(path => matchNamePath(namePath, path, partialMatch));
 }
 
+/**
+ * Check if `namePath` is super set or equal of `subNamePath`.
+ * @param namePath A list of `InternalNamePath[]`
+ * @param subNamePath Compare `InternalNamePath`
+ * @param partialMatch True will make `[a, b]` match `[a, b, c]`
+ */
 export function matchNamePath(
   namePath: InternalNamePath,
-  changedNamePath: InternalNamePath | null,
+  subNamePath: InternalNamePath | null,
+  partialMatch = false,
 ) {
-  if (!namePath || !changedNamePath || namePath.length !== changedNamePath.length) {
+  if (!namePath || !subNamePath) {
     return false;
   }
-  return namePath.every((nameUnit, i) => changedNamePath[i] === nameUnit);
+
+  if (!partialMatch && namePath.length !== subNamePath.length) {
+    return false;
+  }
+
+  return subNamePath.every((nameUnit, i) => namePath[i] === nameUnit);
 }
 
 // Like `shallowEqual`, but we not check the data which may cause re-render

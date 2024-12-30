@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FormInstance } from './interface';
+import type { FormRef, FormInstance } from './interface';
 import Field from './Field';
 import List from './List';
 import useForm from './useForm';
@@ -10,8 +10,8 @@ import FieldContext from './FieldContext';
 import ListContext from './ListContext';
 import useWatch from './useWatch';
 
-const InternalForm = React.forwardRef<FormInstance, FormProps>(FieldForm) as <Values = any>(
-  props: FormProps<Values> & { ref?: React.Ref<FormInstance<Values>> },
+const InternalForm = React.forwardRef<FormRef, FormProps>(FieldForm) as <Values = any>(
+  props: FormProps<Values> & { ref?: React.Ref<FormRef<Values>> },
 ) => React.ReactElement;
 
 type InternalFormType = typeof InternalForm;
@@ -31,8 +31,8 @@ RefForm.List = List;
 RefForm.useForm = useForm;
 RefForm.useWatch = useWatch;
 
-export { FormInstance, Field, List, useForm, FormProvider, FieldContext, ListContext, useWatch };
+export { Field, List, useForm, FormProvider, FieldContext, ListContext, useWatch };
 
-export type { FormProps };
+export type { FormProps, FormInstance, FormRef };
 
 export default RefForm;

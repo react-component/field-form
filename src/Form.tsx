@@ -6,6 +6,7 @@ import type {
   ValidateMessages,
   Callbacks,
   InternalFormInstance,
+  FormRef,
 } from './interface';
 import useForm from './useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
@@ -33,9 +34,10 @@ export interface FormProps<Values = any> extends BaseFormProps {
   onFinishFailed?: Callbacks<Values>['onFinishFailed'];
   validateTrigger?: string | string[] | false;
   preserve?: boolean;
+  clearOnDestroy?: boolean;
 }
 
-const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
+const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
   {
     name,
     initialValues,
@@ -50,10 +52,12 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
     onFieldsChange,
     onFinish,
     onFinishFailed,
+    clearOnDestroy,
     ...restProps
   }: FormProps,
   ref,
 ) => {
+  const nativeElementRef = React.useRef<HTMLFormElement>(null);
   const formContext: FormContextProps = React.useContext(FormContext);
 
   // We customize handle event since Context will makes all the consumer re-render:
@@ -69,7 +73,10 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
-  React.useImperativeHandle(ref, () => formInstance);
+  React.useImperativeHandle(ref, () => ({
+    ...formInstance,
+    nativeElement: nativeElementRef.current,
+  }));
 
   // Register form into Context
   React.useEffect(() => {
@@ -112,7 +119,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   }
 
   React.useEffect(
-    () => destroyForm,
+    () => () => destroyForm(clearOnDestroy),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -160,6 +167,7 @@ const Form: React.ForwardRefRenderFunction<FormInstance, FormProps> = (
   return (
     <Component
       {...restProps}
+      ref={nativeElementRef}
       onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();

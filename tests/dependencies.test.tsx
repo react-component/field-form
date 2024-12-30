@@ -1,16 +1,16 @@
 import React from 'react';
-import { mount } from 'enzyme';
 import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
 import timeout from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue, matchError, getField } from './common';
+import { changeValue, matchError, getInput } from './common';
+import { fireEvent, render } from '@testing-library/react';
 
 describe('Form.Dependencies', () => {
   it('touched', async () => {
     const form = React.createRef<FormInstance>();
 
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form ref={form}>
           <InfoField name="field_1" />
@@ -20,13 +20,13 @@ describe('Form.Dependencies', () => {
     );
 
     // Not trigger if not touched
-    await changeValue(getField(wrapper, 0), '');
-    matchError(getField(wrapper, 1), false);
+    await changeValue(getInput(container, 0), ['bamboo', '']);
+    matchError(getInput(container, 1, true), false);
 
     // Trigger if touched
     form.current?.setFields([{ name: 'field_2', touched: true }]);
-    await changeValue(getField(wrapper, 0), '');
-    matchError(getField(wrapper, 1), true);
+    await changeValue(getInput(container, 0), ['bamboo', '']);
+    matchError(getInput(container, 1, true), true);
   });
 
   describe('initialValue', () => {
@@ -34,7 +34,7 @@ describe('Form.Dependencies', () => {
       it(name, async () => {
         let validated = false;
 
-        const wrapper = mount(
+        const { container } = render(
           <div>
             <Form {...formProps}>
               <InfoField name="field_1" />
@@ -55,7 +55,7 @@ describe('Form.Dependencies', () => {
         );
 
         // Not trigger if not touched
-        await changeValue(getField(wrapper, 0), '');
+        await changeValue(getInput(container, 0), 'bamboo');
         expect(validated).toBeTruthy();
       });
     }
@@ -68,7 +68,7 @@ describe('Form.Dependencies', () => {
     const form = React.createRef<FormInstance>();
     let rendered = false;
 
-    const wrapper = mount(
+    const { container } = render(
       <div>
         <Form ref={form}>
           <Field name="field_1">
@@ -94,7 +94,7 @@ describe('Form.Dependencies', () => {
     ]);
 
     rendered = false;
-    await changeValue(getField(wrapper), '1');
+    await changeValue(getInput(container), '1');
 
     expect(rendered).toBeTruthy();
   });
@@ -102,7 +102,7 @@ describe('Form.Dependencies', () => {
   it('should work when field is dirty', async () => {
     let pass = false;
 
-    const wrapper = mount(
+    const { container } = render(
       <Form>
         <InfoField
           name="field_1"
@@ -134,26 +134,26 @@ describe('Form.Dependencies', () => {
       </Form>,
     );
 
-    wrapper.find('form').simulate('submit');
+    fireEvent.submit(container.querySelector('form')!);
     await timeout();
-    wrapper.update();
-    matchError(getField(wrapper, 0), 'You should not pass');
+    // wrapper.update();
+    matchError(getInput(container, 0, true), 'You should not pass');
 
     // Mock new validate
     pass = true;
-    await changeValue(getField(wrapper, 1), 'bamboo');
-    matchError(getField(wrapper, 0), false);
+    await changeValue(getInput(container, 1), 'bamboo');
+    matchError(getInput(container, 0, true), false);
 
     // Should not validate after reset
     pass = false;
-    wrapper.find('button').simulate('click');
-    await changeValue(getField(wrapper, 1), 'light');
-    matchError(getField(wrapper, 0), false);
+    fireEvent.click(container.querySelector('button')!);
+    await changeValue(getInput(container, 1), 'light');
+    matchError(getInput(container, 0, true), false);
   });
 
   it('should work as a shortcut when name is not provided', async () => {
     const spy = jest.fn();
-    const wrapper = mount(
+    const { container } = render(
       <Form>
         <Field dependencies={['field_1']}>
           {() => {
@@ -170,7 +170,7 @@ describe('Form.Dependencies', () => {
       </Form>,
     );
     expect(spy).toHaveBeenCalledTimes(1);
-    await changeValue(getField(wrapper, 2), 'value2');
+    await changeValue(getInput(container, 1), 'value2');
     // sync start
     //   valueUpdate -> not rerender
     //   depsUpdate  -> not rerender
@@ -179,7 +179,7 @@ describe('Form.Dependencies', () => {
     //   validateFinish -> not rerender
     // async end
     expect(spy).toHaveBeenCalledTimes(1);
-    await changeValue(getField(wrapper, 1), 'value1');
+    await changeValue(getInput(container, 0), 'value1');
     // sync start
     //   valueUpdate -> not rerender
     //   depsUpdate  -> rerender by deps
@@ -193,7 +193,7 @@ describe('Form.Dependencies', () => {
 
   it("shouldn't work when shouldUpdate is set", async () => {
     const spy = jest.fn();
-    const wrapper = mount(
+    const { container } = render(
       <Form>
         <Field dependencies={['field_2']} shouldUpdate={() => true}>
           {() => {
@@ -210,7 +210,7 @@ describe('Form.Dependencies', () => {
       </Form>,
     );
     expect(spy).toHaveBeenCalledTimes(1);
-    await changeValue(getField(wrapper, 1), 'value1');
+    await changeValue(getInput(container, 0), 'value1');
     // sync start
     //   valueUpdate -> rerender by shouldUpdate
     //   depsUpdate  -> rerender by deps
@@ -218,12 +218,51 @@ describe('Form.Dependencies', () => {
     // sync end
     expect(spy).toHaveBeenCalledTimes(2);
 
-    await changeValue(getField(wrapper, 2), 'value2');
+    await changeValue(getInput(container, 1), 'value2');
     // sync start
     //   valueUpdate -> rerender by shouldUpdate
     //   depsUpdate  -> rerender by deps
     //   [ react rerender once -> 3 ]
     // sync end
     expect(spy).toHaveBeenCalledTimes(3);
+  });
+
+  it('shouldUpdate false should not update', () => {
+    let counter = 0;
+    const formRef = React.createRef<FormInstance>();
+
+    const { container } = render(
+      <Form ref={formRef}>
+        <Field name="little" preserve={false}>
+          <Input />
+        </Field>
+
+        <Field shouldUpdate={(prev, next) => prev.little !== next.little}>
+          {(_, __, form) => {
+            // Fill to hide
+            if (!form.getFieldValue('little')) {
+              return <InfoField name="bamboo" preserve={false} />;
+            }
+
+            return null;
+          }}
+        </Field>
+
+        <Field shouldUpdate={() => false}>
+          {() => {
+            console.log('render!');
+            counter += 1;
+            return null;
+          }}
+        </Field>
+      </Form>,
+    );
+    expect(counter).toEqual(1);
+    expect(container.querySelectorAll('input')).toHaveLength(2);
+
+    // hide should not re-render
+    fireEvent.change(getInput(container, 0), { target: { value: '1' } });
+    expect(container.querySelectorAll('input')).toHaveLength(1);
+    expect(counter).toEqual(1);
   });
 });

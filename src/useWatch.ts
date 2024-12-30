@@ -1,4 +1,5 @@
 import warning from 'rc-util/lib/warning';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
   FormInstance,
@@ -8,9 +9,8 @@ import type {
   Store,
   WatchOptions,
 } from './interface';
-import { useState, useContext, useEffect, useRef, useMemo } from 'react';
-import { getNamePath, getValue } from './utils/valueUtil';
 import { isFormInstance } from './utils/typeUtil';
+import { getNamePath, getValue } from './utils/valueUtil';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
@@ -76,6 +76,18 @@ function useWatch<TForm extends FormInstance>(
   form?: TForm | WatchOptions<TForm>,
 ): GetGeneric<TForm>;
 
+// ------- selector type -------
+function useWatch<TForm extends FormInstance, TSelected = unknown>(
+  selector: (values: GetGeneric<TForm>) => TSelected,
+  form?: TForm | WatchOptions<TForm>,
+): TSelected;
+
+function useWatch<ValueType = Store, TSelected = unknown>(
+  selector: (values: ValueType) => TSelected,
+  form?: FormInstance | WatchOptions<FormInstance>,
+): TSelected;
+// ------- selector type end -------
+
 function useWatch<TForm extends FormInstance>(
   dependencies: NamePath,
   form?: TForm | WatchOptions<TForm>,
@@ -86,8 +98,10 @@ function useWatch<ValueType = Store>(
   form?: FormInstance | WatchOptions<FormInstance>,
 ): ValueType;
 
-function useWatch(...args: [NamePath, FormInstance | WatchOptions<FormInstance>]) {
-  const [dependencies = [], _form = {}] = args;
+function useWatch(
+  ...args: [NamePath | ((values: Store) => any), FormInstance | WatchOptions<FormInstance>]
+) {
+  const [dependencies, _form = {}] = args;
   const options = isFormInstance(_form) ? { form: _form } : _form;
   const form = options.form;
 
@@ -125,8 +139,15 @@ function useWatch(...args: [NamePath, FormInstance | WatchOptions<FormInstance>]
       const { getFieldsValue, getInternalHooks } = formInstance;
       const { registerWatch } = getInternalHooks(HOOK_MARK);
 
+      const getWatchValue = (values: any, allValues: any) => {
+        const watchValue = options.preserve ? allValues : values;
+        return typeof dependencies === 'function'
+          ? dependencies(watchValue)
+          : getValue(watchValue, namePathRef.current);
+      };
+
       const cancelRegister = registerWatch((values, allValues) => {
-        const newValue = getValue(options.preserve ? allValues : values, namePathRef.current);
+        const newValue = getWatchValue(values, allValues);
         const nextValueStr = stringify(newValue);
 
         // Compare stringify in case it's nest object
@@ -137,11 +158,13 @@ function useWatch(...args: [NamePath, FormInstance | WatchOptions<FormInstance>]
       });
 
       // TODO: We can improve this perf in future
-      const initialValue = getValue(
-        options.preserve ? getFieldsValue(true) : getFieldsValue(),
-        namePathRef.current,
-      );
-      setValue(initialValue);
+      const initialValue = getWatchValue(getFieldsValue(), getFieldsValue(true));
+
+      // React 18 has the bug that will queue update twice even the value is not changed
+      // ref: https://github.com/facebook/react/issues/27213
+      if (value !== initialValue) {
+        setValue(initialValue);
+      }
 
       return cancelRegister;
     },

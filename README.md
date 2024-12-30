@@ -24,7 +24,7 @@ open http://localhost:8000
 ## Feature
 
 - Support react.js and even react-native
-- Validate fields with [async-validator](https://github.com/yiminghe/async-validator/)
+- Validate fields with [@rc-component/async-validator](https://github.com/react-component/async-validator/)
 
 ## Install
 
@@ -35,13 +35,13 @@ open http://localhost:8000
 ```js | pure
 import Form, { Field } from 'rc-field-form';
 
-const Input = ({ value = "", ...props }) => <input value={value} {...props} />;
+const Input = ({ value = '', ...props }) => <input value={value} {...props} />;
 
 const Demo = () => {
   return (
     <Form
-      onFinish={(values) => {
-        console.log("Finish:", values);
+      onFinish={values => {
+        console.log('Finish:', values);
       }}
     >
       <Field name="username">
@@ -81,20 +81,20 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ### Field
 
-| Prop              | Description                                                                   | Type                                        | Default  |
-| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------- | -------- |
-| dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                     | -        |
-| getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                      | -        |
-| getValueProps     | Customize additional props with value. This prop will disable `valuePropName` | (value) => any                              | -        |
-| initialValue      | Field initial value                                                           | any                                         | -        |
-| name              | Field name path                                                               | [NamePath](#namepath)                       | -        |
-| normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any       | -        |
-| preserve          | Preserve value when field removed                                             | boolean                                     | false    |
-| rules             | Validate rules                                                                | [Rule](#rule)[]                             | -        |
+| Prop              | Description                                                                   | Type                                           | Default  |
+| ----------------- | ----------------------------------------------------------------------------- | ---------------------------------------------- | -------- |
+| dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                        | -        |
+| getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                         | -        |
+| getValueProps     | Customize additional props with value. This prop will disable `valuePropName` | (value) => any                                 | -        |
+| initialValue      | Field initial value                                                           | any                                            | -        |
+| name              | Field name path                                                               | [NamePath](#namepath)                          | -        |
+| normalize         | Normalize value before update                                                 | (value, prevValue, prevValues) => any          | -        |
+| preserve          | Preserve value when field removed                                             | boolean                                        | false    |
+| rules             | Validate rules                                                                | [Rule](#rule)[]                                | -        |
 | shouldUpdate      | Check if Field should update                                                  | boolean \| (prevValues, nextValues) => boolean | -        |
-| trigger           | Collect value update by event trigger                                         | string                                      | onChange |
-| validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                          | onChange |
-| valuePropName     | Config value mapping prop with element                                        | string                                      | value    |
+| trigger           | Collect value update by event trigger                                         | string                                         | onChange |
+| validateTrigger   | Config trigger point with rule validate                                       | string \| string[]                             | onChange |
+| valuePropName     | Config value mapping prop with element                                        | string                                         | value    |
 
 ### List
 

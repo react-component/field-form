@@ -1,8 +1,7 @@
 import React from 'react';
-import { mount } from 'enzyme';
 import Form from '../src';
 import InfoField from './common/InfoField';
-import { changeValue, matchError } from './common';
+import { changeValue, getInput, matchError } from './common';
 import { render } from '@testing-library/react';
 
 describe('Form.Control', () => {
@@ -36,9 +35,9 @@ describe('Form.Control', () => {
       );
     };
 
-    const wrapper = mount(<Test />);
+    const { container } = render(<Test />);
 
-    await changeValue(wrapper, '');
-    matchError(wrapper, "'test' is required");
+    await changeValue(getInput(container), ['bamboo', '']);
+    matchError(container, "'test' is required");
   });
 });

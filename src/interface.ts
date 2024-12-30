@@ -1,8 +1,9 @@
 import type { ReactElement } from 'react';
+import type { DeepNamePath } from './namePathType';
 import type { ReducerAction } from './useForm';
 
 export type InternalNamePath = (string | number)[];
-export type NamePath = string | number | InternalNamePath;
+export type NamePath<T = any> = DeepNamePath<T>;
 
 export type StoreValue = any;
 export type Store = Record<string, StoreValue>;
@@ -23,8 +24,8 @@ export interface InternalFieldData extends Meta {
 /**
  * Used by `setFields` config
  */
-export interface FieldData extends Partial<Omit<InternalFieldData, 'name'>> {
-  name: NamePath;
+export interface FieldData<Values = any> extends Partial<Omit<InternalFieldData, 'name'>> {
+  name: NamePath<Values>;
 }
 
 export type RuleType =
@@ -131,6 +132,13 @@ export interface ValidateOptions {
    * Validate only and not trigger UI and Field status update
    */
   validateOnly?: boolean;
+  /**
+   * Recursive validate. It will validate all the name path that contains the provided one.
+   * e.g. [['a']] will validate ['a'] , ['a', 'b'] and ['a', 1].
+   */
+  recursive?: boolean;
+  /** Validate when a field is dirty (validated or touched) */
+  dirty?: boolean;
 }
 
 export type ValidateFields<Values = any> = {
@@ -141,11 +149,6 @@ export type ValidateFields<Values = any> = {
 export interface InternalValidateOptions extends ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
-  /**
-   * Recursive validate. It will validate all the name path that contains the provided one.
-   * e.g. ['a'] will validate ['a'] , ['a', 'b'] and ['a', 1].
-   */
-  recursive?: boolean;
 }
 
 export type InternalValidateFields<Values = any> = {
@@ -222,7 +225,7 @@ export interface InternalHooks {
   registerField: (entity: FieldEntity) => () => void;
   useSubscribe: (subscribable: boolean) => void;
   setInitialValues: (values: Store, init: boolean) => void;
-  destroyForm: () => void;
+  destroyForm: (clearOnDestroy?: boolean) => void;
   setCallbacks: (callbacks: Callbacks) => void;
   registerWatch: (callback: WatchCallBack) => () => void;
   getFields: (namePathList?: InternalNamePath[]) => FieldData[];
@@ -231,41 +234,37 @@ export interface InternalHooks {
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
 }
 
-type NoUndefined<T> = Exclude<T, undefined>;
-
 /** Only return partial when type is not any */
-type RecursivePartial<T> = NoUndefined<T> extends object
-  ? {
-      [P in keyof T]?: NoUndefined<T[P]> extends (infer U)[]
-        ? RecursivePartial<U>[]
-        : NoUndefined<T[P]> extends object
-        ? RecursivePartial<T[P]>
-        : T[P];
-    }
-  : T;
+type NoUndefined<T> = Exclude<T, undefined>;
+type RecursivePartial<T> = NoUndefined<T> extends object ? {
+    [P in keyof T]?: NoUndefined<T[P]> extends (infer U)[] ? RecursivePartial<U>[] : NoUndefined<T[P]> extends object ? RecursivePartial<T[P]> : T[P];
+} : T;
 
 export interface FormInstance<Values = any> {
   // Origin Form API
-  getFieldValue: (name: NamePath) => StoreValue;
+  getFieldValue: (name: NamePath<Values>) => StoreValue;
   getFieldsValue: (() => Values) &
-    ((nameList: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => any);
-  getFieldError: (name: NamePath) => string[];
-  getFieldsError: (nameList?: NamePath[]) => FieldError[];
-  getFieldWarning: (name: NamePath) => string[];
-  isFieldsTouched: ((nameList?: NamePath[], allFieldsTouched?: boolean) => boolean) &
+    ((nameList: NamePath<Values>[] | true, filterFunc?: FilterFunc) => any) &
+    ((config: GetFieldsValueConfig) => any);
+  getFieldError: (name: NamePath<Values>) => string[];
+  getFieldsError: (nameList?: NamePath<Values>[]) => FieldError[];
+  getFieldWarning: (name: NamePath<Values>) => string[];
+  isFieldsTouched: ((nameList?: NamePath<Values>[], allFieldsTouched?: boolean) => boolean) &
     ((allFieldsTouched?: boolean) => boolean);
-  isFieldTouched: (name: NamePath) => boolean;
-  isFieldValidating: (name: NamePath) => boolean;
-  isFieldsValidating: (nameList: NamePath[]) => boolean;
-  resetFields: (fields?: NamePath[]) => void;
-  setFields: (fields: FieldData[]) => void;
-  setFieldValue: (name: NamePath, value: any) => void;
+  isFieldTouched: (name: NamePath<Values>) => boolean;
+  isFieldValidating: (name: NamePath<Values>) => boolean;
+  isFieldsValidating: (nameList?: NamePath<Values>[]) => boolean;
+  resetFields: (fields?: NamePath<Values>[]) => void;
+  setFields: (fields: FieldData<Values>[]) => void;
+  setFieldValue: (name: NamePath<Values>, value: any) => void;
   setFieldsValue: (values: RecursivePartial<Values>) => void;
   validateFields: ValidateFields<Values>;
 
   // New API
   submit: () => void;
 }
+
+export type FormRef<Values = any> = FormInstance<Values> & { nativeElement?: HTMLElement };
 
 export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
   validateFields: InternalValidateFields;

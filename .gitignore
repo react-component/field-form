@@ -19,9 +19,14 @@
 .DS_Store
 .vscode
 .idea
+~*
 
 # umi
 .umi
 .umi-production
 .umi-test
 .env.local
+.dumi/
+package-lock.json
+
+bun.lockb

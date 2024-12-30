@@ -1,3 +1,4 @@
+import { merge } from 'rc-util/lib/utils/set';
 import warning from 'rc-util/lib/warning';
 import * as React from 'react';
 import { HOOK_MARK } from './FieldContext';
@@ -6,12 +7,15 @@ import type {
   FieldData,
   FieldEntity,
   FieldError,
+  FilterFunc,
   FormInstance,
+  GetFieldsValueConfig,
   InternalFieldData,
   InternalFormInstance,
   InternalHooks,
   InternalNamePath,
   InternalValidateFields,
+  InternalValidateOptions,
   Meta,
   NamePath,
   NotifyInfo,
@@ -20,12 +24,10 @@ import type {
   StoreValue,
   ValidateErrorEntity,
   ValidateMessages,
-  InternalValidateOptions,
   ValuedNotifyInfo,
   WatchCallBack,
 } from './interface';
 import { allPromiseFinish } from './utils/asyncUtil';
-import { merge } from 'rc-util/lib/utils/set';
 import { defaultValidateMessages } from './utils/messages';
 import NameMap from './utils/NameMap';
 import {
@@ -154,15 +156,20 @@ export class FormStore {
     }
   };
 
-  private destroyForm = () => {
-    const prevWithoutPreserves = new NameMap<boolean>();
-    this.getFieldEntities(true).forEach(entity => {
-      if (!this.isMergedPreserve(entity.isPreserve())) {
-        prevWithoutPreserves.set(entity.getNamePath(), true);
-      }
-    });
-
-    this.prevWithoutPreserves = prevWithoutPreserves;
+  private destroyForm = (clearOnDestroy?: boolean) => {
+    if (clearOnDestroy) {
+      // destroy form reset store
+      this.updateStore({});
+    } else {
+      // Fill preserve fields
+      const prevWithoutPreserves = new NameMap<boolean>();
+      this.getFieldEntities(true).forEach(entity => {
+        if (!this.isMergedPreserve(entity.isPreserve())) {
+          prevWithoutPreserves.set(entity.getNamePath(), true);
+        }
+      });
+      this.prevWithoutPreserves = prevWithoutPreserves;
+    }
   };
 
   private getInitialValue = (namePath: InternalNamePath) => {
@@ -265,15 +272,31 @@ export class FormStore {
     });
   };
 
-  private getFieldsValue = (nameList?: NamePath[] | true, filterFunc?: (meta: Meta) => boolean) => {
+  private getFieldsValue = (
+    nameList?: NamePath[] | true | GetFieldsValueConfig,
+    filterFunc?: FilterFunc,
+  ) => {
     this.warningUnhooked();
 
-    if (nameList === true && !filterFunc) {
+    // Fill args
+    let mergedNameList: NamePath[] | true;
+    let mergedFilterFunc: FilterFunc;
+    let mergedStrict: boolean;
+
+    if (nameList === true || Array.isArray(nameList)) {
+      mergedNameList = nameList;
+      mergedFilterFunc = filterFunc;
+    } else if (nameList && typeof nameList === 'object') {
+      mergedStrict = nameList.strict;
+      mergedFilterFunc = nameList.filter;
+    }
+
+    if (mergedNameList === true && !mergedFilterFunc) {
       return this.store;
     }
 
     const fieldEntities = this.getFieldEntitiesForNamePathList(
-      Array.isArray(nameList) ? nameList : null,
+      Array.isArray(mergedNameList) ? mergedNameList : null,
     );
 
     const filteredNameList: NamePath[] = [];
@@ -283,15 +306,19 @@ export class FormStore {
 
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
-      if (!nameList && (entity as FieldEntity).isListField?.()) {
+      if (mergedStrict) {
+        if ((entity as FieldEntity).isList?.()) {
+          return;
+        }
+      } else if (!mergedNameList && (entity as FieldEntity).isListField?.()) {
         return;
       }
 
-      if (!filterFunc) {
+      if (!mergedFilterFunc) {
         filteredNameList.push(namePath);
       } else {
         const meta: Meta = 'getMeta' in entity ? entity.getMeta() : null;
-        if (filterFunc(meta)) {
+        if (mergedFilterFunc(meta)) {
           filteredNameList.push(namePath);
         }
       }
@@ -373,7 +400,7 @@ export class FormStore {
     // ===== Will get fully compare when not config namePathList =====
     if (!namePathList) {
       return isAllFieldsTouched
-        ? fieldEntities.every(isFieldTouched)
+        ? fieldEntities.every(entity => isFieldTouched(entity) || entity.isList())
         : fieldEntities.some(isFieldTouched);
     }
 
@@ -488,8 +515,10 @@ export class FormStore {
               );
             } else if (records) {
               const originValue = this.getFieldValue(namePath);
+              const isListField = field.isListField();
+
               // Set `initialValue`
-              if (!info.skipExist || originValue === undefined) {
+              if (!isListField && (!info.skipExist || originValue === undefined)) {
                 this.updateStore(setValue(this.store, namePath, [...records][0].value));
               }
             }
@@ -758,6 +787,8 @@ export class FormStore {
       {
         name,
         value,
+        errors: [],
+        warnings: [],
       },
     ]);
   };
@@ -863,25 +894,12 @@ export class FormStore {
     const TMP_SPLIT = String(Date.now());
     const validateNamePathList = new Set<string>();
 
+    const { recursive, dirty } = options || {};
+
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
       // Add field if not provide `nameList`
       if (!provideNameList) {
         namePathList.push(field.getNamePath());
-      }
-
-      /**
-       * Recursive validate if configured.
-       * TODO: perf improvement @zombieJ
-       */
-      if (options?.recursive && provideNameList) {
-        const namePath = field.getNamePath();
-        if (
-          // nameList[i] === undefined 说明是以 nameList 开头的
-          // ['name'] -> ['name','list']
-          namePath.every((nameUnit, i) => nameList[i] === nameUnit || nameList[i] === undefined)
-        ) {
-          namePathList.push(namePath);
-        }
       }
 
       // Skip if without rule
@@ -889,11 +907,16 @@ export class FormStore {
         return;
       }
 
+      // Skip if only validate dirty field
+      if (dirty && !field.isFieldDirty()) {
+        return;
+      }
+
       const fieldNamePath = field.getNamePath();
       validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
 
       // Add field validate rule in to promise list
-      if (!provideNameList || containsNamePath(namePathList, fieldNamePath)) {
+      if (!provideNameList || containsNamePath(namePathList, fieldNamePath, recursive)) {
         const promise = field.validateRules({
           validateMessages: {
             ...defaultValidateMessages,

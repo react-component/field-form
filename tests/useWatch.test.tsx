@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, act } from '@testing-library/react';
 import type { FormInstance } from '../src';
 import { List } from '../src';
 import Form, { Field } from '../src';
 import timeout from './common/timeout';
-import { act } from 'react-dom/test-utils';
 import { Input } from './common/InfoField';
 import { stringify } from '../src/useWatch';
+import { changeValue } from './common';
 
 describe('useWatch', () => {
   it('field initialValue', async () => {
@@ -24,11 +24,12 @@ describe('useWatch', () => {
         </div>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const { container } = render(<Demo />);
       await timeout();
-      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
   });
 
   it('form initialValue', async () => {
@@ -46,11 +47,12 @@ describe('useWatch', () => {
         </div>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const { container } = render(<Demo />);
       await timeout();
-      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
   });
 
   it('change value with form api', async () => {
@@ -69,18 +71,26 @@ describe('useWatch', () => {
         </div>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const { container } = render(<Demo />);
       await timeout();
-      staticForm.current?.setFields([{ name: 'name', value: 'little' }]);
-      expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('little');
-
-      staticForm.current?.setFieldsValue({ name: 'light' });
-      expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('light');
-
-      staticForm.current?.resetFields();
-      expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('');
     });
+
+    await act(async () => {
+      staticForm.current?.setFields([{ name: 'name', value: 'little' }]);
+    });
+    expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('little');
+
+    await act(async () => {
+      staticForm.current?.setFieldsValue({ name: 'light' });
+    });
+    expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('light');
+
+    await act(async () => {
+      staticForm.current?.resetFields();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('');
   });
 
   describe('unmount', () => {
@@ -102,18 +112,19 @@ describe('useWatch', () => {
         );
       };
 
+      const { container, rerender } = render(<Demo visible />);
+
       await act(async () => {
-        const { container, rerender } = render(<Demo visible />);
         await timeout();
-
-        expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
-
-        rerender(<Demo visible={false} />);
-        expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
-
-        rerender(<Demo visible />);
-        expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
       });
+
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
+
+      rerender(<Demo visible={false} />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
+
+      rerender(<Demo visible />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
 
     it('nest children component', async () => {
@@ -140,17 +151,17 @@ describe('useWatch', () => {
         );
       };
 
+      const { container, rerender } = render(<Demo visible />);
       await act(async () => {
-        const { container, rerender } = render(<Demo visible />);
         await timeout();
-        expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
-
-        rerender(<Demo visible={false} />);
-        expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
-
-        rerender(<Demo visible />);
-        expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
       });
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
+
+      rerender(<Demo visible={false} />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
+
+      rerender(<Demo visible />);
+      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
   });
 
@@ -182,18 +193,21 @@ describe('useWatch', () => {
         </Form>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const { container } = render(<Demo />);
       await timeout();
-      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
-        JSON.stringify(['bamboo', 'light']),
-      );
-      fireEvent.click(container.querySelector<HTMLAnchorElement>('.remove'));
-      await timeout();
-      expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
-        JSON.stringify(['light']),
-      );
     });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
+      JSON.stringify(['bamboo', 'light']),
+    );
+    fireEvent.click(container.querySelector<HTMLAnchorElement>('.remove'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
+      JSON.stringify(['light']),
+    );
   });
 
   it('warning if not provide form', () => {
@@ -212,7 +226,7 @@ describe('useWatch', () => {
     errorSpy.mockRestore();
   });
 
-  it('no more render time', () => {
+  it('no more render time', async () => {
     let renderTime = 0;
 
     const Demo: React.FC = () => {
@@ -239,13 +253,13 @@ describe('useWatch', () => {
 
     const input = container.querySelectorAll<HTMLInputElement>('input');
 
-    fireEvent.change(input[0], { target: { value: 'bamboo' } });
+    await changeValue(input[0], 'bamboo');
     expect(renderTime).toEqual(2);
 
-    fireEvent.change(input[1], { target: { value: '123' } });
+    await changeValue(input[1], '123');
     expect(renderTime).toEqual(2);
 
-    fireEvent.change(input[1], { target: { value: '123456' } });
+    await changeValue(input[1], '123456');
     expect(renderTime).toEqual(2);
   });
 
@@ -273,8 +287,29 @@ describe('useWatch', () => {
       const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
       const more = Form.useWatch(['age', 'name', 'gender'], form);
       const demo = Form.useWatch<string>(['demo']);
+
+      const values2 = Form.useWatch(values => ({ newName: values.name, newAge: values.age }), form);
+      const values3 = Form.useWatch<FieldType, { newName?: string }>(values => ({
+        newName: values.name,
+      }));
+
       return (
-        <>{JSON.stringify({ values, main, age, demo1, demo2, demo3, demo4, demo5, more, demo })}</>
+        <>
+          {JSON.stringify({
+            values,
+            main,
+            age,
+            demo1,
+            demo2,
+            demo3,
+            demo4,
+            demo5,
+            more,
+            demo,
+            values2,
+            values3,
+          })}
+        </>
       );
     };
 
@@ -428,13 +463,43 @@ describe('useWatch', () => {
         </div>
       );
     };
+
+    const { container } = render(<Demo />);
     await act(async () => {
-      const { container } = render(<Demo />);
       await timeout();
-      expect(logSpy).toHaveBeenCalledWith('bamboo', undefined); // initialValue
-      fireEvent.click(container.querySelector('.test-btn'));
-      await timeout();
-      expect(logSpy).toHaveBeenCalledWith('light', undefined); // after setFieldValue
     });
+    expect(logSpy).toHaveBeenCalledWith('bamboo', undefined); // initialValue
+    fireEvent.click(container.querySelector('.test-btn'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(logSpy).toHaveBeenCalledWith('light', undefined); // after setFieldValue
+
+    logSpy.mockRestore();
+  });
+  it('selector', async () => {
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm<{ name?: string }>();
+      const nameValue = Form.useWatch(values => values.name, form);
+      return (
+        <div>
+          <Form form={form}>
+            <Field name="name" initialValue="bamboo">
+              <Input />
+            </Field>
+          </Form>
+          <div className="values">{nameValue}</div>
+        </div>
+      );
+    };
+
+    const { container } = render(<Demo />);
+    await act(async () => {
+      await timeout();
+    });
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
+    const input = container.querySelectorAll<HTMLInputElement>('input');
+    await changeValue(input[0], 'bamboo2');
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo2');
   });
 });
