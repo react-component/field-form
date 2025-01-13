@@ -138,7 +138,7 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
   useSubscribe(!childrenRenderProps);
 
   // Listen if fields provided. We use ref to save prev data here to avoid additional render
-  const prevFieldsRef = React.useRef<FieldData[] | undefined>();
+  const prevFieldsRef = React.useRef<FieldData[] | undefined>(null);
   React.useEffect(() => {
     if (!isSimilar(prevFieldsRef.current || [], fields || [])) {
       formInstance.setFields(fields || []);

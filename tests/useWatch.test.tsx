@@ -288,9 +288,13 @@ describe('useWatch', () => {
       const more = Form.useWatch(['age', 'name', 'gender'], form);
       const demo = Form.useWatch<string>(['demo']);
 
-      const values2 = Form.useWatch(values => ({ newName: values.name, newAge: values.age }), form);
-      const values3 = Form.useWatch<FieldType, { newName?: string }>(values => ({
-        newName: values.name,
+      const values2 = Form.useWatch(
+        _values => ({ newName: _values.name, newAge: _values.age }),
+        form,
+      );
+
+      const values3 = Form.useWatch<FieldType, { newName?: string }>(_values => ({
+        newName: _values.name,
       }));
 
       return (
@@ -393,7 +397,7 @@ describe('useWatch', () => {
   it('first undefined', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const Demo: React.FC = () => {
-      const formRef = useRef<FormInstance>();
+      const formRef = useRef<FormInstance>(null);
       const name = Form.useWatch('name', formRef.current);
       const [, setUpdate] = useState({});
       return (

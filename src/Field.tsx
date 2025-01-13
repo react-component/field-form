@@ -543,9 +543,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     }
 
     // Filed element only
-    const childList = toChildrenArray(children);
+    const childList = toChildrenArray(children as any);
+
     if (childList.length !== 1 || !React.isValidElement(childList[0])) {
-      return { child: childList, isFunction: false };
+      return { child: childList as React.ReactNode, isFunction: false };
     }
 
     return { child: childList[0], isFunction: false };
