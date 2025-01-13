@@ -397,7 +397,7 @@ describe('useWatch', () => {
   it('first undefined', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const Demo: React.FC = () => {
-      const formRef = useRef<FormInstance>(null);
+      const formRef = useRef<FormInstance>(undefined);
       const name = Form.useWatch('name', formRef.current);
       const [, setUpdate] = useState({});
       return (
