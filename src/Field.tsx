@@ -1,6 +1,6 @@
-import toChildrenArray from 'rc-util/lib/Children/toArray';
-import isEqual from 'rc-util/lib/isEqual';
-import warning from 'rc-util/lib/warning';
+import toChildrenArray from '@rc-component/util/lib/Children/toArray';
+import isEqual from '@rc-component/util/lib/isEqual';
+import warning from '@rc-component/util/lib/warning';
 import * as React from 'react';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
@@ -111,11 +111,6 @@ export interface FieldState {
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
 class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
-
-  public static defaultProps = {
-    trigger: 'onChange',
-    valuePropName: 'value',
-  };
 
   public state = {
     resetCount: 0,
@@ -566,11 +561,11 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
   public getControlled = (childProps: ChildProps = {}) => {
     const {
       name,
-      trigger,
+      trigger = 'onChange',
       validateTrigger,
       getValueFromEvent,
       normalize,
-      valuePropName,
+      valuePropName = 'value',
       getValueProps,
       fieldContext,
     } = this.props;
