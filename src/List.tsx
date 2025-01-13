@@ -28,7 +28,7 @@ export interface ListProps<Values = any> {
     fields: ListField[],
     operations: ListOperations,
     meta: Meta,
-  ) => JSX.Element | React.ReactNode;
+  ) => React.JSX.Element | React.ReactNode;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
   isListField?: boolean;
