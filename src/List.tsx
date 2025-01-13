@@ -24,11 +24,7 @@ export interface ListProps<Values = any> {
   rules?: ValidatorRule[];
   validateTrigger?: string | string[] | false;
   initialValue?: any[];
-  children?: (
-    fields: ListField[],
-    operations: ListOperations,
-    meta: Meta,
-  ) => React.JSX.Element | React.ReactNode;
+  children?: (fields: ListField[], operations: ListOperations, meta: Meta) => React.ReactNode;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
   isListField?: boolean;

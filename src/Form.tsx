@@ -17,7 +17,7 @@ import ListContext from './ListContext';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
-type RenderProps = (values: Store, form: FormInstance) => React.JSX.Element | React.ReactNode;
+type RenderProps = (values: Store, form: FormInstance) => React.ReactNode;
 
 export interface FormProps<Values = any> extends BaseFormProps {
   initialValues?: Store;
