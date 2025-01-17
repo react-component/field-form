@@ -982,7 +982,9 @@ export class FormStore {
       })
       .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
         const errorList = results.filter(result => result && result.errors.length);
+        const errorMessage = errorList[0]?.errors?.[0];
         return Promise.reject({
+          message: errorMessage,
           values: this.getFieldsValue(namePathList),
           errorFields: errorList,
           outOfDate: this.lastValidatePromise !== summaryPromise,
