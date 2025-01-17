@@ -1,4 +1,4 @@
-import warning from 'rc-util/lib/warning';
+import warning from '@rc-component/util/lib/warning';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {

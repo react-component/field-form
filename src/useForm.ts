@@ -1,5 +1,5 @@
-import { merge } from 'rc-util/lib/utils/set';
-import warning from 'rc-util/lib/warning';
+import { merge } from '@rc-component/util/lib/utils/set';
+import warning from '@rc-component/util/lib/warning';
 import * as React from 'react';
 import { HOOK_MARK } from './FieldContext';
 import type {
@@ -1027,7 +1027,7 @@ export class FormStore {
 }
 
 function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Values>] {
-  const formRef = React.useRef<FormInstance>();
+  const formRef = React.useRef<FormInstance>(null);
   const [, forceUpdate] = React.useState({});
 
   if (!formRef.current) {

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import warning from 'rc-util/lib/warning';
+import warning from '@rc-component/util/lib/warning';
 import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
@@ -24,11 +24,7 @@ export interface ListProps<Values = any> {
   rules?: ValidatorRule[];
   validateTrigger?: string | string[] | false;
   initialValue?: any[];
-  children?: (
-    fields: ListField[],
-    operations: ListOperations,
-    meta: Meta,
-  ) => JSX.Element | React.ReactNode;
+  children?: (fields: ListField[], operations: ListOperations, meta: Meta) => React.ReactNode;
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
   isListField?: boolean;

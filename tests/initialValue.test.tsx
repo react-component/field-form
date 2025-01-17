@@ -1,5 +1,5 @@
 import { act, fireEvent, render } from '@testing-library/react';
-import { resetWarned } from 'rc-util/lib/warning';
+import { resetWarned } from '@rc-component/util/lib/warning';
 import React, { useState } from 'react';
 import Form, { Field, List, useForm, type FormInstance } from '../src';
 import { changeValue, getInput } from './common';
