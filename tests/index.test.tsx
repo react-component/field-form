@@ -328,9 +328,12 @@ describe('Form.Basic', () => {
     matchError(container, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
     expect(onFinishFailed).toHaveBeenCalledWith({
+      message: "'user' is required",
       errorFields: [{ name: ['user'], errors: ["'user' is required"], warnings: [] }],
       outOfDate: false,
-      values: {},
+      values: {
+        user: undefined
+      },
     });
 
     onFinish.mockReset();

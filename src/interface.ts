@@ -86,6 +86,7 @@ export type RuleObject = AggregationRule | ArrayRule;
 export type Rule = RuleObject | RuleRender;
 
 export interface ValidateErrorEntity<Values = any> {
+  message: string;
   values: Values;
   errorFields: { name: InternalNamePath; errors: string[] }[];
   outOfDate: boolean;
