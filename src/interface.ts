@@ -55,6 +55,8 @@ export interface ValidatorRule {
   warningOnly?: boolean;
   message?: string | ReactElement;
   validator: Validator;
+  /** Customize rule level `validateTrigger`. Must be subset of Field `validateTrigger` */
+  validateTrigger?: string | string[];
 }
 
 interface BaseRule {
