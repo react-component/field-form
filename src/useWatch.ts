@@ -93,8 +93,8 @@ function useWatch<TForm extends FormInstance>(
   form?: TForm | WatchOptions<TForm>,
 ): any;
 
-function useWatch<ValueType = Store>(
-  dependencies: NamePath<ValueType>,
+function useWatch<ValueType = Store, Values = any>(
+  dependencies: NamePath<Values>,
   form?: FormInstance | WatchOptions<FormInstance>,
 ): ValueType;
 
