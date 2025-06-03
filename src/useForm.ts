@@ -38,6 +38,7 @@ import {
   matchNamePath,
   setValue,
 } from './utils/valueUtil';
+import isEqual from 'rc-util/lib/isEqual';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -580,15 +581,40 @@ export class FormStore {
       const { name, ...data } = fieldData;
       const namePath = getNamePath(name);
       namePathList.push(namePath);
+      const hasValue = 'value' in data;
+
+      const previousFieldEntity = this.getFieldEntitiesForNamePathList(namePath)[0]
+      let previousFieldMeta: Meta | null = null;
+
+      if (previousFieldEntity && !('INVALIDATE_NAME_PATH' in previousFieldEntity)) {
+        previousFieldMeta = previousFieldEntity.getMeta();
+      }
+
+      let mergeTouched: boolean | undefined = previousFieldMeta?.touched
+
+      if ('touched' in data) {
+        mergeTouched = data.touched;
+      } else if (hasValue && previousFieldMeta !== null) {
+        mergeTouched = !isEqual(this.getFieldValue(namePath), data.value)
+      }
+
+      // Meta
+      const nextFieldMeta: Meta = {
+        ...previousFieldMeta,
+        ...(typeof mergeTouched === 'boolean' ? { touched: mergeTouched } : {})
+      };
 
       // Value
-      if ('value' in data) {
+      if (hasValue) {
         this.updateStore(setValue(this.store, namePath, data.value));
       }
 
       this.notifyObservers(prevStore, [namePath], {
         type: 'setField',
-        data: fieldData,
+        data: {
+          ...nextFieldMeta,
+          ...fieldData,
+        },
       });
     });
 
