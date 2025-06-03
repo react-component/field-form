@@ -952,7 +952,7 @@ describe('Form.Basic', () => {
     });
   });
 
-  it('setFieldValue should always set touched', async () => {
+  it('setFieldsValue should always set touched', async () => {
     const EMPTY_VALUES = { light: '', bamboo: [] };
     const formRef = React.createRef<FormRef>();
 
@@ -996,6 +996,35 @@ describe('Form.Basic', () => {
     expect(formRef.current?.getFieldError('light')).toHaveLength(0);
     expect(formRef.current?.getFieldError('bamboo')).toHaveLength(0);
   });
+
+  // https://github.com/ant-design/ant-design/issues/53981
+  it('setFieldValue should mark the registered fields as touched', async () => {
+    const formRef = React.createRef<FormRef>();
+
+    const Demo: React.FC = () => (
+      <Form ref={formRef}>
+        <Field name="light" rules={[{ required: true }]}>
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    render(<Demo />);
+
+    // Mock error first
+    await act(async () => {
+      await formRef.current?.validateFields().catch(() => {});
+    });
+    expect(formRef.current?.getFieldError('light')).toHaveLength(1);
+    expect(formRef.current?.isFieldTouched('light')).toBeFalsy();
+
+    await act(async () => {
+      formRef.current?.setFieldValue('light', 'Bamboo');
+      await Promise.resolve();
+    });
+    expect(formRef.current?.getFieldError('light')).toHaveLength(0);
+    expect(formRef.current?.isFieldTouched('light')).toBeTruthy();
+  })
 
   it('setFieldValue should reset errors', async () => {
     const formRef = React.createRef<FormRef>();
