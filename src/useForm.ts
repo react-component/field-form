@@ -682,7 +682,10 @@ export class FormStore {
         }
       }
 
-      this.notifyWatch([namePath]);
+      // Avoid exponential loops when a large number of components are unloaded
+      setTimeout(() => {
+        this.notifyWatch([namePath]);
+      })
     };
   };
 
