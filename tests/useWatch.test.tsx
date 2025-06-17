@@ -121,6 +121,11 @@ describe('useWatch', () => {
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
 
       rerender(<Demo visible={false} />);
+
+      await act(async () => {
+        await timeout();
+      });
+
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
 
       rerender(<Demo visible />);
@@ -158,6 +163,11 @@ describe('useWatch', () => {
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
 
       rerender(<Demo visible={false} />);
+
+      await act(async () => {
+        await timeout();
+      });
+
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
 
       rerender(<Demo visible />);

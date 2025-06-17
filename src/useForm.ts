@@ -683,7 +683,7 @@ export class FormStore {
       }
 
       // Avoid exponential loops when a large number of components are unloaded
-      setTimeout(() => {
+      Promise.resolve().then(() => {
         this.notifyWatch([namePath]);
       })
     };
