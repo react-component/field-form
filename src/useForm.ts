@@ -202,14 +202,14 @@ export class FormStore {
     };
   };
 
-  private notifyWatch = (namePath: InternalNamePath[] = []) => {
+  private notifyWatch = () => {
     // No need to cost perf when nothing need to watch
     if (this.watchList.length) {
       const values = this.getFieldsValue();
       const allValues = this.getFieldsValue(true);
 
       this.watchList.forEach(callback => {
-        callback(values, allValues, namePath);
+        callback(values, allValues);
       });
     }
   };
@@ -566,7 +566,7 @@ export class FormStore {
     });
     this.resetWithFieldInitialValue({ namePathList });
     this.notifyObservers(prevStore, namePathList, { type: 'reset' });
-    this.notifyWatch(namePathList);
+    this.notifyWatch();
   };
 
   private setFields = (fields: FieldData[]) => {
@@ -592,7 +592,7 @@ export class FormStore {
       });
     });
 
-    this.notifyWatch(namePathList);
+    this.notifyWatch();
   };
 
   private getFields = (): InternalFieldData[] => {
@@ -642,7 +642,7 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
-    this.notifyWatch([namePath]);
+    this.notifyWatch();
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
@@ -682,7 +682,7 @@ export class FormStore {
         }
       }
 
-      this.notifyWatch([namePath]);
+      this.notifyWatch();
     };
   };
 
@@ -748,7 +748,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
-    this.notifyWatch([namePath]);
+    this.notifyWatch();
 
     // Dependencies update
     const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
