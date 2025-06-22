@@ -681,6 +681,7 @@ export class FormStore {
           this.triggerDependenciesUpdate(prevStore, namePath);
         }
       }
+
       this.notifyWatch();
     };
   };

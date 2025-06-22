@@ -128,7 +128,6 @@ function useWatch(
   namePathRef.current = namePath;
 
   useWatchWarning(namePath);
-  console.log('valueStr', valueStr);
   useEffect(
     () => {
       // Skip if not exist form instance
