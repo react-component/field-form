@@ -656,7 +656,6 @@ export class FormStore {
 
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
-      console.log('isListField', isListField, subNamePath);
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
 
       // Clean up store value if not preserve
@@ -682,7 +681,6 @@ export class FormStore {
           this.triggerDependenciesUpdate(prevStore, namePath);
         }
       }
-      console.log('namePath', namePath);
       this.notifyWatch();
     };
   };

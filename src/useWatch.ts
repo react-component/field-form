@@ -128,7 +128,7 @@ function useWatch(
   namePathRef.current = namePath;
 
   useWatchWarning(namePath);
-
+  console.log('valueStr', valueStr);
   useEffect(
     () => {
       // Skip if not exist form instance
@@ -148,11 +148,11 @@ function useWatch(
 
       const cancelRegister = registerWatch((values, allValues) => {
         const newValue = getWatchValue(values, allValues);
-        const nextValueStr = stringify(newValue);
+        const newValueStr = stringify(newValue);
 
         // Compare stringify in case it's nest object
-        if (valueStrRef.current !== nextValueStr) {
-          valueStrRef.current = nextValueStr;
+        if (valueStrRef.current !== newValueStr) {
+          valueStrRef.current = newValueStr;
           setValue(newValue);
         }
       });
@@ -171,7 +171,7 @@ function useWatch(
 
     // We do not need re-register since namePath content is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidForm],
+    [isValidForm, valueStr],
   );
 
   return value;
