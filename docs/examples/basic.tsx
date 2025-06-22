@@ -1,42 +1,51 @@
-import React from 'react';
-import get from 'lodash/get';
-
 import Form, { Field } from 'rc-field-form';
+import React from 'react';
 import Input from './components/Input';
 
-const Child = ({ name, remove }: { name: any; remove: () => void }) => {
-  const nameValue = Form.useWatch(values => {
-    return get(values, ['list', name, 'name']);
-  });
-
-  return (
-    <div style={{ display: 'flex' }}>
-      <Field name={[name, 'name']}>
-        <Input />
-      </Field>
-      <Field name={[name, 'age']}>
-        <Input />
-      </Field>
-      <div>当前值：{nameValue}</div>
-      <button onClick={() => remove()}>删除</button>
-    </div>
-  );
+type FormData = {
+  name?: string;
+  password?: string;
+  password2?: string;
 };
 
-const Demo = () => {
+export default () => {
+  const [form] = Form.useForm();
+
   return (
-    <Form initialValues={{ list: [{ name: 'a' }, { name: 'b' }] }}>
-      <Form.List name="list">
-        {(fields, { remove }) => (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {fields.map(field => (
-              <Child name={field.name} key={field.key} remove={() => remove(field.name)} />
-            ))}
-          </div>
-        )}
-      </Form.List>
+    <Form
+      form={form}
+      preserve={false}
+      onFieldsChange={fields => {
+        console.error('fields:', fields);
+      }}
+    >
+      <Field<FormData> name="name">
+        <Input placeholder="Username" />
+      </Field>
+
+      <Field<FormData> dependencies={['name']}>
+        {() => {
+          return form.getFieldValue('name') === '1' ? (
+            <Field name="password">
+              <Input placeholder="Password" />
+            </Field>
+          ) : null;
+        }}
+      </Field>
+
+      <Field dependencies={['password']}>
+        {() => {
+          const password = form.getFieldValue('password');
+          console.log('>>>', password);
+          return password ? (
+            <Field<FormData> name={['password2']}>
+              <Input placeholder="Password 2" />
+            </Field>
+          ) : null;
+        }}
+      </Field>
+
+      <button type="submit">Submit</button>
     </Form>
   );
 };
-
-export default Demo;
