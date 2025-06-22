@@ -209,11 +209,7 @@ export interface Callbacks<Values = any> {
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
 }
 
-export type WatchCallBack = (
-  values: Store,
-  allValues: Store,
-  namePathList: InternalNamePath[],
-) => void;
+export type WatchCallBack = (values: Store, allValues: Store) => void;
 
 export interface WatchOptions<Form extends FormInstance = FormInstance> {
   form?: Form;
