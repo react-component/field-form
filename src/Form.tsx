@@ -14,6 +14,7 @@ import type { FormContextProps } from './FormContext';
 import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
 import ListContext from './ListContext';
+import BatchUpdate, { BatchUpdateRef } from './BatchUpdate';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
@@ -60,6 +61,8 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
   const nativeElementRef = React.useRef<HTMLFormElement>(null);
   const formContext: FormContextProps = React.useContext(FormContext);
 
+  const batchUpdateRef = React.useRef<BatchUpdateRef>(null);
+
   // We customize handle event since Context will makes all the consumer re-render:
   // https://reactjs.org/docs/context.html#contextprovider
   const [formInstance] = useForm(form);
@@ -70,6 +73,7 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
     setValidateMessages,
     setPreserve,
     destroyForm,
+    setBatchUpdate,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
@@ -118,6 +122,9 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
     mountRef.current = true;
   }
 
+  // Set batch update ref
+  setBatchUpdate(batchUpdateRef);
+
   React.useEffect(
     () => () => destroyForm(clearOnDestroy),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,6 +164,7 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
   const wrapperNode = (
     <ListContext.Provider value={null}>
       <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
+      <BatchUpdate ref={batchUpdateRef} />
     </ListContext.Provider>
   );
 

@@ -38,6 +38,7 @@ import {
   matchNamePath,
   setValue,
 } from './utils/valueUtil';
+import { BatchUpdateRef } from './BatchUpdate';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -119,6 +120,7 @@ export class FormStore {
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
         registerWatch: this.registerWatch,
+        setBatchUpdate: this.setBatchUpdate,
       };
     }
 
@@ -212,6 +214,27 @@ export class FormStore {
         callback(values, allValues, namePath);
       });
     }
+  };
+
+  private notifyWatchNamePathList: InternalNamePath[] = [];
+  private batchNotifyWatch = (namePath: InternalNamePath) => {
+    this.notifyWatchNamePathList.push(namePath);
+    this.batch('notifyWatch', () => {
+      this.notifyWatch(this.notifyWatchNamePathList);
+      this.notifyWatchNamePathList = [];
+    });
+  };
+
+  // ============================= Batch ============================
+  private batchUpdateRef: React.RefObject<BatchUpdateRef>;
+
+  private setBatchUpdate = (batchUpdate: React.RefObject<BatchUpdateRef>) => {
+    this.batchUpdateRef = batchUpdate;
+  };
+
+  // Batch call the task, only last will be called
+  private batch = (key: string, callback: VoidFunction) => {
+    this.batchUpdateRef.current?.batch(key, callback);
   };
 
   // ========================== Dev Warning =========================
@@ -682,7 +705,7 @@ export class FormStore {
         }
       }
 
-      this.notifyWatch([namePath]);
+      this.batchNotifyWatch(namePath);
     };
   };
 
