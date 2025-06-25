@@ -42,6 +42,7 @@ const Context = React.createContext<InternalFormInstance>({
       setValidateMessages: warningFunc,
       setPreserve: warningFunc,
       getInitialValue: warningFunc,
+      setBatchUpdate: warningFunc,
     };
   },
 });
