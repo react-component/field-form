@@ -1,7 +1,9 @@
 import * as React from 'react';
 
+export type BatchTask = (key: string, callback: VoidFunction) => void;
+
 export interface BatchUpdateRef {
-  batch: (key: string, callback: VoidFunction) => void;
+  batch: BatchTask;
 }
 
 const BatchUpdate = React.forwardRef<BatchUpdateRef>((_, ref) => {

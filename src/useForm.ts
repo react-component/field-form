@@ -38,7 +38,7 @@ import {
   matchNamePath,
   setValue,
 } from './utils/valueUtil';
-import { BatchUpdateRef } from './BatchUpdate';
+import { BatchTask, BatchUpdateRef } from './BatchUpdate';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -226,15 +226,15 @@ export class FormStore {
   };
 
   // ============================= Batch ============================
-  private batchUpdateRef: React.RefObject<BatchUpdateRef>;
+  private batchUpdate: BatchTask;
 
-  private setBatchUpdate = (batchUpdate: React.RefObject<BatchUpdateRef>) => {
-    this.batchUpdateRef = batchUpdate;
+  private setBatchUpdate = (batchUpdate: BatchTask) => {
+    this.batchUpdate = batchUpdate;
   };
 
   // Batch call the task, only last will be called
   private batch = (key: string, callback: VoidFunction) => {
-    this.batchUpdateRef.current?.batch(key, callback);
+    this.batchUpdate(key, callback);
   };
 
   // ========================== Dev Warning =========================
@@ -665,7 +665,7 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
-    this.notifyWatch([namePath]);
+    this.batchNotifyWatch(namePath);
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
