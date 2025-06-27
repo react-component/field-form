@@ -38,7 +38,7 @@ import {
   matchNamePath,
   setValue,
 } from './utils/valueUtil';
-import { BatchTask, BatchUpdateRef } from './BatchUpdate';
+import type { BatchTask } from './BatchUpdate';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
