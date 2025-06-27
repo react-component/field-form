@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import type { DeepNamePath } from './namePathType';
 import type { ReducerAction } from './useForm';
+import type { BatchTask } from './BatchUpdate';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath<T = any> = DeepNamePath<T>;
@@ -233,6 +234,7 @@ export interface InternalHooks {
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
+  setBatchUpdate: (fn: BatchTask) => void;
 }
 
 /** Only return partial when type is not any */

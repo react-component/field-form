@@ -38,6 +38,7 @@ import {
   matchNamePath,
   setValue,
 } from './utils/valueUtil';
+import type { BatchTask } from './BatchUpdate';
 
 type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
 
@@ -119,6 +120,7 @@ export class FormStore {
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
         registerWatch: this.registerWatch,
+        setBatchUpdate: this.setBatchUpdate,
       };
     }
 
@@ -212,6 +214,27 @@ export class FormStore {
         callback(values, allValues, namePath);
       });
     }
+  };
+
+  private notifyWatchNamePathList: InternalNamePath[] = [];
+  private batchNotifyWatch = (namePath: InternalNamePath) => {
+    this.notifyWatchNamePathList.push(namePath);
+    this.batch('notifyWatch', () => {
+      this.notifyWatch(this.notifyWatchNamePathList);
+      this.notifyWatchNamePathList = [];
+    });
+  };
+
+  // ============================= Batch ============================
+  private batchUpdate: BatchTask;
+
+  private setBatchUpdate = (batchUpdate: BatchTask) => {
+    this.batchUpdate = batchUpdate;
+  };
+
+  // Batch call the task, only last will be called
+  private batch = (key: string, callback: VoidFunction) => {
+    this.batchUpdate(key, callback);
   };
 
   // ========================== Dev Warning =========================
@@ -642,7 +665,7 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
-    this.notifyWatch([namePath]);
+    this.batchNotifyWatch(namePath);
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
@@ -682,7 +705,7 @@ export class FormStore {
         }
       }
 
-      this.notifyWatch([namePath]);
+      this.batchNotifyWatch(namePath);
     };
   };
 

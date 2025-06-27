@@ -14,6 +14,7 @@ import type { FormContextProps } from './FormContext';
 import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
 import ListContext from './ListContext';
+import BatchUpdate, { BatchTask, type BatchUpdateRef } from './BatchUpdate';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
@@ -70,6 +71,7 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
     setValidateMessages,
     setPreserve,
     destroyForm,
+    setBatchUpdate,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
@@ -118,6 +120,42 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
     mountRef.current = true;
   }
 
+  // ======================== Batch Update ========================
+  // zombieJ:
+  // To avoid Form self re-render,
+  // We create a sub component `BatchUpdate` to handle batch update logic.
+  // When the call with do not change immediate, we will batch the update
+  // and flush it in `useLayoutEffect` for next tick.
+
+  // Set batch update ref
+  const batchUpdateRef = React.useRef<BatchUpdateRef>(null);
+  const batchUpdateTasksRef = React.useRef<[key: string, fn: VoidFunction][]>([]);
+
+  const tryFlushBatch = () => {
+    if (batchUpdateRef.current) {
+      batchUpdateTasksRef.current.forEach(([key, fn]) => {
+        batchUpdateRef.current.batch(key, fn);
+      });
+      batchUpdateTasksRef.current = [];
+    }
+  };
+
+  // Ref update
+  const setBatchUpdateRef = React.useCallback((batchUpdate: BatchUpdateRef | null) => {
+    batchUpdateRef.current = batchUpdate;
+    tryFlushBatch();
+  }, []);
+
+  // Task list
+
+  const batchUpdate: BatchTask = (key, callback) => {
+    batchUpdateTasksRef.current.push([key, callback]);
+    tryFlushBatch();
+  };
+
+  setBatchUpdate(batchUpdate);
+
+  // ========================== Unmount ===========================
   React.useEffect(
     () => () => destroyForm(clearOnDestroy),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,6 +184,7 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
     prevFieldsRef.current = fields;
   }, [fields, formInstance]);
 
+  // =========================== Render ===========================
   const formContextValue = React.useMemo(
     () => ({
       ...(formInstance as InternalFormInstance),
@@ -157,6 +196,7 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
   const wrapperNode = (
     <ListContext.Provider value={null}>
       <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
+      <BatchUpdate ref={setBatchUpdateRef} />
     </ListContext.Provider>
   );
 
