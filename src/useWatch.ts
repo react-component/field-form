@@ -4,10 +4,8 @@ import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
   FormInstance,
   InternalFormInstance,
-  InternalNamePath,
   NamePath,
   Store,
-  WatchCallBack,
   WatchOptions,
 } from './interface';
 import { isFormInstance } from './utils/typeUtil';
