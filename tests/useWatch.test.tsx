@@ -426,25 +426,37 @@ describe('useWatch', () => {
     errorSpy.mockRestore();
   });
 
-  it('dynamic change warning', () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  it('dynamic change', () => {
     const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const [watchPath, setWatchPath] = React.useState('light');
-      Form.useWatch(watchPath, form);
+      const value = Form.useWatch(watchPath, form);
 
-      React.useEffect(() => {
-        setWatchPath('bamboo');
-      }, []);
-
-      return <Form form={form} />;
+      return (
+        <Form form={form} initialValues={{ light: 1128, bamboo: 903 }}>
+          <Field name="light">
+            <Input />
+          </Field>
+          <Field name="bamboo">
+            <Input />
+          </Field>
+          <button
+            onClick={() => {
+              setWatchPath('bamboo');
+            }}
+          >
+            {value}
+          </button>
+        </Form>
+      );
     };
-    render(<Demo />);
 
-    expect(errorSpy).toHaveBeenCalledWith(
-      'Warning: `useWatch` is not support dynamic `namePath`. Please provide static instead.',
-    );
-    errorSpy.mockRestore();
+    const { container } = render(<Demo />);
+    const btn = container.querySelector('button')!;
+    expect(btn.textContent).toEqual('1128');
+
+    fireEvent.click(btn);
+    expect(btn.textContent).toEqual('903');
   });
 
   it('useWatch with preserve option', async () => {

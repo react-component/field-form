@@ -4,13 +4,13 @@ import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
   FormInstance,
   InternalFormInstance,
-  InternalNamePath,
   NamePath,
   Store,
   WatchOptions,
 } from './interface';
 import { isFormInstance } from './utils/typeUtil';
 import { getNamePath, getValue } from './utils/valueUtil';
+import { useEvent } from '@rc-component/util';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
@@ -22,19 +22,6 @@ export function stringify(value: any) {
     return Math.random();
   }
 }
-
-const useWatchWarning =
-  process.env.NODE_ENV !== 'production'
-    ? (namePath: InternalNamePath) => {
-        const fullyStr = namePath.join('__RC_FIELD_FORM_SPLIT__');
-        const nameStrRef = useRef(fullyStr);
-
-        warning(
-          nameStrRef.current === fullyStr,
-          '`useWatch` is not support dynamic `namePath`. Please provide static instead.',
-        );
-      }
-    : () => {};
 
 function useWatch<
   TDependencies1 extends keyof GetGeneric<TForm>,
@@ -123,56 +110,57 @@ function useWatch(
     );
   }
 
-  const namePath = getNamePath(dependencies);
-  const namePathRef = useRef(namePath);
-  namePathRef.current = namePath;
+  // ============================== Form ==============================
+  const { getFieldsValue, getInternalHooks } = formInstance;
+  const { registerWatch } = getInternalHooks(HOOK_MARK);
 
-  useWatchWarning(namePath);
+  // ============================= Update =============================
+  const triggerUpdate = useEvent((values?: any, allValues?: any) => {
+    const watchValue = options.preserve
+      ? (allValues ?? getFieldsValue(true))
+      : (values ?? getFieldsValue());
 
-  useEffect(
-    () => {
-      // Skip if not exist form instance
-      if (!isValidForm) {
-        return;
-      }
+    const nextValue =
+      typeof dependencies === 'function'
+        ? dependencies(watchValue)
+        : getValue(watchValue, getNamePath(dependencies));
 
-      const { getFieldsValue, getInternalHooks } = formInstance;
-      const { registerWatch } = getInternalHooks(HOOK_MARK);
+    if (stringify(value) !== stringify(nextValue)) {
+      setValue(nextValue);
+    }
+  });
 
-      const getWatchValue = (values: any, allValues: any) => {
-        const watchValue = options.preserve ? allValues : values;
-        return typeof dependencies === 'function'
-          ? dependencies(watchValue)
-          : getValue(watchValue, namePathRef.current);
-      };
+  // ============================= Effect =============================
+  const flattenDeps =
+    typeof dependencies === 'function' ? dependencies : JSON.stringify(dependencies);
 
-      const cancelRegister = registerWatch((values, allValues) => {
-        const newValue = getWatchValue(values, allValues);
-        const nextValueStr = stringify(newValue);
+  // Deps changed
+  useEffect(() => {
+    // Skip if not exist form instance
+    if (!isValidForm) {
+      return;
+    }
 
-        // Compare stringify in case it's nest object
-        if (valueStrRef.current !== nextValueStr) {
-          valueStrRef.current = nextValueStr;
-          setValue(newValue);
-        }
-      });
+    triggerUpdate();
 
-      // TODO: We can improve this perf in future
-      const initialValue = getWatchValue(getFieldsValue(), getFieldsValue(true));
-
-      // React 18 has the bug that will queue update twice even the value is not changed
-      // ref: https://github.com/facebook/react/issues/27213
-      if (value !== initialValue) {
-        setValue(initialValue);
-      }
-
-      return cancelRegister;
-    },
-
-    // We do not need re-register since namePath content is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidForm],
-  );
+  }, [isValidForm, flattenDeps]);
+
+  // Value changed
+  useEffect(() => {
+    // Skip if not exist form instance
+    if (!isValidForm) {
+      return;
+    }
+
+    const cancelRegister = registerWatch((values, allValues) => {
+      triggerUpdate(values, allValues);
+    });
+
+    return cancelRegister;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValidForm]);
 
   return value;
 }
