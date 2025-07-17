@@ -204,7 +204,7 @@ export type ValuedNotifyInfo = NotifyInfo & {
 };
 
 export interface Callbacks<Values = any> {
-  onValuesChange?: (changedValues: any, values: Values) => void;
+  onValuesChange?: (changedValues: Partial<Values>, values: Values) => void;
   onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
   onFinish?: (values: Values) => void;
   onFinishFailed?: (errorInfo: ValidateErrorEntity<Values>) => void;
