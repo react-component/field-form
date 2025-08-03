@@ -238,20 +238,10 @@ export interface InternalHooks {
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> =
-  NonNullable<T> extends object
-    ? {
-        [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
-          ? RecursivePartial<U>[]
-          : NonNullable<T[P]> extends object
-            ? RecursivePartial<T[P]>
-            : T[P];
-      }
-    : T;
-
-export type FilterFunc = (meta: Meta | null) => boolean;
-
-export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
+type NoUndefined<T> = Exclude<T, undefined>;
+type RecursivePartial<T> = NoUndefined<T> extends object ? {
+    [P in keyof T]?: NoUndefined<T[P]> extends (infer U)[] ? RecursivePartial<U>[] : NoUndefined<T[P]> extends object ? RecursivePartial<T[P]> : T[P];
+} : T;
 
 export interface FormInstance<Values = any> {
   // Origin Form API
