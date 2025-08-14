@@ -731,7 +731,8 @@ export class FormStore {
     namePathList: InternalNamePath[] | null,
     info: NotifyInfo,
   ) => {
-    if (this.subscribable) {
+    const shloudUpdateField = info.type === 'reset' || info.type === 'setField';
+    if (this.subscribable || shloudUpdateField) {
       const mergedInfo: ValuedNotifyInfo = {
         ...info,
         store: this.getFieldsValue(true),
@@ -739,7 +740,8 @@ export class FormStore {
       this.getFieldEntities().forEach(({ onStoreChange }) => {
         onStoreChange(prevStore, namePathList, mergedInfo);
       });
-    } else {
+    }
+    if (!this.subscribable) {
       this.forceRootUpdate();
     }
   };
