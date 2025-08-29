@@ -885,6 +885,10 @@ describe('Form.Basic', () => {
       Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),
     ).toEqual(['bamboo', 'little', 'light', 'nested']);
 
+    // Check initial touched state
+    expect(formRef.current.isFieldTouched(['list', 1])).toBeFalsy();
+    expect(formRef.current.isFieldTouched(['nest', 'target'])).toBeFalsy();
+
     // Set
     act(() => {
       formRef.current.setFieldValue(['list', 1], 'tiny');
@@ -894,6 +898,15 @@ describe('Form.Basic', () => {
     expect(
       Array.from(container.querySelectorAll<HTMLInputElement>('input')).map(input => input?.value),
     ).toEqual(['bamboo', 'tiny', 'light', 'match']);
+
+    // Check that setFieldValue DOES set touched to true
+    // (setFieldValue internally calls setFields with touched: true)
+    expect(formRef.current.isFieldTouched(['list', 1])).toBeTruthy();
+    expect(formRef.current.isFieldTouched(['nest', 'target'])).toBeTruthy();
+    
+    // Verify other fields remain untouched
+    expect(formRef.current.isFieldTouched(['list', 0])).toBeFalsy();
+    expect(formRef.current.isFieldTouched(['list', 2])).toBeFalsy();
   });
 
   it('onMetaChange should only trigger when meta changed', () => {

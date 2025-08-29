@@ -812,6 +812,7 @@ export class FormStore {
         value,
         errors: [],
         warnings: [],
+        touched: true,
       },
     ]);
   };
