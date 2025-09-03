@@ -921,6 +921,9 @@ export class FormStore {
     const { recursive, dirty } = options || {};
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
+      if (field.isList()) {
+        return;
+      }
       // Add field if not provide `nameList`
       if (!provideNameList) {
         namePathList.push(field.getNamePath());
