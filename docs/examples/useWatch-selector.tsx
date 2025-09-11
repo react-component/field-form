@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React from 'react';
 import Form, { Field } from 'rc-field-form';
 import Input from './components/Input';
@@ -10,11 +11,15 @@ type FieldType = {
 
 export default () => {
   const [form] = Form.useForm<FieldType>();
+  const base = Form.useWatch(values => ({ newName: values.name }), form);
+  console.log('base', base);
+
   const values = Form.useWatch(
     values => ({ init: values.init, newName: values.name, newAge: values.age }),
     { form, preserve: true },
   );
   console.log('values', values);
+
   return (
     <>
       <Form form={form} initialValues={{ init: 'init', name: 'aaa' }}>
