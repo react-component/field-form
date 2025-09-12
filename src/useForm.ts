@@ -921,9 +921,16 @@ export class FormStore {
     const { recursive, dirty } = options || {};
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
+      const fieldNamePath = field.getNamePath();
+
       // Add field if not provide `nameList`
       if (!provideNameList) {
-        namePathList.push(field.getNamePath());
+        if (field.isList()) {
+          if (namePathList.find(name => name.toString().includes(fieldNamePath.toString()))) {
+            return;
+          }
+        }
+        namePathList.push(fieldNamePath);
       }
 
       // Skip if without rule
@@ -936,7 +943,6 @@ export class FormStore {
         return;
       }
 
-      const fieldNamePath = field.getNamePath();
       validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
 
       // Add field validate rule in to promise list
@@ -1000,7 +1006,7 @@ export class FormStore {
     const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
       .then((): Promise<Store | string[]> => {
         if (this.lastValidatePromise === summaryPromise) {
-          return Promise.resolve(this.getFieldsValue({ strict: true }));
+          return Promise.resolve(this.getFieldsValue(namePathList));
         }
         return Promise.reject<string[]>([]);
       })
