@@ -11,8 +11,8 @@ type FieldType = {
 
 export default () => {
   const [form] = Form.useForm<FieldType>();
-  const base = Form.useWatch(values => ({ newName: values.name }), form);
-  console.log('base', base);
+  const firstEmptyObject = Form.useWatch(values => ({ newName: values.name }), form);
+  console.log('firstEmptyObject', firstEmptyObject);
 
   const values = Form.useWatch(
     values => ({ init: values.init, newName: values.name, newAge: values.age }),
