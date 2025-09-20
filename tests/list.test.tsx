@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { fireEvent, render, act } from '@testing-library/react';
 import { resetWarned } from '@rc-component/util/lib/warning';
 import Form, { Field, List } from '../src';
@@ -936,5 +936,68 @@ describe('Form.List', () => {
     });
 
     expect(formRef.current!.getFieldValue('list')).toEqual([{ user: '1' }, { user: '3' }]);
+  });
+
+  it('list unmount', async () => {
+    const valueRef = React.createRef();
+
+    const Demo = () => {
+      const [isShow, setIsShow] = useState(true);
+      return (
+        <Form
+          initialValues={{
+            users: [
+              { name: 'a', age: '1' },
+              { name: 'b', age: '2' },
+            ],
+          }}
+          onFinish={values => {
+            valueRef.current = values;
+          }}
+        >
+          <Form.List name="users">
+            {fields => {
+              return fields.map(field => (
+                <div key={field.key} style={{ display: 'flex', gap: 10 }}>
+                  <InfoField name={[field.name, 'name']}>
+                    <Input />
+                  </InfoField>
+                  {isShow && (
+                    <InfoField name={[field.name, 'age']}>
+                      <Input />
+                    </InfoField>
+                  )}
+                </div>
+              ));
+            }}
+          </Form.List>
+          <button data-testid="hide" type="button" onClick={() => setIsShow(c => !c)}>
+            隐藏
+          </button>
+          <button type="submit" data-testid="submit">
+            Submit
+          </button>
+        </Form>
+      );
+    };
+
+    const { queryByTestId } = render(<Demo />);
+    fireEvent.click(queryByTestId('submit'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(valueRef.current).toEqual({
+      users: [
+        { name: 'a', age: '1' },
+        { name: 'b', age: '2' },
+      ],
+    });
+
+    fireEvent.click(queryByTestId('hide'));
+    fireEvent.click(queryByTestId('submit'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(valueRef.current).toEqual({ users: [{ name: 'a' }, { name: 'b' }] });
   });
 });

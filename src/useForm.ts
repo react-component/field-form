@@ -925,10 +925,8 @@ export class FormStore {
 
       // Add field if not provide `nameList`
       if (!provideNameList) {
-        if (field.isList()) {
-          if (namePathList.find(name => name.toString().includes(fieldNamePath.toString()))) {
-            return;
-          }
+        if (field.isList() && namePathList.some(name => matchNamePath(name, fieldNamePath, true))) {
+          return;
         }
         namePathList.push(fieldNamePath);
       }
