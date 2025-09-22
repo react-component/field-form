@@ -1000,4 +1000,35 @@ describe('Form.List', () => {
     });
     expect(valueRef.current).toEqual({ users: [{ name: 'a' }, { name: 'b' }] });
   });
+
+  it('list rules', async () => {
+    const onFinishFailed = jest.fn();
+
+    const Demo = () => {
+      return (
+        <Form onFinishFailed={onFinishFailed}>
+          <Form.List name="users" rules={[{ validator: () => Promise.reject('error') }]}>
+            {fields => {
+              return fields.map(field => (
+                <InfoField name={[field.name, 'name']} key={field.key}>
+                  <Input />
+                </InfoField>
+              ));
+            }}
+          </Form.List>
+          <button type="submit" data-testid="submit">
+            Submit
+          </button>
+        </Form>
+      );
+    };
+
+    const { queryByTestId } = render(<Demo />);
+    fireEvent.click(queryByTestId('submit'));
+    await act(async () => {
+      await timeout();
+    });
+
+    expect(onFinishFailed).toHaveBeenCalled();
+  });
 });
