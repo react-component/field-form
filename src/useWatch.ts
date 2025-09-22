@@ -92,12 +92,9 @@ function useWatch(
   const options = isFormInstance(_form) ? { form: _form } : _form;
   const form = options.form;
 
-  const dependenciesMemo = useMemo(
-    () => (typeof dependencies === 'function' ? dependencies({}) : undefined),
-    [dependencies],
+  const [value, setValue] = useState<any>(() =>
+    typeof dependencies === 'function' ? dependencies({}) : undefined,
   );
-
-  const [value, setValue] = useState<any>(dependenciesMemo);
 
   const valueStr = useMemo(() => stringify(value), [value]);
   const valueStrRef = useRef(valueStr);
