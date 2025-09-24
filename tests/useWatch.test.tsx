@@ -518,4 +518,22 @@ describe('useWatch', () => {
     await changeValue(input[0], 'bamboo2');
     expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo2');
   });
+  it('selector by first no undefined', async () => {
+    const list: any[] = [];
+    const Demo = () => {
+      const [form] = Form.useForm<{ name?: string }>();
+      const data = Form.useWatch(values => values, form);
+      list.push(data);
+      return (
+        <Form form={form}>
+          <Field name="name" initialValue="bamboo">
+            <Input />
+          </Field>
+        </Form>
+      );
+    };
+    render(<Demo />);
+    expect(list[0]).toEqual({});
+    expect(list[1]).toEqual({ name: 'bamboo' });
+  });
 });

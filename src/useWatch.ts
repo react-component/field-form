@@ -92,7 +92,9 @@ function useWatch(
   const options = isFormInstance(_form) ? { form: _form } : _form;
   const form = options.form;
 
-  const [value, setValue] = useState<any>();
+  const [value, setValue] = useState<any>(() =>
+    typeof dependencies === 'function' ? dependencies({}) : undefined,
+  );
 
   const valueStr = useMemo(() => stringify(value), [value]);
   const valueStrRef = useRef(valueStr);
@@ -117,8 +119,8 @@ function useWatch(
   // ============================= Update =============================
   const triggerUpdate = useEvent((values?: any, allValues?: any) => {
     const watchValue = options.preserve
-      ? (allValues ?? getFieldsValue(true))
-      : (values ?? getFieldsValue());
+      ? allValues ?? getFieldsValue(true)
+      : values ?? getFieldsValue();
 
     const nextValue =
       typeof dependencies === 'function'
