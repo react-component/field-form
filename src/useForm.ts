@@ -910,8 +910,7 @@ export class FormStore {
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
       : [];
-
-    const removeListNameStrList: string[] = [];
+    const noListNamePathList = [...namePathList];
 
     // Collect result in promise list
     const promiseList: Promise<FieldError>[] = [];
@@ -927,8 +926,11 @@ export class FormStore {
 
       // Add field if not provide `nameList`
       if (!provideNameList) {
-        if (field.isList() && namePathList.some(name => matchNamePath(name, fieldNamePath, true))) {
-          removeListNameStrList.push(fieldNamePath.toString());
+        if (
+          // When Form.List has a value, filter Form.List `name`
+          !(field.isList() && namePathList.some(name => matchNamePath(name, fieldNamePath, true)))
+        ) {
+          noListNamePathList.push(fieldNamePath);
         }
         namePathList.push(fieldNamePath);
       }
@@ -1006,10 +1008,7 @@ export class FormStore {
     const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
       .then((): Promise<Store | string[]> => {
         if (this.lastValidatePromise === summaryPromise) {
-          const filterListNameList = namePathList.filter(
-            name => !removeListNameStrList.some(nameStr => nameStr === name.toString()),
-          );
-          return Promise.resolve(this.getFieldsValue(filterListNameList));
+          return Promise.resolve(this.getFieldsValue(noListNamePathList));
         }
         return Promise.reject<string[]>([]);
       })
