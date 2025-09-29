@@ -910,7 +910,7 @@ export class FormStore {
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
       : [];
-
+    // Same namePathList, but does not include Form.List name
     const finalValueNamePathList = [...namePathList];
 
     // Collect result in promise list
