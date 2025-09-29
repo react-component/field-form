@@ -910,7 +910,8 @@ export class FormStore {
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
       : [];
-    const noListNamePathList = [...namePathList];
+
+    const finalValueNamePathList = [...namePathList];
 
     // Collect result in promise list
     const promiseList: Promise<FieldError>[] = [];
@@ -930,7 +931,7 @@ export class FormStore {
           // When Form.List has a value, filter Form.List `name`
           !(field.isList() && namePathList.some(name => matchNamePath(name, fieldNamePath, true)))
         ) {
-          noListNamePathList.push(fieldNamePath);
+          finalValueNamePathList.push(fieldNamePath);
         }
         namePathList.push(fieldNamePath);
       }
@@ -1008,7 +1009,7 @@ export class FormStore {
     const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
       .then((): Promise<Store | string[]> => {
         if (this.lastValidatePromise === summaryPromise) {
-          return Promise.resolve(this.getFieldsValue(noListNamePathList));
+          return Promise.resolve(this.getFieldsValue(finalValueNamePathList));
         }
         return Promise.reject<string[]>([]);
       })
