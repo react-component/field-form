@@ -1,6 +1,13 @@
 import * as React from 'react';
 import warning from '@rc-component/util/lib/warning';
-import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
+import type {
+  InternalNamePath,
+  NamePath,
+  StoreValue,
+  ValidatorRule,
+  Meta,
+  InternalFormInstance,
+} from './interface';
 import FieldContext from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
@@ -40,18 +47,19 @@ function List<Values = any>({
 }: ListProps<Values>) {
   const context = React.useContext(FieldContext);
   const wrapperListContext = React.useContext(ListContext);
-  const keyRef = React.useRef({
-    keys: [],
-    id: 0,
-  });
+  const keyRef = React.useRef({ keys: [], id: 0 });
+
   const keyManager = keyRef.current;
 
-  const prefixName: InternalNamePath = React.useMemo(() => {
+  const prefixName = React.useMemo<InternalNamePath>(() => {
     const parentPrefixName = getNamePath(context.prefixName) || [];
     return [...parentPrefixName, ...getNamePath(name)];
   }, [context.prefixName, name]);
 
-  const fieldContext = React.useMemo(() => ({ ...context, prefixName }), [context, prefixName]);
+  const fieldContext = React.useMemo<InternalFormInstance>(
+    () => ({ ...context, prefixName }),
+    [context, prefixName],
+  );
 
   // List context
   const listContext = React.useMemo<ListContextProps>(
@@ -62,7 +70,7 @@ function List<Values = any>({
         return [keyManager.keys[pathName], namePath.slice(len + 1)];
       },
     }),
-    [prefixName],
+    [keyManager, prefixName],
   );
 
   // User should not pass `children` as other type.

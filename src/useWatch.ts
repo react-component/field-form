@@ -18,7 +18,7 @@ type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['va
 export function stringify(value: any) {
   try {
     return JSON.stringify(value);
-  } catch (err) {
+  } catch {
     return Math.random();
   }
 }
@@ -119,8 +119,8 @@ function useWatch(
   // ============================= Update =============================
   const triggerUpdate = useEvent((values?: any, allValues?: any) => {
     const watchValue = options.preserve
-      ? allValues ?? getFieldsValue(true)
-      : values ?? getFieldsValue();
+      ? (allValues ?? getFieldsValue(true))
+      : (values ?? getFieldsValue());
 
     const nextValue =
       typeof dependencies === 'function'

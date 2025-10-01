@@ -17,18 +17,17 @@ const InfoField: React.FC<InfoFieldProps> = ({ children, ...props }) => (
   <Field {...props}>
     {(control, info) => {
       const { errors, warnings, validating } = info;
-
       return (
-        <div className='field'>
+        <div className="field">
           {children ? React.cloneElement(children, control) : <Input {...control} />}
           <ul className="errors">
             {errors.map((error, index) => (
-              <li key={index}>{error}</li>
+              <li key={`error-${index}`}>{error}</li>
             ))}
           </ul>
           <ul className="warnings">
             {warnings.map((warning, index) => (
-              <li key={index}>{warning}</li>
+              <li key={`warning-${index}`}>{warning}</li>
             ))}
           </ul>
           {validating && <span className="validating" />}
