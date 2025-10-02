@@ -910,6 +910,8 @@ export class FormStore {
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
       : [];
+    // Same namePathList, but does not include Form.List name
+    const finalValueNamePathList = [...namePathList];
 
     // Collect result in promise list
     const promiseList: Promise<FieldError>[] = [];
@@ -921,9 +923,17 @@ export class FormStore {
     const { recursive, dirty } = options || {};
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
+      const fieldNamePath = field.getNamePath();
+
       // Add field if not provide `nameList`
       if (!provideNameList) {
-        namePathList.push(field.getNamePath());
+        if (
+          // When Form.List has a value, filter Form.List `name`
+          !(field.isList() && namePathList.some(name => matchNamePath(name, fieldNamePath, true)))
+        ) {
+          finalValueNamePathList.push(fieldNamePath);
+        }
+        namePathList.push(fieldNamePath);
       }
 
       // Skip if without rule
@@ -936,7 +946,6 @@ export class FormStore {
         return;
       }
 
-      const fieldNamePath = field.getNamePath();
       validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
 
       // Add field validate rule in to promise list
@@ -1000,7 +1009,7 @@ export class FormStore {
     const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
       .then((): Promise<Store | string[]> => {
         if (this.lastValidatePromise === summaryPromise) {
-          return Promise.resolve(this.getFieldsValue(namePathList));
+          return Promise.resolve(this.getFieldsValue(finalValueNamePathList));
         }
         return Promise.reject<string[]>([]);
       })
