@@ -40,7 +40,7 @@ import {
 } from './utils/valueUtil';
 import type { BatchTask } from './BatchUpdate';
 
-type InvalidateFieldEntity = { INVALIDATE_NAME_PATH: InternalNamePath };
+type FlexibleFieldEntity = Partial<FieldEntity>;
 
 interface UpdateAction {
   type: 'updateValue';
@@ -282,9 +282,7 @@ export class FormStore {
     return cache;
   };
 
-  private getFieldEntitiesForNamePathList = (
-    nameList?: NamePath[],
-  ): (FieldEntity | InvalidateFieldEntity)[] => {
+  private getFieldEntitiesForNamePathList = (nameList?: NamePath[]): FlexibleFieldEntity[] => {
     if (!nameList) {
       return this.getFieldEntities(true);
     }
@@ -304,13 +302,11 @@ export class FormStore {
     // Fill args
     let mergedNameList: NamePath[] | true;
     let mergedFilterFunc: FilterFunc;
-    let mergedStrict: boolean;
 
     if (nameList === true || Array.isArray(nameList)) {
       mergedNameList = nameList;
       mergedFilterFunc = filterFunc;
     } else if (nameList && typeof nameList === 'object') {
-      mergedStrict = nameList.strict;
       mergedFilterFunc = nameList.filter;
     }
 
@@ -323,17 +319,15 @@ export class FormStore {
     );
 
     const filteredNameList: NamePath[] = [];
-    fieldEntities.forEach((entity: FieldEntity | InvalidateFieldEntity) => {
-      const namePath =
-        'INVALIDATE_NAME_PATH' in entity ? entity.INVALIDATE_NAME_PATH : entity.getNamePath();
+    const listNamePaths: InternalNamePath[] = [];
+
+    fieldEntities.forEach((entity: FlexibleFieldEntity) => {
+      const namePath = entity.INVALIDATE_NAME_PATH || entity.getNamePath();
 
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
-      if (mergedStrict) {
-        if ((entity as FieldEntity).isList?.()) {
-          return;
-        }
-      } else if (!mergedNameList && (entity as FieldEntity).isListField?.()) {
+      if ((entity as FieldEntity).isList?.()) {
+        listNamePaths.push(namePath);
         return;
       }
 
@@ -347,7 +341,16 @@ export class FormStore {
       }
     });
 
-    return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
+    let mergedValues = cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
+
+    // We need fill the list as [] if Form.List is empty
+    listNamePaths.forEach(namePath => {
+      if (!getValue(mergedValues, namePath)) {
+        mergedValues = setValue(mergedValues, namePath, []);
+      }
+    });
+
+    return mergedValues;
   };
 
   private getFieldValue = (name: NamePath) => {
@@ -363,7 +366,7 @@ export class FormStore {
     const fieldEntities = this.getFieldEntitiesForNamePathList(nameList);
 
     return fieldEntities.map((entity, index) => {
-      if (entity && !('INVALIDATE_NAME_PATH' in entity)) {
+      if (entity && !entity.INVALIDATE_NAME_PATH) {
         return {
           name: entity.getNamePath(),
           errors: entity.getErrors(),
@@ -781,7 +784,10 @@ export class FormStore {
 
     if (onValuesChange) {
       const changedValues = cloneByNamePathList(this.store, [namePath]);
-      onValuesChange(changedValues, this.getFieldsValue());
+      const allValues = this.getFieldsValue();
+      // Merge changedValues into allValues to ensure allValues contains the latest changes
+      const mergedAllValues = merge(allValues, changedValues);
+      onValuesChange(changedValues, mergedAllValues);
     }
 
     this.triggerOnFieldsChange([namePath, ...childrenFields]);
@@ -910,6 +916,8 @@ export class FormStore {
     const namePathList: InternalNamePath[] | undefined = provideNameList
       ? nameList.map(getNamePath)
       : [];
+    // Same namePathList, but does not include Form.List name
+    const finalValueNamePathList = [...namePathList];
 
     // Collect result in promise list
     const promiseList: Promise<FieldError>[] = [];
@@ -921,9 +929,19 @@ export class FormStore {
     const { recursive, dirty } = options || {};
 
     this.getFieldEntities(true).forEach((field: FieldEntity) => {
+      const fieldNamePath = field.getNamePath();
+
       // Add field if not provide `nameList`
       if (!provideNameList) {
-        namePathList.push(field.getNamePath());
+        if (
+          // If is field, pass directly
+          !field.isList() ||
+          // If is list, do not add if already exist sub field in the namePathList
+          !namePathList.some(name => matchNamePath(name, fieldNamePath, true))
+        ) {
+          finalValueNamePathList.push(fieldNamePath);
+        }
+        namePathList.push(fieldNamePath);
       }
 
       // Skip if without rule
@@ -936,7 +954,6 @@ export class FormStore {
         return;
       }
 
-      const fieldNamePath = field.getNamePath();
       validateNamePathList.add(fieldNamePath.join(TMP_SPLIT));
 
       // Add field validate rule in to promise list
@@ -1000,7 +1017,7 @@ export class FormStore {
     const returnPromise: Promise<Store | ValidateErrorEntity | string[]> = summaryPromise
       .then((): Promise<Store | string[]> => {
         if (this.lastValidatePromise === summaryPromise) {
-          return Promise.resolve(this.getFieldsValue(namePathList));
+          return Promise.resolve(this.getFieldsValue(finalValueNamePathList));
         }
         return Promise.reject<string[]>([]);
       })

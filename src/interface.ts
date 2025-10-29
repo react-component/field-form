@@ -116,6 +116,12 @@ export interface FieldEntity {
     dependencies?: NamePath[];
     initialValue?: any;
   };
+
+  /**
+   * Mask as invalidate.
+   * This will filled when Field is removed but not updated in render yet.
+   */
+  INVALIDATE_NAME_PATH?: InternalNamePath;
 }
 
 export interface FieldError {
@@ -251,7 +257,13 @@ type RecursivePartial<T> =
 
 export type FilterFunc = (meta: Meta | null) => boolean;
 
-export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
+export type GetFieldsValueConfig = {
+  /**
+   * @deprecated `strict` is deprecated and not working anymore
+   */
+  strict?: boolean;
+  filter?: FilterFunc;
+};
 
 export interface FormInstance<Values = any> {
   // Origin Form API

@@ -16,6 +16,10 @@ export function getNamePath(path: NamePath | null): InternalNamePath {
   return toArray(path);
 }
 
+/**
+ * Create a new store object that contains only the values referenced by
+ * the provided list of name paths.
+ */
 export function cloneByNamePathList(store: Store, namePathList: InternalNamePath[]): Store {
   let newStore = {};
   namePathList.forEach(namePath => {

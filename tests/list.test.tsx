@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { fireEvent, render, act } from '@testing-library/react';
 import { resetWarned } from '@rc-component/util/lib/warning';
 import Form, { Field, List } from '../src';
@@ -569,7 +569,7 @@ describe('Form.List', () => {
     expect(currentMeta.errors).toEqual(['Bamboo Light']);
   });
 
-  it('Nest list remove should trigger correct onValuesChange', () => {
+  it('Nest list remove index should trigger correct onValuesChange', () => {
     const onValuesChange = jest.fn();
 
     const [container] = generateForm(
@@ -596,6 +596,7 @@ describe('Form.List', () => {
       },
     );
 
+    onValuesChange.mockReset();
     fireEvent.click(container.querySelector('button')!);
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
   });
@@ -936,5 +937,109 @@ describe('Form.List', () => {
     });
 
     expect(formRef.current!.getFieldValue('list')).toEqual([{ user: '1' }, { user: '3' }]);
+  });
+
+  it('list unmount', async () => {
+    const onFinish = jest.fn();
+    const formRef = React.createRef<FormInstance>();
+
+    const Demo = () => {
+      const [isShow, setIsShow] = useState(true);
+      return (
+        <Form
+          initialValues={{
+            users: [
+              { name: 'a', age: '1' },
+              { name: 'b', age: '2' },
+            ],
+          }}
+          ref={formRef}
+          onFinish={onFinish}
+        >
+          <Form.List name="users">
+            {fields => {
+              return fields.map(field => (
+                <div key={field.key} style={{ display: 'flex', gap: 10 }}>
+                  <InfoField name={[field.name, 'name']}>
+                    <Input />
+                  </InfoField>
+                  {isShow && (
+                    <InfoField name={[field.name, 'age']}>
+                      <Input />
+                    </InfoField>
+                  )}
+                </div>
+              ));
+            }}
+          </Form.List>
+          <button data-testid="hide" type="button" onClick={() => setIsShow(c => !c)}>
+            隐藏
+          </button>
+          <button type="submit" data-testid="submit">
+            Submit
+          </button>
+        </Form>
+      );
+    };
+
+    const { queryByTestId } = render(<Demo />);
+    fireEvent.click(queryByTestId('submit'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(onFinish).toHaveBeenCalledWith({
+      users: [
+        { name: 'a', age: '1' },
+        { name: 'b', age: '2' },
+      ],
+    });
+    expect(formRef.current?.getFieldsValue()).toEqual({
+      users: [
+        { name: 'a', age: '1' },
+        { name: 'b', age: '2' },
+      ],
+    });
+    onFinish.mockReset();
+
+    fireEvent.click(queryByTestId('hide'));
+    fireEvent.click(queryByTestId('submit'));
+    await act(async () => {
+      await timeout();
+    });
+    expect(onFinish).toHaveBeenCalledWith({ users: [{ name: 'a' }, { name: 'b' }] });
+    expect(formRef.current?.getFieldsValue()).toEqual({
+      users: [{ name: 'a' }, { name: 'b' }],
+    });
+  });
+
+  it('list rules', async () => {
+    const onFinishFailed = jest.fn();
+
+    const Demo = () => {
+      return (
+        <Form onFinishFailed={onFinishFailed}>
+          <Form.List name="users" rules={[{ validator: () => Promise.reject('error') }]}>
+            {fields => {
+              return fields.map(field => (
+                <InfoField name={[field.name, 'name']} key={field.key}>
+                  <Input />
+                </InfoField>
+              ));
+            }}
+          </Form.List>
+          <button type="submit" data-testid="submit">
+            Submit
+          </button>
+        </Form>
+      );
+    };
+
+    const { queryByTestId } = render(<Demo />);
+    fireEvent.click(queryByTestId('submit'));
+    await act(async () => {
+      await timeout();
+    });
+
+    expect(onFinishFailed).toHaveBeenCalled();
   });
 });
