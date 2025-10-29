@@ -18,7 +18,7 @@ type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['va
 export function stringify(value: any) {
   try {
     return JSON.stringify(value);
-  } catch (err) {
+  } catch {
     return Math.random();
   }
 }
@@ -92,7 +92,9 @@ function useWatch(
   const options = isFormInstance(_form) ? { form: _form } : _form;
   const form = options.form;
 
-  const [value, setValue] = useState<any>();
+  const [value, setValue] = useState<any>(() =>
+    typeof dependencies === 'function' ? dependencies({}) : undefined,
+  );
 
   const valueStr = useMemo(() => stringify(value), [value]);
   const valueStrRef = useRef(valueStr);
