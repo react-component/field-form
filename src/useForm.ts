@@ -784,9 +784,9 @@ export class FormStore {
     if (onValuesChange) {
       const changedValues = cloneByNamePathList(this.store, [namePath]);
       const allValues = this.getFieldsValue();
-      // TODO: Since allValues is not final value for the changedValues part.
-      // We should merge the changedValues into allValues instead.
-      onValuesChange(changedValues, allValues);
+      // Merge changedValues into allValues to ensure allValues contains the latest changes
+      const mergedAllValues = merge(allValues, changedValues);
+      onValuesChange(changedValues, mergedAllValues);
     }
 
     this.triggerOnFieldsChange([namePath, ...childrenFields]);
