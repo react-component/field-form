@@ -39,7 +39,7 @@
     "prettier": "prettier --write \"**/*.{js,jsx,tsx,ts,less,md,json}\"",
     "test": "rc-test",
     "test:coverage": "umi-test --coverage",
-    "prepublishOnly": "npm run compile && np --no-cleanup --yolo --no-publish",
+    "prepublishOnly": "npm run compile && np --no-cleanup --yolo --no-publish --branch=antd-5.x",
     "lint": "eslint src/ --ext .tsx,.ts",
     "lint:tsc": "tsc -p tsconfig.json --noEmit",
     "now-build": "npm run docs:build"
