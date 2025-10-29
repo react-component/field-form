@@ -609,7 +609,7 @@ export class FormStore {
 
       // Value
       if ('value' in data) {
-        this.updateStore(setValue(this.store, namePath, data.value));
+        this.updateValue(namePath,data.value)
       }
 
       this.notifyObservers(prevStore, [namePath], {
