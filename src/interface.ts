@@ -116,6 +116,12 @@ export interface FieldEntity {
     dependencies?: NamePath[];
     initialValue?: any;
   };
+
+  /**
+   * Mask as invalidate.
+   * This will filled when Field is removed but not updated in render yet.
+   */
+  INVALIDATE_NAME_PATH?: InternalNamePath;
 }
 
 export interface FieldError {

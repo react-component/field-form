@@ -569,7 +569,7 @@ describe('Form.List', () => {
     expect(currentMeta.errors).toEqual(['Bamboo Light']);
   });
 
-  it('Nest list remove should trigger correct onValuesChange', () => {
+  it('Nest list remove index should trigger correct onValuesChange', () => {
     const onValuesChange = jest.fn();
 
     const [container] = generateForm(
@@ -596,6 +596,7 @@ describe('Form.List', () => {
       },
     );
 
+    onValuesChange.mockReset();
     fireEvent.click(container.querySelector('button')!);
     expect(onValuesChange).toHaveBeenCalledWith(expect.anything(), { list: [{ first: 'light' }] });
   });
@@ -939,7 +940,8 @@ describe('Form.List', () => {
   });
 
   it('list unmount', async () => {
-    const valueRef = React.createRef();
+    const onFinish = jest.fn();
+    const formRef = React.createRef<FormInstance>();
 
     const Demo = () => {
       const [isShow, setIsShow] = useState(true);
@@ -951,9 +953,8 @@ describe('Form.List', () => {
               { name: 'b', age: '2' },
             ],
           }}
-          onFinish={values => {
-            valueRef.current = values;
-          }}
+          ref={formRef}
+          onFinish={onFinish}
         >
           <Form.List name="users">
             {fields => {
@@ -986,19 +987,29 @@ describe('Form.List', () => {
     await act(async () => {
       await timeout();
     });
-    expect(valueRef.current).toEqual({
+    expect(onFinish).toHaveBeenCalledWith({
       users: [
         { name: 'a', age: '1' },
         { name: 'b', age: '2' },
       ],
     });
+    expect(formRef.current?.getFieldsValue()).toEqual({
+      users: [
+        { name: 'a', age: '1' },
+        { name: 'b', age: '2' },
+      ],
+    });
+    onFinish.mockReset();
 
     fireEvent.click(queryByTestId('hide'));
     fireEvent.click(queryByTestId('submit'));
     await act(async () => {
       await timeout();
     });
-    expect(valueRef.current).toEqual({ users: [{ name: 'a' }, { name: 'b' }] });
+    expect(onFinish).toHaveBeenCalledWith({ users: [{ name: 'a' }, { name: 'b' }] });
+    expect(formRef.current?.getFieldsValue()).toEqual({
+      users: [{ name: 'a' }, { name: 'b' }],
+    });
   });
 
   it('list rules', async () => {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import warning from '@rc-component/util/lib/warning';
 import type { InternalNamePath, NamePath, StoreValue, ValidatorRule, Meta } from './interface';
-import FieldContext from './FieldContext';
+import FieldContext, { HOOK_MARK } from './FieldContext';
 import Field from './Field';
 import { move, getNamePath } from './utils/valueUtil';
 import type { ListContextProps } from './ListContext';

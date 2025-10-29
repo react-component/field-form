@@ -14,7 +14,7 @@ import type { FormContextProps } from './FormContext';
 import FormContext from './FormContext';
 import { isSimilar } from './utils/valueUtil';
 import ListContext from './ListContext';
-import BatchUpdate, { BatchTask, type BatchUpdateRef } from './BatchUpdate';
+import BatchUpdate, { type BatchTask, type BatchUpdateRef } from './BatchUpdate';
 
 type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
