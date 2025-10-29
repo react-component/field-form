@@ -341,8 +341,16 @@ export class FormStore {
       }
     });
 
-    // TODO: Should fill `listNamePaths` to ensure the list field exist even list is empty
-    return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
+    let mergedValues = cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
+
+    // We need fill the list as [] if Form.List is empty
+    listNamePaths.forEach(namePath => {
+      if (!getValue(mergedValues, namePath)) {
+        mergedValues = setValue(mergedValues, namePath, []);
+      }
+    });
+
+    return mergedValues;
   };
 
   private getFieldValue = (name: NamePath) => {
