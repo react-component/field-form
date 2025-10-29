@@ -303,6 +303,7 @@ export class FormStore {
     let mergedNameList: NamePath[] | true;
     let mergedFilterFunc: FilterFunc;
     // let mergedStrict: boolean = true;
+    // let mergedStrict: boolean;
 
     if (nameList === true || Array.isArray(nameList)) {
       mergedNameList = nameList;
@@ -782,7 +783,10 @@ export class FormStore {
 
     if (onValuesChange) {
       const changedValues = cloneByNamePathList(this.store, [namePath]);
-      onValuesChange(changedValues, this.getFieldsValue());
+      const allValues = this.getFieldsValue();
+      // TODO: Since allValues is not final value for the changedValues part.
+      // We should merge the changedValues into allValues instead.
+      onValuesChange(changedValues, allValues);
     }
 
     this.triggerOnFieldsChange([namePath, ...childrenFields]);
