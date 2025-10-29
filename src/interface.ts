@@ -257,7 +257,13 @@ type RecursivePartial<T> =
 
 export type FilterFunc = (meta: Meta | null) => boolean;
 
-export type GetFieldsValueConfig = { strict?: boolean; filter?: FilterFunc };
+export type GetFieldsValueConfig = {
+  /**
+   * @deprecated `strict` is deprecated and not working anymore
+   */
+  strict?: boolean;
+  filter?: FilterFunc;
+};
 
 export interface FormInstance<Values = any> {
   // Origin Form API
