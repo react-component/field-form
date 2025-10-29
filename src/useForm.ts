@@ -302,14 +302,11 @@ export class FormStore {
     // Fill args
     let mergedNameList: NamePath[] | true;
     let mergedFilterFunc: FilterFunc;
-    // let mergedStrict: boolean = true;
-    // let mergedStrict: boolean;
 
     if (nameList === true || Array.isArray(nameList)) {
       mergedNameList = nameList;
       mergedFilterFunc = filterFunc;
     } else if (nameList && typeof nameList === 'object') {
-      // mergedStrict = nameList.strict ?? true;
       mergedFilterFunc = nameList.filter;
     }
 
@@ -322,22 +319,17 @@ export class FormStore {
     );
 
     const filteredNameList: NamePath[] = [];
+    const listNamePaths: InternalNamePath[] = [];
+
     fieldEntities.forEach((entity: FlexibleFieldEntity) => {
       const namePath = entity.INVALIDATE_NAME_PATH || entity.getNamePath();
 
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
-      // if (mergedStrict) {
-      //   if ((entity as FieldEntity).isList?.()) {
-      //     return;
-      //   }
-      // } else if (!mergedNameList && (entity as FieldEntity).isListField?.()) {
-      //   return;
-      // }
       if ((entity as FieldEntity).isList?.()) {
+        listNamePaths.push(namePath);
         return;
       }
-      // } else if (!mergedNameList && (entity as FieldEntity).isListField?.() && (entity as FieldEntity).) {}
 
       if (!mergedFilterFunc) {
         filteredNameList.push(namePath);
@@ -349,6 +341,7 @@ export class FormStore {
       }
     });
 
+    // TODO: Should fill `listNamePaths` to ensure the list field exist even list is empty
     return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
   };
 
