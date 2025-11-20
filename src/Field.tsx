@@ -10,6 +10,7 @@ import type {
   InternalFormInstance,
   InternalNamePath,
   InternalValidateOptions,
+  Message,
   Meta,
   NamePath,
   NotifyInfo,
@@ -29,8 +30,8 @@ import {
   getValue,
 } from './utils/valueUtil';
 
-const EMPTY_ERRORS: any[] = [];
-const EMPTY_WARNINGS: any[] = [];
+const EMPTY_ERRORS: never[] = [];
+const EMPTY_WARNINGS: never[] = [];
 
 export type ShouldUpdate<Values = any> =
   | boolean
@@ -137,12 +138,12 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
    */
   private dirty: boolean = false;
 
-  private validatePromise: Promise<string[]> | null;
+  private validatePromise: Promise<RuleError[]> | null;
 
   private prevValidating: boolean;
 
-  private errors: string[] = EMPTY_ERRORS;
-  private warnings: string[] = EMPTY_WARNINGS;
+  private errors: Message[] = EMPTY_ERRORS;
+  private warnings: Message[] = EMPTY_WARNINGS;
 
   // ============================== Subscriptions ==============================
   constructor(props: InternalFieldProps) {
@@ -392,7 +393,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const { triggerName, validateOnly = false } = options || {};
 
     // Force change to async to avoid rule OOD under renderProps field
-    const rootPromise = Promise.resolve().then(async (): Promise<any[]> => {
+    const rootPromise = Promise.resolve().then(async (): Promise<RuleError[]> => {
       if (!this.mounted) {
         return [];
       }
@@ -442,8 +443,8 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
             this.validatePromise = null;
 
             // Get errors & warnings
-            const nextErrors: string[] = [];
-            const nextWarnings: string[] = [];
+            const nextErrors: Message[] = [];
+            const nextWarnings: Message[] = [];
             ruleErrors.forEach?.(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
               if (warningOnly) {
                 nextWarnings.push(...errors);
