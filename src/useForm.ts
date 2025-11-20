@@ -1022,7 +1022,7 @@ export class FormStore {
         }
         return Promise.reject<string[]>([]);
       })
-      .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
+      .catch((results: FieldError[]) => {
         const errorList = results.filter(result => result && result.errors.length);
         const errorMessage = errorList[0]?.errors?.[0];
         return Promise.reject({
