@@ -316,7 +316,7 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventArgs = any[];
 
-type ValidateMessage = string | (() => string);
+type ValidateMessage = string | (() => string) | ReactElement;
 export interface ValidateMessages {
   default?: ValidateMessage;
   required?: ValidateMessage;
