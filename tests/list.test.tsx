@@ -1042,4 +1042,37 @@ describe('Form.List', () => {
 
     expect(onFinishFailed).toHaveBeenCalled();
   });
+
+  it('List should have correct onValuesChange', () => {
+    const onValuesChange = jest.fn();
+
+    const [container] = generateForm(
+      fields => (
+        <div>
+          {fields.map(field => (
+            <div key={field.key}>
+              <Field {...field} name={[field.name, 'first']}>
+                <Input />
+              </Field>
+              <Field {...field} name={[field.name, 'last']}>
+                <Input />
+              </Field>
+            </div>
+          ))}
+        </div>
+      ),
+      {
+        initialValues: {
+          list: [{ first: 'light' }],
+        },
+        onValuesChange,
+      },
+    );
+
+    fireEvent.change(getInput(container, 1), { target: { value: 'little' } });
+    expect(onValuesChange).toHaveBeenCalledWith(
+      { list: [{ last: 'little' }] },
+      { list: [{ first: 'light', last: 'little' }] },
+    );
+  });
 });
