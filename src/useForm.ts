@@ -1,4 +1,5 @@
 import { merge } from '@rc-component/util/lib/utils/set';
+import { mergeWith } from '@rc-component/util';
 import warning from '@rc-component/util/lib/warning';
 import * as React from 'react';
 import { HOOK_MARK } from './FieldContext';
@@ -786,7 +787,10 @@ export class FormStore {
       const changedValues = cloneByNamePathList(this.store, [namePath]);
       const allValues = this.getFieldsValue();
       // Merge changedValues into allValues to ensure allValues contains the latest changes
-      const mergedAllValues = merge(allValues, changedValues);
+      const mergedAllValues = mergeWith([allValues, changedValues], {
+        // When value is array, it means trigger by Form.List which should replace directly
+        prepareArray: current => (Array.isArray(value) ? [] : [...(current || [])]),
+      });
       onValuesChange(changedValues, mergedAllValues);
     }
 
