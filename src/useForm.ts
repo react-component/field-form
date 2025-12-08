@@ -784,12 +784,13 @@ export class FormStore {
     const { onValuesChange } = this.callbacks;
 
     if (onValuesChange) {
+      const fieldEntity = this.getFieldsMap(true).get(namePath);
       const changedValues = cloneByNamePathList(this.store, [namePath]);
       const allValues = this.getFieldsValue();
       // Merge changedValues into allValues to ensure allValues contains the latest changes
       const mergedAllValues = mergeWith([allValues, changedValues], {
         // When value is array, it means trigger by Form.List which should replace directly
-        prepareArray: current => (Array.isArray(value) ? [] : [...(current || [])]),
+        prepareArray: current => (fieldEntity?.isList() ? [] : [...(current || [])]),
       });
       onValuesChange(changedValues, mergedAllValues);
     }

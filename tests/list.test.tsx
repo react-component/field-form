@@ -1075,4 +1075,68 @@ describe('Form.List', () => {
       { list: [{ first: 'light', last: 'little' }] },
     );
   });
+
+  it('should correctly merge array-valued fields within Form.List items without losing data', async () => {
+    const TagInput = ({ value = [], onChange }: any) => (
+      <input
+        data-testid="tag-input"
+        value={value.join(',')}
+        onChange={e => {
+          const newValue = e.target.value
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+          onChange(newValue);
+        }}
+      />
+    );
+
+    const onValuesChange = jest.fn();
+
+    const [container] = generateForm(
+      fields => (
+        <>
+          {fields.map(field => (
+            <div key={field.key}>
+              <Field {...field} name={[field.name, 'name']}>
+                <Input />
+              </Field>
+              <Field {...field} name={[field.name, 'tags']}>
+                <TagInput />
+              </Field>
+            </div>
+          ))}
+        </>
+      ),
+      {
+        initialValues: {
+          list: [{ name: 'John', tags: ['react', 'js'] }],
+        },
+        onValuesChange,
+      },
+    );
+
+    const tagInput = container.querySelector('input[data-testid="tag-input"]') as HTMLElement;
+
+    await act(async () => {
+      fireEvent.change(tagInput, {
+        target: { value: 'react,ts' },
+      });
+    });
+
+    expect(onValuesChange).toHaveBeenCalledWith(
+      { list: [{ tags: ['react', 'ts'] }] }, // changedValues
+      { list: [{ name: 'John', tags: ['react', 'ts'] }] }, // allValues
+    );
+    onValuesChange.mockReset();
+
+    await act(async () => {
+      fireEvent.change(tagInput, { target: { value: 'react,ts,redux' } });
+    });
+
+    expect(onValuesChange).toHaveBeenLastCalledWith(
+      { list: [{ tags: ['react', 'ts', 'redux'] }] },
+      { list: [{ name: 'John', tags: ['react', 'ts', 'redux'] }] },
+    );
+  });
 });
