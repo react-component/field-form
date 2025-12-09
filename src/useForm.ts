@@ -618,7 +618,8 @@ export class FormStore {
         data: fieldData,
       });
     });
-
+    //validation of the fields to be rerun when someone sets the value using setFields/setFieldValue
+    this.validateFields(namePathList)
     this.notifyWatch(namePathList);
   };
 
@@ -803,16 +804,18 @@ export class FormStore {
     this.warningUnhooked();
 
     const prevStore = this.store;
-
+    const namesLists  = Object.keys(store);
     if (store) {
       const nextStore = merge(this.store, store);
       this.updateStore(nextStore);
-    }
 
+    }
     this.notifyObservers(prevStore, null, {
       type: 'valueUpdate',
       source: 'external',
     });
+    //validation of the fields to be rerun when someone sets the value using setFieldsValue
+    this.validateFields(namesLists)
     this.notifyWatch();
   };
 
