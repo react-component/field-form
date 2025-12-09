@@ -17,6 +17,7 @@ import type {
   InternalNamePath,
   InternalValidateFields,
   InternalValidateOptions,
+  Message,
   Meta,
   NamePath,
   NotifyInfo,
@@ -383,7 +384,7 @@ export class FormStore {
     });
   };
 
-  private getFieldError = (name: NamePath): string[] => {
+  private getFieldError = (name: NamePath): Message[] => {
     this.warningUnhooked();
 
     const namePath = getNamePath(name);
@@ -391,7 +392,7 @@ export class FormStore {
     return fieldError.errors;
   };
 
-  private getFieldWarning = (name: NamePath): string[] => {
+  private getFieldWarning = (name: NamePath): Message[] => {
     this.warningUnhooked();
 
     const namePath = getNamePath(name);
@@ -882,7 +883,7 @@ export class FormStore {
        * Fill errors since `fields` may be replaced by controlled fields
        */
       if (filedErrors) {
-        const cache = new NameMap<string[]>();
+        const cache = new NameMap<Message[]>();
         filedErrors.forEach(({ name, errors }) => {
           cache.set(name, errors);
         });
@@ -976,8 +977,8 @@ export class FormStore {
           promise
             .then<any, RuleError>(() => ({ name: fieldNamePath, errors: [], warnings: [] }))
             .catch((ruleErrors: RuleError[]) => {
-              const mergedErrors: string[] = [];
-              const mergedWarnings: string[] = [];
+              const mergedErrors: Message[] = [];
+              const mergedWarnings: Message[] = [];
 
               ruleErrors.forEach?.(({ rule: { warningOnly }, errors }) => {
                 if (warningOnly) {
@@ -1026,7 +1027,7 @@ export class FormStore {
         }
         return Promise.reject<string[]>([]);
       })
-      .catch((results: { name: InternalNamePath; errors: string[] }[]) => {
+      .catch((results: FieldError[]) => {
         const errorList = results.filter(result => result && result.errors.length);
         const errorMessage = errorList[0]?.errors?.[0];
         return Promise.reject({

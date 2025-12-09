@@ -9,11 +9,13 @@ export type NamePath<T = any> = DeepNamePath<T>;
 export type StoreValue = any;
 export type Store = Record<string, StoreValue>;
 
+export type Message = string | ReactElement;
+
 export interface Meta {
   touched: boolean;
   validating: boolean;
-  errors: string[];
-  warnings: string[];
+  errors: Message[];
+  warnings: Message[];
   name: InternalNamePath;
   validated: boolean;
 }
@@ -54,7 +56,7 @@ export type RuleRender = (form: FormInstance) => RuleObject;
 
 export interface ValidatorRule {
   warningOnly?: boolean;
-  message?: string | ReactElement;
+  message?: Message;
   validator: Validator;
 }
 
@@ -63,7 +65,7 @@ interface BaseRule {
   enum?: StoreValue[];
   len?: number;
   max?: number;
-  message?: string | ReactElement;
+  message?: Message;
   min?: number;
   pattern?: RegExp;
   required?: boolean;
@@ -87,9 +89,9 @@ export type RuleObject = AggregationRule | ArrayRule;
 export type Rule = RuleObject | RuleRender;
 
 export interface ValidateErrorEntity<Values = any> {
-  message: string;
+  message: Message;
   values: Values;
-  errorFields: { name: InternalNamePath; errors: string[] }[];
+  errorFields: { name: InternalNamePath; errors: Message[] }[];
   outOfDate: boolean;
 }
 
@@ -108,8 +110,8 @@ export interface FieldEntity {
   validateRules: (options?: InternalValidateOptions) => Promise<RuleError[]>;
   getMeta: () => Meta;
   getNamePath: () => InternalNamePath;
-  getErrors: () => string[];
-  getWarnings: () => string[];
+  getErrors: () => Message[];
+  getWarnings: () => Message[];
   props: {
     name?: NamePath;
     rules?: Rule[];
@@ -126,12 +128,12 @@ export interface FieldEntity {
 
 export interface FieldError {
   name: InternalNamePath;
-  errors: string[];
-  warnings: string[];
+  errors: Message[];
+  warnings: Message[];
 }
 
 export interface RuleError {
-  errors: string[];
+  errors: Message[];
   rule: RuleObject;
 }
 
@@ -271,9 +273,9 @@ export interface FormInstance<Values = any> {
   getFieldsValue: (() => Values) &
     ((nameList: NamePath<Values>[] | true, filterFunc?: FilterFunc) => any) &
     ((config: GetFieldsValueConfig) => any);
-  getFieldError: (name: NamePath<Values>) => string[];
+  getFieldError: (name: NamePath<Values>) => Message[];
   getFieldsError: (nameList?: NamePath<Values>[]) => FieldError[];
-  getFieldWarning: (name: NamePath<Values>) => string[];
+  getFieldWarning: (name: NamePath<Values>) => Message[];
   isFieldsTouched: ((nameList?: NamePath<Values>[], allFieldsTouched?: boolean) => boolean) &
     ((allFieldsTouched?: boolean) => boolean);
   isFieldTouched: (name: NamePath<Values>) => boolean;
@@ -314,7 +316,7 @@ export type InternalFormInstance = Omit<FormInstance, 'validateFields'> & {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventArgs = any[];
 
-type ValidateMessage = string | (() => string);
+type ValidateMessage = string | (() => string) | ReactElement;
 export interface ValidateMessages {
   default?: ValidateMessage;
   required?: ValidateMessage;

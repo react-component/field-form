@@ -4,7 +4,7 @@ import React from 'react';
 import Form, { Field, FormInstance } from 'rc-field-form';
 import Input from './components/Input';
 import LabelField from './components/LabelField';
-import { ValidateMessages } from '@/interface';
+import { Message, ValidateMessages } from '@/interface';
 
 const myMessages: ValidateMessages = {
   default: '${name} 看起来怪怪的……',
@@ -34,7 +34,7 @@ export default class Demo extends React.Component {
     console.log('Failed:', errorInfo);
   };
 
-  public onPasswordError = ({ errors }: { errors: string[] }) => {
+  public onPasswordError = ({ errors }: { errors: Message[] }) => {
     console.log('🐞 Password Error:', errors);
   };
 
