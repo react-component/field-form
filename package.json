@@ -73,7 +73,7 @@
     "jest": "^29.0.0",
     "prettier": "^3.1.0",
     "rc-test": "^7.0.15",
-    "react": "^18.0.0",
+    "react": "^19.0.0",
     "react-dnd": "^8.0.3",
     "react-dnd-html5-backend": "^8.0.3",
     "react-dom": "^18.0.0",
