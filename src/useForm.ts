@@ -346,8 +346,17 @@ export class FormStore {
 
     // We need fill the list as [] if Form.List is empty
     listNamePaths.forEach(namePath => {
-      if (!getValue(mergedValues, namePath)) {
-        mergedValues = setValue(mergedValues, namePath, []);
+      const listValue = getValue(mergedValues, namePath);
+
+      // NOTE: `getFieldsValue(['list'])` may not include list root when Form.List isn't wrapped by a parent Field.
+      // In this case we should fallback to store value first, and only fill `[]` when store doesn't have it.
+      if (listValue === undefined) {
+        const storeListValue = getValue(this.store, namePath);
+        mergedValues = setValue(
+          mergedValues,
+          namePath,
+          storeListValue === undefined ? [] : storeListValue,
+        );
       }
     });
 
