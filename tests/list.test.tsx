@@ -1139,4 +1139,39 @@ describe('Form.List', () => {
       { list: [{ name: 'John', tags: ['react', 'ts', 'redux'] }] },
     );
   });
+
+  it('getFieldsValue should return list root value when Form.List is not wrapped by parent Field', async () => {
+    let operation: ListOperations;
+
+    const [container] = generateForm((fields, opt) => {
+      operation = opt;
+      return (
+        <div>
+          {fields.map(field => (
+            <div key={field.key}>
+              <Field {...field} name={[field.name, 'name']}>
+                <Input />
+              </Field>
+              <Field {...field} name={[field.name, 'value']}>
+                <Input />
+              </Field>
+            </div>
+          ))}
+        </div>
+      );
+    });
+
+    // First add a row
+    act(() => {
+      operation.add();
+    });
+
+    // Fill some values
+    await changeValue(getInput(container, 0), 'n1'); // list[0].name
+    await changeValue(getInput(container, 1), '1'); // list[0].value
+
+    expect(form.current?.getFieldsValue(['list'])).toEqual({
+      list: [{ name: 'n1', value: '1' }],
+    });
+  });
 });
