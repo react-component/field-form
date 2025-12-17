@@ -775,7 +775,7 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
-    this.notifyWatch([namePath]);
+    this.batchNotifyWatch(namePath);
 
     // Dependencies update
     const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);

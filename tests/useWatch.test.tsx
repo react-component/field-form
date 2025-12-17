@@ -536,4 +536,69 @@ describe('useWatch', () => {
     expect(list[0]).toEqual({});
     expect(list[1]).toEqual({ name: 'bamboo' });
   });
+
+  it('list remove should not trigger intermediate undefined value', async () => {
+    const snapshots: any[] = [];
+
+    const Demo: React.FC = () => {
+      const [form] = Form.useForm();
+      const users = Form.useWatch<string[]>(['users'], form) || [];
+
+      React.useEffect(() => {
+        snapshots.push(users);
+      }, [users]);
+
+      return (
+        <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
+          <div className="values">{JSON.stringify(users)}</div>
+          <List name="users" initialValue={['bamboo', 'light']}>
+            {(fields, { remove }) => (
+              <div>
+                {fields.map((field, index) => (
+                  <Field {...field} key={field.key} rules={[{ required: true }]}>
+                    {control => (
+                      <div>
+                        <Input {...control} />
+                        <a className="remove" onClick={() => remove(1)} />
+                      </div>
+                    )}
+                  </Field>
+                ))}
+              </div>
+            )}
+          </List>
+        </Form>
+      );
+    };
+
+    const { container } = render(<Demo />);
+
+    await act(async () => {
+      await timeout();
+    });
+
+    // Initial
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
+      JSON.stringify(['bamboo', 'light']),
+    );
+
+    // Remove index 1
+    fireEvent.click(container.querySelector<HTMLAnchorElement>('.remove')!);
+
+    await act(async () => {
+      await timeout();
+    });
+
+    // Final
+    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
+      JSON.stringify(['bamboo']),
+    );
+
+    // Should not have intermediate state like ['bamboo', undefined]
+    expect(
+      snapshots.some(
+        v => Array.isArray(v) && v.length === 2 && v[0] === 'bamboo' && v[1] === undefined,
+      ),
+    ).toBe(false);
+  });
 });
