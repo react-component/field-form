@@ -788,10 +788,10 @@ export class FormStore {
       const changedValues = cloneByNamePathList(this.store, [namePath]);
       const allValues = this.getFieldsValue();
       // Merge changedValues into allValues to ensure allValues contains the latest changes
-      const mergedAllValues = mergeWith([allValues, changedValues], {
-        // When value is array, it means trigger by Form.List which should replace directly
-        prepareArray: current => (fieldEntity?.isList() ? [] : [...(current || [])]),
-      });
+      let mergedAllValues = allValues;
+      if (fieldEntity?.isList()) {
+        mergedAllValues = mergeWith([allValues, changedValues]);
+      }
       onValuesChange(changedValues, mergedAllValues);
     }
 
