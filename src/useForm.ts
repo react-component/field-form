@@ -346,17 +346,16 @@ export class FormStore {
 
     // We need fill the list as [] if Form.List is empty
     listNamePaths.forEach(namePath => {
-      const listValue = getValue(mergedValues, namePath);
+      // Form.List 的数组结构（add/remove）会先同步更新 store，
+      // 而对应的子 Field 要到下一次 commit 才会 register。
+      // 在这段 render 时序中，fieldEntities 仍然是“上一帧”的结果，
+      // 用它来拼 list 会得到不完整的数据。
+      // 因此 List 根节点的值始终以 store 为准，避免依赖 Field 注册时序。
+      const storeListValue = getValue(this.store, namePath);
 
-      // NOTE: `getFieldsValue(['list'])` may not include list root when Form.List isn't wrapped by a parent Field.
-      // In this case we should fallback to store value first, and only fill `[]` when store doesn't have it.
-      if (listValue === undefined) {
-        const storeListValue = getValue(this.store, namePath);
-        mergedValues = setValue(
-          mergedValues,
-          namePath,
-          storeListValue === undefined ? [] : storeListValue,
-        );
+      if (storeListValue !== undefined) {
+        mergedValues = setValue(mergedValues, namePath, storeListValue);
+        return;
       }
     });
 
