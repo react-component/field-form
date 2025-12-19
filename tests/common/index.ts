@@ -24,18 +24,35 @@ export function getInput(
   return ele!;
 }
 
+const nativeSetTimeout = window.setTimeout;
+
+export async function waitFakeTimer() {
+  for (let i = 0; i < 10; i += 1) {
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+      await Promise.resolve();
+    });
+  }
+}
+
 export async function changeValue(wrapper: HTMLElement, value: string | string[]) {
   const values = Array.isArray(value) ? value : [value];
+
+  const isMockTimer = nativeSetTimeout !== window.setTimeout;
 
   for (let i = 0; i < values.length; i += 1) {
     fireEvent.change(wrapper, { target: { value: values[i] } });
 
-    await act(async () => {
-      await timeout();
-    });
+    if (isMockTimer) {
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    } else {
+      await act(async () => {
+        await timeout();
+      });
+    }
   }
-
-  return;
 }
 
 export function matchError(
@@ -95,4 +112,8 @@ export async function validateFields(form, ...args) {
   await act(async () => {
     await form.validateFields(...args);
   });
+}
+
+export function executeMicroTasks() {
+  jest.advanceTimersByTime(1000);
 }
