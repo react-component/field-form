@@ -8,7 +8,7 @@ import type {
   InternalFormInstance,
   FormRef,
 } from './interface';
-import useForm from './useForm';
+import useForm from './hooks/useForm';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type { FormContextProps } from './FormContext';
 import FormContext from './FormContext';

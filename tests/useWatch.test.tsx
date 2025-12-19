@@ -5,7 +5,7 @@ import { List } from '../src';
 import Form, { Field } from '../src';
 import timeout from './common/timeout';
 import { Input } from './common/InfoField';
-import { stringify } from '../src/useWatch';
+import { stringify } from '../src/hooks/useWatch';
 import { changeValue } from './common';
 
 describe('useWatch', () => {

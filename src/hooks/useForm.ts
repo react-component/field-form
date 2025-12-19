@@ -2,7 +2,7 @@ import { merge } from '@rc-component/util/lib/utils/set';
 import { mergeWith } from '@rc-component/util';
 import warning from '@rc-component/util/lib/warning';
 import * as React from 'react';
-import { HOOK_MARK } from './FieldContext';
+import { HOOK_MARK } from '../FieldContext';
 import type {
   Callbacks,
   FieldData,
@@ -27,10 +27,10 @@ import type {
   ValidateMessages,
   ValuedNotifyInfo,
   WatchCallBack,
-} from './interface';
-import { allPromiseFinish } from './utils/asyncUtil';
-import { defaultValidateMessages } from './utils/messages';
-import NameMap from './utils/NameMap';
+} from '../interface';
+import { allPromiseFinish } from '../utils/asyncUtil';
+import { defaultValidateMessages } from '../utils/messages';
+import NameMap from '../utils/NameMap';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -38,8 +38,8 @@ import {
   getValue,
   matchNamePath,
   setValue,
-} from './utils/valueUtil';
-import type { BatchTask } from './BatchUpdate';
+} from '../utils/valueUtil';
+import type { BatchTask } from '../BatchUpdate';
 
 type FlexibleFieldEntity = Partial<FieldEntity>;
 

@@ -1,15 +1,15 @@
 import warning from '@rc-component/util/lib/warning';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import FieldContext, { HOOK_MARK } from './FieldContext';
+import FieldContext, { HOOK_MARK } from '../FieldContext';
 import type {
   FormInstance,
   InternalFormInstance,
   NamePath,
   Store,
   WatchOptions,
-} from './interface';
-import { isFormInstance } from './utils/typeUtil';
-import { getNamePath, getValue } from './utils/valueUtil';
+} from '../interface';
+import { isFormInstance } from '../utils/typeUtil';
+import { getNamePath, getValue } from '../utils/valueUtil';
 import { useEvent } from '@rc-component/util';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
