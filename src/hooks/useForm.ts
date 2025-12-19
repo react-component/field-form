@@ -200,26 +200,8 @@ export class FormStore {
   };
 
   private notifyWatch = (namePath: InternalNamePath[] = []) => {
-    // // No need to cost perf when nothing need to watch
-    // if (this.watchList.length) {
-    //   const values = this.getFieldsValue();
-    //   const allValues = this.getFieldsValue(true);
-
-    //   this.watchList.forEach(callback => {
-    //     callback(values, allValues, namePath);
-    //   });
-    // }
     this.watcherCenter.notify(namePath);
   };
-
-  // private notifyWatchNamePathList: InternalNamePath[] = [];
-  // private batchNotifyWatch = (namePath: InternalNamePath) => {
-  //   this.notifyWatchNamePathList.push(namePath);
-  //   this.batch('notifyWatch', () => {
-  //     this.notifyWatch(this.notifyWatchNamePathList);
-  //     this.notifyWatchNamePathList = [];
-  //   });
-  // };
 
   // ========================== Dev Warning =========================
   private timeoutId: any = null;
@@ -652,7 +634,6 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
-    // this.batchNotifyWatch(namePath);
     this.notifyWatch([namePath]);
 
     // Set initial values
@@ -693,7 +674,6 @@ export class FormStore {
         }
       }
 
-      // this.batchNotifyWatch(namePath);
       this.notifyWatch([namePath]);
     };
   };
@@ -760,7 +740,6 @@ export class FormStore {
       type: 'valueUpdate',
       source: 'internal',
     });
-    // this.batchNotifyWatch(namePath);
     this.notifyWatch([namePath]);
 
     // Dependencies update
