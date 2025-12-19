@@ -3,10 +3,10 @@ import { render, fireEvent, act } from '@testing-library/react';
 import type { FormInstance } from '../src';
 import { List } from '../src';
 import Form, { Field } from '../src';
-import timeout from './common/timeout';
+import { waitFakeTime } from './common/timeout';
 import { Input } from './common/InfoField';
 import { stringify } from '../src/hooks/useWatch';
-import { changeValue, waitFakeTimer } from './common';
+import { changeValue } from './common';
 
 describe('useWatch', () => {
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('useWatch', () => {
     };
 
     const { container } = render(<Demo />);
-    await waitFakeTimer();
+    await waitFakeTime();
     expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
   });
 
@@ -55,7 +55,7 @@ describe('useWatch', () => {
     };
 
     const { container } = render(<Demo />);
-    await waitFakeTimer();
+    await waitFakeTime();
     expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
   });
 
@@ -77,24 +77,24 @@ describe('useWatch', () => {
     };
 
     const { container } = render(<Demo />);
-    await waitFakeTimer();
+    await waitFakeTime();
 
     await act(async () => {
       staticForm.current?.setFields([{ name: 'name', value: 'little' }]);
     });
-    await waitFakeTimer();
+    await waitFakeTime();
     expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('little');
 
     await act(async () => {
       staticForm.current?.setFieldsValue({ name: 'light' });
     });
-    await waitFakeTimer();
+    await waitFakeTime();
     expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('light');
 
     await act(async () => {
       staticForm.current?.resetFields();
     });
-    await waitFakeTimer();
+    await waitFakeTime();
     expect(container.querySelector<HTMLDivElement>('.values').textContent)?.toEqual('');
   });
 
@@ -118,16 +118,16 @@ describe('useWatch', () => {
       };
 
       const { container, rerender } = render(<Demo visible />);
-      await waitFakeTimer();
+      await waitFakeTime();
 
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
 
       rerender(<Demo visible={false} />);
-      await waitFakeTimer();
+      await waitFakeTime();
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
 
       rerender(<Demo visible />);
-      await waitFakeTimer();
+      await waitFakeTime();
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
 
@@ -156,15 +156,15 @@ describe('useWatch', () => {
       };
 
       const { container, rerender } = render(<Demo visible />);
-      await waitFakeTimer();
+      await waitFakeTime();
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
 
       rerender(<Demo visible={false} />);
-      await waitFakeTimer();
+      await waitFakeTime();
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('');
 
       rerender(<Demo visible />);
-      await waitFakeTimer();
+      await waitFakeTime();
       expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     });
   });
@@ -199,13 +199,13 @@ describe('useWatch', () => {
     };
 
     const { container } = render(<Demo />);
-    await waitFakeTimer();
+    await waitFakeTime();
 
     expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
       JSON.stringify(['bamboo', 'light']),
     );
     fireEvent.click(container.querySelector<HTMLAnchorElement>('.remove'));
-    await waitFakeTimer();
+    await waitFakeTime();
 
     expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
       JSON.stringify(['light']),
@@ -481,11 +481,11 @@ describe('useWatch', () => {
     };
 
     const { container } = render(<Demo />);
-    await waitFakeTimer();
+    await waitFakeTime();
     expect(logSpy).toHaveBeenCalledWith('bamboo', undefined); // initialValue
 
     fireEvent.click(container.querySelector('.test-btn'));
-    await waitFakeTimer();
+    await waitFakeTime();
     expect(logSpy).toHaveBeenCalledWith('light', undefined); // after setFieldValue
 
     logSpy.mockRestore();
@@ -507,7 +507,7 @@ describe('useWatch', () => {
     };
 
     const { container } = render(<Demo />);
-    await waitFakeTimer();
+    await waitFakeTime();
 
     expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual('bamboo');
     const input = container.querySelectorAll<HTMLInputElement>('input');
@@ -534,32 +534,30 @@ describe('useWatch', () => {
   });
 
   it('list remove should not trigger intermediate undefined value', async () => {
-    const snapshots: any[] = [];
+    let snapshots: any[] = [];
 
     const Demo: React.FC = () => {
       const [form] = Form.useForm();
       const users = Form.useWatch<string[]>(['users'], form) || [];
-
-      React.useEffect(() => {
-        snapshots.push(users);
-      }, [users]);
+      snapshots.push(users);
 
       return (
-        <Form form={form} style={{ border: '1px solid red', padding: 15 }}>
-          <div className="values">{JSON.stringify(users)}</div>
+        <Form form={form}>
           <List name="users" initialValue={['bamboo', 'light']}>
             {(fields, { remove }) => (
               <div>
-                {fields.map((field, index) => (
+                {fields.map(field => (
                   <Field {...field} key={field.key} rules={[{ required: true }]}>
-                    {control => (
-                      <div>
-                        <Input {...control} />
-                        <a className="remove" onClick={() => remove(1)} />
-                      </div>
-                    )}
+                    <div />
                   </Field>
                 ))}
+                <button
+                  onClick={() => {
+                    remove(1);
+                  }}
+                >
+                  Remove 1
+                </button>
               </div>
             )}
           </List>
@@ -568,27 +566,13 @@ describe('useWatch', () => {
     };
 
     const { container } = render(<Demo />);
-    await waitFakeTimer();
+    await waitFakeTime();
+    snapshots = [];
 
-    // Initial
-    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
-      JSON.stringify(['bamboo', 'light']),
-    );
+    fireEvent.click(container.querySelector('button'));;
+    await waitFakeTime();
 
-    // Remove index 1
-    fireEvent.click(container.querySelector<HTMLAnchorElement>('.remove')!);
-    await waitFakeTimer();
-
-    // Final
-    expect(container.querySelector<HTMLDivElement>('.values')?.textContent).toEqual(
-      JSON.stringify(['bamboo']),
-    );
-
-    // Should not have intermediate state like ['bamboo', undefined]
-    expect(
-      snapshots.some(
-        v => Array.isArray(v) && v.length === 2 && v[0] === 'bamboo' && v[1] === undefined,
-      ),
-    ).toBe(false);
+    expect(snapshots).toHaveLength(1);
+    expect(snapshots[0]).toEqual(['bamboo']);
   });
 });

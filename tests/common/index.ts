@@ -26,15 +26,6 @@ export function getInput(
 
 const nativeSetTimeout = window.setTimeout;
 
-export async function waitFakeTimer() {
-  for (let i = 0; i < 10; i += 1) {
-    await act(async () => {
-      jest.advanceTimersByTime(1000);
-      await Promise.resolve();
-    });
-  }
-}
-
 export async function changeValue(wrapper: HTMLElement, value: string | string[]) {
   const values = Array.isArray(value) ? value : [value];
 
