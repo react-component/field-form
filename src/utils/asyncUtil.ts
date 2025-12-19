@@ -32,12 +32,3 @@ export function allPromiseFinish(promiseList: Promise<FieldError>[]): Promise<Fi
     });
   });
 }
-
-/**
- * Call action with delay in macro task.
- */
-export const macroTask = (fn: VoidFunction) => {
-  const channel = new MessageChannel();
-  channel.port1.onmessage = fn;
-  channel.port2.postMessage(null);
-};

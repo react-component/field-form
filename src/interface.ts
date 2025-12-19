@@ -240,7 +240,6 @@ export interface InternalHooks {
   setValidateMessages: (validateMessages: ValidateMessages) => void;
   setPreserve: (preserve?: boolean) => void;
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
-  setBatchUpdate: (fn: BatchTask) => void;
 }
 
 /** Only return partial when type is not any */
