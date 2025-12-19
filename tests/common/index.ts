@@ -104,7 +104,3 @@ export async function validateFields(form, ...args) {
     await form.validateFields(...args);
   });
 }
-
-export function executeMicroTasks() {
-  jest.advanceTimersByTime(1000);
-}
