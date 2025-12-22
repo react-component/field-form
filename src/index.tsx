@@ -2,13 +2,13 @@ import * as React from 'react';
 import type { FormRef, FormInstance } from './interface';
 import Field from './Field';
 import List from './List';
-import useForm from './useForm';
+import useForm from './hooks/useForm';
 import type { FormProps } from './Form';
 import FieldForm from './Form';
 import { FormProvider } from './FormContext';
 import FieldContext from './FieldContext';
 import ListContext from './ListContext';
-import useWatch from './useWatch';
+import useWatch from './hooks/useWatch';
 
 const InternalForm = React.forwardRef<FormRef, FormProps>(FieldForm) as <Values = any>(
   props: FormProps<Values> & { ref?: React.Ref<FormRef<Values>> },

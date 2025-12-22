@@ -24,18 +24,26 @@ export function getInput(
   return ele!;
 }
 
+const nativeSetTimeout = window.setTimeout;
+
 export async function changeValue(wrapper: HTMLElement, value: string | string[]) {
   const values = Array.isArray(value) ? value : [value];
+
+  const isMockTimer = nativeSetTimeout !== window.setTimeout;
 
   for (let i = 0; i < values.length; i += 1) {
     fireEvent.change(wrapper, { target: { value: values[i] } });
 
-    await act(async () => {
-      await timeout();
-    });
+    if (isMockTimer) {
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+    } else {
+      await act(async () => {
+        await timeout();
+      });
+    }
   }
-
-  return;
 }
 
 export function matchError(

@@ -48,7 +48,7 @@ export function containsNamePath(
  * Check if `namePath` is super set or equal of `subNamePath`.
  * @param namePath A list of `InternalNamePath[]`
  * @param subNamePath Compare `InternalNamePath`
- * @param partialMatch True will make `[a, b]` match `[a, b, c]`
+ * @param partialMatch Default false. True will make `[a, b]` match `[a, b, c]`
  */
 export function matchNamePath(
   namePath: InternalNamePath,

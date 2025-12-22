@@ -288,6 +288,8 @@ describe('Form.Validate', () => {
     });
 
     it('form context', async () => {
+      jest.useFakeTimers();
+
       const { container, rerender } = render(
         <Form validateTrigger="onBlur">
           <InfoField name="test" rules={[{ required: true }]} />
@@ -299,14 +301,11 @@ describe('Form.Validate', () => {
       matchError(container, false);
 
       // Trigger onBlur
-      // wrapper.find('input').simulate('blur');
       fireEvent.blur(getInput(container));
-      await timeout();
-      // wrapper.update();
+      await waitFakeTime();
       matchError(container, true);
 
       // Update Form context
-      // wrapper.setProps({ validateTrigger: 'onChange' });
       rerender(
         <Form validateTrigger="onChange">
           <InfoField name="test" rules={[{ required: true }]} />
@@ -314,6 +313,8 @@ describe('Form.Validate', () => {
       );
       await changeValue(getInput(container), '1');
       matchError(container, false);
+
+      jest.useRealTimers();
     });
   });
 
