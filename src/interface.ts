@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react';
 import type { DeepNamePath } from './namePathType';
-import type { ReducerAction } from './useForm';
-import type { BatchTask } from './BatchUpdate';
+import type { ReducerAction } from './hooks/useForm';
 
 export type InternalNamePath = (string | number)[];
 export type NamePath<T = any> = DeepNamePath<T>;
