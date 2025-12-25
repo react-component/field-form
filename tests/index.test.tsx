@@ -5,7 +5,7 @@ import type { FormInstance } from '../src';
 import Form, { Field, useForm } from '../src';
 import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
-import timeout from './common/timeout';
+import timeout, { waitFakeTime } from './common/timeout';
 import type { FormRef, Meta } from '@/interface';
 
 describe('Form.Basic', () => {
@@ -311,6 +311,8 @@ describe('Form.Basic', () => {
     expect(getInput(container).value).toEqual('');
   });
   it('submit', async () => {
+    jest.useFakeTimers();
+
     const onFinish = jest.fn();
     const onFinishFailed = jest.fn();
 
@@ -324,7 +326,7 @@ describe('Form.Basic', () => {
 
     // Not trigger
     fireEvent.submit(container.querySelector('form'));
-    await timeout();
+    await waitFakeTime();
     matchError(container, "'user' is required");
     expect(onFinish).not.toHaveBeenCalled();
     expect(onFinishFailed).toHaveBeenCalledWith({
@@ -332,7 +334,7 @@ describe('Form.Basic', () => {
       errorFields: [{ name: ['user'], errors: ["'user' is required"], warnings: [] }],
       outOfDate: false,
       values: {
-        user: undefined
+        user: undefined,
       },
     });
 
@@ -342,10 +344,12 @@ describe('Form.Basic', () => {
     // Trigger
     await changeValue(getInput(container), 'Bamboo');
     fireEvent.submit(container.querySelector('form'));
-    await timeout();
+    await waitFakeTime();
     matchError(container, false);
     expect(onFinish).toHaveBeenCalledWith({ user: 'Bamboo' });
     expect(onFinishFailed).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
   });
 
   it('getInternalHooks should not usable by user', () => {
@@ -903,7 +907,7 @@ describe('Form.Basic', () => {
     // (setFieldValue internally calls setFields with touched: true)
     expect(formRef.current.isFieldTouched(['list', 1])).toBeTruthy();
     expect(formRef.current.isFieldTouched(['nest', 'target'])).toBeTruthy();
-    
+
     // Verify other fields remain untouched
     expect(formRef.current.isFieldTouched(['list', 0])).toBeFalsy();
     expect(formRef.current.isFieldTouched(['list', 2])).toBeFalsy();

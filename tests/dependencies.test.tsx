@@ -1,7 +1,7 @@
 import React from 'react';
 import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
-import timeout from './common/timeout';
+import timeout, { waitFakeTime } from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getInput } from './common';
 import { fireEvent, render } from '@testing-library/react';
@@ -100,6 +100,8 @@ describe('Form.Dependencies', () => {
   });
 
   it('should work when field is dirty', async () => {
+    jest.useFakeTimers();
+
     let pass = false;
 
     const { container } = render(
@@ -135,8 +137,7 @@ describe('Form.Dependencies', () => {
     );
 
     fireEvent.submit(container.querySelector('form')!);
-    await timeout();
-    // wrapper.update();
+    await waitFakeTime();
     matchError(getInput(container, 0, true), 'You should not pass');
 
     // Mock new validate
@@ -149,6 +150,8 @@ describe('Form.Dependencies', () => {
     fireEvent.click(container.querySelector('button')!);
     await changeValue(getInput(container, 1), 'light');
     matchError(getInput(container, 0, true), false);
+
+    jest.useRealTimers();
   });
 
   it('should work as a shortcut when name is not provided', async () => {

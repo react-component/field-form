@@ -2,7 +2,7 @@ import { merge } from '@rc-component/util/lib/utils/set';
 import { mergeWith } from '@rc-component/util';
 import warning from '@rc-component/util/lib/warning';
 import * as React from 'react';
-import { HOOK_MARK } from './FieldContext';
+import { HOOK_MARK } from '../FieldContext';
 import type {
   Callbacks,
   FieldData,
@@ -26,11 +26,10 @@ import type {
   ValidateErrorEntity,
   ValidateMessages,
   ValuedNotifyInfo,
-  WatchCallBack,
-} from './interface';
-import { allPromiseFinish } from './utils/asyncUtil';
-import { defaultValidateMessages } from './utils/messages';
-import NameMap from './utils/NameMap';
+} from '../interface';
+import { allPromiseFinish } from '../utils/asyncUtil';
+import { defaultValidateMessages } from '../utils/messages';
+import NameMap from '../utils/NameMap';
 import {
   cloneByNamePathList,
   containsNamePath,
@@ -38,8 +37,8 @@ import {
   getValue,
   matchNamePath,
   setValue,
-} from './utils/valueUtil';
-import type { BatchTask } from './BatchUpdate';
+} from '../utils/valueUtil';
+import WatcherCenter from './useNotifyWatch';
 
 type FlexibleFieldEntity = Partial<FieldEntity>;
 
@@ -77,6 +76,8 @@ export class FormStore {
   private preserve?: boolean = null;
 
   private lastValidatePromise: Promise<FieldError[]> = null;
+
+  private watcherCenter = new WatcherCenter(this);
 
   constructor(forceRootUpdate: () => void) {
     this.forceRootUpdate = forceRootUpdate;
@@ -121,7 +122,6 @@ export class FormStore {
         setPreserve: this.setPreserve,
         getInitialValue: this.getInitialValue,
         registerWatch: this.registerWatch,
-        setBatchUpdate: this.setBatchUpdate,
       };
     }
 
@@ -195,47 +195,12 @@ export class FormStore {
   };
 
   // ============================= Watch ============================
-  private watchList: WatchCallBack[] = [];
-
   private registerWatch: InternalHooks['registerWatch'] = callback => {
-    this.watchList.push(callback);
-
-    return () => {
-      this.watchList = this.watchList.filter(fn => fn !== callback);
-    };
+    return this.watcherCenter.register(callback);
   };
 
   private notifyWatch = (namePath: InternalNamePath[] = []) => {
-    // No need to cost perf when nothing need to watch
-    if (this.watchList.length) {
-      const values = this.getFieldsValue();
-      const allValues = this.getFieldsValue(true);
-
-      this.watchList.forEach(callback => {
-        callback(values, allValues, namePath);
-      });
-    }
-  };
-
-  private notifyWatchNamePathList: InternalNamePath[] = [];
-  private batchNotifyWatch = (namePath: InternalNamePath) => {
-    this.notifyWatchNamePathList.push(namePath);
-    this.batch('notifyWatch', () => {
-      this.notifyWatch(this.notifyWatchNamePathList);
-      this.notifyWatchNamePathList = [];
-    });
-  };
-
-  // ============================= Batch ============================
-  private batchUpdate: BatchTask;
-
-  private setBatchUpdate = (batchUpdate: BatchTask) => {
-    this.batchUpdate = batchUpdate;
-  };
-
-  // Batch call the task, only last will be called
-  private batch = (key: string, callback: VoidFunction) => {
-    this.batchUpdate(key, callback);
+    this.watcherCenter.notify(namePath);
   };
 
   // ========================== Dev Warning =========================
@@ -669,7 +634,7 @@ export class FormStore {
   private registerField = (entity: FieldEntity) => {
     this.fieldEntities.push(entity);
     const namePath = entity.getNamePath();
-    this.batchNotifyWatch(namePath);
+    this.notifyWatch([namePath]);
 
     // Set initial values
     if (entity.props.initialValue !== undefined) {
@@ -709,7 +674,7 @@ export class FormStore {
         }
       }
 
-      this.batchNotifyWatch(namePath);
+      this.notifyWatch([namePath]);
     };
   };
 
@@ -1078,6 +1043,7 @@ function useForm<Values = any>(form?: FormInstance<Values>): [FormInstance<Value
   const formRef = React.useRef<FormInstance>(null);
   const [, forceUpdate] = React.useState({});
 
+  // Create singleton FormStore
   if (!formRef.current) {
     if (form) {
       formRef.current = form;
