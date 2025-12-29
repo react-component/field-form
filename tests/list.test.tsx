@@ -1140,30 +1140,67 @@ describe('Form.List', () => {
     );
   });
 
-  it('getFieldsValue("list") should not be empty object when list has value but no child Field entities', async () => {
-    const [container] = generateForm(
-      () => (
-        <input
-          className="raw-name"
-          defaultValue="123"
-          onChange={e => {
-            form.current!.setFieldValue(['list', 0, 'name'], (e.target as HTMLInputElement).value);
-          }}
-        />
-      ),
-      {
-        initialValues: {
-          list: [{ name: '123' }],
-        },
-      },
+  it('should not drop list items when updating list item field', async () => {
+    const onValuesChange = jest.fn();
+
+    const { getAllByRole } = render(
+      <Form onValuesChange={onValuesChange}>
+        <Form.List
+          name="list"
+          initialValue={[{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }]}
+        >
+          {fields =>
+            fields.map(field => (
+              <Field key={field.key} name={[field.name, 'name']}>
+                <input />
+              </Field>
+            ))
+          }
+        </Form.List>
+      </Form>,
     );
 
-    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: '123' }] });
-
-    await act(async () => {
-      fireEvent.change(container.querySelector('input.raw-name')!, { target: { value: '456' } });
+    // Change second item (index = 1)
+    fireEvent.change(getAllByRole('textbox')[1], {
+      target: { value: 'BB' },
     });
 
-    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: '456' }] });
+    const [, allValues] = onValuesChange.mock.calls.pop();
+
+    expect(allValues).toEqual({
+      list: [{ name: 'A' }, { name: 'BB' }, { name: 'C' }, { name: 'D' }],
+    });
+  });
+
+  it('should not drop list items when updating list item field', async () => {
+    const onValuesChange = jest.fn();
+
+    const { getAllByRole } = render(
+      <Form onValuesChange={onValuesChange}>
+        <Form.List
+          name="list"
+          initialValue={[{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }]}
+        >
+          {fields =>
+            fields.map(field => (
+              <Field key={field.key} name={[field.name, 'name']}>
+                <input />
+              </Field>
+            ))
+          }
+        </Form.List>
+      </Form>,
+    );
+
+    // Change second item (index = 1)
+    fireEvent.change(getAllByRole('textbox')[1], {
+      target: { value: 'BB' },
+    });
+
+    const [, allValues] = onValuesChange.mock.calls.pop();
+
+    expect(allValues).toEqual({
+      list: [{ name: 'A' }, { name: 'BB' }, { name: 'C' }, { name: 'D' }],
+    });
   });
 });
