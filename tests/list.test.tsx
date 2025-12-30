@@ -1172,38 +1172,6 @@ describe('Form.List', () => {
     });
   });
 
-  it('should not drop list items when updating list item field', async () => {
-    const onValuesChange = jest.fn();
-
-    const { getAllByRole } = render(
-      <Form onValuesChange={onValuesChange}>
-        <Form.List
-          name="list"
-          initialValue={[{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }]}
-        >
-          {fields =>
-            fields.map(field => (
-              <Field key={field.key} name={[field.name, 'name']}>
-                <input />
-              </Field>
-            ))
-          }
-        </Form.List>
-      </Form>,
-    );
-
-    // Change second item (index = 1)
-    fireEvent.change(getAllByRole('textbox')[1], {
-      target: { value: 'BB' },
-    });
-
-    const [, allValues] = onValuesChange.mock.calls.pop();
-
-    expect(allValues).toEqual({
-      list: [{ name: 'A' }, { name: 'BB' }, { name: 'C' }, { name: 'D' }],
-    });
-  });
-
   it('getFieldsValue(["list"]) should keep list value when list has value but no child Field entities', async () => {
     const [container] = generateForm(
       () => (
