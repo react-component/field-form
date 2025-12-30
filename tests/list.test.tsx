@@ -1203,4 +1203,31 @@ describe('Form.List', () => {
       list: [{ name: 'A' }, { name: 'BB' }, { name: 'C' }, { name: 'D' }],
     });
   });
+
+  it('getFieldsValue(["list"]) should keep list value when list has value but no child Field entities', async () => {
+    const [container] = generateForm(
+      () => (
+        <input
+          className="raw-name"
+          defaultValue="123"
+          onChange={e => {
+            form.current!.setFieldValue(['list', 0, 'name'], (e.target as HTMLInputElement).value);
+          }}
+        />
+      ),
+      {
+        initialValues: {
+          list: [{ name: '123' }],
+        },
+      },
+    );
+
+    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: '123' }] });
+
+    await act(async () => {
+      fireEvent.change(container.querySelector('input.raw-name')!, { target: { value: '456' } });
+    });
+
+    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: '456' }] });
+  });
 });
