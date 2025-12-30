@@ -293,8 +293,21 @@ export class FormStore {
       // Ignore when it's a list item and not specific the namePath,
       // since parent field is already take in count
       if ((entity as FieldEntity).isList?.()) {
-        listNamePaths.push(namePath);
-        return;
+        // 这里直接跳过跟节点是有bug的，getFieldsValue("list") 会返回空对象
+        const hasChild = fieldEntities.some(other => {
+          if (other === entity) return false;
+          const otherNamePath = other.INVALIDATE_NAME_PATH || other.getNamePath();
+          return (
+            otherNamePath.length > namePath.length &&
+            matchNamePath(otherNamePath as InternalNamePath, namePath as InternalNamePath, true)
+          );
+        });
+
+        // 只有当它确实有子节点时，才跳过根节点
+        if (hasChild) {
+          listNamePaths.push(namePath);
+          return;
+        }
       }
 
       if (!mergedFilterFunc) {
