@@ -2,7 +2,6 @@ import * as React from 'react';
 import type { FormRef, FormInstance } from './interface';
 import Field from './Field';
 import List from './List';
-import Screen from './Screen';
 import useForm from './hooks/useForm';
 import type { FormProps } from './Form';
 import FieldForm from './Form';
@@ -34,7 +33,7 @@ RefForm.Screen = Screen;
 RefForm.useForm = useForm;
 RefForm.useWatch = useWatch;
 
-export { Field, List, Screen, useForm, FormProvider, FieldContext, ListContext, useWatch };
+export { Field, List, useForm, FormProvider, FieldContext, ListContext, useWatch };
 
 export type { FormProps, FormInstance, FormRef };
 
