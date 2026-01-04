@@ -253,6 +253,11 @@ export class FormStore {
     return cache;
   };
 
+  /**
+   * Get field entities based on a list of name paths.
+   * @param nameList - Array of name paths to search for. If not provided, returns all field entities with names.
+   * @param includesSubNamePath - Whether to include fields that have the given name path as a prefix.
+   */
   private getFieldEntitiesForNamePathList = (
     nameList?: NamePath[],
     includesSubNamePath = false,
@@ -268,6 +273,16 @@ export class FormStore {
         return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
       });
     }
+
+    return nameList.flatMap(name => {
+      const namePath = getNamePath(name);
+      const fields: FlexibleFieldEntity[] = cache.getAsPrefix(namePath);
+
+      if (fields.length) {
+        return fields;
+      }
+      return [{ INVALIDATE_NAME_PATH: namePath }];
+    });
   };
 
   private getFieldsValue = (
@@ -293,6 +308,7 @@ export class FormStore {
 
     const fieldEntities = this.getFieldEntitiesForNamePathList(
       Array.isArray(mergedNameList) ? mergedNameList : null,
+      true,
     );
 
     const filteredNameList: NamePath[] = [];
