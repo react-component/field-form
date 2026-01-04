@@ -19,7 +19,6 @@ interface RefFormType extends InternalFormType {
   FormProvider: typeof FormProvider;
   Field: typeof Field;
   List: typeof List;
-  Screen: typeof Screen;
   useForm: typeof useForm;
   useWatch: typeof useWatch;
 }
@@ -29,7 +28,6 @@ const RefForm: RefFormType = InternalForm as RefFormType;
 RefForm.FormProvider = FormProvider;
 RefForm.Field = Field;
 RefForm.List = List;
-RefForm.Screen = Screen;
 RefForm.useForm = useForm;
 RefForm.useWatch = useWatch;
 
