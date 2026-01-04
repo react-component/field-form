@@ -239,6 +239,11 @@ export class FormStore {
     return this.fieldEntities.filter(field => field.getNamePath().length);
   };
 
+  /**
+   * Get a map of registered field entities with their name path as the key.
+   * @param pure Only include fields which have a `name`. Default: false
+   * @returns A NameMap containing field entities indexed by their name paths
+   */
   private getFieldsMap = (pure: boolean = false) => {
     const cache: NameMap<FieldEntity> = new NameMap();
     this.getFieldEntities(pure).forEach(field => {
@@ -248,15 +253,21 @@ export class FormStore {
     return cache;
   };
 
-  private getFieldEntitiesForNamePathList = (nameList?: NamePath[]): FlexibleFieldEntity[] => {
+  private getFieldEntitiesForNamePathList = (
+    nameList?: NamePath[],
+    includesSubNamePath = false,
+  ): FlexibleFieldEntity[] => {
     if (!nameList) {
       return this.getFieldEntities(true);
     }
     const cache = this.getFieldsMap(true);
-    return nameList.map(name => {
-      const namePath = getNamePath(name);
-      return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
-    });
+
+    if (!includesSubNamePath) {
+      return nameList.map(name => {
+        const namePath = getNamePath(name);
+        return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
+      });
+    }
   };
 
   private getFieldsValue = (

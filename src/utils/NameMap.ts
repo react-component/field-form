@@ -33,6 +33,10 @@ class NameMap<T> {
     return this.kvs.get(normalize(key));
   }
 
+  public getAsPrefix(key: InternalNamePath): T[] {
+    // TODO: 实现前缀获取，如果 InternalNamePath 满足前缀则返回所有包含本身的集合
+  }
+
   public update(key: InternalNamePath, updater: (origin: T) => T | null) {
     const origin = this.get(key);
     const next = updater(origin);
