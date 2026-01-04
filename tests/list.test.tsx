@@ -1182,12 +1182,12 @@ describe('Form.List', () => {
         )),
       {
         initialValues: {
-          list: [{ name: '123' }],
+          list: [{ name: 'bamboo', notExist: 'little' }],
         },
       },
     );
 
-    // expect(form.current!.getFieldsValue()).toEqual({ list: [{ name: '123' }] });
-    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: '123' }] });
+    expect(form.current!.getFieldsValue()).toEqual({ list: [{ name: 'bamboo' }] });
+    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: 'bamboo' }] });
   });
 });
