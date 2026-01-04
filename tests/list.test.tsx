@@ -1171,4 +1171,22 @@ describe('Form.List', () => {
       list: [{ name: 'A' }, { name: 'BB' }, { name: 'C' }, { name: 'D' }],
     });
   });
+
+  it('getFieldsValue(["list"]) should same as getFieldsValue().list', async () => {
+    generateForm(
+      fields => (
+        <Field name="age" {...fields}>
+          <Input />
+        </Field>
+      ),
+      {
+        initialValues: {
+          list: [{ name: '123' }],
+        },
+      },
+    );
+
+    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: '123' }] });
+    expect(form.current!.getFieldsValue().list).toEqual({ list: [{ name: '123' }] });
+  });
 });
