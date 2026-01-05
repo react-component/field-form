@@ -47,7 +47,8 @@ function requireUpdate(
   if (typeof shouldUpdate === 'function') {
     return shouldUpdate(prev, next, 'source' in info ? { source: info.source } : {});
   }
-  return prevValue !== nextValue;
+  // return prevValue !== nextValue;
+  return !isEqual(prev, next)
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
