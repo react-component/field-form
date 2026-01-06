@@ -33,6 +33,25 @@ class NameMap<T> {
     return this.kvs.get(normalize(key));
   }
 
+  public getAsPrefix(key: InternalNamePath): T[] {
+    const normalizedKey = normalize(key);
+    const normalizedPrefix = normalizedKey + SPLIT;
+    const results: T[] = [];
+
+    const current = this.kvs.get(normalizedKey);
+    if (current !== undefined) {
+      results.push(current);
+    }
+
+    this.kvs.forEach((value, itemNormalizedKey) => {
+      if (itemNormalizedKey.startsWith(normalizedPrefix)) {
+        results.push(value);
+      }
+    });
+
+    return results;
+  }
+
   public update(key: InternalNamePath, updater: (origin: T) => T | null) {
     const origin = this.get(key);
     const next = updater(origin);

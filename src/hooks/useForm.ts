@@ -239,6 +239,11 @@ export class FormStore {
     return this.fieldEntities.filter(field => field.getNamePath().length);
   };
 
+  /**
+   * Get a map of registered field entities with their name path as the key.
+   * @param pure Only include fields which have a `name`. Default: false
+   * @returns A NameMap containing field entities indexed by their name paths
+   */
   private getFieldsMap = (pure: boolean = false) => {
     const cache: NameMap<FieldEntity> = new NameMap();
     this.getFieldEntities(pure).forEach(field => {
@@ -248,14 +253,35 @@ export class FormStore {
     return cache;
   };
 
-  private getFieldEntitiesForNamePathList = (nameList?: NamePath[]): FlexibleFieldEntity[] => {
+  /**
+   * Get field entities based on a list of name paths.
+   * @param nameList - Array of name paths to search for. If not provided, returns all field entities with names.
+   * @param includesSubNamePath - Whether to include fields that have the given name path as a prefix.
+   */
+  private getFieldEntitiesForNamePathList = (
+    nameList?: NamePath[],
+    includesSubNamePath = false,
+  ): FlexibleFieldEntity[] => {
     if (!nameList) {
       return this.getFieldEntities(true);
     }
     const cache = this.getFieldsMap(true);
-    return nameList.map(name => {
+
+    if (!includesSubNamePath) {
+      return nameList.map(name => {
+        const namePath = getNamePath(name);
+        return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
+      });
+    }
+
+    return nameList.flatMap(name => {
       const namePath = getNamePath(name);
-      return cache.get(namePath) || { INVALIDATE_NAME_PATH: getNamePath(name) };
+      const fields: FlexibleFieldEntity[] = cache.getAsPrefix(namePath);
+
+      if (fields.length) {
+        return fields;
+      }
+      return [{ INVALIDATE_NAME_PATH: namePath }];
     });
   };
 
@@ -282,6 +308,7 @@ export class FormStore {
 
     const fieldEntities = this.getFieldEntitiesForNamePathList(
       Array.isArray(mergedNameList) ? mergedNameList : null,
+      true,
     );
 
     const filteredNameList: NamePath[] = [];

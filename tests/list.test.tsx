@@ -1171,4 +1171,23 @@ describe('Form.List', () => {
       list: [{ name: 'A' }, { name: 'BB' }, { name: 'C' }, { name: 'D' }],
     });
   });
+
+  it('getFieldsValue(["list"]) should same as getFieldsValue().list', async () => {
+    generateForm(
+      fields =>
+        fields.map(field => (
+          <Field {...fields} name={[field.name, 'name']} key={field.key}>
+            <Input />
+          </Field>
+        )),
+      {
+        initialValues: {
+          list: [{ name: 'bamboo', notExist: 'little' }],
+        },
+      },
+    );
+
+    expect(form.current!.getFieldsValue()).toEqual({ list: [{ name: 'bamboo' }] });
+    expect(form.current!.getFieldsValue(['list'])).toEqual({ list: [{ name: 'bamboo' }] });
+  });
 });
