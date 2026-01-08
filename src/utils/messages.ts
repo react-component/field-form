@@ -22,6 +22,7 @@ export const defaultValidateMessages = {
     float: typeTemplate,
     regexp: typeTemplate,
     email: typeTemplate,
+    tel: typeTemplate,
     url: typeTemplate,
     hex: typeTemplate,
   },
