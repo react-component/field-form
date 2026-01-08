@@ -9,7 +9,7 @@ type FormData = {
 };
 
 export default () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormData>();
 
   return (
     <Form

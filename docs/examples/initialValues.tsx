@@ -12,7 +12,7 @@ const formValue = {
 };
 
 export default () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<typeof formValue>();
   const [show, setShow] = useState<boolean>(false);
 
   return (
