@@ -3,7 +3,6 @@ import Form, { Field } from '../src';
 import type { FormInstance } from '../src';
 import { act, fireEvent, render } from '@testing-library/react';
 import { Input } from './common/InfoField';
-import { getInput } from './common';
 import timeout from './common/timeout';
 
 describe('Form.Field', () => {
@@ -71,6 +70,40 @@ describe('Form.Field', () => {
       });
       expect(onValuesChange).toHaveBeenCalled();
       onValuesChange.mockReset();
+    }
+  });
+
+  // https://github.com/react-component/field-form/issues/753
+  it('value change multiple times', async () => {
+    const form = React.createRef<FormInstance>();
+    const MockBtnInput = props => (
+      <>
+        <Input {...props} />
+        <button
+          onClick={() => {
+            props.onChange?.('');
+            props.onChange?.('A');
+          }}
+        >
+          change
+        </button>
+      </>
+    );
+    const { container } = render(
+      <Form ref={form}>
+        <Field name="input">
+          <MockBtnInput />
+        </Field>
+      </Form>,
+    );
+
+    // Trigger
+    for (let i = 0; i < 3; i += 1) {
+      fireEvent.click(container.querySelector('button'));
+      await act(async () => {
+        await timeout();
+      });
+      expect(form.current?.getFieldValue('input')).toBe('A');
     }
   });
 });
