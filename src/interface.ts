@@ -41,7 +41,8 @@ export type RuleType =
   | 'date'
   | 'url'
   | 'hex'
-  | 'email';
+  | 'email'
+  | 'tel';
 
 type Validator = (
   rule: RuleObject,
@@ -335,6 +336,7 @@ export interface ValidateMessages {
     float?: ValidateMessage;
     regexp?: ValidateMessage;
     email?: ValidateMessage;
+    tel?: ValidateMessage;
     url?: ValidateMessage;
     hex?: ValidateMessage;
   };
