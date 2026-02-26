@@ -6,8 +6,8 @@ React Performance First Form Component.
 
 [npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
 [npm-url]: http://npmjs.org/package/rc-field-form
-[github-actions-image]: https://github.com/react-component/field-form/workflows/CI/badge.svg
-[github-actions-url]: https://github.com/react-component/field-form/actions
+[github-actions-image]: https://github.com/react-component/field-form/actions/workflows/main.yml/badge.svg
+[github-actions-url]: https://github.com/react-component/field-form/actions/workflows/main.yml
 [codecov-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
 [codecov-url]: https://codecov.io/gh/react-component/field-form/branch/master
 [download-image]: https://img.shields.io/npm/dm/rc-field-form.svg?style=flat-square
