@@ -4,9 +4,8 @@ import type { FormStore } from './useForm';
 
 /**
  * Call action with delay in macro task.
- * export for test usage.
  */
-export const macroTask = (fn: VoidFunction) => {
+const macroTask = (fn: VoidFunction) => {
   const channel = new MessageChannel();
   channel.port1.onmessage = fn;
   channel.port2.postMessage(null);
