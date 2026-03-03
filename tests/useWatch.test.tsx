@@ -471,6 +471,8 @@ describe('useWatch', () => {
       React.useEffect(() => {
         console.log(nameValuePreserve, nameValue);
       }, [nameValuePreserve, nameValue]);
+
+
       return (
         <div>
           <Form form={form} initialValues={{ name: 'bamboo' }} />

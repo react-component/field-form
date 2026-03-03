@@ -260,7 +260,7 @@ describe('Form.Dependencies', () => {
 
         <Field shouldUpdate={() => false}>
           {() => {
-            console.log('render!');
+
             counter += 1;
             return null;
           }}
