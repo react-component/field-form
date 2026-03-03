@@ -279,7 +279,7 @@ describe('Form.Dependencies', () => {
           <InfoField name="type">
             <Input />
           </InfoField>
-          <InfoField name="name" rules={[{ required: type !== '1' }]}>
+          <InfoField name="name" rules={[{ required: type !== '1' }]} dependencies={['type']}>
             <Input />
           </InfoField>
         </Form>
