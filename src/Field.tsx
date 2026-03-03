@@ -2,6 +2,7 @@ import toChildrenArray from '@rc-component/util/lib/Children/toArray';
 import isEqual from '@rc-component/util/lib/isEqual';
 import warning from '@rc-component/util/lib/warning';
 import * as React from 'react';
+import raf from '@rc-component/util/lib/raf';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
   EventArgs,
@@ -99,8 +100,10 @@ export interface InternalFieldProps<Values = any> {
   fieldContext?: InternalFormInstance;
 }
 
-export interface FieldProps<Values = any>
-  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
+export interface FieldProps<Values = any> extends Omit<
+  InternalFieldProps<Values>,
+  'name' | 'fieldContext'
+> {
   name?: NamePath<Values>;
 }
 
@@ -398,6 +401,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       const { validateFirst = false, messageVariables, validateDebounce } = this.props;
+
+      // Should wait for the frame render,
+      // since developer may `useWatch` value in the rules.
+      await new Promise<void>(resolve => raf(() => resolve()));
 
       // Start validate
       let filteredRules = this.getRules();
