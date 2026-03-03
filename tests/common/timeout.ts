@@ -1,3 +1,4 @@
+import { macroTask } from '../../src/hooks/useNotifyWatch';
 import { act } from '@testing-library/react';
 
 export default async (timeout: number = 10) => {
@@ -7,6 +8,13 @@ export default async (timeout: number = 10) => {
 };
 
 export async function waitFakeTime(timeout: number = 10) {
+  await act(async () => {
+    await new Promise<void>(resolve => {
+      macroTask(resolve);
+      jest.advanceTimersByTime(11);
+    });
+  });
+
   await act(async () => {
     await Promise.resolve();
     jest.advanceTimersByTime(timeout);

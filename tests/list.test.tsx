@@ -10,6 +10,8 @@ import InfoField, { Input } from './common/InfoField';
 import { changeValue, getInput } from './common';
 import timeout from './common/timeout';
 
+jest.mock('../src/utils/delayUtil');
+
 describe('Form.List', () => {
   const form = React.createRef<FormInstance>();
 

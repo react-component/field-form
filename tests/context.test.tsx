@@ -6,6 +6,8 @@ import InfoField from './common/InfoField';
 import { changeValue, matchError, getInput } from './common';
 import timeout from './common/timeout';
 
+jest.mock('../src/utils/delayUtil');
+
 describe('Form.Context', () => {
   it('validateMessages', async () => {
     const { container } = render(

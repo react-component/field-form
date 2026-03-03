@@ -1,12 +1,16 @@
 import React from 'react';
 import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
-import timeout, { waitFakeTime } from './common/timeout';
+import { waitFakeTime } from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getInput } from './common';
 import { fireEvent, render } from '@testing-library/react';
 
 describe('Form.Dependencies', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('touched', async () => {
     const form = React.createRef<FormInstance>();
 
@@ -32,6 +36,8 @@ describe('Form.Dependencies', () => {
   describe('initialValue', () => {
     function test(name: string, formProps = {}, fieldProps = {}) {
       it(name, async () => {
+        jest.useFakeTimers();
+
         let validated = false;
 
         const { container } = render(
@@ -56,6 +62,7 @@ describe('Form.Dependencies', () => {
 
         // Not trigger if not touched
         await changeValue(getInput(container, 0), 'bamboo');
+        await waitFakeTime();
         expect(validated).toBeTruthy();
       });
     }
