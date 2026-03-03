@@ -268,4 +268,30 @@ describe('Form.Dependencies', () => {
     expect(container.querySelectorAll('input')).toHaveLength(1);
     expect(counter).toEqual(1);
   });
+
+  it('error should be cleared when dependency field changes and rule becomes false', async () => {
+    const Demo = () => {
+      const [form] = Form.useForm();
+      const type = Form.useWatch('type', form);
+
+      return (
+        <Form form={form}>
+          <InfoField name="type">
+            <Input />
+          </InfoField>
+          <InfoField name="name" rules={[{ required: type !== '1' }]}>
+            <Input />
+          </InfoField>
+        </Form>
+      );
+    };
+
+    const { container } = render(<Demo />);
+    await changeValue(getInput(container, 1), ['bamboo', '']);
+    matchError(container, true);
+
+    // Change type to make rule true
+    await changeValue(getInput(container), '1');
+    matchError(container, false);
+  });
 });
