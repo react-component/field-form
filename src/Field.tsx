@@ -28,6 +28,7 @@ import {
   getNamePath,
   getValue,
 } from './utils/valueUtil';
+import delayFrame from './utils/delayUtil';
 
 const EMPTY_ERRORS: any[] = [];
 const EMPTY_WARNINGS: any[] = [];
@@ -99,8 +100,10 @@ export interface InternalFieldProps<Values = any> {
   fieldContext?: InternalFormInstance;
 }
 
-export interface FieldProps<Values = any>
-  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
+export interface FieldProps<Values = any> extends Omit<
+  InternalFieldProps<Values>,
+  'name' | 'fieldContext'
+> {
   name?: NamePath<Values>;
 }
 
@@ -398,6 +401,10 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
       }
 
       const { validateFirst = false, messageVariables, validateDebounce } = this.props;
+
+      // Should wait for the frame render,
+      // since developer may `useWatch` value in the rules.
+      await delayFrame();
 
       // Start validate
       let filteredRules = this.getRules();

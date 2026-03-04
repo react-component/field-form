@@ -6,6 +6,8 @@ import Form, { Field, useForm } from '../src';
 import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
 import timeout, { waitFakeTime } from './common/timeout';
+
+jest.mock('../src/utils/delayUtil');
 import type { FormRef, Meta } from '@/interface';
 
 describe('Form.Basic', () => {

@@ -6,6 +6,8 @@ import { changeValue, getInput, matchError } from './common';
 import InfoField, { Input } from './common/InfoField';
 import timeout, { waitFakeTime } from './common/timeout';
 
+jest.mock('../src/utils/delayUtil');
+
 describe('Form.Validate', () => {
   it('required', async () => {
     const form = React.createRef<FormInstance>();

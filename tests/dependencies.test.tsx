@@ -1,12 +1,16 @@
 import React from 'react';
 import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
-import timeout, { waitFakeTime } from './common/timeout';
+import { waitFakeTime } from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getInput } from './common';
 import { fireEvent, render } from '@testing-library/react';
 
 describe('Form.Dependencies', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('touched', async () => {
     const form = React.createRef<FormInstance>();
 
@@ -32,6 +36,8 @@ describe('Form.Dependencies', () => {
   describe('initialValue', () => {
     function test(name: string, formProps = {}, fieldProps = {}) {
       it(name, async () => {
+        jest.useFakeTimers();
+
         let validated = false;
 
         const { container } = render(
@@ -56,6 +62,7 @@ describe('Form.Dependencies', () => {
 
         // Not trigger if not touched
         await changeValue(getInput(container, 0), 'bamboo');
+        await waitFakeTime();
         expect(validated).toBeTruthy();
       });
     }
@@ -253,7 +260,7 @@ describe('Form.Dependencies', () => {
 
         <Field shouldUpdate={() => false}>
           {() => {
-            console.log('render!');
+
             counter += 1;
             return null;
           }}
@@ -267,5 +274,31 @@ describe('Form.Dependencies', () => {
     fireEvent.change(getInput(container, 0), { target: { value: '1' } });
     expect(container.querySelectorAll('input')).toHaveLength(1);
     expect(counter).toEqual(1);
+  });
+
+  it('error should be cleared when dependency field changes and rule becomes false', async () => {
+    const Demo = () => {
+      const [form] = Form.useForm();
+      const type = Form.useWatch('type', form);
+
+      return (
+        <Form form={form}>
+          <InfoField name="type">
+            <Input />
+          </InfoField>
+          <InfoField name="name" rules={[{ required: type !== '1' }]} dependencies={['type']}>
+            <Input />
+          </InfoField>
+        </Form>
+      );
+    };
+
+    const { container } = render(<Demo />);
+    await changeValue(getInput(container, 1), ['bamboo', '']);
+    matchError(container, true);
+
+    // Change type to make rule true
+    await changeValue(getInput(container), '1');
+    matchError(container, false);
   });
 });

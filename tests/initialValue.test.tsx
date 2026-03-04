@@ -165,11 +165,11 @@ describe('Form.InitialValues', () => {
 
     fireEvent.click(container.querySelector('button'));
     expect(formValue.users[0].last).toEqual('bbb');
-    console.log('Form Value:', refForm.getFieldsValue(true));
+
 
     fireEvent.click(container.querySelector('button'));
     expect(formValue.users[0].last).toEqual('bbb');
-    console.log('Form Value:', refForm.getFieldsValue(true));
+
 
     fireEvent.click(container.querySelector('button'));
 
