@@ -747,7 +747,10 @@ export class FormStore {
   private triggerDependenciesUpdate = (prevStore: Store, namePath: InternalNamePath) => {
     const childrenFields = this.getDependencyChildrenFields(namePath);
     if (childrenFields.length) {
-      this.validateFields(childrenFields);
+      this.validateFields(childrenFields, {
+        // Delay to avoid `useWatch` dynamic adjust rules that deps not get latest one
+        delayFrame: true,
+      });
     }
 
     this.notifyObservers(prevStore, childrenFields, {
