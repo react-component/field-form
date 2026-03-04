@@ -5,8 +5,6 @@ import { changeValue, getInput, matchError } from './common';
 import type { FormInstance, Rule } from '../src/interface';
 import { render } from '@testing-library/react';
 
-jest.mock('../src/utils/delayUtil');
-
 describe('Form.WarningValidate', () => {
   it('required', async () => {
     const form = React.createRef<FormInstance>();

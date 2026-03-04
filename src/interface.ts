@@ -157,6 +157,7 @@ export type ValidateFields<Values = any> = {
 export interface InternalValidateOptions extends ValidateOptions {
   triggerName?: string;
   validateMessages?: ValidateMessages;
+  delayFrame?: boolean;
 }
 
 export type InternalValidateFields<Values = any> = {

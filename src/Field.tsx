@@ -392,7 +392,7 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
     const namePath = this.getNamePath();
     const currentValue = this.getValue();
 
-    const { triggerName, validateOnly = false } = options || {};
+    const { triggerName, validateOnly = false, delayFrame: showDelayFrame } = options || {};
 
     // Force change to async to avoid rule OOD under renderProps field
     const rootPromise = Promise.resolve().then(async (): Promise<any[]> => {
@@ -404,7 +404,9 @@ class Field extends React.Component<InternalFieldProps, FieldState> implements F
 
       // Should wait for the frame render,
       // since developer may `useWatch` value in the rules.
-      await delayFrame();
+      if (showDelayFrame) {
+        await delayFrame();
+      }
 
       // Start validate
       let filteredRules = this.getRules();
