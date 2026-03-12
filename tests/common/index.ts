@@ -1,4 +1,4 @@
-import timeout from './timeout';
+import timeout, { waitFakeTime } from './timeout';
 import { matchNamePath } from '../../src/utils/valueUtil';
 import { fireEvent, act } from '@testing-library/react';
 
@@ -44,6 +44,13 @@ export async function changeValue(wrapper: HTMLElement, value: string | string[]
       });
     }
   }
+}
+
+export async function changeValueWithMockTimer(wrapper: HTMLElement, value: string | string[]) {
+  const promise = changeValue(wrapper, value);
+
+  await waitFakeTime();
+  return promise;
 }
 
 export function matchError(
