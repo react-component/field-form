@@ -3,7 +3,7 @@ import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
 import { waitFakeTime } from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
-import { changeValue, matchError, getInput } from './common';
+import { changeValue, matchError, getInput, changeValueWithMockTimer } from './common';
 import { fireEvent, render } from '@testing-library/react';
 
 describe('Form.Dependencies', () => {
@@ -12,6 +12,7 @@ describe('Form.Dependencies', () => {
   });
 
   it('touched', async () => {
+    jest.useFakeTimers();
     const form = React.createRef<FormInstance>();
 
     const { container } = render(
@@ -24,12 +25,13 @@ describe('Form.Dependencies', () => {
     );
 
     // Not trigger if not touched
-    await changeValue(getInput(container, 0), ['bamboo', '']);
+    await changeValueWithMockTimer(getInput(container, 0), ['bamboo', '']);
     matchError(getInput(container, 1, true), false);
 
     // Trigger if touched
     form.current?.setFields([{ name: 'field_2', touched: true }]);
-    await changeValue(getInput(container, 0), ['bamboo', '']);
+
+    await changeValueWithMockTimer(getInput(container, 0), ['bamboo', '']);
     matchError(getInput(container, 1, true), true);
   });
 
@@ -260,7 +262,6 @@ describe('Form.Dependencies', () => {
 
         <Field shouldUpdate={() => false}>
           {() => {
-
             counter += 1;
             return null;
           }}
