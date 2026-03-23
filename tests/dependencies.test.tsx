@@ -302,4 +302,49 @@ describe('Form.Dependencies', () => {
     await changeValue(getInput(container), '1');
     matchError(container, false);
   });
+
+  it('mixed field list should not missing value with onValuesChange', () => {
+    const onValuesChange = jest.fn();
+
+    const { container } = render(
+      <Form
+        initialValues={{ rules: [{ name: 'test', triggers: [] }] }}
+        onValuesChange={onValuesChange}
+      >
+        <Form.List name="rules">
+          {fields =>
+            fields.map(field => (
+              <div key={field.key}>
+                <Field {...field} name={[field.name, 'name']}>
+                  <Input />
+                </Field>
+
+                <Form.List name={[field.name, 'triggers']}>
+                  {(triggerFields, { add }) => (
+                    <>
+                      {triggerFields.map(triggerField => (
+                        <Field {...triggerField} key={triggerField.key}>
+                          <Input />
+                        </Field>
+                      ))}
+                      <button type="button" onClick={() => add('trigger_1')}>
+                        Add trigger
+                      </button>
+                    </>
+                  )}
+                </Form.List>
+              </div>
+            ))
+          }
+        </Form.List>
+      </Form>,
+    );
+
+    fireEvent.click(container.querySelector('button')!);
+
+    expect(onValuesChange).toHaveBeenLastCalledWith(
+      expect.anything(),
+      { rules: [{ name: 'test', triggers: ['trigger_1'] }] },
+    );
+  });
 });
