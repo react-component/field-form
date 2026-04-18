@@ -95,6 +95,7 @@ export class FormStore {
     resetFields: this.resetFields,
     setFields: this.setFields,
     setFieldValue: this.setFieldValue,
+    setFieldError: this.setFieldError,
     setFieldsValue: this.setFieldsValue,
     validateFields: this.validateFields,
     submit: this.submit,
@@ -813,6 +814,15 @@ export class FormStore {
         errors: [],
         warnings: [],
         touched: true,
+      },
+    ]);
+  };
+
+  private setFieldError = (name: NamePath, errors: string[]) => {
+    this.setFields([
+      {
+        name,
+        errors,
       },
     ]);
   };
