@@ -823,6 +823,7 @@ export class FormStore {
       {
         name,
         errors,
+        touched: true,
       },
     ]);
   };
