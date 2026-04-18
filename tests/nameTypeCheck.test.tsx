@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { render } from '@testing-library/react';
 import Form, { Field, List } from '../src';
-import type { NamePath } from '../src/interface';
+import type { FormInstance, NamePath } from '../src/interface';
 
 describe('nameTypeCheck', () => {
   it('typescript', () => {
@@ -13,9 +13,32 @@ describe('nameTypeCheck', () => {
       d?: { d1?: string[]; d2?: string };
       e?: { e1?: { e2?: string; e3?: string[]; e4: { e5: { e6: string } } } };
       list?: { age?: string }[];
+      strictList?: { age: string; name: string }[];
+      user?: { profile: { name: string; tags: string[] } };
+      nullableList?: string[] | null;
+      nullableObjectList?: { name?: string }[] | null;
     };
 
     type fieldType = NamePath<FieldType>;
+
+    type SetFieldsValueParam = Parameters<FormInstance<FieldType>['setFieldsValue']>[0];
+
+    const nullableListAsNull: SetFieldsValueParam = { nullableList: null };
+    const nullableListAsArray: SetFieldsValueParam = { nullableList: ['bamboo'] };
+    const nullableObjectListAsNull: SetFieldsValueParam = { nullableObjectList: null };
+    const nullableObjectListAsArray: SetFieldsValueParam = {
+      nullableObjectList: [{ name: 'light' }],
+    };
+    const optionalNestedObjectAsPartial: SetFieldsValueParam = {
+      user: {
+        profile: {
+          name: 'light',
+        },
+      },
+    };
+    const optionalListAsPartial: SetFieldsValueParam = {
+      strictList: [{ age: '18' }],
+    };
 
     const Demo: React.FC = () => {
       return (
