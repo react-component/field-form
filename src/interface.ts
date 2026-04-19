@@ -245,14 +245,12 @@ export interface InternalHooks {
 
 /** Only return partial when type is not any */
 type RecursivePartial<T> =
-  NonNullable<T> extends object
-    ? {
-        [P in keyof T]?: NonNullable<T[P]> extends (infer U)[]
-          ? RecursivePartial<U>[]
-          : NonNullable<T[P]> extends object
-            ? RecursivePartial<T[P]>
-            : T[P];
-      }
+  T extends (infer U)[]
+    ? RecursivePartial<U>[]
+    : T extends object
+      ? {
+          [P in keyof T]?: RecursivePartial<T[P]>;
+        }
     : T;
 
 export type FilterFunc = (meta: Meta | null) => boolean;
