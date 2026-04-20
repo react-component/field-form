@@ -139,6 +139,8 @@ class Demo extends React.Component {
 | isFieldValidating | Check if a field is validating             | (name: [NamePath](#namepath)) => boolean                                   |
 | resetFields       | Reset fields status                        | (fields?: [NamePath](#namepath)[]) => void                                 |
 | setFields         | Set fields status                          | (fields: FieldData[]) => void                                              |
+| setFieldValue     | Set field value                            | (name: [NamePath](#namepath), value: any) => void                          |
+| setFieldError     | Set a field error list                     | (name: [NamePath](#namepath), errors: string[]) => void                    |
 | setFieldsValue    | Set fields value                           | (values) => void                                                           |
 | submit            | Trigger form submit                        | () => void                                                                 |
 | validateFields    | Trigger fields to validate                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
