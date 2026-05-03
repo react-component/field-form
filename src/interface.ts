@@ -272,6 +272,7 @@ export interface FormInstance<Values = any> {
   getFieldError: (name: NamePath<Values>) => string[];
   getFieldsError: (nameList?: NamePath<Values>[]) => FieldError[];
   getFieldWarning: (name: NamePath<Values>) => string[];
+  getFieldsName: () => NamePath<Values>[];
   isFieldsTouched: ((nameList?: NamePath<Values>[], allFieldsTouched?: boolean) => boolean) &
     ((allFieldsTouched?: boolean) => boolean);
   isFieldTouched: (name: NamePath<Values>) => boolean;
