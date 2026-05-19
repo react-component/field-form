@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { FormRef, FormInstance } from './interface';
+import type { FormRef } from './interface';
 import Field from './Field';
 import List from './List';
 import useForm from './hooks/useForm';
@@ -33,6 +33,23 @@ RefForm.useWatch = useWatch;
 
 export { Field, List, useForm, FormProvider, FieldContext, ListContext, useWatch };
 
-export type { FormProps, FormInstance, FormRef };
+export type { FieldProps } from './Field';
+export type { FormProviderProps } from './FormContext';
+export type {
+  FormInstance,
+  FormRef,
+  InternalNamePath,
+  Meta,
+  NamePath,
+  Rule,
+  RuleObject,
+  RuleRender,
+  Store,
+  StoreValue,
+  ValidateErrorEntity,
+  ValidateMessages,
+  ValidatorRule,
+} from './interface';
+export type { FormProps };
 
 export default RefForm;
