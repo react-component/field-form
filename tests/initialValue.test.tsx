@@ -1,5 +1,5 @@
 import { act, fireEvent, render } from '@testing-library/react';
-import { resetWarned } from '@rc-component/util/lib/warning';
+import { resetWarned } from '@rc-component/util';
 import React, { useState } from 'react';
 import Form, { Field, List, useForm, type FormInstance } from '../src';
 import { changeValue, getInput } from './common';
@@ -166,10 +166,8 @@ describe('Form.InitialValues', () => {
     fireEvent.click(container.querySelector('button'));
     expect(formValue.users[0].last).toEqual('bbb');
 
-
     fireEvent.click(container.querySelector('button'));
     expect(formValue.users[0].last).toEqual('bbb');
-
 
     fireEvent.click(container.querySelector('button'));
 

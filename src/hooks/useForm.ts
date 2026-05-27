@@ -1,5 +1,4 @@
-import { merge } from '@rc-component/util/lib/utils/set';
-import warning from '@rc-component/util/lib/warning';
+import { merge, warning } from '@rc-component/util';
 import * as React from 'react';
 import { HOOK_MARK } from '../FieldContext';
 import type {

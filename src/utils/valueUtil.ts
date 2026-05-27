@@ -1,5 +1,4 @@
-import getValue from '@rc-component/util/lib/utils/get';
-import setValue from '@rc-component/util/lib/utils/set';
+import { get as getValue, set as setValue } from '@rc-component/util';
 import type { InternalNamePath, NamePath, Store, EventArgs } from '../interface';
 import { toArray } from './typeUtil';
 

@@ -1,6 +1,4 @@
-import toChildrenArray from '@rc-component/util/lib/Children/toArray';
-import isEqual from '@rc-component/util/lib/isEqual';
-import warning from '@rc-component/util/lib/warning';
+import { isEqual, toArray as toChildrenArray, warning } from '@rc-component/util';
 import * as React from 'react';
 import FieldContext, { HOOK_MARK } from './FieldContext';
 import type {
