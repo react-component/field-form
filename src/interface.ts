@@ -280,7 +280,7 @@ export interface FormInstance<Values = any> {
   resetFields: (fields?: NamePath<Values>[]) => void;
   setFields: (fields: FieldData<Values>[]) => void;
   setFieldValue: (name: NamePath<Values>, value: any) => void;
-  setFieldsValue: (values: RecursivePartial<Values>) => void;
+  setFieldsValue: (values: RecursivePartial<Values> | Partial<Values>) => void;
   validateFields: ValidateFields<Values>;
 
   // New API

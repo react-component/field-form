@@ -23,6 +23,13 @@ describe('nameTypeCheck', () => {
 
     type SetFieldsValueParam = Parameters<FormInstance<FieldType>['setFieldsValue']>[0];
 
+    const forwardGenericSetFieldsValue = <Values,>(
+      form: FormInstance<Values>,
+      values: Partial<Values>,
+    ) => {
+      form.setFieldsValue(values);
+    };
+
     const nullableListAsNull: SetFieldsValueParam = { nullableList: null };
     const nullableListAsArray: SetFieldsValueParam = { nullableList: ['bamboo'] };
     const nullableObjectListAsNull: SetFieldsValueParam = { nullableObjectList: null };
