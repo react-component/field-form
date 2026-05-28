@@ -86,6 +86,7 @@ export class FormStore {
     getFieldsValue: this.getFieldsValue,
     getFieldError: this.getFieldError,
     getFieldWarning: this.getFieldWarning,
+    getFieldsName: this.getFieldsName,
     getFieldsError: this.getFieldsError,
     isFieldsTouched: this.isFieldsTouched,
     isFieldTouched: this.isFieldTouched,
@@ -342,6 +343,11 @@ export class FormStore {
     });
 
     return mergedValues;
+  };
+
+  private getFieldsName = (): InternalNamePath[] => {
+    this.warningUnhooked();
+    return this.getFieldEntities(true).map(entity => entity.getNamePath());
   };
 
   private getFieldValue = (name: NamePath) => {
