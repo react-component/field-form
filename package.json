@@ -60,7 +60,7 @@
     "@testing-library/react": "^16.0.0",
     "@types/jest": "^29.2.5",
     "@types/lodash": "^4.14.135",
-    "@types/node": "^22.0.2",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.1",
     "@umijs/fabric": "^4.0.1",
