@@ -244,14 +244,13 @@ export interface InternalHooks {
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> =
-  T extends (infer U)[]
+type RecursivePartial<T> = T extends Date | RegExp | Function | Map<any, any> | Set<any>
+  ? T
+  : T extends (infer U)[]
     ? RecursivePartial<U>[]
     : T extends object
-      ? {
-          [P in keyof T]?: RecursivePartial<T[P]>;
-        }
-    : T;
+      ? { [P in keyof T]?: RecursivePartial<T[P]> }
+      : T;
 
 export type FilterFunc = (meta: Meta | null) => boolean;
 
@@ -280,7 +279,7 @@ export interface FormInstance<Values = any> {
   resetFields: (fields?: NamePath<Values>[]) => void;
   setFields: (fields: FieldData<Values>[]) => void;
   setFieldValue: (name: NamePath<Values>, value: any) => void;
-  setFieldsValue: (values: RecursivePartial<Values>) => void;
+  setFieldsValue: (values: RecursivePartial<Values> | Partial<Values>) => void;
   validateFields: ValidateFields<Values>;
 
   // New API
