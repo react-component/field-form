@@ -913,6 +913,32 @@ describe('Form.Basic', () => {
     expect(formRef.current.isFieldTouched(['list', 2])).toBeFalsy();
   });
 
+  it('setFieldError', () => {
+    const formRef = React.createRef<FormRef>();
+
+    render(
+      <Form ref={formRef} initialValues={{ username: 'light' }}>
+        <Field name="username">
+          <Input />
+        </Field>
+      </Form>,
+    );
+
+    expect(formRef.current.getFieldError('username')).toEqual([]);
+
+    act(() => {
+      formRef.current.setFieldError('username', ['Set single error']);
+    });
+
+    expect(formRef.current.getFieldError('username')).toEqual(['Set single error']);
+
+    act(() => {
+      formRef.current.setFieldError('username', []);
+    });
+
+    expect(formRef.current.getFieldError('username')).toEqual([]);
+  });
+
   it('onMetaChange should only trigger when meta changed', () => {
     const onMetaChange = jest.fn();
     const formRef = React.createRef<FormRef>();
