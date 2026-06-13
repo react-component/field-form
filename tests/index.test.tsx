@@ -754,7 +754,7 @@ describe('Form.Basic', () => {
     );
     expect(() => {
       fireEvent.change(container.querySelector('input'), { target: { value: 'Light' } });
-    }).not.toThrowError();
+    }).not.toThrow();
   });
 
   it('setFieldsValue for List should work', () => {
@@ -835,7 +835,7 @@ describe('Form.Basic', () => {
 
   // https://github.com/ant-design/ant-design/issues/34768
   it('remount should not clear current value', () => {
-    let refForm: FormInstance = null;
+    let refForm: FormInstance | null = null;
 
     const Demo: React.FC<any> = ({ remount }) => {
       const [form] = Form.useForm();
@@ -857,7 +857,7 @@ describe('Form.Basic', () => {
 
     const { container, rerender } = render(<Demo />);
     act(() => {
-      refForm.setFieldsValue({ name: 'bamboo' });
+      refForm?.setFieldsValue({ name: 'bamboo' });
     });
     expect(container.querySelector<HTMLInputElement>('input').value).toBe('bamboo');
     rerender(<Demo remount />);
@@ -1042,5 +1042,13 @@ describe('Form.Basic', () => {
       await Promise.resolve();
     });
     expect(formRef.current?.getFieldError('light')).toHaveLength(0);
+  });
+
+  it('accepts partial values from generic helper', () => {
+    const useGenericSetter = <Values,>() => {
+      const [form] = Form.useForm<Values>();
+      return (values: Partial<Values>) => form.setFieldsValue(values);
+    };
+    expect(useGenericSetter).toBeInstanceOf(Function);
   });
 });

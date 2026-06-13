@@ -244,13 +244,15 @@ export interface InternalHooks {
 }
 
 /** Only return partial when type is not any */
-type RecursivePartial<T> = T extends Date | RegExp | Function | Map<any, any> | Set<any>
+export type RecursivePartial<T> = T extends Date | RegExp | Function | Map<any, any> | Set<any>
   ? T
   : T extends (infer U)[]
     ? RecursivePartial<U>[]
-    : T extends object
-      ? { [P in keyof T]?: RecursivePartial<T[P]> }
-      : T;
+    : T extends readonly (infer U)[]
+      ? readonly RecursivePartial<U>[]
+      : T extends object
+        ? { [P in keyof T]?: RecursivePartial<T[P]> }
+        : T;
 
 export type FilterFunc = (meta: Meta | null) => boolean;
 
