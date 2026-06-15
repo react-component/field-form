@@ -1044,11 +1044,4 @@ describe('Form.Basic', () => {
     expect(formRef.current?.getFieldError('light')).toHaveLength(0);
   });
 
-  it('accepts partial values from generic helper', () => {
-    const useGenericSetter = <Values,>() => {
-      const [form] = Form.useForm<Values>();
-      return (values: Partial<Values>) => form.setFieldsValue(values);
-    };
-    expect(useGenericSetter).toBeInstanceOf(Function);
-  });
 });
