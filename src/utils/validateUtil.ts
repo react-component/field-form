@@ -76,7 +76,7 @@ async function validateRule(
 
   try {
     await Promise.resolve(validator.validate({ [name]: value }, { ...options }));
-  } catch (errObj) {
+  } catch (errObj: any) {
     if (errObj.errors) {
       result = errObj.errors.map(({ message }, index: number) => {
         const mergedMessage = message === CODE_LOGIC_ERROR ? messages.default : message;

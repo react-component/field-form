@@ -39,6 +39,10 @@ describe('nameTypeCheck', () => {
     const optionalListAsPartial: SetFieldsValueParam = {
       strictList: [{ age: '18' }],
     };
+    const useGenericSetter = <Values,>() => {
+      const [form] = Form.useForm<Values>();
+      return (values: Partial<Values>) => form.setFieldsValue(values);
+    };
 
     const Demo: React.FC = () => {
       return (
