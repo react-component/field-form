@@ -37,8 +37,8 @@ export interface FormProps<Values = any> extends BaseFormProps {
   clearOnDestroy?: boolean;
 }
 
-const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
-  {
+const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (props, ref) => {
+  const {
     name,
     initialValues,
     fields,
@@ -54,15 +54,15 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (
     onFinishFailed,
     clearOnDestroy,
     ...restProps
-  }: FormProps,
-  ref,
-) => {
+  } = props;
+
   const nativeElementRef = React.useRef<HTMLFormElement>(null);
-  const formContext: FormContextProps = React.useContext(FormContext);
+  const formContext = React.useContext<FormContextProps>(FormContext);
 
   // We customize handle event since Context will makes all the consumer re-render:
   // https://reactjs.org/docs/context.html#contextprovider
   const [formInstance] = useForm(form);
+
   const {
     useSubscribe,
     setInitialValues,
