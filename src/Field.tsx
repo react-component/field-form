@@ -98,10 +98,8 @@ export interface InternalFieldProps<Values = any> {
   fieldContext?: InternalFormInstance;
 }
 
-export interface FieldProps<Values = any> extends Omit<
-  InternalFieldProps<Values>,
-  'name' | 'fieldContext'
-> {
+export interface FieldProps<Values = any>
+  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
   name?: NamePath<Values>;
 }
 
@@ -110,7 +108,7 @@ export interface FieldState {
 }
 
 // We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.Component<InternalFieldProps, FieldState> implements FieldEntity {
+class Field extends React.PureComponent<InternalFieldProps, FieldState> implements FieldEntity {
   public static contextType = FieldContext;
 
   public state = {
