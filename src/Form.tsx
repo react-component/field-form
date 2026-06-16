@@ -24,7 +24,7 @@ export interface FormProps<Values = any> extends BaseFormProps {
   form?: FormInstance<Values>;
   children?: RenderProps | React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component?: false | string | React.FC<any> | React.ComponentClass<any>;
+  component?: false | string | React.ComponentType<any>;
   fields?: FieldData[];
   name?: string;
   validateMessages?: ValidateMessages;
