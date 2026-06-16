@@ -121,7 +121,6 @@ class Demo extends React.Component {
   setRef = form => {
     // Form instance here
   };
-
   render() {
     return <Form ref={this.setRef} />;
   }
