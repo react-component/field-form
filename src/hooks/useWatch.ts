@@ -13,6 +13,9 @@ import { getNamePath, getValue } from '../utils/valueUtil';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type AnyNamePath<TForm extends FormInstance> =
+  IsAny<GetGeneric<TForm>> extends true ? NamePath : never;
 
 export function stringify(value: any) {
   try {
@@ -75,13 +78,13 @@ function useWatch<ValueType = Store, TSelected = unknown>(
 // ------- selector type end -------
 
 function useWatch<TForm extends FormInstance>(
-  dependencies: NamePath,
+  dependencies: AnyNamePath<TForm>,
   form?: TForm | WatchOptions<TForm>,
 ): any;
 
-function useWatch<ValueType = Store>(
-  dependencies: NamePath,
-  form?: FormInstance | WatchOptions<FormInstance>,
+function useWatch<ValueType = Store, TForm extends FormInstance = FormInstance>(
+  dependencies: AnyNamePath<TForm>,
+  form?: TForm | WatchOptions<TForm>,
 ): ValueType;
 
 function useWatch(
