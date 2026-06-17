@@ -41,6 +41,47 @@ describe('Form.Field', () => {
     expect(formRef.getFieldsValue()).toEqual({ light: 'bamboo' });
   });
 
+  it('render props should receive initialValue on first render', () => {
+    let firstValue: any;
+
+    render(
+      <Form>
+        <Field name="light" initialValue="bamboo">
+          {control => {
+            if (firstValue === undefined) {
+              firstValue = control.value;
+            }
+
+            return <Input {...control} />;
+          }}
+        </Field>
+      </Form>,
+    );
+
+    expect(firstValue).toBe('bamboo');
+  });
+
+  it('unmount should use latest onMetaChange', () => {
+    const onMetaChange1 = jest.fn();
+    const onMetaChange2 = jest.fn();
+
+    const Demo = ({ onMetaChange }: { onMetaChange: any }) => (
+      <Form>
+        <Field name="light" onMetaChange={onMetaChange}>
+          <Input />
+        </Field>
+      </Form>
+    );
+
+    const { rerender, unmount } = render(<Demo onMetaChange={onMetaChange1} />);
+
+    rerender(<Demo onMetaChange={onMetaChange2} />);
+    unmount();
+
+    expect(onMetaChange1).not.toHaveBeenCalledWith(expect.objectContaining({ destroy: true }));
+    expect(onMetaChange2).toHaveBeenCalledWith(expect.objectContaining({ destroy: true }));
+  });
+
   // https://github.com/ant-design/ant-design/issues/51611
   it('date type as change', async () => {
     const onValuesChange = jest.fn();
