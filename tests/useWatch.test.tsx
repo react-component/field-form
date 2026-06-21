@@ -281,6 +281,7 @@ describe('useWatch', () => {
       id?: number;
       value3: string;
       path1?: { path2?: number };
+      deep?: { path1?: { path2?: { path3?: { path4?: string } } } };
       demo1?: { demo2?: { demo3?: { demo4?: string } } };
     };
 
@@ -295,12 +296,16 @@ describe('useWatch', () => {
       const demo4 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4'], form);
       const value3 = Form.useWatch('value3', form);
       const pathValue = Form.useWatch(['path1', 'path2'], form);
+      const deepValue = Form.useWatch(['deep', 'path1', 'path2', 'path3', 'path4'], form);
+      const dynamicValue = Form.useWatch<string>(['dynamic', 'path'], form);
       const demo = Form.useWatch<string>(['demo']);
       const typeCheck: [
         Expect<Equal<IsAny<typeof value3>, false>>,
         Expect<Equal<typeof value3, string>>,
         Expect<Equal<typeof pathValue, number | undefined>>,
-      ] = [true, true, true];
+        Expect<Equal<typeof deepValue, string | undefined>>,
+        Expect<Equal<typeof dynamicValue, string>>,
+      ] = [true, true, true, true, true];
 
       // @ts-expect-error not a field of FieldType
       Form.useWatch('unknown', form);
@@ -328,6 +333,8 @@ describe('useWatch', () => {
             demo4,
             value3,
             pathValue,
+            deepValue,
+            dynamicValue,
             demo,
             typeCheck,
             values2,
