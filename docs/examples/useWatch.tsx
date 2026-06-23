@@ -47,10 +47,8 @@ export default () => {
   const demo2 = Form.useWatch(['demo1', 'demo2'], form);
   const demo3 = Form.useWatch(['demo1', 'demo2', 'demo3'], form);
   const demo4 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4'], form);
-  const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
-  const more = Form.useWatch(['age', 'name', 'gender'], form);
   const hidden = Form.useWatch(['hidden'], { form, preserve: true });
-  console.log('main watch', values, demo1, demo2, main, age, demo3, demo4, demo5, more, hidden);
+  console.log('main watch', values, demo1, demo2, main, age, demo3, demo4, hidden);
   return (
     <>
       <Form

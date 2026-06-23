@@ -8,6 +8,11 @@ import { Input } from './common/InfoField';
 import { stringify } from '../src/hooks/useWatch';
 import { changeValue } from './common';
 
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
+type Expect<T extends true> = T;
+
 describe('useWatch', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -274,6 +279,9 @@ describe('useWatch', () => {
       demo?: string;
       demo2?: string;
       id?: number;
+      value3: string;
+      path1?: { path2?: number };
+      deep?: { path1?: { path2?: { path3?: { path4?: string } } } };
       demo1?: { demo2?: { demo3?: { demo4?: string } } };
     };
 
@@ -286,9 +294,23 @@ describe('useWatch', () => {
       const demo2 = Form.useWatch(['demo1', 'demo2'], form);
       const demo3 = Form.useWatch(['demo1', 'demo2', 'demo3'], form);
       const demo4 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4'], form);
-      const demo5 = Form.useWatch(['demo1', 'demo2', 'demo3', 'demo4', 'demo5'], form);
-      const more = Form.useWatch(['age', 'name', 'gender'], form);
+      const value3 = Form.useWatch('value3', form);
+      const pathValue = Form.useWatch(['path1', 'path2'], form);
+      const deepValue = Form.useWatch(['deep', 'path1', 'path2', 'path3', 'path4'], form);
+      const dynamicValue = Form.useWatch<string>(['dynamic', 'path'], form);
       const demo = Form.useWatch<string>(['demo']);
+      const typeCheck: [
+        Expect<Equal<IsAny<typeof value3>, false>>,
+        Expect<Equal<typeof value3, string>>,
+        Expect<Equal<typeof pathValue, number | undefined>>,
+        Expect<Equal<typeof deepValue, string | undefined>>,
+        Expect<Equal<typeof dynamicValue, string>>,
+      ] = [true, true, true, true, true];
+
+      // @ts-expect-error not a field of FieldType
+      Form.useWatch('unknown', form);
+      // @ts-expect-error not a nested field of FieldType
+      Form.useWatch(['path1', 'unknown'], form);
 
       const values2 = Form.useWatch(
         _values => ({ newName: _values.name, newAge: _values.age }),
@@ -309,9 +331,12 @@ describe('useWatch', () => {
             demo2,
             demo3,
             demo4,
-            demo5,
-            more,
+            value3,
+            pathValue,
+            deepValue,
+            dynamicValue,
             demo,
+            typeCheck,
             values2,
             values3,
           })}

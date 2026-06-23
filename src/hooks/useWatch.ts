@@ -13,6 +13,17 @@ import { getNamePath, getValue } from '../utils/valueUtil';
 
 type ReturnPromise<T> = T extends Promise<infer ValueType> ? ValueType : never;
 type GetGeneric<TForm extends FormInstance> = ReturnPromise<ReturnType<TForm['validateFields']>>;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type IsEqual<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
+type AnyNamePath<TForm extends FormInstance, ValueType = Store> =
+  IsAny<GetGeneric<TForm>> extends true
+    ? NamePath
+    : IsAny<ValueType> extends true
+      ? NamePath
+      : IsEqual<ValueType, Store> extends true
+        ? NamePath<GetGeneric<TForm>>
+        : NamePath;
 
 export function stringify(value: any) {
   try {
@@ -21,6 +32,18 @@ export function stringify(value: any) {
     return Math.random();
   }
 }
+
+function useWatch<
+  TDependencies1 extends keyof GetGeneric<TForm>,
+  TForm extends FormInstance,
+  TDependencies2 extends keyof GetGeneric<TForm>[TDependencies1],
+  TDependencies3 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2],
+  TDependencies4 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3],
+  TDependencies5 extends keyof GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3][TDependencies4],
+>(
+  dependencies: [TDependencies1, TDependencies2, TDependencies3, TDependencies4, TDependencies5],
+  form?: TForm | WatchOptions<TForm>,
+): GetGeneric<TForm>[TDependencies1][TDependencies2][TDependencies3][TDependencies4][TDependencies5];
 
 function useWatch<
   TDependencies1 extends keyof GetGeneric<TForm>,
@@ -75,13 +98,13 @@ function useWatch<ValueType = Store, TSelected = unknown>(
 // ------- selector type end -------
 
 function useWatch<TForm extends FormInstance>(
-  dependencies: NamePath,
+  dependencies: AnyNamePath<TForm>,
   form?: TForm | WatchOptions<TForm>,
 ): any;
 
-function useWatch<ValueType = Store>(
-  dependencies: NamePath,
-  form?: FormInstance | WatchOptions<FormInstance>,
+function useWatch<ValueType = Store, TForm extends FormInstance = FormInstance>(
+  dependencies: AnyNamePath<TForm, ValueType>,
+  form?: TForm | WatchOptions<TForm>,
 ): ValueType;
 
 function useWatch(
