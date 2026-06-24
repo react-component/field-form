@@ -23,8 +23,8 @@ import { validateRules } from './utils/validateUtil';
 import {
   containsNamePath,
   defaultGetValueFromEvent,
-  getNamePath,
-  getValue,
+  getNamePath as getNamePathByName,
+  getValue as getValueByNamePath,
 } from './utils/valueUtil';
 import delayFrame from './utils/delayUtil';
 
@@ -92,14 +92,9 @@ export interface InternalFieldProps<Values = any> {
 
   /** @private Passed by Form.List props. Do not use since it will break by path check. */
   isList?: boolean;
-
-  /** @private Pass context as prop instead of context api
-   *  since class component can not get context in constructor */
-  fieldContext?: InternalFormInstance;
 }
 
-export interface FieldProps<Values = any>
-  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
+export interface FieldProps<Values = any> extends Omit<InternalFieldProps<Values>, 'name'> {
   name?: NamePath<Values>;
 }
 
@@ -107,589 +102,641 @@ export interface FieldState {
   resetCount: number;
 }
 
-// We use Class instead of Hooks here since it will cost much code by using Hooks.
-class Field extends React.PureComponent<InternalFieldProps, FieldState> implements FieldEntity {
-  public static contextType = FieldContext;
+type CancelRegisterFunc = (
+  isListField?: boolean,
+  preserve?: boolean,
+  namePath?: InternalNamePath,
+) => void;
 
-  public state = {
-    resetCount: 0,
-  };
+interface FieldEntityInstance extends FieldEntity {
+  props: InternalFieldProps;
+  cancelRegister: () => void;
+  reRender: () => void;
+  refresh: () => void;
+  triggerMetaEvent: (destroy?: boolean) => void;
+  getRules: () => RuleObject[];
+  getValue: (store?: Store) => StoreValue;
+  getControlled: (childProps?: ChildProps) => ChildProps;
+  getOnlyChild: (
+    children:
+      | React.ReactNode
+      | ((control: ChildProps, meta: Meta, context: FormInstance) => React.ReactNode),
+  ) => { child: React.ReactNode | null; isFunction: boolean };
+}
 
-  private cancelRegisterFunc: (
-    isListField?: boolean,
-    preserve?: boolean,
-    namePath?: InternalNamePath,
-  ) => void | null = null;
+const Field: React.FC<InternalFieldProps> = props => {
+  const {
+    children,
+    dependencies,
+    getValueFromEvent,
+    getValueProps,
+    initialValue,
+    isList: isListProp,
+    isListField: isListFieldProp,
+    name,
+    normalize,
+    onMetaChange,
+    onReset,
+    preserve,
+    rules,
+    shouldUpdate,
+    trigger = 'onChange',
+    validateTrigger,
+    valuePropName = 'value',
+  } = props;
 
-  private mounted = false;
+  const fieldContext = React.useContext(FieldContext);
+  const [resetCount, setResetCount] = React.useState(0);
+  const [, forceUpdate] = React.useReducer(value => value + 1, 0);
 
-  /**
-   * Follow state should not management in State since it will async update by React.
-   * This makes first render of form can not get correct state value.
-   */
-  private touched: boolean = false;
+  const cancelRegisterFuncRef = React.useRef<CancelRegisterFunc | null>(null);
+  const mountedRef = React.useRef(false);
+  const touchedRef = React.useRef(false);
+  const dirtyRef = React.useRef(false);
+  const validatePromiseRef = React.useRef<Promise<any[]> | null | undefined>(undefined);
+  const prevValidatingRef = React.useRef(false);
+  const errorsRef = React.useRef<string[]>(EMPTY_ERRORS);
+  const warningsRef = React.useRef<string[]>(EMPTY_WARNINGS);
+  const metaCacheRef = React.useRef<MetaEvent>(null);
+  const fieldRef = React.useRef<FieldEntityInstance>(null);
+  const initializedRef = React.useRef(false);
 
-  /**
-   * Mark when touched & validated. Currently only used for `dependencies`.
-   * Note that we do not think field with `initialValue` is dirty
-   * but this will be by `isFieldDirty` func.
-   */
-  private dirty: boolean = false;
-
-  private validatePromise: Promise<string[]> | null;
-
-  private prevValidating: boolean;
-
-  private errors: string[] = EMPTY_ERRORS;
-  private warnings: string[] = EMPTY_WARNINGS;
-
-  // ============================== Subscriptions ==============================
-  constructor(props: InternalFieldProps) {
-    super(props);
-
-    // Register on init
-    if (props.fieldContext) {
-      const { getInternalHooks }: InternalFormInstance = props.fieldContext;
-      const { initEntityValue } = getInternalHooks(HOOK_MARK);
-      initEntityValue(this);
-    }
+  if (!fieldRef.current) {
+    fieldRef.current = {} as FieldEntityInstance;
   }
 
-  public componentDidMount() {
-    const { shouldUpdate, fieldContext } = this.props;
-
-    this.mounted = true;
-
-    // Register on init
-    if (fieldContext) {
-      const { getInternalHooks }: InternalFormInstance = fieldContext;
-      const { registerField } = getInternalHooks(HOOK_MARK);
-      this.cancelRegisterFunc = registerField(this);
-    }
-
-    // One more render for component in case fields not ready
-    if (shouldUpdate === true) {
-      this.reRender();
-    }
-  }
-
-  public componentWillUnmount() {
-    this.cancelRegister();
-    this.triggerMetaEvent(true);
-    this.mounted = false;
-  }
-
-  public cancelRegister = () => {
-    const { preserve, isListField, name } = this.props;
-
-    if (this.cancelRegisterFunc) {
-      this.cancelRegisterFunc(isListField, preserve, getNamePath(name));
-    }
-    this.cancelRegisterFunc = null;
-  };
-
-  // ================================== Utils ==================================
-  public getNamePath = (): InternalNamePath => {
-    const { name, fieldContext } = this.props;
+  const getNamePath = React.useCallback((): InternalNamePath => {
     const { prefixName = [] }: InternalFormInstance = fieldContext;
-
     return name !== undefined ? [...prefixName, ...name] : [];
-  };
+  }, [fieldContext, name]);
 
-  public getRules = (): RuleObject[] => {
-    const { rules = [], fieldContext } = this.props;
-
-    return rules.map((rule: Rule): RuleObject => {
+  const getRules = React.useCallback((): RuleObject[] => {
+    const mergedRules = rules || [];
+    return mergedRules.map((rule: Rule): RuleObject => {
       if (typeof rule === 'function') {
         return rule(fieldContext);
       }
       return rule;
     });
-  };
+  }, [fieldContext, rules]);
 
-  public reRender() {
-    if (!this.mounted) return;
-    this.forceUpdate();
-  }
+  const reRender = React.useCallback(() => {
+    if (!mountedRef.current) {
+      return;
+    }
+    forceUpdate();
+  }, []);
 
-  public refresh = () => {
-    if (!this.mounted) return;
-
+  const refresh = React.useCallback(() => {
+    if (!mountedRef.current) {
+      return;
+    }
     /**
      * Clean up current node.
      */
-    this.setState(({ resetCount }) => ({
-      resetCount: resetCount + 1,
-    }));
-  };
+    setResetCount(count => count + 1);
+  }, []);
 
-  // Event should only trigger when meta changed
-  private metaCache: MetaEvent = null;
+  const getValue = React.useCallback(
+    (store?: Store) => {
+      const { getFieldsValue }: FormInstance = fieldContext;
+      const namePath = getNamePath();
+      return getValueByNamePath(store || getFieldsValue(true), namePath);
+    },
+    [fieldContext, getNamePath],
+  );
 
-  public triggerMetaEvent = (destroy?: boolean) => {
-    const { onMetaChange } = this.props;
+  const isFieldValidating = React.useCallback(() => !!validatePromiseRef.current, []);
 
-    if (onMetaChange) {
-      const meta = { ...this.getMeta(), destroy };
+  const isFieldTouched = React.useCallback(() => touchedRef.current, []);
 
-      if (!isEqual(this.metaCache, meta)) {
-        onMetaChange(meta);
-      }
-
-      this.metaCache = meta;
-    } else {
-      this.metaCache = null;
-    }
-  };
-
-  // ========================= Field Entity Interfaces =========================
-  // Trigger by store update. Check if need update the component
-  public onStoreChange: FieldEntity['onStoreChange'] = (prevStore, namePathList, info) => {
-    const { shouldUpdate, dependencies = [], onReset } = this.props;
-    const { store } = info;
-    const namePath = this.getNamePath();
-    const prevValue = this.getValue(prevStore);
-    const curValue = this.getValue(store);
-
-    const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
-
-    // `setFieldsValue` is a quick access to update related status
-    if (
-      info.type === 'valueUpdate' &&
-      info.source === 'external' &&
-      !isEqual(prevValue, curValue)
-    ) {
-      this.touched = true;
-      this.dirty = true;
-      this.validatePromise = null;
-      this.errors = EMPTY_ERRORS;
-      this.warnings = EMPTY_WARNINGS;
-      this.triggerMetaEvent();
-    }
-
-    switch (info.type) {
-      case 'reset':
-        if (!namePathList || namePathMatch) {
-          // Clean up state
-          this.touched = false;
-          this.dirty = false;
-          this.validatePromise = undefined;
-          this.errors = EMPTY_ERRORS;
-          this.warnings = EMPTY_WARNINGS;
-          this.triggerMetaEvent();
-
-          onReset?.();
-
-          this.refresh();
-          return;
-        }
-        break;
-
-      /**
-       * In case field with `preserve = false` nest deps like:
-       * - A = 1 => show B
-       * - B = 1 => show C
-       * - Reset A, need clean B, C
-       */
-      case 'remove': {
-        if (
-          shouldUpdate &&
-          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
-        ) {
-          this.reRender();
-          return;
-        }
-        break;
-      }
-
-      case 'setField': {
-        const { data } = info;
-        if (namePathMatch) {
-          if ('touched' in data) {
-            this.touched = data.touched;
-          }
-          if ('validating' in data && !('originRCField' in data)) {
-            this.validatePromise = data.validating ? Promise.resolve([]) : null;
-          }
-          if ('errors' in data) {
-            this.errors = data.errors || EMPTY_ERRORS;
-          }
-          if ('warnings' in data) {
-            this.warnings = data.warnings || EMPTY_WARNINGS;
-          }
-          this.dirty = true;
-
-          this.triggerMetaEvent();
-
-          this.reRender();
-          return;
-        } else if ('value' in data && containsNamePath(namePathList, namePath, true)) {
-          // Contains path with value should also check
-          this.reRender();
-          return;
-        }
-
-        // Handle update by `setField` with `shouldUpdate`
-        if (
-          shouldUpdate &&
-          !namePath.length &&
-          requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
-        ) {
-          this.reRender();
-          return;
-        }
-        break;
-      }
-
-      case 'dependenciesUpdate': {
-        /**
-         * Trigger when marked `dependencies` updated. Related fields will all update
-         */
-        const dependencyList = dependencies.map(getNamePath);
-        // No need for `namePathMath` check and `shouldUpdate` check, since `valueUpdate` will be
-        // emitted earlier and they will work there
-        // If set it may cause unnecessary twice rerendering
-        if (dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))) {
-          this.reRender();
-          return;
-        }
-        break;
-      }
-
-      default:
-        // 1. If `namePath` exists in `namePathList`, means it's related value and should update
-        //      For example <List name="list"><Field name={['list', 0]}></List>
-        //      If `namePathList` is [['list']] (List value update), Field should be updated
-        //      If `namePathList` is [['list', 0]] (Field value update), List shouldn't be updated
-        // 2.
-        //   2.1 If `dependencies` is set, `name` is not set and `shouldUpdate` is not set,
-        //       don't use `shouldUpdate`. `dependencies` is view as a shortcut if `shouldUpdate`
-        //       is not provided
-        //   2.2 If `shouldUpdate` provided, use customize logic to update the field
-        //       else to check if value changed
-        if (
-          namePathMatch ||
-          ((!dependencies.length || namePath.length || shouldUpdate) &&
-            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
-        ) {
-          this.reRender();
-          return;
-        }
-        break;
-    }
-
-    if (shouldUpdate === true) {
-      this.reRender();
-    }
-  };
-
-  public validateRules = (options?: InternalValidateOptions): Promise<RuleError[]> => {
-    // We should fixed namePath & value to avoid developer change then by form function
-    const namePath = this.getNamePath();
-    const currentValue = this.getValue();
-
-    const { triggerName, validateOnly = false, delayFrame: showDelayFrame } = options || {};
-
-    // Force change to async to avoid rule OOD under renderProps field
-    const rootPromise = Promise.resolve().then(async (): Promise<any[]> => {
-      if (!this.mounted) {
-        return [];
-      }
-
-      const { validateFirst = false, messageVariables, validateDebounce } = this.props;
-
-      // Should wait for the frame render,
-      // since developer may `useWatch` value in the rules.
-      if (showDelayFrame) {
-        await delayFrame();
-      }
-
-      // Start validate
-      let filteredRules = this.getRules();
-      if (triggerName) {
-        filteredRules = filteredRules
-          .filter(rule => rule)
-          .filter((rule: RuleObject) => {
-            const { validateTrigger } = rule;
-            if (!validateTrigger) {
-              return true;
-            }
-            const triggerList = toArray(validateTrigger);
-            return triggerList.includes(triggerName);
-          });
-      }
-
-      // Wait for debounce. Skip if no `triggerName` since its from `validateFields / submit`
-      if (validateDebounce && triggerName) {
-        await new Promise(resolve => {
-          setTimeout(resolve, validateDebounce);
-        });
-
-        // Skip since out of date
-        if (this.validatePromise !== rootPromise) {
-          return [];
-        }
-      }
-
-      const promise = validateRules(
-        namePath,
-        currentValue,
-        filteredRules,
-        options,
-        validateFirst,
-        messageVariables,
-      );
-
-      promise
-        .catch(e => e)
-        .then((ruleErrors: RuleError[] = EMPTY_ERRORS) => {
-          if (this.validatePromise === rootPromise) {
-            this.validatePromise = null;
-
-            // Get errors & warnings
-            const nextErrors: string[] = [];
-            const nextWarnings: string[] = [];
-            ruleErrors.forEach?.(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
-              if (warningOnly) {
-                nextWarnings.push(...errors);
-              } else {
-                nextErrors.push(...errors);
-              }
-            });
-
-            this.errors = nextErrors;
-            this.warnings = nextWarnings;
-            this.triggerMetaEvent();
-
-            this.reRender();
-          }
-        });
-
-      return promise;
-    });
-
-    if (validateOnly) {
-      return rootPromise;
-    }
-
-    this.validatePromise = rootPromise;
-    this.dirty = true;
-    this.errors = EMPTY_ERRORS;
-    this.warnings = EMPTY_WARNINGS;
-    this.triggerMetaEvent();
-
-    // Force trigger re-render since we need sync renderProps with new meta
-    this.reRender();
-
-    return rootPromise;
-  };
-
-  public isFieldValidating = () => !!this.validatePromise;
-
-  public isFieldTouched = () => this.touched;
-
-  public isFieldDirty = () => {
+  const isFieldDirty = React.useCallback(() => {
     // Touched or validate or has initialValue
-    if (this.dirty || this.props.initialValue !== undefined) {
+    if (dirtyRef.current || initialValue !== undefined) {
       return true;
     }
 
     // Form set initialValue
-    const { fieldContext } = this.props;
     const { getInitialValue } = fieldContext.getInternalHooks(HOOK_MARK);
-    if (getInitialValue(this.getNamePath()) !== undefined) {
+    if (getInitialValue(getNamePath()) !== undefined) {
       return true;
     }
 
     return false;
-  };
+  }, [fieldContext, getNamePath, initialValue]);
 
-  public getErrors = () => this.errors;
+  const getErrors = React.useCallback(() => errorsRef.current, []);
 
-  public getWarnings = () => this.warnings;
+  const getWarnings = React.useCallback(() => warningsRef.current, []);
 
-  public isListField = () => this.props.isListField;
+  const isListField = React.useCallback(() => isListFieldProp, [isListFieldProp]);
 
-  public isList = () => this.props.isList;
+  const isList = React.useCallback(() => isListProp, [isListProp]);
 
-  public isPreserve = () => this.props.preserve;
+  const isPreserve = React.useCallback(() => preserve, [preserve]);
 
-  // ============================= Child Component =============================
-  public getMeta = (): Meta => {
+  const getMeta = React.useCallback((): Meta => {
     // Make error & validating in cache to save perf
-    this.prevValidating = this.isFieldValidating();
+    prevValidatingRef.current = isFieldValidating();
 
     const meta: Meta = {
-      touched: this.isFieldTouched(),
-      validating: this.prevValidating,
-      errors: this.errors,
-      warnings: this.warnings,
-      name: this.getNamePath(),
-      validated: this.validatePromise === null,
+      touched: isFieldTouched(),
+      validating: prevValidatingRef.current,
+      errors: errorsRef.current,
+      warnings: warningsRef.current,
+      name: getNamePath(),
+      validated: validatePromiseRef.current === null,
     };
 
     return meta;
-  };
+  }, [getNamePath, isFieldTouched, isFieldValidating]);
 
-  // Only return validate child node. If invalidate, will do nothing about field.
-  public getOnlyChild = (
-    children:
-      | React.ReactNode
-      | ((control: ChildProps, meta: Meta, context: FormInstance) => React.ReactNode),
-  ): { child: React.ReactNode | null; isFunction: boolean } => {
-    // Support render props
-    if (typeof children === 'function') {
-      const meta = this.getMeta();
+  // Event should only trigger when meta changed
+  const triggerMetaEvent = React.useCallback(
+    (destroy?: boolean) => {
+      if (onMetaChange) {
+        const meta = { ...getMeta(), destroy };
 
-      return {
-        ...this.getOnlyChild(children(this.getControlled(), meta, this.props.fieldContext)),
-        isFunction: true,
-      };
-    }
+        if (!isEqual(metaCacheRef.current, meta)) {
+          onMetaChange(meta);
+        }
 
-    // Filed element only
-    const childList = toChildrenArray(children as any);
-
-    if (childList.length !== 1 || !React.isValidElement(childList[0])) {
-      return { child: childList as React.ReactNode, isFunction: false };
-    }
-
-    return { child: childList[0], isFunction: false };
-  };
-
-  // ============================== Field Control ==============================
-  public getValue = (store?: Store) => {
-    const { getFieldsValue }: FormInstance = this.props.fieldContext;
-    const namePath = this.getNamePath();
-    return getValue(store || getFieldsValue(true), namePath);
-  };
-
-  public getControlled = (childProps: ChildProps = {}) => {
-    const {
-      name,
-      trigger = 'onChange',
-      validateTrigger,
-      getValueFromEvent,
-      normalize,
-      valuePropName = 'value',
-      getValueProps,
-      fieldContext,
-    } = this.props;
-
-    const mergedValidateTrigger =
-      validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
-
-    const namePath = this.getNamePath();
-    const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
-    const { dispatch } = getInternalHooks(HOOK_MARK);
-    const value = this.getValue();
-    const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
-
-    const originTriggerFunc = childProps[trigger];
-
-    const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
-
-    // warning when prop value is function
-    if (process.env.NODE_ENV !== 'production' && valueProps) {
-      Object.keys(valueProps).forEach(key => {
-        warning(
-          typeof valueProps[key] !== 'function',
-          `It's not recommended to generate dynamic function prop by \`getValueProps\`. Please pass it to child component directly (prop: ${key})`,
-        );
-      });
-    }
-
-    const control = {
-      ...childProps,
-      ...valueProps,
-    };
-
-    // Add trigger
-    control[trigger] = (...args: EventArgs) => {
-      // Mark as touched
-      this.touched = true;
-      this.dirty = true;
-
-      this.triggerMetaEvent();
-
-      let newValue: StoreValue;
-      if (getValueFromEvent) {
-        newValue = getValueFromEvent(...args);
+        metaCacheRef.current = meta;
       } else {
-        newValue = defaultGetValueFromEvent(valuePropName, ...args);
+        metaCacheRef.current = null;
+      }
+    },
+    [getMeta, onMetaChange],
+  );
+
+  const validateRulesHandler = React.useCallback(
+    (options?: InternalValidateOptions): Promise<RuleError[]> => {
+      // We should fixed namePath & value to avoid developer change then by form function
+      const namePath = getNamePath();
+      const currentValue = getValue();
+
+      const { triggerName, validateOnly = false, delayFrame: showDelayFrame } = options || {};
+
+      // Force change to async to avoid rule OOD under renderProps field
+      const rootPromise = Promise.resolve().then(async (): Promise<any[]> => {
+        if (!mountedRef.current) {
+          return [];
+        }
+
+        const currentField = fieldRef.current;
+        const { validateFirst = false, messageVariables, validateDebounce } = currentField?.props;
+
+        // Should wait for the frame render,
+        // since developer may `useWatch` value in the rules.
+        if (showDelayFrame) {
+          await delayFrame();
+        }
+
+        // Start validate
+        let filteredRules = currentField?.getRules();
+        if (triggerName) {
+          filteredRules = filteredRules
+            .filter(rule => rule)
+            .filter((rule: RuleObject) => {
+              const { validateTrigger: ruleValidateTrigger } = rule;
+              if (!ruleValidateTrigger) {
+                return true;
+              }
+              const triggerList = toArray(ruleValidateTrigger);
+              return triggerList.includes(triggerName);
+            });
+        }
+
+        // Wait for debounce. Skip if no `triggerName` since its from `validateFields / submit`
+        if (validateDebounce && triggerName) {
+          await new Promise(resolve => {
+            setTimeout(resolve, validateDebounce);
+          });
+
+          // Skip since out of date
+          if (validatePromiseRef.current !== rootPromise) {
+            return [];
+          }
+        }
+
+        const promise = validateRules(
+          namePath,
+          currentValue,
+          filteredRules,
+          options,
+          validateFirst,
+          messageVariables,
+        );
+
+        promise
+          .catch(e => e)
+          .then((ruleErrors: RuleError[] = EMPTY_ERRORS) => {
+            if (validatePromiseRef.current === rootPromise) {
+              validatePromiseRef.current = null;
+
+              // Get errors & warnings
+              const nextErrors: string[] = [];
+              const nextWarnings: string[] = [];
+              ruleErrors.forEach?.(({ rule: { warningOnly }, errors = EMPTY_ERRORS }) => {
+                if (warningOnly) {
+                  nextWarnings.push(...errors);
+                } else {
+                  nextErrors.push(...errors);
+                }
+              });
+
+              errorsRef.current = nextErrors;
+              warningsRef.current = nextWarnings;
+              currentField?.triggerMetaEvent();
+              currentField?.reRender();
+            }
+          });
+
+        return promise;
+      });
+
+      if (validateOnly) {
+        return rootPromise;
       }
 
-      if (normalize) {
-        newValue = normalize(newValue, value, getFieldsValue(true));
+      validatePromiseRef.current = rootPromise;
+      dirtyRef.current = true;
+      errorsRef.current = EMPTY_ERRORS;
+      warningsRef.current = EMPTY_WARNINGS;
+      fieldRef.current?.triggerMetaEvent();
+
+      // Force trigger re-render since we need sync renderProps with new meta
+      fieldRef.current?.reRender();
+
+      return rootPromise;
+    },
+    [getNamePath, getValue],
+  );
+
+  const cancelRegister = React.useCallback(() => {
+    if (cancelRegisterFuncRef.current) {
+      cancelRegisterFuncRef.current(isListFieldProp, preserve, getNamePathByName(name));
+    }
+    cancelRegisterFuncRef.current = null;
+  }, [isListFieldProp, name, preserve]);
+
+  // Trigger by store update. Check if need update the component
+  const onStoreChange = React.useCallback<FieldEntity['onStoreChange']>(
+    (prevStore, namePathList, info) => {
+      const mergedDependencies = dependencies || [];
+      const { store } = info;
+      const namePath = getNamePath();
+      const prevValue = getValue(prevStore);
+      const curValue = getValue(store);
+
+      const namePathMatch = namePathList && containsNamePath(namePathList, namePath);
+
+      // `setFieldsValue` is a quick access to update related status
+      if (
+        info.type === 'valueUpdate' &&
+        info.source === 'external' &&
+        !isEqual(prevValue, curValue)
+      ) {
+        touchedRef.current = true;
+        dirtyRef.current = true;
+        validatePromiseRef.current = null;
+        errorsRef.current = EMPTY_ERRORS;
+        warningsRef.current = EMPTY_WARNINGS;
+        triggerMetaEvent();
       }
-      if (newValue !== value) {
-        dispatch({
-          type: 'updateValue',
-          namePath,
-          value: newValue,
+
+      switch (info.type) {
+        case 'reset':
+          if (!namePathList || namePathMatch) {
+            // Clean up state
+            touchedRef.current = false;
+            dirtyRef.current = false;
+            validatePromiseRef.current = undefined;
+            errorsRef.current = EMPTY_ERRORS;
+            warningsRef.current = EMPTY_WARNINGS;
+            triggerMetaEvent();
+
+            onReset?.();
+
+            refresh();
+            return;
+          }
+          break;
+
+        /**
+         * In case field with `preserve = false` nest deps like:
+         * - A = 1 => show B
+         * - B = 1 => show C
+         * - Reset A, need clean B, C
+         */
+        case 'remove': {
+          if (
+            shouldUpdate &&
+            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+          ) {
+            reRender();
+            return;
+          }
+          break;
+        }
+
+        case 'setField': {
+          const { data } = info;
+          if (namePathMatch) {
+            if ('touched' in data) {
+              touchedRef.current = data.touched;
+            }
+            if ('validating' in data && !('originRCField' in data)) {
+              validatePromiseRef.current = data.validating ? Promise.resolve([]) : null;
+            }
+            if ('errors' in data) {
+              errorsRef.current = data.errors || EMPTY_ERRORS;
+            }
+            if ('warnings' in data) {
+              warningsRef.current = data.warnings || EMPTY_WARNINGS;
+            }
+            dirtyRef.current = true;
+
+            triggerMetaEvent();
+
+            reRender();
+            return;
+          } else if ('value' in data && containsNamePath(namePathList, namePath, true)) {
+            // Contains path with value should also check
+            reRender();
+            return;
+          }
+
+          // Handle update by `setField` with `shouldUpdate`
+          if (
+            shouldUpdate &&
+            !namePath.length &&
+            requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info)
+          ) {
+            reRender();
+            return;
+          }
+          break;
+        }
+
+        case 'dependenciesUpdate': {
+          /**
+           * Trigger when marked `dependencies` updated. Related fields will all update
+           */
+          const dependencyList = mergedDependencies.map(getNamePathByName);
+          // No need for `namePathMath` check and `shouldUpdate` check, since `valueUpdate` will be
+          // emitted earlier and they will work there
+          // If set it may cause unnecessary twice rerendering
+          if (dependencyList.some(dependency => containsNamePath(info.relatedFields, dependency))) {
+            reRender();
+            return;
+          }
+          break;
+        }
+
+        default:
+          // 1. If `namePath` exists in `namePathList`, means it's related value and should update
+          //      For example <List name="list"><Field name={['list', 0]}></List>
+          //      If `namePathList` is [['list']] (List value update), Field should be updated
+          //      If `namePathList` is [['list', 0]] (Field value update), List shouldn't be updated
+          // 2.
+          //   2.1 If `dependencies` is set, `name` is not set and `shouldUpdate` is not set,
+          //       don't use `shouldUpdate`. `dependencies` is view as a shortcut if `shouldUpdate`
+          //       is not provided
+          //   2.2 If `shouldUpdate` provided, use customize logic to update the field
+          //       else to check if value changed
+          if (
+            namePathMatch ||
+            ((!mergedDependencies.length || namePath.length || shouldUpdate) &&
+              requireUpdate(shouldUpdate, prevStore, store, prevValue, curValue, info))
+          ) {
+            reRender();
+            return;
+          }
+          break;
+      }
+
+      if (shouldUpdate === true) {
+        reRender();
+      }
+    },
+    [
+      dependencies,
+      getNamePath,
+      getValue,
+      onReset,
+      reRender,
+      refresh,
+      shouldUpdate,
+      triggerMetaEvent,
+    ],
+  );
+
+  const getControlled = React.useCallback(
+    (childProps: ChildProps = {}) => {
+      const mergedValidateTrigger =
+        validateTrigger !== undefined ? validateTrigger : fieldContext.validateTrigger;
+
+      const namePath = getNamePath();
+      const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
+      const { dispatch } = getInternalHooks(HOOK_MARK);
+      const value = getValue();
+      const mergedGetValueProps =
+        getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
+
+      const originTriggerFunc = childProps[trigger];
+
+      const valueProps = name !== undefined ? mergedGetValueProps(value) : {};
+
+      // warning when prop value is function
+      if (process.env.NODE_ENV !== 'production' && valueProps) {
+        Object.keys(valueProps).forEach(key => {
+          warning(
+            typeof valueProps[key] !== 'function',
+            `It's not recommended to generate dynamic function prop by \`getValueProps\`. Please pass it to child component directly (prop: ${key})`,
+          );
         });
       }
-      if (originTriggerFunc) {
-        originTriggerFunc(...args);
-      }
-    };
 
-    // Add validateTrigger
-    const validateTriggerList: string[] = toArray(mergedValidateTrigger || []);
+      const control = {
+        ...childProps,
+        ...valueProps,
+      };
 
-    validateTriggerList.forEach((triggerName: string) => {
-      // Wrap additional function of component, so that we can get latest value from store
-      const originTrigger = control[triggerName];
-      control[triggerName] = (...args: EventArgs) => {
-        if (originTrigger) {
-          originTrigger(...args);
+      // Add trigger
+      control[trigger] = (...args: EventArgs) => {
+        // Mark as touched
+        touchedRef.current = true;
+        dirtyRef.current = true;
+
+        triggerMetaEvent();
+
+        let newValue: StoreValue;
+        if (getValueFromEvent) {
+          newValue = getValueFromEvent(...args);
+        } else {
+          newValue = defaultGetValueFromEvent(valuePropName, ...args);
         }
 
-        // Always use latest rules
-        const { rules } = this.props;
-        if (rules && rules.length) {
-          // We dispatch validate to root,
-          // since it will update related data with other field with same name
-          dispatch({
-            type: 'validateField',
-            namePath,
-            triggerName,
-          });
+        if (normalize) {
+          newValue = normalize(newValue, value, getFieldsValue(true));
+        }
+        if (newValue !== value) {
+          dispatch({ type: 'updateValue', namePath, value: newValue });
+        }
+        if (originTriggerFunc) {
+          originTriggerFunc(...args);
         }
       };
-    });
 
-    return control;
-  };
+      // Add validateTrigger
+      const validateTriggerList: string[] = toArray(mergedValidateTrigger || []);
 
-  public render() {
-    const { resetCount } = this.state;
-    const { children } = this.props;
+      validateTriggerList.forEach((triggerName: string) => {
+        // Wrap additional function of component, so that we can get latest value from store
+        const originTrigger = control[triggerName];
+        control[triggerName] = (...args: EventArgs) => {
+          if (originTrigger) {
+            originTrigger(...args);
+          }
 
-    const { child, isFunction } = this.getOnlyChild(children);
+          // Always use latest rules
+          if (rules && rules.length) {
+            // We dispatch validate to root,
+            // since it will update related data with other field with same name
+            dispatch({
+              type: 'validateField',
+              namePath,
+              triggerName,
+            });
+          }
+        };
+      });
 
-    // Not need to `cloneElement` since user can handle this in render function self
-    let returnChildNode: React.ReactNode;
-    if (isFunction) {
-      returnChildNode = child;
-    } else if (React.isValidElement(child)) {
-      returnChildNode = React.cloneElement(
-        child as React.ReactElement,
-        this.getControlled((child as React.ReactElement).props),
-      );
-    } else {
-      warning(!child, '`children` of Field is not validate ReactElement.');
-      returnChildNode = child;
+      return control;
+    },
+    [
+      fieldContext,
+      getNamePath,
+      getValue,
+      getValueFromEvent,
+      getValueProps,
+      name,
+      normalize,
+      rules,
+      trigger,
+      triggerMetaEvent,
+      validateTrigger,
+      valuePropName,
+    ],
+  );
+
+  const getOnlyChild = React.useCallback(
+    (
+      childrenNode:
+        | React.ReactNode
+        | ((control: ChildProps, meta: Meta, context: FormInstance) => React.ReactNode),
+    ): { child: React.ReactNode | null; isFunction: boolean } => {
+      // Support render props
+      if (typeof childrenNode === 'function') {
+        const meta = getMeta();
+
+        return {
+          ...getOnlyChild(childrenNode(getControlled(), meta, fieldContext)),
+          isFunction: true,
+        };
+      }
+
+      // Filed element only
+      const childList = toChildrenArray(childrenNode as any);
+
+      if (childList.length !== 1 || !React.isValidElement(childList[0])) {
+        return { child: childList as React.ReactNode, isFunction: false };
+      }
+
+      return { child: childList[0], isFunction: false };
+    },
+    [fieldContext, getControlled, getMeta],
+  );
+
+  const field = fieldRef.current;
+
+  field.props = props;
+  field.getNamePath = getNamePath;
+  field.getRules = getRules;
+  field.reRender = reRender;
+  field.refresh = refresh;
+  field.triggerMetaEvent = triggerMetaEvent;
+  field.onStoreChange = onStoreChange;
+  field.validateRules = validateRulesHandler;
+  field.isFieldValidating = isFieldValidating;
+  field.isFieldTouched = isFieldTouched;
+  field.isFieldDirty = isFieldDirty;
+  field.getErrors = getErrors;
+  field.getWarnings = getWarnings;
+  field.isListField = isListField;
+  field.isList = isList;
+  field.isPreserve = isPreserve;
+  field.getMeta = getMeta;
+  field.getOnlyChild = getOnlyChild;
+  field.getValue = getValue;
+  field.getControlled = getControlled;
+  field.cancelRegister = cancelRegister;
+
+  // Register on init
+  if (!initializedRef.current) {
+    const { getInternalHooks }: InternalFormInstance = fieldContext;
+    const { initEntityValue } = getInternalHooks(HOOK_MARK);
+    initEntityValue(field);
+    initializedRef.current = true;
+  }
+
+  React.useLayoutEffect(() => {
+    mountedRef.current = true;
+
+    // Register on init
+    if (fieldContext) {
+      const { getInternalHooks }: InternalFormInstance = fieldContext;
+      const { registerField } = getInternalHooks(HOOK_MARK);
+      cancelRegisterFuncRef.current = registerField(field);
     }
 
-    return <React.Fragment key={resetCount}>{returnChildNode}</React.Fragment>;
+    // One more render for component in case fields not ready
+    if (shouldUpdate === true) {
+      reRender();
+    }
+
+    return () => {
+      field.cancelRegister();
+      field.triggerMetaEvent(true);
+      mountedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { child, isFunction } = getOnlyChild(children);
+
+  // Not need to `cloneElement` since user can handle this in render function self
+  let returnChildNode: React.ReactNode;
+  if (isFunction) {
+    returnChildNode = child;
+  } else if (React.isValidElement<any>(child)) {
+    returnChildNode = React.cloneElement(child, getControlled(child.props));
+  } else {
+    warning(!child, '`children` of Field is not validate ReactElement.');
+    returnChildNode = child;
   }
-}
+
+  return <React.Fragment key={resetCount}>{returnChildNode}</React.Fragment>;
+};
 
 function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) {
-  const fieldContext = React.useContext(FieldContext);
   const listContext = React.useContext(ListContext);
-  const namePath = name !== undefined ? getNamePath(name) : undefined;
+
+  const namePath = React.useMemo(
+    () => (name !== undefined ? getNamePathByName(name) : undefined),
+    [name],
+  );
 
   const isMergedListField = restProps.isListField ?? !!listContext;
 
@@ -704,20 +751,13 @@ function WrapperField<Values = any>({ name, ...restProps }: FieldProps<Values>) 
     process.env.NODE_ENV !== 'production' &&
     restProps.preserve === false &&
     isMergedListField &&
+    namePath &&
     namePath.length <= 1
   ) {
     warning(false, '`preserve` should not apply on Form.List fields.');
   }
 
-  return (
-    <Field
-      key={key}
-      name={namePath}
-      isListField={isMergedListField}
-      {...restProps}
-      fieldContext={fieldContext}
-    />
-  );
+  return <Field key={key} name={namePath} isListField={isMergedListField} {...restProps} />;
 }
 
 export default WrapperField;
