@@ -43,8 +43,7 @@
     "prepublishOnly": "npm run compile && rc-np",
     "lint": "eslint src/ --ext .tsx,.ts",
     "lint:tsc": "tsc -p tsconfig.json --noEmit",
-    "tsc": "tsc --noEmit",
-    "now-build": "npm run docs:build"
+    "tsc": "tsc --noEmit"
   },
   "peerDependencies": {
     "react": ">=16.9.0",
