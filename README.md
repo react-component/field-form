@@ -319,11 +319,11 @@ npm run build
 ## Release
 
 ```bash
-npm publish
+npm run prepublishOnly
 ```
 
-The `prepublishOnly` script runs `npm run compile && rc-np` before publishing.
+The release flow is handled by `@rc-component/np` through the `rc-np` command after the package build.
 
 ## License
 
-`@rc-component/form` is released under the MIT license.
+@rc-component/form is released under the [MIT](./LICENSE) license.
