@@ -1,39 +1,49 @@
-# rc-field-form
+<div align="center">
+  <h1>@rc-component/form</h1>
+  <p>📝 Performance-first React form state manager with field subscriptions, validation, lists, dependencies, and hook APIs.</p>
 
-React Performance First Form Component.
+  <p>
+    <a href="https://npmjs.org/package/@rc-component/form"><img alt="NPM version" src="https://img.shields.io/npm/v/@rc-component/form.svg?style=flat-square"></a>
+    <a href="https://npmjs.org/package/@rc-component/form"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@rc-component/form.svg?style=flat-square"></a>
+    <a href="https://github.com/react-component/field-form/actions/workflows/main.yml"><img alt="build status" src="https://github.com/react-component/field-form/actions/workflows/main.yml/badge.svg"></a>
+    <a href="https://codecov.io/gh/react-component/field-form/branch/master"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square"></a>
+    <a href="https://bundlephobia.com/package/@rc-component/form"><img alt="bundle size" src="https://img.shields.io/bundlephobia/minzip/@rc-component/form?style=flat-square"></a>
+    <a href="https://github.com/umijs/dumi"><img alt="dumi" src="https://img.shields.io/badge/docs%20by-dumi-blue?style=flat-square"></a>
+  </p>
+</div>
 
-[![NPM version][npm-image]][npm-url] [![dumi](https://img.shields.io/badge/docs%20by-dumi-blue?style=flat-square)](https://github.com/umijs/dumi) [![build status][github-actions-image]][github-actions-url] [![Codecov][codecov-image]][codecov-url] [![npm download][download-image]][download-url]
+<p align="center">
+  <sub>
+    <a href="https://ant.design">
+      <img alt="Ant Design" src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" height="16">
+    </a>
+    Part of the <a href="https://ant.design">Ant Design</a> ecosystem.
+  </sub>
+</p>
 
-[npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
-[npm-url]: http://npmjs.org/package/rc-field-form
-[github-actions-image]: https://github.com/react-component/field-form/actions/workflows/main.yml/badge.svg
-[github-actions-url]: https://github.com/react-component/field-form/actions/workflows/main.yml
-[codecov-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
-[codecov-url]: https://codecov.io/gh/react-component/field-form/branch/master
-[download-image]: https://img.shields.io/npm/dm/rc-field-form.svg?style=flat-square
-[download-url]: https://npmjs.org/package/rc-field-form
+## Highlights
 
-## Development
-
-```bash
-npm install
-npm start
-open http://localhost:8000
-```
-
-## Feature
-
-- Support react.js and even react-native
-- Validate fields with [@rc-component/async-validator](https://github.com/react-component/async-validator/)
+| Area       | Support                                                            |
+| ---------- | ------------------------------------------------------------------ |
+| State      | Field-level subscriptions, controlled fields, initial values       |
+| Validation | Rule-based validation powered by `@rc-component/async-validator`   |
+| Structure  | Nested names, lists, dependencies, and preservation control        |
+| APIs       | `Form`, `Field`, `List`, `FormProvider`, `useForm`, and `useWatch` |
+| Runtime    | React DOM and React Native friendly form state model               |
 
 ## Install
 
-[![rc-field-form](https://nodei.co/npm/rc-field-form.png)](https://npmjs.org/package/rc-field-form)
+```bash
+npm install @rc-component/form
+```
+
+The package was formerly documented as `rc-field-form`; use
+`@rc-component/form` for new installs.
 
 ## Usage
 
-```js | pure
-import Form, { Field } from 'rc-field-form';
+```tsx | pure
+import Form, { Field } from '@rc-component/form';
 
 const Input = ({ value = '', ...props }) => <input value={value} {...props} />;
 
@@ -58,6 +68,15 @@ const Demo = () => {
 
 export default Demo;
 ```
+
+## Examples
+
+```bash
+npm install
+npm start
+```
+
+Open <http://localhost:8000> locally.
 
 ## 🔥 API
 
@@ -283,3 +302,27 @@ In `rc-form` you should use `preserve` to keep a value cause Form will auto remo
 In `rc-form`, we hope to help user auto trigger change event by setting to make redux dispatch easier, but it's not good design since it makes code logic couping.
 
 Additionally, user control update trigger `onFieldsChange` & `onValuesChange` event has potential dead loop risk.
+
+## Development
+
+```bash
+npm install
+npm start
+npm test
+npm run lint
+npm run tsc
+npm run compile
+npm run build
+```
+
+## Release
+
+```bash
+npm publish
+```
+
+The `prepublishOnly` script runs `npm run compile && rc-np` before publishing.
+
+## License
+
+`@rc-component/form` is released under the MIT license.

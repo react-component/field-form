@@ -32,16 +32,18 @@
   "module": "./es/index",
   "scripts": {
     "start": "dumi dev",
+    "build": "npm run docs:build",
     "docs:build": "dumi build",
     "docs:deploy": "gh-pages -d docs-dist",
     "compile": "father build",
     "deploy": "npm run docs:build && npm run docs:deploy",
-    "prettier": "prettier --write \"**/*.{js,jsx,tsx,ts,less,md,json}\"",
+    "prettier": "prettier --write --ignore-unknown .",
     "test": "rc-test",
     "test:coverage": "umi-test --coverage",
     "prepublishOnly": "npm run compile && rc-np",
     "lint": "eslint src/ --ext .tsx,.ts",
     "lint:tsc": "tsc -p tsconfig.json --noEmit",
+    "tsc": "tsc --noEmit",
     "now-build": "npm run docs:build"
   },
   "peerDependencies": {

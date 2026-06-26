@@ -3,7 +3,9 @@ import path from 'path';
 
 const isProdSite =
   // 不是预览模式 同时是生产环境
-  process.env.PREVIEW !== 'true' && process.env.NODE_ENV === 'production';
+  process.env.PREVIEW !== 'true' &&
+  process.env.VERCEL !== '1' &&
+  process.env.NODE_ENV === 'production';
 
 const name = 'field-form';
 
