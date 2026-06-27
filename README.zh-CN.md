@@ -1,8 +1,8 @@
 <div align="center">
   <h1>@rc-component/form</h1>
-  <p><sub>Part of the Ant Design ecosystem.</sub></p>
+  <p><sub>Ant Design 生态的一部分。</sub></p>
   <img alt="Ant Design" height="32" src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" />
-  <p>📝 Performance-first React form state manager with field subscriptions, validation, lists, dependencies, and hook APIs.</p>
+  <p>⚡️ 面向 React 的高性能表单状态管理组件。</p>
 
   <p>
     <a href="https://npmjs.org/package/@rc-component/form"><img alt="NPM version" src="https://img.shields.io/npm/v/@rc-component/form.svg?style=flat-square"></a>
@@ -14,12 +14,12 @@
   </p>
 </div>
 
-<p align="center">English | <a href="./README.zh-CN.md">简体中文</a></p>
+<p align="center"><a href="./README.md">English</a> | 简体中文</p>
 
 
-## Highlights
+## 特性
 
-| Area       | Support                                                            |
+| 范围 | 支持 |
 | ---------- | ------------------------------------------------------------------ |
 | State      | Field-level subscriptions, controlled fields, initial values       |
 | Validation | Rule-based validation powered by `@rc-component/async-validator`   |
@@ -27,7 +27,7 @@
 | APIs       | `Form`, `Field`, `List`, `FormProvider`, `useForm`, and `useWatch` |
 | Runtime    | React DOM and React Native friendly form state model               |
 
-## Install
+## 安装
 
 ```bash
 npm install @rc-component/form
@@ -36,7 +36,7 @@ npm install @rc-component/form
 The package was formerly documented as `rc-field-form`; use
 `@rc-component/form` for new installs.
 
-## Usage
+## 使用
 
 ```tsx | pure
 import Form, { Field } from '@rc-component/form';
@@ -65,7 +65,7 @@ const Demo = () => {
 export default Demo;
 ```
 
-## Examples
+## 示例
 
 ```bash
 npm install
@@ -80,7 +80,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ### Form
 
-| Prop             | Description                                        | Type                                         | Default          |
+| 属性 | 说明 | 类型 | 默认值 |
 | ---------------- | -------------------------------------------------- | -------------------------------------------- | ---------------- |
 | component        | Customize Form render component                    | string \| Component \| false                 | form             |
 | fields           | Control Form fields status. Only use when in Redux | [FieldData](#fielddata)[]                    | -                |
@@ -96,7 +96,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ### Field
 
-| Prop              | Description                                                                   | Type                                           | Default  |
+| 属性 | 说明 | 类型 | 默认值 |
 | ----------------- | ----------------------------------------------------------------------------- | ---------------------------------------------- | -------- |
 | dependencies      | Will re-render if dependencies changed                                        | [NamePath](#namepath)[]                        | -        |
 | getValueFromEvent | Specify how to get value from event                                           | (..args: any[]) => any                         | -        |
@@ -113,7 +113,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ### List
 
-| Prop     | Description                     | Type                                                                                                    | Default |
+| 属性 | 说明 | 类型 | 默认值 |
 | -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- | ------- |
 | name     | List field name path            | [NamePath](#namepath)[]                                                                                 | -       |
 | children | Render props for listing fields | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)) => ReactNode | -       |
@@ -142,7 +142,7 @@ class Demo extends React.Component {
 }
 ```
 
-| Prop              | Description                                | Type                                                                       |
+| 属性              | 说明                                | 类型                                                                       |
 | ----------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
 | getFieldValue     | Get field value by name path               | (name: [NamePath](#namepath)) => any                                       |
 | getFieldsValue    | Get list of field values by name path list | (nameList?: ([NamePath](#namepath)[]) => any) \| true                      |
@@ -159,7 +159,7 @@ class Demo extends React.Component {
 
 ### FormProvider
 
-| Prop             | Description                               | Type                                     | Default |
+| 属性 | 说明 | 类型 | 默认值 |
 | ---------------- | ----------------------------------------- | ---------------------------------------- | ------- |
 | validateMessages | Config global `validateMessages` template | [ValidateMessages](#validatemessages)    | -       |
 | onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
@@ -169,13 +169,13 @@ class Demo extends React.Component {
 
 ### NamePath
 
-| Type                                     |
+| 类型                                     |
 | ---------------------------------------- |
 | string \| number \| (string \| number)[] |
 
 ### FieldData
 
-| Prop       | Type                                     |
+| 属性       | 类型                                     |
 | ---------- | ---------------------------------------- |
 | touched    | boolean                                  |
 | validating | boolean                                  |
@@ -185,7 +185,7 @@ class Demo extends React.Component {
 
 ### Rule
 
-| Prop            | Type                                                                                            |
+| 属性            | 类型                                                                                            |
 | --------------- | ----------------------------------------------------------------------------------------------- |
 | enum            | any[]                                                                                           |
 | len             | number                                                                                          |
@@ -206,7 +206,7 @@ To keep sync with `rc-form` legacy usage of `validator`, we still provides `call
 
 ### ListOperations
 
-| Prop   | Type                     |
+| 属性   | 类型                     |
 | ------ | ------------------------ |
 | add    | (initValue: any) => void |
 | remove | (index: number) => void  |
@@ -215,7 +215,7 @@ To keep sync with `rc-form` legacy usage of `validator`, we still provides `call
 
 Validate Messages provides a list of error template. You can ref [here](https://github.com/react-component/field-form/blob/master/src/utils/messages.ts) for fully default templates.
 
-| Prop    | Description         |
+| 属性    | 说明         |
 | ------- | ------------------- |
 | enum    | Rule `enum` prop    |
 | len     | Rule `len` prop     |
@@ -299,7 +299,7 @@ In `rc-form`, we hope to help user auto trigger change event by setting to make 
 
 Additionally, user control update trigger `onFieldsChange` & `onValuesChange` event has potential dead loop risk.
 
-## Development
+## 本地开发
 
 ```bash
 npm install
@@ -311,7 +311,7 @@ npm run compile
 npm run build
 ```
 
-## Release
+## 发布
 
 ```bash
 npm run prepublishOnly
@@ -319,6 +319,6 @@ npm run prepublishOnly
 
 The release flow is handled by `@rc-component/np` through the `rc-np` command after the package build.
 
-## License
+## 许可证
 
 @rc-component/form is released under the [MIT](./LICENSE) license.
