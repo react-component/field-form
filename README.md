@@ -66,12 +66,14 @@ export default Demo;
 
 ## Examples
 
+Run the local dumi site:
+
 ```bash
 npm install
 npm start
 ```
 
-Open <http://localhost:8000> locally.
+Then open `http://localhost:8000`.
 
 ## 🔥 API
 
