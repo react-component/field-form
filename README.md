@@ -1,7 +1,6 @@
 <div align="center">
   <h1>@rc-component/form</h1>
-  <p><sub>Part of the Ant Design ecosystem.</sub></p>
-  <img alt="Ant Design" height="32" src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" />
+  <p><sub><img alt="Ant Design" height="14" src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" style="vertical-align: -0.125em;" /> Part of the Ant Design ecosystem.</sub></p>
   <p>📝 Performance-first React form state manager with field subscriptions, validation, lists, dependencies, and hook APIs.</p>
 
   <p>
