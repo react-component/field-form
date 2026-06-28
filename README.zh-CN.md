@@ -23,7 +23,7 @@
 | 状态      | 字段级订阅、受控字段和初始值       |
 | 验证 | 由 `@rc-component/async-validator` 支持的基于规则的验证   |
 | 结构  | 嵌套名称、列表、依赖和保留控制        |
-| API       | `Form`、`Field`、`List`、`FormProvider`、`useForm` 和 `useWatch` |
+| 接口       | `Form`、`Field`、`List`、`FormProvider`、`useForm` 和 `useWatch` |
 | 运行时    | 兼容 React DOM 和 React Native 的表单状态模型               |
 
 ## 安装
