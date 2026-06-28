@@ -15,16 +15,15 @@
 
 <p align="center"><a href="./README.md">English</a> | 简体中文</p>
 
-
 ## 特性
 
-| 范围 | 支持 |
-| ---------- | ------------------------------------------------------------------ |
-| 状态      | 字段级订阅、受控字段和初始值       |
-| 验证 | 由 `@rc-component/async-validator` 支持的基于规则的验证   |
-| 结构  | 嵌套名称、列表、依赖和保留控制        |
-| 接口       | `Form`、`Field`、`List`、`FormProvider`、`useForm` 和 `useWatch` |
-| 运行时    | 兼容 React DOM 和 React Native 的表单状态模型               |
+| 范围   | 支持                                                             |
+| ------ | ---------------------------------------------------------------- |
+| 状态   | 字段级订阅、受控字段和初始值                                     |
+| 验证   | 由 `@rc-component/async-validator` 支持的基于规则的验证          |
+| 结构   | 嵌套名称、列表、依赖和保留控制                                   |
+| 接口   | `Form`、`Field`、`List`、`FormProvider`、`useForm` 和 `useWatch` |
+| 运行时 | 兼容 React DOM 和 React Native 的表单状态模型                    |
 
 ## 安装
 
@@ -74,49 +73,49 @@ npm start
 
 然后打开 `http://localhost:8000`。
 
-## 🔥 API
+## API
 
 我们使用 TypeScript 生成类型定义，可直接在 IDE 中查看，也可以查看[这里](https://github.com/react-component/field-form/blob/master/src/interface.ts)的类型定义。
 
 ### Form
 
-| 属性 | 说明 | 类型 | 默认值 |
-| ---------------- | -------------------------------------------------- | -------------------------------------------- | ---------------- |
-| component        | 自定义表单渲染组件                    | string \| Component \| false                 | form             |
+| 属性             | 说明                                              | 类型                                         | 默认值           |
+| ---------------- | ------------------------------------------------- | -------------------------------------------- | ---------------- |
+| component        | 自定义表单渲染组件                                | string \| Component \| false                 | form             |
 | fields           | 控制 Form 字段状态，仅在 Redux 等外部状态场景使用 | [FieldData](#fielddata)[]                    | -                |
-| form             | 设置由 `useForm` 创建的表单实例             | [FormInstance](#useform)                     | `Form.useForm()` |
-| initialValues    | 表单初始值                              | Object                                       | -                |
-| name             | 配合 [FormProvider](#formprovider) 使用的表单名称     | string                                       | -                |
-| preserve         | 删除字段后保留值                  | boolean                                      | false            |
-| validateMessages | 设置验证消息模板                      | [ValidateMessages](#validatemessages)        | -                |
-| onFieldsChange   | 任意字段状态变化时触发            | (changedFields, allFields) => void           | -                |
-| onFinish         | 表单提交成功时触发               | (values) => void                             | -                |
-| onFinishFailed   | 表单提交失败时触发                | ({ values, errorFields, outOfDate }) => void | -                |
-| onValuesChange   | 任意字段值变化时触发            | (changedValues, values) => void              | -                |
+| form             | 设置由 `useForm` 创建的表单实例                   | [FormInstance](#useform)                     | `Form.useForm()` |
+| initialValues    | 表单初始值                                        | Object                                       | -                |
+| name             | 配合 [FormProvider](#formprovider) 使用的表单名称 | string                                       | -                |
+| preserve         | 删除字段后保留值                                  | boolean                                      | false            |
+| validateMessages | 设置验证消息模板                                  | [ValidateMessages](#validatemessages)        | -                |
+| onFieldsChange   | 任意字段状态变化时触发                            | (changedFields, allFields) => void           | -                |
+| onFinish         | 表单提交成功时触发                                | (values) => void                             | -                |
+| onFinishFailed   | 表单提交失败时触发                                | ({ values, errorFields, outOfDate }) => void | -                |
+| onValuesChange   | 任意字段值变化时触发                              | (changedValues, values) => void              | -                |
 
 ### Field
 
-| 属性 | 说明 | 类型 | 默认值 |
-| ----------------- | ----------------------------------------------------------------------------- | ---------------------------------------------- | -------- |
-| dependencies      | 如果依赖项发生变化，将重新渲染                                        | [NamePath](#namepath)[]                        | -        |
-| getValueFromEvent | 指定如何从事件中获取值                                           | (..args: any[]) => any                         | -        |
+| 属性              | 说明                                                 | 类型                                           | 默认值   |
+| ----------------- | ---------------------------------------------------- | ---------------------------------------------- | -------- |
+| dependencies      | 如果依赖项发生变化，将重新渲染                       | [NamePath](#namepath)[]                        | -        |
+| getValueFromEvent | 指定如何从事件中获取值                               | (..args: any[]) => any                         | -        |
 | getValueProps     | 基于值自定义额外 props。该属性会禁用 `valuePropName` | (value) => any                                 | -        |
-| initialValue      | 字段初始值                                                           | any                                            | -        |
-| name              | 字段名称路径                                                               | [NamePath](#namepath)                          | -        |
-| normalize         | 更新前标准化值                                                 | (value, prevValue, prevValues) => any          | -        |
-| preserve          | 删除字段后保留值                                             | boolean                                        | false    |
-| rules             | 验证规则                                                                | [Rule](#rule)[]                                | -        |
-| shouldUpdate      | 检查字段是否应该更新                                                  | boolean \| (prevValues, nextValues) => boolean | -        |
-| trigger           | 通过事件触发收集值更新                                         | string                                         | onChange |
-| validateTrigger   | 使用规则验证配置触发点                                       | string \| string[]                             | onChange |
-| valuePropName     | 配置元素中映射值的 prop                                        | string                                         | value    |
+| initialValue      | 字段初始值                                           | any                                            | -        |
+| name              | 字段名称路径                                         | [NamePath](#namepath)                          | -        |
+| normalize         | 更新前标准化值                                       | (value, prevValue, prevValues) => any          | -        |
+| preserve          | 删除字段后保留值                                     | boolean                                        | false    |
+| rules             | 验证规则                                             | [Rule](#rule)[]                                | -        |
+| shouldUpdate      | 检查字段是否应该更新                                 | boolean \| (prevValues, nextValues) => boolean | -        |
+| trigger           | 通过事件触发收集值更新                               | string                                         | onChange |
+| validateTrigger   | 使用规则验证配置触发点                               | string \| string[]                             | onChange |
+| valuePropName     | 配置元素中映射值的 prop                              | string                                         | value    |
 
 ### List
 
-| 属性 | 说明 | 类型 | 默认值 |
-| -------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- | ------- |
-| name     | 列表字段名称路径            | [NamePath](#namepath)[]                                                                                 | -       |
-| children | 列表字段的渲染函数 | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)) => ReactNode | -       |
+| 属性     | 说明               | 类型                                                                                                    | 默认值 |
+| -------- | ------------------ | ------------------------------------------------------------------------------------------------------- | ------ |
+| name     | 列表字段名称路径   | [NamePath](#namepath)[]                                                                                 | -      |
+| children | 列表字段的渲染函数 | (fields: { name: [NamePath](#namepath) }[], operations: [ListOperations](#listoperations)) => ReactNode | -      |
 
 ### useForm
 
@@ -134,7 +133,7 @@ const Demo = () => {
 ```jsx | pure
 class Demo extends React.Component {
   setRef = form => {
-    // Form instance here
+    // 在这里访问 Form 实例
   };
   render() {
     return <Form ref={this.setRef} />;
@@ -142,36 +141,36 @@ class Demo extends React.Component {
 }
 ```
 
-| 属性              | 说明                                | 类型                                                                       |
-| ----------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
-| getFieldValue     | 通过名称路径获取字段值               | (name: [NamePath](#namepath)) => any                                       |
-| getFieldsValue    | 按名称路径列表获取字段值列表 | (nameList?: ([NamePath](#namepath)[]) => any) \| true                      |
-| getFieldError     | 按名称路径获取字段错误              | (name: [NamePath](#namepath)) => string[]                                  |
+| 属性              | 说明                           | 类型                                                                       |
+| ----------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| getFieldValue     | 通过名称路径获取字段值         | (name: [NamePath](#namepath)) => any                                       |
+| getFieldsValue    | 按名称路径列表获取字段值列表   | (nameList?: ([NamePath](#namepath)[]) => any) \| true                      |
+| getFieldError     | 按名称路径获取字段错误         | (name: [NamePath](#namepath)) => string[]                                  |
 | getFieldsError    | 按名称路径列表获取字段错误列表 | (nameList?: [NamePath](#namepath)[]) => FieldError[]                       |
-| isFieldsTouched   | 检查字段列表是否被触及        | (nameList?: [NamePath](#namepath)[], allTouched?: boolean) => boolean      |
-| isFieldTouched    | 检查某个字段是否被触摸                | (name: [NamePath](#namepath)) => boolean                                   |
-| isFieldValidating | 检查字段是否正在校验             | (name: [NamePath](#namepath)) => boolean                                   |
-| resetFields       | 重置字段状态                        | (fields?: [NamePath](#namepath)[]) => void                                 |
-| setFields         | 设置字段状态                          | (fields: FieldData[]) => void                                              |
-| setFieldsValue    | 设置字段值                           | (values) => void                                                           |
-| submit            | 触发表单提交                        | () => void                                                                 |
-| validateFields    | 触发字段进行验证                 | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
+| isFieldsTouched   | 检查字段列表是否被触及         | (nameList?: [NamePath](#namepath)[], allTouched?: boolean) => boolean      |
+| isFieldTouched    | 检查某个字段是否被触摸         | (name: [NamePath](#namepath)) => boolean                                   |
+| isFieldValidating | 检查字段是否正在校验           | (name: [NamePath](#namepath)) => boolean                                   |
+| resetFields       | 重置字段状态                   | (fields?: [NamePath](#namepath)[]) => void                                 |
+| setFields         | 设置字段状态                   | (fields: FieldData[]) => void                                              |
+| setFieldsValue    | 设置字段值                     | (values) => void                                                           |
+| submit            | 触发表单提交                   | () => void                                                                 |
+| validateFields    | 触发字段进行验证               | (nameList?: [NamePath](#namepath)[], options?: ValidateOptions) => Promise |
 
 ### FormProvider
 
-| 属性 | 说明 | 类型 | 默认值 |
-| ---------------- | ----------------------------------------- | ---------------------------------------- | ------- |
-| validateMessages | 配置全局`validateMessages`模板 | [ValidateMessages](#validatemessages)    | -       |
-| onFormChange     | 命名表单字段变化时触发       | (name, { changedFields, forms }) => void | -       |
-| onFormFinish     | 命名表单提交完成时触发       | (name, { values, forms }) => void        | -       |
+| 属性             | 说明                             | 类型                                     | 默认值 |
+| ---------------- | -------------------------------- | ---------------------------------------- | ------ |
+| validateMessages | 配置全局 `validateMessages` 模板 | [ValidateMessages](#validatemessages)    | -      |
+| onFormChange     | 命名表单字段变化时触发           | (name, { changedFields, forms }) => void | -      |
+| onFormFinish     | 命名表单提交完成时触发           | (name, { values, forms }) => void        | -      |
 
-## 📋 Interface
+## 接口
 
 ### NamePath
 
 | 类型                                     |
 | ---------------------------------------- |
-| 字符串\|数字\| (字符串\|数字)[] |
+| string \| number \| (string \| number)[] |
 
 ### FieldData
 
@@ -180,7 +179,7 @@ class Demo extends React.Component {
 | touched    | boolean                                  |
 | validating | boolean                                  |
 | errors     | string[]                                 |
-| name       | 字符串\|数字\| (字符串\|数字)[] |
+| name       | string \| number \| (string \| number)[] |
 | value      | any                                      |
 
 ### Rule
@@ -209,19 +208,19 @@ class Demo extends React.Component {
 | 属性   | 类型                     |
 | ------ | ------------------------ |
 | add    | (initValue: any) => void |
-| remove | (index: number) => void |
+| remove | (index: number) => void  |
 
 ### ValidateMessages
 
 验证消息提供错误模板列表。您可以参考[此处](https://github.com/react-component/field-form/blob/master/src/utils/messages.ts)以获得完全默认的模板。
 
-| 属性    | 说明         |
-| ------- | ------------------- |
+| 属性    | 说明                   |
+| ------- | ---------------------- |
 | enum    | Rule 的 `enum` 属性    |
 | len     | Rule 的 `len` 属性     |
 | max     | Rule 的 `max` 属性     |
 | min     | Rule 的 `min` 属性     |
-| name    | 字段名称          |
+| name    | 字段名称               |
 | pattern | Rule 的 `pattern` 属性 |
 | type    | Rule 的 `type` 属性    |
 

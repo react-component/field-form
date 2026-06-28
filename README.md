@@ -15,7 +15,6 @@
 
 <p align="center">English | <a href="./README.zh-CN.md">简体中文</a></p>
 
-
 ## Highlights
 
 | Area       | Support                                                            |
@@ -75,7 +74,7 @@ npm start
 
 Then open `http://localhost:8000`.
 
-## 🔥 API
+## API
 
 We use typescript to create the Type definition. You can view directly in IDE. But you can still check the type definition [here](https://github.com/react-component/field-form/blob/master/src/interface.ts).
 
@@ -121,7 +120,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ### useForm
 
-Form component default create an form instance by `Form.useForm`. But you can create it and pass to Form also. This allow you to call some function on the form instance.
+Form creates a form instance with `Form.useForm` by default. You can also create the instance yourself and pass it to Form to call methods directly.
 
 ```jsx | pure
 const Demo = () => {
@@ -130,7 +129,7 @@ const Demo = () => {
 };
 ```
 
-For class component user, you can use `ref` to get form instance:
+For class components, use `ref` to get the form instance:
 
 ```jsx | pure
 class Demo extends React.Component {
@@ -166,7 +165,7 @@ class Demo extends React.Component {
 | onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
 | onFormFinish     | Trigger by named form fields finish       | (name, { values, forms }) => void        | -       |
 
-## 📋 Interface
+## Interface
 
 ### NamePath
 
