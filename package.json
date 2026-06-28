@@ -39,7 +39,7 @@
     "deploy": "npm run docs:build:gh-pages && npm run docs:deploy",
     "prettier": "prettier --write --ignore-unknown .",
     "test": "rc-test",
-    "test:coverage": "umi-test --coverage",
+    "test:coverage": "npm run test -- --coverage",
     "prepublishOnly": "npm run compile && rc-np",
     "lint": "eslint src/ --ext .tsx,.ts",
     "lint:tsc": "tsc -p tsconfig.json --noEmit",
