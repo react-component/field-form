@@ -2,7 +2,6 @@
   "name": "@rc-component/form",
   "version": "1.8.5",
   "description": "React Form Component",
-  "typings": "es/index.d.ts",
   "engines": {
     "node": ">=8.x"
   },
@@ -91,5 +90,6 @@
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"
-  }
+  },
+  "types": "./es/index.d.ts"
 }
