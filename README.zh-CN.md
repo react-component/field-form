@@ -311,6 +311,8 @@ npm run compile
 npm run build
 ```
 
+dumi 站点默认运行在 `http://localhost:8000`。
+
 ## 发布
 
 ```bash
