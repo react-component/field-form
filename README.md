@@ -7,7 +7,7 @@
     <a href="https://npmjs.org/package/@rc-component/form"><img alt="NPM version" src="https://img.shields.io/npm/v/@rc-component/form.svg?style=flat-square"></a>
     <a href="https://npmjs.org/package/@rc-component/form"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@rc-component/form.svg?style=flat-square"></a>
     <a href="https://github.com/react-component/field-form/actions/workflows/main.yml"><img alt="build status" src="https://github.com/react-component/field-form/actions/workflows/main.yml/badge.svg"></a>
-    <a href="https://codecov.io/gh/react-component/field-form/branch/master"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square"></a>
+    <a href="https://app.codecov.io/gh/react-component/field-form"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square"></a>
     <a href="https://bundlephobia.com/package/@rc-component/form"><img alt="bundle size" src="https://img.shields.io/bundlephobia/minzip/@rc-component/form?style=flat-square"></a>
     <a href="https://github.com/umijs/dumi"><img alt="dumi" src="https://img.shields.io/badge/docs%20by-dumi-blue?style=flat-square"></a>
   </p>
