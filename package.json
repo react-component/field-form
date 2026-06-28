@@ -12,7 +12,7 @@
     "react-form",
     "form"
   ],
-  "homepage": "https://github.com/react-component/field-form",
+  "homepage": "https://react-component.github.io/field-form",
   "author": "smith3816@gmail.com",
   "repository": {
     "type": "git",
@@ -82,5 +82,8 @@
     "react-redux": "^9.0.4",
     "redux": "^5.0.0",
     "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
