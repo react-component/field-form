@@ -1,0 +1,50 @@
+name: Surge Preview
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: surge-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    env:
+      PREVIEW: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check Surge token
+        id: surge-token
+        env:
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+        run: |
+          if [ -n "$SURGE_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build preview
+        if: ${{ steps.surge-token.outputs.enabled == 'true' }}
+        run: |
+          npm install
+          npm run build
+      - uses: afc163/surge-preview@bf90a5a86111f6311ca42f0a5a0f80fb0fb03cec
+        if: ${{ steps.surge-token.outputs.enabled == 'true' }}
+        env:
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+        with:
+          surge_token: ${{ env.SURGE_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dist: docs-dist
+          failOnError: false
+          setCommitStatus: false
+      - name: Skip Surge preview
+        if: ${{ steps.surge-token.outputs.enabled != 'true' }}
+        run: echo "SURGE_TOKEN is not configured; skip Surge preview."

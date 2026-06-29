@@ -8,9 +8,23 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["src/*"],
-      "@@/*": ["src/.umi/*"],
-      "rc-field-form": ["src/index.tsx"]
-    }
-  }
+      "@/*": [
+        "src/*"
+      ],
+      "@@/*": [
+        "src/.umi/*"
+      ],
+      "rc-field-form": [
+        "src/index.tsx"
+      ]
+    },
+    "ignoreDeprecations": "5.0"
+  },
+  "include": [
+    ".dumirc.ts",
+    ".fatherrc.ts",
+    "src",
+    "tests",
+    "docs"
+  ]
 }

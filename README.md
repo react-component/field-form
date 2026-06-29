@@ -1,39 +1,43 @@
-# rc-field-form
+<div align="center">
+  <h1>@rc-component/form</h1>
+  <p><sub><img alt="Ant Design" height="14" src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" style="vertical-align: -0.125em;" /> Part of the Ant Design ecosystem.</sub></p>
+  <p>📝 Performance-first React form state manager with field subscriptions, validation, lists, dependencies, and hook APIs.</p>
 
-React Performance First Form Component.
+  <p>
+    <a href="https://npmjs.org/package/@rc-component/form"><img alt="NPM version" src="https://img.shields.io/npm/v/@rc-component/form.svg?style=flat-square"></a>
+    <a href="https://npmjs.org/package/@rc-component/form"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@rc-component/form.svg?style=flat-square"></a>
+    <a href="https://github.com/react-component/field-form/actions/workflows/main.yml"><img alt="build status" src="https://github.com/react-component/field-form/actions/workflows/main.yml/badge.svg"></a>
+    <a href="https://app.codecov.io/gh/react-component/field-form"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square"></a>
+    <a href="https://bundlephobia.com/package/@rc-component/form"><img alt="bundle size" src="https://img.shields.io/bundlephobia/minzip/@rc-component/form?style=flat-square"></a>
+    <a href="https://github.com/umijs/dumi"><img alt="dumi" src="https://img.shields.io/badge/docs%20by-dumi-blue?style=flat-square"></a>
+  </p>
+</div>
 
-[![NPM version][npm-image]][npm-url] [![dumi](https://img.shields.io/badge/docs%20by-dumi-blue?style=flat-square)](https://github.com/umijs/dumi) [![build status][github-actions-image]][github-actions-url] [![Codecov][codecov-image]][codecov-url] [![npm download][download-image]][download-url]
+<p align="center">English | <a href="./README.zh-CN.md">简体中文</a></p>
 
-[npm-image]: http://img.shields.io/npm/v/rc-field-form.svg?style=flat-square
-[npm-url]: http://npmjs.org/package/rc-field-form
-[github-actions-image]: https://github.com/react-component/field-form/actions/workflows/main.yml/badge.svg
-[github-actions-url]: https://github.com/react-component/field-form/actions/workflows/main.yml
-[codecov-image]: https://img.shields.io/codecov/c/github/react-component/field-form/master.svg?style=flat-square
-[codecov-url]: https://codecov.io/gh/react-component/field-form/branch/master
-[download-image]: https://img.shields.io/npm/dm/rc-field-form.svg?style=flat-square
-[download-url]: https://npmjs.org/package/rc-field-form
+## Highlights
 
-## Development
-
-```bash
-npm install
-npm start
-open http://localhost:8000
-```
-
-## Feature
-
-- Support react.js and even react-native
-- Validate fields with [@rc-component/async-validator](https://github.com/react-component/async-validator/)
+| Area       | Support                                                            |
+| ---------- | ------------------------------------------------------------------ |
+| State      | Field-level subscriptions, controlled fields, initial values       |
+| Validation | Rule-based validation powered by `@rc-component/async-validator`   |
+| Structure  | Nested names, lists, dependencies, and preservation control        |
+| APIs       | `Form`, `Field`, `List`, `FormProvider`, `useForm`, and `useWatch` |
+| Runtime    | React DOM and React Native friendly form state model               |
 
 ## Install
 
-[![rc-field-form](https://nodei.co/npm/rc-field-form.png)](https://npmjs.org/package/rc-field-form)
+```bash
+npm install @rc-component/form
+```
+
+The package was formerly documented as `rc-field-form`; use
+`@rc-component/form` for new installs.
 
 ## Usage
 
-```js | pure
-import Form, { Field } from 'rc-field-form';
+```tsx | pure
+import Form, { Field } from '@rc-component/form';
 
 const Input = ({ value = '', ...props }) => <input value={value} {...props} />;
 
@@ -59,7 +63,18 @@ const Demo = () => {
 export default Demo;
 ```
 
-## 🔥 API
+## Examples
+
+Run the local dumi site:
+
+```bash
+npm install
+npm start
+```
+
+Then open `http://localhost:8000`.
+
+## API
 
 We use typescript to create the Type definition. You can view directly in IDE. But you can still check the type definition [here](https://github.com/react-component/field-form/blob/master/src/interface.ts).
 
@@ -105,7 +120,7 @@ We use typescript to create the Type definition. You can view directly in IDE. B
 
 ### useForm
 
-Form component default create an form instance by `Form.useForm`. But you can create it and pass to Form also. This allow you to call some function on the form instance.
+Form creates a form instance with `Form.useForm` by default. You can also create the instance yourself and pass it to Form to call methods directly.
 
 ```jsx | pure
 const Demo = () => {
@@ -114,7 +129,7 @@ const Demo = () => {
 };
 ```
 
-For class component user, you can use `ref` to get form instance:
+For class components, use `ref` to get the form instance:
 
 ```jsx | pure
 class Demo extends React.Component {
@@ -150,7 +165,7 @@ class Demo extends React.Component {
 | onFormChange     | Trigger by named form fields change       | (name, { changedFields, forms }) => void | -       |
 | onFormFinish     | Trigger by named form fields finish       | (name, { values, forms }) => void        | -       |
 
-## 📋 Interface
+## Interface
 
 ### NamePath
 
@@ -283,3 +298,29 @@ In `rc-form` you should use `preserve` to keep a value cause Form will auto remo
 In `rc-form`, we hope to help user auto trigger change event by setting to make redux dispatch easier, but it's not good design since it makes code logic couping.
 
 Additionally, user control update trigger `onFieldsChange` & `onValuesChange` event has potential dead loop risk.
+
+## Development
+
+```bash
+npm install
+npm start
+npm test
+npm run lint
+npm run tsc
+npm run compile
+npm run build
+```
+
+The dumi site runs at `http://localhost:8000` by default.
+
+## Release
+
+```bash
+npm run prepublishOnly
+```
+
+The release flow is handled by `@rc-component/np` through the `rc-np` command after the package build.
+
+## License
+
+@rc-component/form is released under the [MIT](./LICENSE) license.
