@@ -18,9 +18,18 @@
         "src/index.tsx"
       ]
     },
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "6.0",
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "strictFunctionTypes": false,
+    "strict": false,
+    "noImplicitThis": false,
+    "strictBindCallApply": false
   },
   "include": [
+    "react-compat.d.ts",
+    "global.d.ts",
     ".dumirc.ts",
     ".fatherrc.ts",
     "src",
