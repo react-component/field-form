@@ -611,6 +611,7 @@ class Field extends React.PureComponent<InternalFieldProps, FieldState> implemen
       this.dirty = true;
 
       this.triggerMetaEvent();
+      const curValue = this.getValue();
 
       let newValue: StoreValue;
       if (getValueFromEvent) {
@@ -620,9 +621,9 @@ class Field extends React.PureComponent<InternalFieldProps, FieldState> implemen
       }
 
       if (normalize) {
-        newValue = normalize(newValue, value, getFieldsValue(true));
+        newValue = normalize(newValue, curValue, getFieldsValue(true));
       }
-      if (newValue !== value) {
+      if (newValue !== curValue) {
         dispatch({
           type: 'updateValue',
           namePath,
