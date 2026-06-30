@@ -1,4 +1,5 @@
-import { act, fireEvent, render } from '@testing-library/react';
+import { fireEvent } from '@testing-library/dom';
+import { act, render } from '@testing-library/react';
 import { resetWarned } from '@rc-component/util';
 import React from 'react';
 import type { FormInstance } from '../src';

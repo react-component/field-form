@@ -1,6 +1,7 @@
+import { fireEvent } from '@testing-library/dom';
 import timeout, { waitFakeTime } from './timeout';
 import { matchNamePath } from '../../src/utils/valueUtil';
-import { fireEvent, act } from '@testing-library/react';
+import { act } from '@testing-library/react';
 
 export function getInput(
   container: HTMLElement,

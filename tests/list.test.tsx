@@ -1,5 +1,6 @@
+import { fireEvent } from '@testing-library/dom';
 import React, { useState } from 'react';
-import { fireEvent, render, act } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { resetWarned } from '@rc-component/util';
 import Form, { Field, List } from '../src';
 import type { FormProps } from '../src';
