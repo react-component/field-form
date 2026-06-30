@@ -1,6 +1,5 @@
-import { fireEvent } from '@testing-library/dom';
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import type { FormInstance } from '../../src';
 import Form, { Field, useForm } from '../../src';
 import { Input } from '../common/InfoField';

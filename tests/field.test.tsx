@@ -1,8 +1,7 @@
-import { fireEvent } from '@testing-library/dom';
 import React from 'react';
 import Form, { Field } from '../src';
 import type { FormInstance } from '../src';
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { Input } from './common/InfoField';
 import { getInput } from './common';
 import timeout from './common/timeout';

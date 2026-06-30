@@ -1,11 +1,10 @@
-import { fireEvent } from '@testing-library/dom';
 import React from 'react';
 import type { FormInstance } from '../src';
 import Form, { Field } from '../src';
 import { waitFakeTime } from './common/timeout';
 import InfoField, { Input } from './common/InfoField';
 import { changeValue, matchError, getInput, changeValueWithMockTimer } from './common';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 
 describe('Form.Dependencies', () => {
   afterEach(() => {

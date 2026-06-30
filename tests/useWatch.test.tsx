@@ -1,6 +1,5 @@
-import { fireEvent } from '@testing-library/dom';
 import React, { useRef, useState } from 'react';
-import { render, act } from '@testing-library/react';
+import { render, fireEvent, act } from '@testing-library/react';
 import type { FormInstance } from '../src';
 import { List } from '../src';
 import Form, { Field } from '../src';
@@ -497,6 +496,7 @@ describe('useWatch', () => {
       React.useEffect(() => {
         console.log(nameValuePreserve, nameValue);
       }, [nameValuePreserve, nameValue]);
+
 
       return (
         <div>
