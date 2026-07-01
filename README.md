@@ -68,7 +68,7 @@ export default Demo;
 Run the local dumi site:
 
 ```bash
-npm install
+ut install
 npm start
 ```
 
@@ -302,7 +302,7 @@ Additionally, user control update trigger `onFieldsChange` & `onValuesChange` ev
 ## Development
 
 ```bash
-npm install
+ut install
 npm start
 npm test
 npm run lint
