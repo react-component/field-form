@@ -1,8 +1,9 @@
 import { useRef } from 'react';
-import type { DragObjectWithType } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 
-type DragWithIndex = DragObjectWithType & {
+type DragWithIndex = {
+  type: string;
+  id: string | number;
   index: number;
 };
 export default function useDraggable(
@@ -69,6 +70,7 @@ export default function useDraggable(
     },
   });
   const [{ isDragging }, drag] = useDrag({
+    type,
     item: { type, id, index },
     collect: monitor => ({
       isDragging: monitor.isDragging(),
