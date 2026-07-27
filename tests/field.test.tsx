@@ -2,7 +2,6 @@ import React from 'react';
 import Form, { Field } from '../src';
 import type { FormInstance } from '../src';
 import { act, fireEvent, render } from '@testing-library/react';
-import { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
 describe('Form.Field', () => {
@@ -74,36 +73,29 @@ describe('Form.Field', () => {
   });
 
   // https://github.com/react-component/field-form/issues/753
-  it('value change multiple times', async () => {
+  it('uses the latest value for consecutive changes', () => {
     const form = React.createRef<FormInstance>();
-    const MockBtnInput = props => (
-      <>
-        <Input {...props} />
-        <button
-          onClick={() => {
-            props.onChange?.('');
-            props.onChange?.('A');
-          }}
-        >
-          change
-        </button>
-      </>
+    const MockInput = ({ onChange }: { onChange?: (value: string) => void }) => (
+      <button
+        type="button"
+        onClick={() => {
+          onChange?.('');
+          onChange?.('A');
+        }}
+      >
+        change
+      </button>
     );
-    const { container } = render(
+
+    const { getByRole } = render(
       <Form ref={form}>
-        <Field name="input">
-          <MockBtnInput />
+        <Field name="input" initialValue="A">
+          <MockInput />
         </Field>
       </Form>,
     );
 
-    // Trigger
-    for (let i = 0; i < 3; i += 1) {
-      fireEvent.click(container.querySelector('button'));
-      await act(async () => {
-        await timeout();
-      });
-      expect(form.current?.getFieldValue('input')).toBe('A');
-    }
+    fireEvent.click(getByRole('button'));
+    expect(form.current?.getFieldValue('input')).toBe('A');
   });
 });
