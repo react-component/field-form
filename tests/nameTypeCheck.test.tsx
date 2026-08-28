@@ -2,7 +2,11 @@
 import React, { useMemo } from 'react';
 import { render } from '@testing-library/react';
 import Form, { Field, List } from '../src';
-import type { FormInstance, NamePath } from '../src/interface';
+import type { FormInstance, NamePath, RecursivePartial } from '../src/interface';
+
+type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
+type Expect<T extends true> = T;
 
 describe('nameTypeCheck', () => {
   it('typescript', () => {
@@ -23,6 +27,11 @@ describe('nameTypeCheck', () => {
 
     type SetFieldsValueParam = Parameters<FormInstance<FieldType>['setFieldsValue']>[0];
 
+    type DomainId = string & {
+      readonly __nominal: unique symbol;
+    };
+    type BrandedPartial = RecursivePartial<{ id: DomainId }>;
+
     const nullableListAsNull: SetFieldsValueParam = { nullableList: null };
     const nullableListAsArray: SetFieldsValueParam = { nullableList: ['bamboo'] };
     const nullableObjectListAsNull: SetFieldsValueParam = { nullableObjectList: null };
@@ -39,6 +48,10 @@ describe('nameTypeCheck', () => {
     const optionalListAsPartial: SetFieldsValueParam = {
       strictList: [{ age: '18' }],
     };
+    const brandedValue: BrandedPartial = {
+      id: 'domain-id' as DomainId,
+    };
+    const brandedTypeCheck: Expect<Equal<BrandedPartial['id'], DomainId | undefined>> = true;
     const useGenericSetter = <Values,>() => {
       const [form] = Form.useForm<Values>();
       return (values: Partial<Values>) => form.setFieldsValue(values);

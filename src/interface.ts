@@ -243,8 +243,11 @@ export interface InternalHooks {
   getInitialValue: (namePath: InternalNamePath) => StoreValue;
 }
 
+type Primitive = string | number | bigint | boolean | symbol | null | undefined;
+
 /** Only return partial when type is not any */
-export type RecursivePartial<T> = T extends Date | RegExp | Function | Map<any, any> | Set<any>
+export type RecursivePartial<T> = T extends
+  Primitive | Date | RegExp | Function | Map<any, any> | Set<any>
   ? T
   : T extends (infer U)[]
     ? RecursivePartial<U>[]
