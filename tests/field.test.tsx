@@ -2,6 +2,7 @@ import React from 'react';
 import Form, { Field } from '../src';
 import type { FormInstance } from '../src';
 import { act, fireEvent, render } from '@testing-library/react';
+import { Input } from './common/InfoField';
 import timeout from './common/timeout';
 
 describe('Form.Field', () => {
@@ -37,6 +38,50 @@ describe('Form.Field', () => {
     // expect(instance.cancelRegisterFunc).toBeFalsy();
     // expect((wrapper.find('Field').instance() as any).cancelRegisterFunc).toBeTruthy();
     expect(formRef.getFieldsValue()).toEqual({ light: 'bamboo' });
+  });
+
+  it('render props should receive initialValue on first render', () => {
+    let firstValue: any;
+
+    render(
+      <Form>
+        <Field name="light" initialValue="bamboo">
+          {control => {
+            if (firstValue === undefined) {
+              firstValue = control.value;
+            }
+
+            return <Input {...control} />;
+          }}
+        </Field>
+      </Form>,
+    );
+
+    expect(firstValue).toBe('bamboo');
+  });
+
+  it('unmount should use latest onMetaChange', () => {
+    const onMetaChange1 = jest.fn();
+    const onMetaChange2 = jest.fn();
+
+    const Demo: React.FC<{ onMetaChange: (meta: any) => void }> = props => {
+      const { onMetaChange } = props;
+      return (
+        <Form>
+          <Field name="light" onMetaChange={onMetaChange}>
+            <Input />
+          </Field>
+        </Form>
+      );
+    };
+
+    const { rerender, unmount } = render(<Demo onMetaChange={onMetaChange1} />);
+
+    rerender(<Demo onMetaChange={onMetaChange2} />);
+    unmount();
+
+    expect(onMetaChange1).not.toHaveBeenCalledWith(expect.objectContaining({ destroy: true }));
+    expect(onMetaChange2).toHaveBeenCalledWith(expect.objectContaining({ destroy: true }));
   });
 
   // https://github.com/ant-design/ant-design/issues/51611
