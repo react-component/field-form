@@ -32,8 +32,7 @@ const EMPTY_ERRORS: any[] = [];
 const EMPTY_WARNINGS: any[] = [];
 
 export type ShouldUpdate<Values = any> =
-  | boolean
-  | ((prevValues: Values, nextValues: Values, info: { source?: string }) => boolean);
+  boolean | ((prevValues: Values, nextValues: Values, info: { source?: string }) => boolean);
 
 function requireUpdate(
   shouldUpdate: ShouldUpdate,
@@ -98,8 +97,10 @@ export interface InternalFieldProps<Values = any> {
   fieldContext?: InternalFormInstance;
 }
 
-export interface FieldProps<Values = any>
-  extends Omit<InternalFieldProps<Values>, 'name' | 'fieldContext'> {
+export interface FieldProps<Values = any> extends Omit<
+  InternalFieldProps<Values>,
+  'name' | 'fieldContext'
+> {
   name?: NamePath<Values>;
 }
 
@@ -140,6 +141,8 @@ class Field extends React.PureComponent<InternalFieldProps, FieldState> implemen
 
   private prevValidating: boolean;
 
+  private lastRenderedValue: StoreValue;
+
   private errors: string[] = EMPTY_ERRORS;
   private warnings: string[] = EMPTY_WARNINGS;
 
@@ -167,8 +170,11 @@ class Field extends React.PureComponent<InternalFieldProps, FieldState> implemen
       this.cancelRegisterFunc = registerField(this);
     }
 
-    // One more render for component in case fields not ready
-    if (shouldUpdate === true) {
+    // One more render if the store changed before mount, including replay recovery.
+    if (
+      shouldUpdate === true ||
+      (this.getNamePath().length && this.getValue() !== this.lastRenderedValue)
+    ) {
       this.reRender();
     }
   }
@@ -583,6 +589,7 @@ class Field extends React.PureComponent<InternalFieldProps, FieldState> implemen
     const { getInternalHooks, getFieldsValue }: InternalFormInstance = fieldContext;
     const { dispatch } = getInternalHooks(HOOK_MARK);
     const value = this.getValue();
+    this.lastRenderedValue = value;
     const mergedGetValueProps = getValueProps || ((val: StoreValue) => ({ [valuePropName]: val }));
 
     const originTriggerFunc = childProps[trigger];

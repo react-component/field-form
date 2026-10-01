@@ -63,6 +63,8 @@ export class FormStore {
 
   private store: Store = {};
 
+  private explicitValueUpdateVersion = 0;
+
   private fieldEntities: FieldEntity[] = [];
 
   private initialValues: Store = {};
@@ -114,6 +116,7 @@ export class FormStore {
         useSubscribe: this.useSubscribe,
         setInitialValues: this.setInitialValues,
         destroyForm: this.destroyForm,
+        backupStore: this.backupStore,
         setCallbacks: this.setCallbacks,
         setValidateMessages: this.setValidateMessages,
         getFields: this.getFields,
@@ -171,6 +174,17 @@ export class FormStore {
       });
       this.prevWithoutPreserves = prevWithoutPreserves;
     }
+  };
+
+  private backupStore = () => {
+    const store = this.store;
+    const version = this.explicitValueUpdateVersion;
+    return () => {
+      // Explicit writes or resets after cleanup take precedence over replay recovery.
+      if (this.explicitValueUpdateVersion === version) {
+        this.updateStore(store);
+      }
+    };
   };
 
   private getInitialValue = (namePath: InternalNamePath) => {
@@ -565,6 +579,7 @@ export class FormStore {
 
   private resetFields = (nameList?: NamePath[]) => {
     this.warningUnhooked();
+    this.explicitValueUpdateVersion += 1;
 
     const prevStore = this.store;
     if (!nameList) {
@@ -600,6 +615,7 @@ export class FormStore {
 
       // Value
       if ('value' in data) {
+        this.explicitValueUpdateVersion += 1;
         this.updateStore(setValue(this.store, namePath, data.value));
       }
 
@@ -762,6 +778,7 @@ export class FormStore {
   private updateValue = (name: NamePath, value: StoreValue) => {
     const namePath = getNamePath(name);
     const prevStore = this.store;
+    this.explicitValueUpdateVersion += 1;
     this.updateStore(setValue(this.store, namePath, value));
 
     this.notifyObservers(prevStore, [namePath], {
@@ -793,6 +810,7 @@ export class FormStore {
     const prevStore = this.store;
 
     if (store) {
+      this.explicitValueUpdateVersion += 1;
       const nextStore = merge(this.store, store);
       this.updateStore(nextStore);
     }

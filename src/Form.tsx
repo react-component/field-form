@@ -19,6 +19,34 @@ type BaseFormProps = Omit<React.FormHTMLAttributes<HTMLFormElement>, 'onSubmit' 
 
 type RenderProps = (values: Store, form: FormInstance) => React.ReactNode;
 
+class FormStoreSnapshot extends React.Component<{
+  backupStore: () => () => void;
+  clearOnDestroy?: boolean;
+}> {
+  private restoreStore?: () => void;
+  private hasMounted = false;
+  private clearOnDestroy?: boolean;
+
+  public componentDidMount() {
+    // Match the value captured when Form's unmount effect first mounts.
+    if (!this.hasMounted) {
+      this.hasMounted = true;
+      this.clearOnDestroy = this.props.clearOnDestroy;
+    }
+    this.restoreStore?.();
+  }
+
+  public componentWillUnmount() {
+    if (this.clearOnDestroy) {
+      this.restoreStore = this.props.backupStore();
+    }
+  }
+
+  public render() {
+    return null;
+  }
+}
+
 export interface FormProps<Values = any> extends BaseFormProps {
   initialValues?: Store;
   form?: FormInstance<Values>;
@@ -70,6 +98,7 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (props, ref) =>
     setValidateMessages,
     setPreserve,
     destroyForm,
+    backupStore,
   } = (formInstance as InternalFormInstance).getInternalHooks(HOOK_MARK);
 
   // Pass ref with form instance
@@ -158,6 +187,8 @@ const Form: React.ForwardRefRenderFunction<FormRef, FormProps> = (props, ref) =>
 
   const wrapperNode = (
     <ListContext.Provider value={null}>
+      {/* Restore replayed mounts before fields register or read the store in layout effects. */}
+      <FormStoreSnapshot backupStore={backupStore} clearOnDestroy={clearOnDestroy} />
       <FieldContext.Provider value={formContextValue}>{childrenNode}</FieldContext.Provider>
     </ListContext.Provider>
   );
