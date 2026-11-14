@@ -232,6 +232,49 @@ describe('Form.Preserve', () => {
       fireEvent.click(container.querySelector<HTMLButtonElement>('button'));
       expect(form.current?.getFieldsValue()).toEqual({ list: [] });
     });
+
+    it('clean value by current name after index changed', () => {
+      const form = React.createRef<FormInstance>();
+
+      const Demo = ({ showMemo }: { showMemo: boolean }) => (
+        <Form
+          ref={form}
+          initialValues={{
+            list: [
+              { id: 1, memo: 'first' },
+              { id: 2, memo: 'second' },
+            ],
+          }}
+        >
+          <Form.List name="list">
+            {(fields, { remove }) => (
+              <>
+                {fields.map(field => (
+                  <div key={field.key}>
+                    <Form.Field name={[field.name, 'id']}>
+                      <Input />
+                    </Form.Field>
+                    {showMemo && (
+                      <Form.Field name={[field.name, 'memo']} preserve={false}>
+                        <Input />
+                      </Form.Field>
+                    )}
+                  </div>
+                ))}
+                <button type="button" onClick={() => remove(0)} />
+              </>
+            )}
+          </Form.List>
+        </Form>
+      );
+
+      const { container, rerender } = render(<Demo showMemo />);
+      fireEvent.click(container.querySelector<HTMLButtonElement>('button'));
+      expect(form.current?.getFieldsValue(true)).toEqual({ list: [{ id: 2, memo: 'second' }] });
+
+      rerender(<Demo showMemo={false} />);
+      expect(form.current?.getFieldsValue(true)).toEqual({ list: [{ id: 2 }] });
+    });
   });
 
   it('nest render props should not clean full store', () => {
