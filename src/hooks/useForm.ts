@@ -674,6 +674,8 @@ export class FormStore {
     // un-register field callback
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
+      // List move/remove may change the name after register
+      const namePath = entity.getNamePath();
 
       // Clean up store value if not preserve
       if (!this.isMergedPreserve(preserve) && (!isListField || subNamePath.length > 1)) {
