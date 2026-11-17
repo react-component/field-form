@@ -445,4 +445,98 @@ describe('Form.Preserve', () => {
     fireEvent.click(container.querySelector('button'));
     expect(container.querySelector('input')).toBeFalsy();
   });
+
+  it('clean up nested list field with preserve={false} after rows are removed', () => {
+    const formRef = React.createRef<FormInstance>();
+
+    const Demo: React.FC<{ showMemo: boolean }> = ({ showMemo }) => (
+      <Form
+        ref={formRef}
+        initialValues={{
+          lines: [
+            { id: 1, memo: 'first memo' },
+            { id: 2, memo: 'second memo' },
+          ],
+        }}
+      >
+        <Form.List name="lines">
+          {(fields, { remove }) => (
+            <>
+              {fields.map(field => (
+                <div key={field.key}>
+                  <Form.Field name={[field.name, 'id']}>
+                    <input />
+                  </Form.Field>
+                  {showMemo && (
+                    <Form.Field name={[field.name, 'memo']} preserve={false}>
+                      <input />
+                    </Form.Field>
+                  )}
+                </div>
+              ))}
+              <button type="button" className="remove-first" onClick={() => remove(0)}>
+                remove first row
+              </button>
+            </>
+          )}
+        </Form.List>
+      </Form>
+    );
+
+    const { container, rerender } = render(<Demo showMemo />);
+
+    fireEvent.click(container.querySelector('.remove-first'));
+    rerender(<Demo showMemo={false} />);
+
+    expect(formRef.current?.getFieldsValue(true)).toEqual({
+      lines: [{ id: 2 }],
+    });
+  });
+
+  it('clean up nested list field with preserve={false} after rows are moved', () => {
+    const formRef = React.createRef<FormInstance>();
+
+    const Demo: React.FC<{ showMemo: boolean }> = ({ showMemo }) => (
+      <Form
+        ref={formRef}
+        initialValues={{
+          lines: [
+            { id: 1, memo: 'first memo' },
+            { id: 2, memo: 'second memo' },
+          ],
+        }}
+      >
+        <Form.List name="lines">
+          {(fields, { move }) => (
+            <>
+              {fields.map(field => (
+                <div key={field.key}>
+                  <Form.Field name={[field.name, 'id']}>
+                    <input />
+                  </Form.Field>
+                  {showMemo && (
+                    <Form.Field name={[field.name, 'memo']} preserve={false}>
+                      <input />
+                    </Form.Field>
+                  )}
+                </div>
+              ))}
+              <button type="button" className="move-first" onClick={() => move(0, 1)}>
+                move first row
+              </button>
+            </>
+          )}
+        </Form.List>
+      </Form>
+    );
+
+    const { container, rerender } = render(<Demo showMemo />);
+
+    fireEvent.click(container.querySelector('.move-first'));
+    rerender(<Demo showMemo={false} />);
+
+    expect(formRef.current?.getFieldsValue(true)).toEqual({
+      lines: [{ id: 2 }, { id: 1 }],
+    });
+  });
 });

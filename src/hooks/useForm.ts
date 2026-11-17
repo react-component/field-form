@@ -675,31 +675,34 @@ export class FormStore {
     return (isListField?: boolean, preserve?: boolean, subNamePath: InternalNamePath = []) => {
       this.fieldEntities = this.fieldEntities.filter(item => item !== entity);
 
+      // `namePath` may be changed by `List` move/remove after registration
+      const currentNamePath = entity.getNamePath();
+
       // Clean up store value if not preserve
       if (!this.isMergedPreserve(preserve) && (!isListField || subNamePath.length > 1)) {
-        const defaultValue = isListField ? undefined : this.getInitialValue(namePath);
+        const defaultValue = isListField ? undefined : this.getInitialValue(currentNamePath);
 
         if (
-          namePath.length &&
-          this.getFieldValue(namePath) !== defaultValue &&
+          currentNamePath.length &&
+          this.getFieldValue(currentNamePath) !== defaultValue &&
           this.fieldEntities.every(
             field =>
               // Only reset when no namePath exist
-              !matchNamePath(field.getNamePath(), namePath),
+              !matchNamePath(field.getNamePath(), currentNamePath),
           )
         ) {
           const prevStore = this.store;
-          this.updateStore(setValue(prevStore, namePath, defaultValue, true));
+          this.updateStore(setValue(prevStore, currentNamePath, defaultValue, true));
 
           // Notify that field is unmount
-          this.notifyObservers(prevStore, [namePath], { type: 'remove' });
+          this.notifyObservers(prevStore, [currentNamePath], { type: 'remove' });
 
           // Dependencies update
-          this.triggerDependenciesUpdate(prevStore, namePath);
+          this.triggerDependenciesUpdate(prevStore, currentNamePath);
         }
       }
 
-      this.notifyWatch([namePath]);
+      this.notifyWatch([currentNamePath]);
     };
   };
 
